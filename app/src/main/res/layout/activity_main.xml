@@ -1,0 +1,57 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    android:theme="@style/Theme.Material3.DayNight.NoActionBar"
+    tools:context=".MainActivity">
+
+    <TextView
+        android:id="@+id/fileTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="35sp"
+        android:text="@string/app_name"
+        android:textAlignment="center"
+        android:layout_margin="90dp"
+        android:textAllCaps="true"
+        android:textStyle="bold"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="16dp" />
+
+    <Button
+        android:id="@+id/pickFileButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:text="@string/pick_file" />
+
+    <Button
+        android:id="@+id/changeDirectoryButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/extract_to"
+        android:layout_below="@id/pickFileButton"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="16dp"/>
+
+    <TextView
+        android:id="@+id/directoryTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="25dp"
+        android:textSize="20sp"
+        android:text="@string/not_selected"
+        android:textAlignment="center"
+        android:layout_centerInParent="true"
+        android:layout_below="@id/changeDirectoryButton"
+        android:layout_marginTop="16dp" />
+
+    <Button
+        android:id="@+id/extractButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/extract"
+        android:layout_below="@id/directoryTextView"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="16dp"/>
+</RelativeLayout>

@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">ZipXtract</string>
+    <string name="pick_file">Pick File</string>
+    <string name="extract">Extract</string>
+    <string name="extract_to">Extract To</string>
+    <string name="not_selected">Not Selected</string>
+</resources>
