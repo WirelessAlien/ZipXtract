@@ -7,10 +7,10 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.DocumentsContract
 import android.provider.MediaStore
-import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
@@ -40,6 +40,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var sharedPreferences: SharedPreferences
 
     private val requestPermissionCode = 1
+    private val legacyRequestPermissionCode = 2
 
     private val pickFileLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
@@ -108,12 +109,26 @@ class MainActivity : AppCompatActivity() {
         requestPermissions()
     }
 
+
     private fun requestPermissions() {
-        val permissions = arrayOf(
-            Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
-        )
-        ActivityCompat.requestPermissions(this, permissions, requestPermissionCode)
+        val permissions: Array<String>
+        val requestCode: Int
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            // For Android API 30 and above, use MANAGE_EXTERNAL_STORAGE permission
+            permissions = arrayOf(Manifest.permission.MANAGE_EXTERNAL_STORAGE)
+            requestCode = requestPermissionCode
+        } else {
+            // For older Android versions, use READ_EXTERNAL_STORAGE and WRITE_EXTERNAL_STORAGE permissions
+            permissions = arrayOf(
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            )
+            val legacyRequestPermissionCode = 3
+            requestCode = legacyRequestPermissionCode
+        }
+
+        ActivityCompat.requestPermissions(this, permissions, requestCode)
     }
 
     override fun onRequestPermissionsResult(
@@ -124,6 +139,15 @@ class MainActivity : AppCompatActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when (requestCode) {
             requestPermissionCode -> {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // Permissions granted, nothing to do
+                } else {
+                    // Permissions denied, show a dialog with a message and provide the functionality to go to app info
+                    showPermissionDeniedDialog()
+                }
+            }
+            legacyRequestPermissionCode -> {
+                // Handle permissions for older Android versions
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     // Permissions granted, nothing to do
                 } else {
@@ -363,11 +387,13 @@ class MainActivity : AppCompatActivity() {
         val rootView = findViewById<View>(android.R.id.content)
         Snackbar.make(rootView, "Extraction completed successfully", Snackbar.LENGTH_LONG)
             .setAction("Open Folder") {
-                val intent = Intent(Intent.ACTION_VIEW).apply {
-                    setDataAndType(outputDirectory?.uri, DocumentsContract.Document.MIME_TYPE_DIR)
-                    flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+                val intent = Intent(Intent.ACTION_VIEW)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    intent.setDataAndType(outputDirectory?.uri, DocumentsContract.Document.MIME_TYPE_DIR)
+                } else {
+                    intent.type = "application/vnd.android.document/directory"
                 }
-                Log.d("OutputDirectory", "Path: ${outputDirectory?.uri}")
+                intent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
                 startActivity(intent)
             }
             .show()
