@@ -21,6 +21,13 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.documentfile.provider.DocumentFile
 import com.google.android.material.snackbar.Snackbar
+import org.apache.commons.compress.archivers.sevenz.SevenZArchiveEntry
+import org.apache.commons.compress.archivers.sevenz.SevenZFile
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
+import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream
+import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream
+import org.apache.commons.compress.compressors.xz.XZCompressorInputStream
+import org.apache.commons.compress.utils.SeekableInMemoryByteChannel
 import java.io.BufferedInputStream
 import java.util.zip.ZipInputStream
 
@@ -28,7 +35,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var extractButton: Button
     private lateinit var directoryTextView: TextView // New TextView to display the selected output directory
-    private var zipFileUri: Uri? = null
+    private var archiveFileUri: Uri? = null
     private var outputDirectory: DocumentFile? = null
     private lateinit var sharedPreferences: SharedPreferences
 
@@ -36,8 +43,8 @@ class MainActivity : AppCompatActivity() {
 
     private val pickFileLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
-            zipFileUri = result.data?.data
-            if (zipFileUri != null) {
+            archiveFileUri = result.data?.data
+            if (archiveFileUri != null) {
                 Toast.makeText(this, "File picked successfully", Toast.LENGTH_SHORT).show()
                 extractButton.isEnabled = true
             }
@@ -70,19 +77,21 @@ class MainActivity : AppCompatActivity() {
         directoryTextView = findViewById(R.id.directoryTextView) // Assign the TextView from the layout
         sharedPreferences = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
 
-
         pickFileButton.setOnClickListener {
             val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
             intent.addCategory(Intent.CATEGORY_OPENABLE)
-            intent.type = "application/zip"
+            intent.type = "*/*"
             pickFileLauncher.launch(intent)
         }
 
         extractButton.setOnClickListener {
-            if (zipFileUri != null) {
-                extractZipFile(zipFileUri!!)
+            if (archiveFileUri != null) {
+                extractArchiveFile(archiveFileUri!!)
+            } else {
+                Toast.makeText(this, "Please pick a file to extract", Toast.LENGTH_SHORT).show()
             }
         }
+
 
         val savedDirectoryUri = sharedPreferences.getString("outputDirectoryUri", null)
         if (savedDirectoryUri != null) {
@@ -152,17 +161,35 @@ class MainActivity : AppCompatActivity() {
         directoryPicker.launch(null)
     }
 
-    private fun extractZipFile(zipFileUri: Uri) {
+    private fun extractArchiveFile(archiveFileUri: Uri) {
         if (outputDirectory == null) {
             showToast("Please select where to extract the files")
             return
         }
 
-        val zipFileName = getZipFileName(zipFileUri)
-        val outputDirectory = outputDirectory?.createDirectory(zipFileName!!)
+        val archiveFileName = getArchiveFileName(archiveFileUri)
 
-        val inputStream = contentResolver.openInputStream(zipFileUri)
-        val zipInputStream = ZipInputStream(BufferedInputStream(inputStream))
+        archiveFileName?.let { fileName ->
+            val outputDirectory = outputDirectory?.createDirectory(fileName.substringBeforeLast("."))
+
+            val inputStream = contentResolver.openInputStream(archiveFileUri)
+            val bufferedInputStream = BufferedInputStream(inputStream)
+
+            when (fileName.substringAfterLast(".").lowercase()) {
+                "zip" -> extractZip(bufferedInputStream, outputDirectory)
+                "tar" -> extractTar(bufferedInputStream, outputDirectory)
+                "bz2" -> extractBzip2(bufferedInputStream, outputDirectory)
+                "gz" -> extractGzip(bufferedInputStream, outputDirectory)
+                "7z" -> extract7z(bufferedInputStream, outputDirectory)
+                "xz" -> extractXz(bufferedInputStream, outputDirectory)
+                else -> showToast("Unsupported archive format")
+            }
+        } ?: showToast("Failed to get the archive file name")
+    }
+
+
+    private fun extractZip(bufferedInputStream: BufferedInputStream, outputDirectory: DocumentFile?) {
+        val zipInputStream = ZipInputStream(bufferedInputStream)
 
         var entry = zipInputStream.nextEntry
         while (entry != null) {
@@ -192,8 +219,147 @@ class MainActivity : AppCompatActivity() {
         }
 
         zipInputStream.close()
+        showExtractionCompletedSnackbar(outputDirectory)
+    }
 
-        // Show a Snackbar with the output directory path and an action button
+    private fun extractTar(bufferedInputStream: BufferedInputStream, outputDirectory: DocumentFile?) {
+        val tarInputStream = TarArchiveInputStream(bufferedInputStream)
+
+        var entry = tarInputStream.nextTarEntry
+        while (entry != null) {
+            val outputFile = outputDirectory?.createFile("application/octet-stream", entry.name)
+            if (entry.isDirectory) {
+                outputFile!!.createDirectory("UnTar")
+            } else {
+                outputFile?.uri?.let { uri ->
+                    contentResolver.openOutputStream(uri)?.use { outputStream ->
+                        val buffer = ByteArray(1024)
+                        var count: Int
+                        try {
+                            while (tarInputStream.read(buffer).also { count = it } != -1) {
+                                outputStream.write(buffer, 0, count)
+                            }
+                        } catch (e: Exception) {
+                            showToast("Extraction failed: ${e.message}")
+                            tarInputStream.close()
+                            return
+                        }
+                    }
+                }
+            }
+            entry = tarInputStream.nextTarEntry
+        }
+
+        tarInputStream.close()
+        showExtractionCompletedSnackbar(outputDirectory)
+    }
+    private fun extractBzip2(bufferedInputStream: BufferedInputStream, outputDirectory: DocumentFile?) {
+        val bzip2InputStream = BZip2CompressorInputStream(bufferedInputStream)
+
+        val outputFile = outputDirectory?.createFile("application/octet-stream", "output")
+
+        outputFile?.uri?.let { uri ->
+            contentResolver.openOutputStream(uri)?.use { outputStream ->
+                val buffer = ByteArray(1024)
+                var count: Int
+                try {
+                    while (bzip2InputStream.read(buffer).also { count = it } != -1) {
+                        outputStream.write(buffer, 0, count)
+                    }
+                } catch (e: Exception) {
+                    showToast("Extraction failed: ${e.message}")
+                    bzip2InputStream.close()
+                    return
+                }
+            }
+        }
+
+        bzip2InputStream.close()
+        showExtractionCompletedSnackbar(outputDirectory)
+    }
+
+    private fun extractGzip(bufferedInputStream: BufferedInputStream, outputDirectory: DocumentFile?) {
+        val gzipInputStream = GzipCompressorInputStream(bufferedInputStream)
+
+        val outputFile = outputDirectory?.createFile("application/octet-stream", "output")
+
+        outputFile?.uri?.let { uri ->
+            contentResolver.openOutputStream(uri)?.use { outputStream ->
+                val buffer = ByteArray(1024)
+                var count: Int
+                try {
+                    while (gzipInputStream.read(buffer).also { count = it } != -1) {
+                        outputStream.write(buffer, 0, count)
+                    }
+                } catch (e: Exception) {
+                    showToast("Extraction failed: ${e.message}")
+                    gzipInputStream.close()
+                    return
+                }
+            }
+        }
+
+        gzipInputStream.close()
+        showExtractionCompletedSnackbar(outputDirectory)
+    }
+    private fun extract7z(bufferedInputStream: BufferedInputStream, outputDirectory: DocumentFile?) {
+        val byteChannel = SeekableInMemoryByteChannel(bufferedInputStream.readBytes())
+        SevenZFile(byteChannel).use { sevenZFile ->
+            var entry: SevenZArchiveEntry? = sevenZFile.nextEntry
+            while (entry != null) {
+                val outputFile = outputDirectory?.createFile("application/octet-stream", entry.name)
+                if (entry.isDirectory) {
+                    outputFile?.createDirectory("Un7z")
+                } else {
+                    outputFile?.uri?.let { uri ->
+                        contentResolver.openOutputStream(uri)?.use { outputStream ->
+                            val buffer = ByteArray(8192)
+                            try {
+                                var count: Int
+                                while (sevenZFile.read(buffer).also { count = it } != -1) {
+                                    outputStream.write(buffer, 0, count)
+                                }
+                            } catch (e: Exception) {
+                                showToast("Extraction failed: ${e.message}")
+                                return
+                            }
+                        }
+                    }
+                }
+                entry = sevenZFile.nextEntry
+            }
+        }
+
+        showExtractionCompletedSnackbar(outputDirectory)
+    }
+
+    private fun extractXz(bufferedInputStream: BufferedInputStream, outputDirectory: DocumentFile?) {
+        val xzInputStream = XZCompressorInputStream(bufferedInputStream)
+
+        val outputFile = outputDirectory?.createFile("application/octet-stream", "output")
+
+        outputFile?.uri?.let { uri ->
+            contentResolver.openOutputStream(uri)?.use { outputStream ->
+                val buffer = ByteArray(1024)
+                var count: Int
+                try {
+                    while (xzInputStream.read(buffer).also { count = it } != -1) {
+                        outputStream.write(buffer, 0, count)
+                    }
+                } catch (e: Exception) {
+                    showToast("Extraction failed: ${e.message}")
+                    xzInputStream.close()
+                    return
+                }
+            }
+        }
+
+        xzInputStream.close()
+        showExtractionCompletedSnackbar(outputDirectory)
+    }
+
+
+    private fun showExtractionCompletedSnackbar(outputDirectory: DocumentFile?) {
         val rootView = findViewById<View>(android.R.id.content)
         Snackbar.make(rootView, "Extraction completed successfully", Snackbar.LENGTH_LONG)
             .setAction("Open Folder") {
@@ -204,24 +370,23 @@ class MainActivity : AppCompatActivity() {
                 Log.d("OutputDirectory", "Path: ${outputDirectory?.uri}")
                 startActivity(intent)
             }
-
             .show()
     }
 
 
 
-    private fun getZipFileName(zipFileUri: Uri?): String? {
+    private fun getArchiveFileName(archiveFileUri: Uri?): String? {
         val projection = arrayOf(MediaStore.MediaColumns.DISPLAY_NAME)
-        val cursor = contentResolver.query(zipFileUri!!, projection, null, null, null)
+        val cursor = contentResolver.query(archiveFileUri!!, projection, null, null, null)
         cursor?.use {
             if (it.moveToFirst()) {
                 val nameIndex = it.getColumnIndexOrThrow(MediaStore.MediaColumns.DISPLAY_NAME)
-                val fileNameWithExtension = it.getString(nameIndex)
-                return fileNameWithExtension.substringBeforeLast(".")
+                return it.getString(nameIndex)
             }
         }
         return null
     }
+
 
     private fun showToast(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
