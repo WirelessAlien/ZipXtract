@@ -34,13 +34,12 @@ import java.util.zip.ZipInputStream
 class MainActivity : AppCompatActivity() {
 
     private lateinit var extractButton: Button
-    private lateinit var directoryTextView: TextView // New TextView to display the selected output directory
+    private lateinit var directoryTextView: TextView
     private var archiveFileUri: Uri? = null
     private var outputDirectory: DocumentFile? = null
     private lateinit var sharedPreferences: SharedPreferences
 
     private val requestPermissionCode = 1
-    private val legacyRequestPermissionCode = 2
 
     private val pickFileLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
@@ -60,7 +59,7 @@ class MainActivity : AppCompatActivity() {
                     Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                 )
                 outputDirectory = DocumentFile.fromTreeUri(this, uri)
-                directoryTextView.text = outputDirectory?.name // Update the directory name in the TextView
+                directoryTextView.text = outputDirectory?.name
 
                 // Save the output directory URI in SharedPreferences
                 val editor = sharedPreferences.edit()
@@ -131,19 +130,9 @@ class MainActivity : AppCompatActivity() {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     // Permissions granted, nothing to do
                 } else {
-                    // Permissions denied, show a dialog with a message and provide the functionality to go to app info
                     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
                         showPermissionDeniedDialog()
                     }
-                }
-            }
-            legacyRequestPermissionCode -> {
-                // Handle permissions for older Android versions
-                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    // Permissions granted, nothing to do
-                } else {
-                    // Permissions denied, show a dialog with a message and provide the functionality to go to app info
-                    showPermissionDeniedDialog()
                 }
             }
         }
