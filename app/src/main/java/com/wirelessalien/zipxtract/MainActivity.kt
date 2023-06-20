@@ -111,22 +111,11 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun requestPermissions() {
-        val permissions: Array<String>
-        val requestCode: Int
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            // For Android API 30 and above, use MANAGE_EXTERNAL_STORAGE permission
-            permissions = arrayOf(Manifest.permission.MANAGE_EXTERNAL_STORAGE)
-            requestCode = requestPermissionCode
-        } else {
-            // For older Android versions, use READ_EXTERNAL_STORAGE and WRITE_EXTERNAL_STORAGE permissions
-            permissions = arrayOf(
-                Manifest.permission.READ_EXTERNAL_STORAGE,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
-            )
-            val legacyRequestPermissionCode = 3
-            requestCode = legacyRequestPermissionCode
-        }
+        val permissions = arrayOf(
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+        )
+        val requestCode = requestPermissionCode
 
         ActivityCompat.requestPermissions(this, permissions, requestCode)
     }
@@ -143,7 +132,9 @@ class MainActivity : AppCompatActivity() {
                     // Permissions granted, nothing to do
                 } else {
                     // Permissions denied, show a dialog with a message and provide the functionality to go to app info
-                    showPermissionDeniedDialog()
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                        showPermissionDeniedDialog()
+                    }
                 }
             }
             legacyRequestPermissionCode -> {
@@ -385,20 +376,19 @@ class MainActivity : AppCompatActivity() {
 
     private fun showExtractionCompletedSnackbar(outputDirectory: DocumentFile?) {
         val rootView = findViewById<View>(android.R.id.content)
-        Snackbar.make(rootView, "Extraction completed successfully", Snackbar.LENGTH_LONG)
-            .setAction("Open Folder") {
+        val snackbar = Snackbar.make(rootView, "Extraction completed successfully", Snackbar.LENGTH_LONG)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            snackbar.setAction("Open Folder") {
                 val intent = Intent(Intent.ACTION_VIEW)
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    intent.setDataAndType(outputDirectory?.uri, DocumentsContract.Document.MIME_TYPE_DIR)
-                } else {
-                    intent.type = "application/vnd.android.document/directory"
-                }
+                intent.setDataAndType(outputDirectory?.uri, DocumentsContract.Document.MIME_TYPE_DIR)
                 intent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
                 startActivity(intent)
             }
-            .show()
-    }
+        }
 
+        snackbar.show()
+    }
 
 
     private fun getArchiveFileName(archiveFileUri: Uri?): String? {
