@@ -3,7 +3,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="16dp"
-    android:theme="@style/Theme.Material3.DayNight.NoActionBar"
     tools:context=".MainActivity">
 
     <TextView
@@ -19,14 +18,14 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="16dp" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/pickFileButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:text="@string/pick_file" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/changeDirectoryButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -46,7 +45,7 @@
         android:layout_below="@id/changeDirectoryButton"
         android:layout_marginTop="16dp" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/extractButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -54,4 +53,13 @@
         android:layout_below="@id/directoryTextView"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="16dp"/>
+
+    <com.google.android.material.progressindicator.LinearProgressIndicator
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/progressBar"
+        android:layout_alignBottom="@id/extractButton"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="-15dp"
+        android:indeterminate="true" />
 </RelativeLayout>

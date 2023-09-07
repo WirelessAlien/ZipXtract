@@ -13,6 +13,7 @@ import android.provider.DocumentsContract
 import android.provider.MediaStore
 import android.view.View
 import android.widget.Button
+import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -21,14 +22,19 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.documentfile.provider.DocumentFile
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.apache.commons.compress.archivers.sevenz.SevenZArchiveEntry
 import org.apache.commons.compress.archivers.sevenz.SevenZFile
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream
 import org.apache.commons.compress.compressors.xz.XZCompressorInputStream
-import org.apache.commons.compress.utils.SeekableInMemoryByteChannel
 import java.io.BufferedInputStream
+import java.io.File
+import java.io.FileOutputStream
 import java.util.zip.ZipInputStream
 
 class MainActivity : AppCompatActivity() {
@@ -38,6 +44,7 @@ class MainActivity : AppCompatActivity() {
     private var archiveFileUri: Uri? = null
     private var outputDirectory: DocumentFile? = null
     private lateinit var sharedPreferences: SharedPreferences
+    private lateinit var progressBar: ProgressBar
 
     private val requestPermissionCode = 1
 
@@ -74,8 +81,10 @@ class MainActivity : AppCompatActivity() {
 
         val pickFileButton = findViewById<Button>(R.id.pickFileButton)
         extractButton = findViewById(R.id.extractButton)
+        progressBar = findViewById(R.id.progressBar)
         directoryTextView = findViewById(R.id.directoryTextView) // Assign the TextView from the layout
         sharedPreferences = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
+        progressBar.visibility = View.GONE
 
         pickFileButton.setOnClickListener {
             val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
@@ -86,6 +95,7 @@ class MainActivity : AppCompatActivity() {
 
         extractButton.setOnClickListener {
             if (archiveFileUri != null) {
+                progressBar.visibility = View.VISIBLE
                 extractArchiveFile(archiveFileUri!!)
             } else {
                 Toast.makeText(this, "Please pick a file to extract", Toast.LENGTH_SHORT).show()
@@ -306,35 +316,59 @@ class MainActivity : AppCompatActivity() {
         gzipInputStream.close()
         showExtractionCompletedSnackbar(outputDirectory)
     }
+    private suspend fun createTemp7zFileInBackground(bufferedInputStream: BufferedInputStream): File = withContext(Dispatchers.IO) {
+        return@withContext File.createTempFile("temp_", ".7z", cacheDir).apply {
+            FileOutputStream(this).use { outputStream ->
+                val buffer = ByteArray(4096)
+                var count: Int
+                while (bufferedInputStream.read(buffer).also { count = it } != -1) {
+                    outputStream.write(buffer, 0, count)
+                }
+            }
+        }
+    }
+
     private fun extract7z(bufferedInputStream: BufferedInputStream, outputDirectory: DocumentFile?) {
-        val byteChannel = SeekableInMemoryByteChannel(bufferedInputStream.readBytes())
-        SevenZFile(byteChannel).use { sevenZFile ->
-            var entry: SevenZArchiveEntry? = sevenZFile.nextEntry
-            while (entry != null) {
-                val outputFile = outputDirectory?.createFile("application/octet-stream", entry.name)
-                if (entry.isDirectory) {
-                    outputFile?.createDirectory("Un7z")
-                } else {
-                    outputFile?.uri?.let { uri ->
-                        contentResolver.openOutputStream(uri)?.use { outputStream ->
-                            val buffer = ByteArray(8192)
-                            try {
-                                var count: Int
-                                while (sevenZFile.read(buffer).also { count = it } != -1) {
-                                    outputStream.write(buffer, 0, count)
+        val tempFileJob = CoroutineScope(Dispatchers.Default).launch {
+            val tempFile = createTemp7zFileInBackground(bufferedInputStream)
+
+            // Continue with the rest of your extraction logic using the tempFile
+            SevenZFile(tempFile).use { sevenZFile ->
+                var entry: SevenZArchiveEntry? = sevenZFile.nextEntry
+                while (entry != null) {
+                    val outputFile = outputDirectory?.createFile("application/octet-stream", entry.name)
+                    if (entry.isDirectory) {
+                        outputFile?.createDirectory("Un7z")
+                    } else {
+                        outputFile?.uri?.let { uri ->
+                            contentResolver.openOutputStream(uri)?.use { outputStream ->
+                                val buffer = ByteArray(4096)
+                                try {
+                                    var count: Int
+                                    while (sevenZFile.read(buffer).also { count = it } != -1) {
+                                        outputStream.write(buffer, 0, count)
+                                    }
+                                } catch (e: Exception) {
+                                    showToast("Extraction failed: ${e.message}")
+                                    sevenZFile.close()
                                 }
-                            } catch (e: Exception) {
-                                showToast("Extraction failed: ${e.message}")
-                                return
                             }
                         }
                     }
+                    entry = sevenZFile.nextEntry
                 }
-                entry = sevenZFile.nextEntry
+            }
+            // Show a completion message after extraction is done
+            withContext(Dispatchers.Main) {
+                showExtractionCompletedSnackbar(outputDirectory)
             }
         }
 
-        showExtractionCompletedSnackbar(outputDirectory)
+        tempFileJob.invokeOnCompletion { throwable ->
+            if (throwable != null) {
+                showToast("Temp file creation failed: ${throwable.message}")
+            }
+        }
     }
 
     private fun extractXz(bufferedInputStream: BufferedInputStream, outputDirectory: DocumentFile?) {
@@ -364,6 +398,7 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun showExtractionCompletedSnackbar(outputDirectory: DocumentFile?) {
+        progressBar.visibility = View.GONE
         val rootView = findViewById<View>(android.R.id.content)
         val snackbar = Snackbar.make(rootView, "Extraction completed successfully", Snackbar.LENGTH_LONG)
 
