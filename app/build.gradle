@@ -11,8 +11,8 @@ android {
         applicationId "com.wirelessalien.zipxtract"
         minSdk 23
         targetSdk 33
-        versionCode 3
-        versionName "2.1"
+        versionCode 4
+        versionName "2.2"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -51,6 +51,5 @@ dependencies {
 
     implementation 'org.apache.commons:commons-compress:1.23.0'
     implementation 'org.tukaani:xz:1.9'
-    
 
 }

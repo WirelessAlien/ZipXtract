@@ -11,6 +11,7 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.DocumentsContract
 import android.provider.MediaStore
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.ProgressBar
@@ -101,6 +102,18 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this, "Please pick a file to extract", Toast.LENGTH_SHORT).show()
             }
         }
+
+        if (intent?.action == Intent.ACTION_VIEW) {
+            val uri = intent.data
+            Log.d("IntentData", "URI: $uri")
+            if (uri != null) {
+                archiveFileUri = uri
+                extractButton.isEnabled = true
+            } else {
+                showToast("No file selected")
+            }
+        }
+
 
 
         val savedDirectoryUri = sharedPreferences.getString("outputDirectoryUri", null)
@@ -221,17 +234,14 @@ class MainActivity : AppCompatActivity() {
                             }
                         } catch (e: Exception) {
                             showToast("Extraction failed: ${e.message}")
-                            zipInputStream.closeEntry()
                             zipInputStream.close()
                             return
                         }
                     }
                 }
             }
-            zipInputStream.closeEntry()
             entry = zipInputStream.nextEntry
         }
-
         zipInputStream.close()
         showExtractionCompletedSnackbar(outputDirectory)
     }
@@ -349,7 +359,6 @@ class MainActivity : AppCompatActivity() {
                                         outputStream.write(buffer, 0, count)
                                     }
                                 } catch (e: Exception) {
-                                    showToast("Extraction failed: ${e.message}")
                                     sevenZFile.close()
                                 }
                             }
@@ -416,17 +425,26 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun getArchiveFileName(archiveFileUri: Uri?): String? {
-        val projection = arrayOf(MediaStore.MediaColumns.DISPLAY_NAME)
-        val cursor = contentResolver.query(archiveFileUri!!, projection, null, null, null)
+        val cursor = contentResolver.query(archiveFileUri!!, null, null, null, null)
         cursor?.use {
             if (it.moveToFirst()) {
-                val nameIndex = it.getColumnIndexOrThrow(MediaStore.MediaColumns.DISPLAY_NAME)
-                return it.getString(nameIndex)
+                // Try to get the display name from the cursor, if not, use the last segment of the URI.
+                val displayNameIndex = it.getColumnIndex(MediaStore.Images.Media.DISPLAY_NAME)
+                if (displayNameIndex != -1) {
+                    return it.getString(displayNameIndex)
+                } else {
+                    val path = archiveFileUri.path
+                    if (path != null) {
+                        val slashIndex = path.lastIndexOf('/')
+                        if (slashIndex >= 0 && slashIndex < path.length - 1) {
+                            return path.substring(slashIndex + 1)
+                        }
+                    }
+                }
             }
         }
         return null
     }
-
 
     private fun showToast(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
