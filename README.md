@@ -1,6 +1,10 @@
 # ZipXtract
 It can extract zip, tar, bz2, gz, 7z and xz etc.
-Password protected zip and 7z file not supported.
+
+#### Planned Feature
+* Extraction of password protected Zip, 7z
+* Support for RAR
+
 
 [<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
      alt="Get it on F-Droid"
