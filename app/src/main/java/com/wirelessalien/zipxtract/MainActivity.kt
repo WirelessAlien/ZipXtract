@@ -61,6 +61,7 @@ class MainActivity : AppCompatActivity() {
                 val fileName = getArchiveFileName(archiveFileUri)
                 val selectedFileText = getString(R.string.selected_file_text, fileName)
                 pickedFileName.text = selectedFileText
+                pickedFileName.isSelected = true
             } else {
                 showToast("No file selected")
             }
@@ -75,7 +76,15 @@ class MainActivity : AppCompatActivity() {
                     Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                 )
                 outputDirectory = DocumentFile.fromTreeUri(this, uri)
-                directoryTextView.text = outputDirectory?.name
+                val fullPath = outputDirectory?.uri?.path
+                Log.d("DirectoryPicker", "URI: $fullPath")
+                val displayedPath = fullPath?.replace("/tree/primary", "")
+
+                if (displayedPath != null) {
+
+                    val directoryText = getString(R.string.directory_path, displayedPath)
+                    directoryTextView.text = directoryText
+                }
 
                 // Save the output directory URI in SharedPreferences
                 val editor = sharedPreferences.edit()
@@ -124,6 +133,7 @@ class MainActivity : AppCompatActivity() {
                 val fileName = getArchiveFileName(archiveFileUri)
                 val selectedFileText = getString(R.string.selected_file_text, fileName)
                 pickedFileName.text = selectedFileText
+                pickedFileName.isSelected = true
 
             } else {
                 showToast("No file selected")
@@ -135,7 +145,16 @@ class MainActivity : AppCompatActivity() {
         val savedDirectoryUri = sharedPreferences.getString("outputDirectoryUri", null)
         if (savedDirectoryUri != null) {
             outputDirectory = DocumentFile.fromTreeUri(this, Uri.parse(savedDirectoryUri))
-            directoryTextView.text = outputDirectory?.name // Set the directory name in the TextView
+            val fullPath = outputDirectory?.uri?.path
+
+            val displayedPath = fullPath?.replace("/tree/primary:", "")
+
+            if (displayedPath != null) {
+                val directoryText = getString(R.string.directory_path, displayedPath)
+                directoryTextView.text = directoryText
+            }
+        } else {
+            chooseOutputDirectory()
         }
 
 

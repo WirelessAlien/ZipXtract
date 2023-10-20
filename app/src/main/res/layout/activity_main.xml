@@ -30,6 +30,10 @@
         android:layout_below="@id/pickFileButton"
         android:layout_centerInParent="true"
         android:layout_marginTop="10dp"
+        android:ellipsize="marquee"
+        android:marqueeRepeatLimit="marquee_forever"
+        android:scrollHorizontally="true"
+        android:singleLine="true"
         android:text="@string/not_selected"
         android:textAlignment="center"
         android:textSize="20sp" />
@@ -43,23 +47,30 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="16dp"/>
 
+    <HorizontalScrollView
+        android:id="@+id/directoryScrollView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_centerVertical="true"
+        android:layout_below="@id/changeDirectoryButton">
     <TextView
         android:id="@+id/directoryTextView"
         android:layout_width="wrap_content"
-        android:layout_height="25dp"
-        android:textSize="20sp"
+        android:layout_height="wrap_content"
+        android:scrollHorizontally="true"
+        android:singleLine="true"
         android:text="@string/not_selected"
         android:textAlignment="center"
-        android:layout_centerInParent="true"
-        android:layout_below="@id/changeDirectoryButton"
-        android:layout_marginTop="16dp" />
+        android:textSize="18sp" />
+    </HorizontalScrollView>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/extractButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/extract"
-        android:layout_below="@id/directoryTextView"
+        android:layout_below="@id/directoryScrollView"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="16dp"/>
 

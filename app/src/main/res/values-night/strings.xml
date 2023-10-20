@@ -5,4 +5,5 @@
     <string name="extract_to">Extract To</string>
     <string name="not_selected">Not Selected</string>
     <string name="selected_file_text">Selected File: %1$s</string>
+    <string name="directory_path">Selected Folder: %1$s</string>
 </resources>
