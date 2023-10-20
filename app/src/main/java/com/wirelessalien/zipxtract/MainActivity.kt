@@ -10,7 +10,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.DocumentsContract
-import android.provider.MediaStore
+import android.provider.OpenableColumns
 import android.util.Log
 import android.view.View
 import android.widget.Button
@@ -46,6 +46,7 @@ class MainActivity : AppCompatActivity() {
     private var outputDirectory: DocumentFile? = null
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var progressBar: ProgressBar
+    private lateinit var pickedFileName: TextView
 
     private val requestPermissionCode = 1
 
@@ -55,6 +56,13 @@ class MainActivity : AppCompatActivity() {
             if (archiveFileUri != null) {
                 Toast.makeText(this, "File picked successfully", Toast.LENGTH_SHORT).show()
                 extractButton.isEnabled = true
+
+                // Display the selected file name
+                val fileName = getArchiveFileName(archiveFileUri)
+                val selectedFileText = getString(R.string.selected_file_text, fileName)
+                pickedFileName.text = selectedFileText
+            } else {
+                showToast("No file selected")
             }
         }
     }
@@ -83,6 +91,7 @@ class MainActivity : AppCompatActivity() {
         val pickFileButton = findViewById<Button>(R.id.pickFileButton)
         extractButton = findViewById(R.id.extractButton)
         progressBar = findViewById(R.id.progressBar)
+        pickedFileName = findViewById(R.id.fileNameTextView)
         directoryTextView = findViewById(R.id.directoryTextView) // Assign the TextView from the layout
         sharedPreferences = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
         progressBar.visibility = View.GONE
@@ -105,10 +114,17 @@ class MainActivity : AppCompatActivity() {
 
         if (intent?.action == Intent.ACTION_VIEW) {
             val uri = intent.data
-            Log.d("IntentData", "URI: $uri")
+            Log.d("IntentData", "URI from intent: $uri") // Log the URI
+
             if (uri != null) {
                 archiveFileUri = uri
                 extractButton.isEnabled = true
+
+                // Display the file name from the intent
+                val fileName = getArchiveFileName(archiveFileUri)
+                val selectedFileText = getString(R.string.selected_file_text, fileName)
+                pickedFileName.text = selectedFileText
+
             } else {
                 showToast("No file selected")
             }
@@ -425,20 +441,13 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun getArchiveFileName(archiveFileUri: Uri?): String? {
-        val cursor = contentResolver.query(archiveFileUri!!, null, null, null, null)
-        cursor?.use {
-            if (it.moveToFirst()) {
-                // Try to get the display name from the cursor, if not, use the last segment of the URI.
-                val displayNameIndex = it.getColumnIndex(MediaStore.Images.Media.DISPLAY_NAME)
-                if (displayNameIndex != -1) {
-                    return it.getString(displayNameIndex)
-                } else {
-                    val path = archiveFileUri.path
-                    if (path != null) {
-                        val slashIndex = path.lastIndexOf('/')
-                        if (slashIndex >= 0 && slashIndex < path.length - 1) {
-                            return path.substring(slashIndex + 1)
-                        }
+        if (archiveFileUri != null) {
+            val cursor = contentResolver.query(archiveFileUri, null, null, null, null)
+            cursor?.use {
+                if (it.moveToFirst()) {
+                    val displayNameIndex = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                    if (displayNameIndex != -1) {
+                        return it.getString(displayNameIndex)
                     }
                 }
             }
