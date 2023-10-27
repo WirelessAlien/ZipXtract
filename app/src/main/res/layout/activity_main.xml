@@ -74,12 +74,28 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="16dp"/>
 
-    <com.google.android.material.progressindicator.LinearProgressIndicator
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/progressBar"
         android:layout_alignBottom="@id/extractButton"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="-15dp"
-        android:indeterminate="true" />
+        android:layout_marginBottom="-50dp">
+
+        <com.google.android.material.progressindicator.LinearProgressIndicator
+            android:id="@+id/progressBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true" />
+
+        <TextView
+            android:id="@+id/progressTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/progressBar"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="4dp"
+            android:text="Progress"
+            android:textSize="18sp" />
+    </RelativeLayout>
+
 </RelativeLayout>

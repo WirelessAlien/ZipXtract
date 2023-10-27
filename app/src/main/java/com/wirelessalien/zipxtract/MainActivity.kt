@@ -12,7 +12,6 @@ import android.os.Bundle
 import android.provider.DocumentsContract
 import android.provider.OpenableColumns
 import android.text.InputType
-import android.util.Log
 import android.view.View
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
@@ -20,6 +19,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.documentfile.provider.DocumentFile
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.CoroutineScope
@@ -44,6 +44,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var progressBar: ProgressBar
     private lateinit var pickedFileName: TextView
+    private lateinit var progressText: TextView
 
     private val requestPermissionCode = 1
 
@@ -97,6 +98,7 @@ class MainActivity : AppCompatActivity() {
         extractButton = findViewById(R.id.extractButton)
         progressBar = findViewById(R.id.progressBar)
         pickedFileName = findViewById(R.id.fileNameTextView)
+        progressText = findViewById(R.id.progressTextView)
         directoryTextView = findViewById(R.id.directoryTextView) // Assign the TextView from the layout
         sharedPreferences = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
         progressBar.visibility = View.GONE
@@ -119,7 +121,6 @@ class MainActivity : AppCompatActivity() {
 
         if (intent?.action == Intent.ACTION_VIEW) {
             val uri = intent.data
-            Log.d("IntentData", "URI from intent: $uri") // Log the URI
 
             if (uri != null) {
                 archiveFileUri = uri
@@ -219,6 +220,12 @@ class MainActivity : AppCompatActivity() {
         directoryPicker.launch(null)
     }
 
+    private fun toggleExtractButtonEnabled(isEnabled: Boolean) {
+        lifecycleScope.launch(Dispatchers.Main) {
+            extractButton.isEnabled = isEnabled
+        }
+    }
+
     private fun extractArchiveFile(archiveFileUri: Uri) {
         if (outputDirectory == null) {
             showToast("Please select where to extract the files")
@@ -246,41 +253,45 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun extractPasswordProtectedZipOrRegularZip(bufferedInputStream: BufferedInputStream, outputDirectory: DocumentFile?) {
+
         val archiveFilePath = archiveFileUri?.path
 
         if (archiveFilePath != null) {
-            val tempFile = createTempFileFromInputStream(bufferedInputStream)
 
-            if (isZipFileEncrypted(tempFile)) {
-                // Show an AlertDialog to get the password from the user
-                val passwordEditText = EditText(this)
-                passwordEditText.inputType = InputType.TYPE_TEXT_VARIATION_PASSWORD
+            toggleExtractButtonEnabled(false)
 
-                //password dialog
-                val passwordDialog = MaterialAlertDialogBuilder(this)
-                    .setTitle("Enter Password")
-                    .setView(passwordEditText)
-                    .setPositiveButton("Extract") { _, _ ->
-                        val password = passwordEditText.text.toString()
+            lifecycleScope.launch {
+                val tempFile = createTempFileFromInputStreamAsync(bufferedInputStream)
 
-                        // Set the password for the encrypted ZIP file
-                        // You can use zip4j to extract the file
-                        zip4jExtractZipFile(tempFile, password, outputDirectory)
-                    }
-                    .setNegativeButton("Cancel", null)
-                    .create()
+                if (isZipFileEncrypted(tempFile)) {
 
-                passwordDialog.show()
-            } else {
+                    // Ask for password
+                    val passwordEditText = EditText(this@MainActivity)
+                    passwordEditText.inputType = InputType.TYPE_TEXT_VARIATION_PASSWORD
 
-                zip4jExtractZipFile(tempFile, null, outputDirectory)
+                    val passwordDialog = MaterialAlertDialogBuilder(this@MainActivity)
+                        .setTitle("Enter Password")
+                        .setView(passwordEditText)
+                        .setPositiveButton("Extract") { _, _ ->
+                            val password = passwordEditText.text.toString()
+
+                            zip4jExtractZipFile(tempFile, password, outputDirectory)
+                        }
+                        .setNegativeButton("Cancel", null)
+                        .create()
+
+                    passwordDialog.show()
+                } else {
+
+                    zip4jExtractZipFile(tempFile, null, outputDirectory)
+                }
             }
         } else {
             showToast("Invalid archive file URI")
         }
     }
 
-    private fun createTempFileFromInputStream(inputStream: InputStream): File {
+    private suspend fun createTempFileFromInputStreamAsync(inputStream: InputStream): File = withContext(Dispatchers.IO) {
         val tempFile = File.createTempFile("temp_", ".zip", cacheDir)
         FileOutputStream(tempFile).use { outputStream ->
             val buffer = ByteArray(4096)
@@ -289,54 +300,84 @@ class MainActivity : AppCompatActivity() {
                 outputStream.write(buffer, 0, count)
             }
         }
-        return tempFile
+        return@withContext tempFile
     }
+
 
     private fun isZipFileEncrypted(tempFile: File): Boolean {
         val zipFile = ZipFile(tempFile)
-        Log.d("Enc", "${zipFile.isEncrypted}")
         return zipFile.isEncrypted
     }
 
     private fun zip4jExtractZipFile(tempFile: File, password: String?, outputDirectory: DocumentFile?) {
         val zipFile = ZipFile(tempFile)
 
+        zipFile.isRunInThread = true
+
         if (password != null && password.isNotEmpty()) {
             zipFile.setPassword(password.toCharArray())
         }
 
-        try {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val fileHeaders = zipFile.fileHeaders
+                val totalEntries = fileHeaders.size
+                var extractedEntries = 0
 
-            val fileHeaders = zipFile.fileHeaders
-            for (header in fileHeaders) {
-                val outputFile =  outputDirectory?.createFile("application/octet-stream", header.fileName)
+                for (header in fileHeaders) {
+                    val outputFile = outputDirectory?.createFile("application/octet-stream", header.fileName)
 
-                if (header.isDirectory) {
-                    outputFile!!.createDirectory("UnZip")
-                } else {
-                    val bufferedOutputStream = BufferedOutputStream(outputFile!!.uri.let { contentResolver.openOutputStream(it) })
+                    if (header.isDirectory) {
+                        outputFile?.createDirectory("UnZip")
+                    } else {
+                        val bufferedOutputStream = BufferedOutputStream(outputFile?.uri?.let { contentResolver.openOutputStream(it) })
 
+                        zipFile.getInputStream(header).use { inputStream ->
+                            val buffer = ByteArray(4096)
+                            var bytesRead: Int
+                            var totalBytesRead = 0L
+                            val fileSize = header.uncompressedSize
 
-                    zipFile.getInputStream(header).use { inputStream ->
-                        val buffer = ByteArray(4096)
-                        var bytesRead: Int
+                            while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                                bufferedOutputStream.write(buffer, 0, bytesRead)
+                                totalBytesRead += bytesRead
 
-                        while (inputStream.read(buffer).also { bytesRead = it } != -1) {
-                            bufferedOutputStream.write(buffer, 0, bytesRead)
+                                // Calculate and update the progress
+                                val progress = (totalBytesRead * 100 / fileSize).toInt()
+                                updateProgress(progress)
+
+                                // You can update the progress bar here
+                            }
+
+                            bufferedOutputStream.close()
                         }
                     }
 
-                    bufferedOutputStream.close()
-                }
-            }
+                    extractedEntries++
 
-            // After extraction, you can handle the extracted files as needed
-            showToast("Extraction completed successfully")
-        } catch (e: Exception) {
-            showToast("Extraction failed: ${e.message}")
+                    val progress = (extractedEntries * 100 / totalEntries)
+                    updateProgress(progress)
+                }
+                // Show the extraction completed snackbar
+                lifecycleScope.launch(Dispatchers.Main) {
+                   showExtractionCompletedSnackbar(outputDirectory)
+                }
+
+            } catch (e: Exception) {
+                showToast("Extraction failed: ${e.message}")
+            } finally {
+                // Enable the button after extraction is complete or if there's an error
+                toggleExtractButtonEnabled(true)
+            }
         }
     }
 
+    private fun updateProgress(progress: Int) {
+        lifecycleScope.launch(Dispatchers.Main) {
+            progressBar.progress = progress
+            progressText.text = "$progress%"
+        }
+    }
 
     private fun extractTar(bufferedInputStream: BufferedInputStream, outputDirectory: DocumentFile?) {
         val tarInputStream = TarArchiveInputStream(bufferedInputStream)
@@ -532,7 +573,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showToast(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+        runOnUiThread {
+            Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+        }
     }
 }
 
