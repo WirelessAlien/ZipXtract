@@ -11,32 +11,29 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.DocumentsContract
 import android.provider.OpenableColumns
+import android.text.InputType
 import android.util.Log
 import android.view.View
-import android.widget.Button
-import android.widget.ProgressBar
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.documentfile.provider.DocumentFile
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import net.lingala.zip4j.ZipFile
 import org.apache.commons.compress.archivers.sevenz.SevenZArchiveEntry
 import org.apache.commons.compress.archivers.sevenz.SevenZFile
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream
 import org.apache.commons.compress.compressors.xz.XZCompressorInputStream
-import java.io.BufferedInputStream
-import java.io.File
-import java.io.FileOutputStream
-import java.util.zip.ZipInputStream
+import java.io.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -77,7 +74,6 @@ class MainActivity : AppCompatActivity() {
                 )
                 outputDirectory = DocumentFile.fromTreeUri(this, uri)
                 val fullPath = outputDirectory?.uri?.path
-                Log.d("DirectoryPicker", "URI: $fullPath")
                 val displayedPath = fullPath?.replace("/tree/primary", "")
 
                 if (displayedPath != null) {
@@ -238,7 +234,7 @@ class MainActivity : AppCompatActivity() {
             val bufferedInputStream = BufferedInputStream(inputStream)
 
             when (fileName.substringAfterLast(".").lowercase()) {
-                "zip" -> extractZip(bufferedInputStream, outputDirectory)
+                "zip" -> extractPasswordProtectedZipOrRegularZip(bufferedInputStream, outputDirectory)
                 "tar" -> extractTar(bufferedInputStream, outputDirectory)
                 "bz2" -> extractBzip2(bufferedInputStream, outputDirectory)
                 "gz" -> extractGzip(bufferedInputStream, outputDirectory)
@@ -249,37 +245,98 @@ class MainActivity : AppCompatActivity() {
         } ?: showToast("Failed to get the archive file name")
     }
 
+    private fun extractPasswordProtectedZipOrRegularZip(bufferedInputStream: BufferedInputStream, outputDirectory: DocumentFile?) {
+        val archiveFilePath = archiveFileUri?.path
 
-    private fun extractZip(bufferedInputStream: BufferedInputStream, outputDirectory: DocumentFile?) {
-        val zipInputStream = ZipInputStream(bufferedInputStream)
+        if (archiveFilePath != null) {
+            val tempFile = createTempFileFromInputStream(bufferedInputStream)
 
-        var entry = zipInputStream.nextEntry
-        while (entry != null) {
-            val outputFile = outputDirectory?.createFile("application/octet-stream", entry.name)
-            if (entry.isDirectory) {
-                outputFile!!.createDirectory("UnZip")
+            if (isZipFileEncrypted(tempFile)) {
+                // Show an AlertDialog to get the password from the user
+                val passwordEditText = EditText(this)
+                passwordEditText.inputType = InputType.TYPE_TEXT_VARIATION_PASSWORD
+
+                //password dialog
+                val passwordDialog = MaterialAlertDialogBuilder(this)
+                    .setTitle("Enter Password")
+                    .setView(passwordEditText)
+                    .setPositiveButton("Extract") { _, _ ->
+                        val password = passwordEditText.text.toString()
+
+                        // Set the password for the encrypted ZIP file
+                        // You can use zip4j to extract the file
+                        zip4jExtractZipFile(tempFile, password, outputDirectory)
+                    }
+                    .setNegativeButton("Cancel", null)
+                    .create()
+
+                passwordDialog.show()
             } else {
-                outputFile?.uri?.let { uri ->
-                    contentResolver.openOutputStream(uri)?.use { outputStream ->
-                        val buffer = ByteArray(1024)
-                        var count: Int
-                        try {
-                            while (zipInputStream.read(buffer).also { count = it } != -1) {
-                                outputStream.write(buffer, 0, count)
-                            }
-                        } catch (e: Exception) {
-                            showToast("Extraction failed: ${e.message}")
-                            zipInputStream.close()
-                            return
+
+                zip4jExtractZipFile(tempFile, null, outputDirectory)
+            }
+        } else {
+            showToast("Invalid archive file URI")
+        }
+    }
+
+    private fun createTempFileFromInputStream(inputStream: InputStream): File {
+        val tempFile = File.createTempFile("temp_", ".zip", cacheDir)
+        FileOutputStream(tempFile).use { outputStream ->
+            val buffer = ByteArray(4096)
+            var count: Int
+            while (inputStream.read(buffer).also { count = it } != -1) {
+                outputStream.write(buffer, 0, count)
+            }
+        }
+        return tempFile
+    }
+
+    private fun isZipFileEncrypted(tempFile: File): Boolean {
+        val zipFile = ZipFile(tempFile)
+        Log.d("Enc", "${zipFile.isEncrypted}")
+        return zipFile.isEncrypted
+    }
+
+    private fun zip4jExtractZipFile(tempFile: File, password: String?, outputDirectory: DocumentFile?) {
+        val zipFile = ZipFile(tempFile)
+
+        if (password != null && password.isNotEmpty()) {
+            zipFile.setPassword(password.toCharArray())
+        }
+
+        try {
+
+            val fileHeaders = zipFile.fileHeaders
+            for (header in fileHeaders) {
+                val outputFile =  outputDirectory?.createFile("application/octet-stream", header.fileName)
+
+                if (header.isDirectory) {
+                    outputFile!!.createDirectory("UnZip")
+                } else {
+                    val bufferedOutputStream = BufferedOutputStream(outputFile!!.uri.let { contentResolver.openOutputStream(it) })
+
+
+                    zipFile.getInputStream(header).use { inputStream ->
+                        val buffer = ByteArray(4096)
+                        var bytesRead: Int
+
+                        while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                            bufferedOutputStream.write(buffer, 0, bytesRead)
                         }
                     }
+
+                    bufferedOutputStream.close()
                 }
             }
-            entry = zipInputStream.nextEntry
+
+            // After extraction, you can handle the extracted files as needed
+            showToast("Extraction completed successfully")
+        } catch (e: Exception) {
+            showToast("Extraction failed: ${e.message}")
         }
-        zipInputStream.close()
-        showExtractionCompletedSnackbar(outputDirectory)
     }
+
 
     private fun extractTar(bufferedInputStream: BufferedInputStream, outputDirectory: DocumentFile?) {
         val tarInputStream = TarArchiveInputStream(bufferedInputStream)
