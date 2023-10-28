@@ -22,6 +22,7 @@ import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
+import com.wirelessalien.zipxtract.databinding.ActivityMainBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -37,14 +38,10 @@ import java.io.*
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var extractButton: Button
-    private lateinit var directoryTextView: TextView
+    private lateinit var binding: ActivityMainBinding
     private var archiveFileUri: Uri? = null
     private var outputDirectory: DocumentFile? = null
     private lateinit var sharedPreferences: SharedPreferences
-    private lateinit var progressBar: ProgressBar
-    private lateinit var pickedFileName: TextView
-    private lateinit var progressText: TextView
 
     private val requestPermissionCode = 1
 
@@ -53,13 +50,13 @@ class MainActivity : AppCompatActivity() {
             archiveFileUri = result.data?.data
             if (archiveFileUri != null) {
                 Toast.makeText(this, "File picked successfully", Toast.LENGTH_SHORT).show()
-                extractButton.isEnabled = true
+                binding.extractButton.isEnabled = true
 
-                // Display the selected file name
+                // Display the file name from the intent
                 val fileName = getArchiveFileName(archiveFileUri)
                 val selectedFileText = getString(R.string.selected_file_text, fileName)
-                pickedFileName.text = selectedFileText
-                pickedFileName.isSelected = true
+                binding.fileNameTextView.text = selectedFileText
+                binding.fileNameTextView.isSelected = true
             } else {
                 showToast("No file selected")
             }
@@ -80,7 +77,7 @@ class MainActivity : AppCompatActivity() {
                 if (displayedPath != null) {
 
                     val directoryText = getString(R.string.directory_path, displayedPath)
-                    directoryTextView.text = directoryText
+                    binding.directoryTextView.text = directoryText
                 }
 
                 // Save the output directory URI in SharedPreferences
@@ -92,27 +89,23 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
 
-        val pickFileButton = findViewById<Button>(R.id.pickFileButton)
-        extractButton = findViewById(R.id.extractButton)
-        progressBar = findViewById(R.id.progressBar)
-        pickedFileName = findViewById(R.id.fileNameTextView)
-        progressText = findViewById(R.id.progressTextView)
-        directoryTextView = findViewById(R.id.directoryTextView) // Assign the TextView from the layout
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
         sharedPreferences = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
-        progressBar.visibility = View.GONE
+        binding.progressBar.visibility = View.GONE
 
-        pickFileButton.setOnClickListener {
+        binding.pickFileButton.setOnClickListener {
             val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
             intent.addCategory(Intent.CATEGORY_OPENABLE)
             intent.type = "*/*"
             pickFileLauncher.launch(intent)
         }
 
-        extractButton.setOnClickListener {
+        binding.extractButton.setOnClickListener {
             if (archiveFileUri != null) {
-                progressBar.visibility = View.VISIBLE
+                binding.progressBar.visibility = View.VISIBLE
                 extractArchiveFile(archiveFileUri!!)
             } else {
                 Toast.makeText(this, "Please pick a file to extract", Toast.LENGTH_SHORT).show()
@@ -124,20 +117,18 @@ class MainActivity : AppCompatActivity() {
 
             if (uri != null) {
                 archiveFileUri = uri
-                extractButton.isEnabled = true
+                binding.extractButton.isEnabled = true
 
                 // Display the file name from the intent
                 val fileName = getArchiveFileName(archiveFileUri)
                 val selectedFileText = getString(R.string.selected_file_text, fileName)
-                pickedFileName.text = selectedFileText
-                pickedFileName.isSelected = true
+                binding.fileNameTextView.text = selectedFileText
+                binding.fileNameTextView.isSelected = true
 
             } else {
                 showToast("No file selected")
             }
         }
-
-
 
         val savedDirectoryUri = sharedPreferences.getString("outputDirectoryUri", null)
         if (savedDirectoryUri != null) {
@@ -148,21 +139,18 @@ class MainActivity : AppCompatActivity() {
 
             if (displayedPath != null) {
                 val directoryText = getString(R.string.directory_path, displayedPath)
-                directoryTextView.text = directoryText
+                binding.directoryTextView.text = directoryText
             }
         } else {
             chooseOutputDirectory()
         }
 
-
-        val changeDirectoryButton = findViewById<Button>(R.id.changeDirectoryButton)
-        changeDirectoryButton.setOnClickListener {
+        binding.changeDirectoryButton.setOnClickListener {
             chooseOutputDirectory()
         }
 
         requestPermissions()
     }
-
 
     private fun requestPermissions() {
         val permissions = arrayOf(
@@ -222,7 +210,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun toggleExtractButtonEnabled(isEnabled: Boolean) {
         lifecycleScope.launch(Dispatchers.Main) {
-            extractButton.isEnabled = isEnabled
+            binding.extractButton.isEnabled = isEnabled
         }
     }
 
@@ -374,8 +362,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateProgress(progress: Int) {
         lifecycleScope.launch(Dispatchers.Main) {
-            progressBar.progress = progress
-            progressText.text = "$progress%"
+            binding.progressBar.progress = progress
+            binding.progressTextView.text = "$progress%"
         }
     }
 
@@ -410,6 +398,7 @@ class MainActivity : AppCompatActivity() {
         tarInputStream.close()
         showExtractionCompletedSnackbar(outputDirectory)
     }
+
     private fun extractBzip2(bufferedInputStream: BufferedInputStream, outputDirectory: DocumentFile?) {
         val bzip2InputStream = BZip2CompressorInputStream(bufferedInputStream)
 
@@ -476,7 +465,6 @@ class MainActivity : AppCompatActivity() {
             val tempFileJob = CoroutineScope(Dispatchers.Default).launch {
                 val tempFile = createTemp7zFileInBackground(bufferedInputStream)
 
-                // Continue with the rest of your extraction logic using the tempFile and password
                 try {
                     val sevenZFile: SevenZFile = if (password != null) {
                         val passwordCharArray = password.toCharArray()
@@ -573,8 +561,9 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun showExtractionCompletedSnackbar(outputDirectory: DocumentFile?) {
-        progressBar.visibility = View.GONE
-        val rootView = findViewById<View>(android.R.id.content)
+        binding.progressBar.visibility = View.GONE
+
+        val rootView = binding.root
         val snackbar = Snackbar.make(rootView, "Extraction completed successfully", Snackbar.LENGTH_LONG)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
