@@ -472,11 +472,19 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun extract7z(bufferedInputStream: BufferedInputStream, outputDirectory: DocumentFile?) {
-        val tempFileJob = CoroutineScope(Dispatchers.Default).launch {
-            val tempFile = createTemp7zFileInBackground(bufferedInputStream)
+        showPasswordInputDialog { password ->
+            val tempFileJob = CoroutineScope(Dispatchers.Default).launch {
+                val tempFile = createTemp7zFileInBackground(bufferedInputStream)
 
-            // Continue with the rest of your extraction logic using the tempFile
-            SevenZFile(tempFile).use { sevenZFile ->
+                // Continue with the rest of your extraction logic using the tempFile and password
+                try {
+                    val sevenZFile: SevenZFile = if (password != null) {
+                        val passwordCharArray = password.toCharArray()
+                        SevenZFile(tempFile, passwordCharArray)
+                } else {
+                    SevenZFile(tempFile)
+                }
+
                 var entry: SevenZArchiveEntry? = sevenZFile.nextEntry
                 while (entry != null) {
                     val outputFile = outputDirectory?.createFile("application/octet-stream", entry.name)
@@ -499,19 +507,44 @@ class MainActivity : AppCompatActivity() {
                     }
                     entry = sevenZFile.nextEntry
                 }
-            }
-            // Show a completion message after extraction is done
-            withContext(Dispatchers.Main) {
-                showExtractionCompletedSnackbar(outputDirectory)
-            }
-        }
+                } catch (e: Exception) {
+                    // Handle any exceptions related to 7z file processing
+                    e.printStackTrace()
+                } finally {
+                    tempFile.delete()
+                }
 
-        tempFileJob.invokeOnCompletion { throwable ->
-            if (throwable != null) {
-                showToast("Temp file creation failed: ${throwable.message}")
+                // Show a completion message after extraction is done
+                withContext(Dispatchers.Main) {
+                    showExtractionCompletedSnackbar(outputDirectory)
+                }
+            }
+
+            tempFileJob.invokeOnCompletion { throwable ->
+                if (throwable != null) {
+                    showToast("Extraction failed: ${throwable.message}")
+                }
             }
         }
     }
+
+    private fun showPasswordInputDialog(callback: (String?) -> Unit) {
+        val passwordInputView = EditText(this)
+        passwordInputView.inputType = InputType.TYPE_TEXT_VARIATION_PASSWORD
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Enter Password")
+            .setView(passwordInputView)
+            .setPositiveButton("Extract") { _, _ ->
+                val password = passwordInputView.text.toString()
+                callback(password.takeIf { it.isNotEmpty() })
+            }
+            .setNegativeButton("No Password") { _, _ ->
+                callback(null)
+            }
+            .show()
+    }
+
 
     private fun extractXz(bufferedInputStream: BufferedInputStream, outputDirectory: DocumentFile?) {
         val xzInputStream = XZCompressorInputStream(bufferedInputStream)

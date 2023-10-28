@@ -6,7 +6,7 @@
     tools:context=".MainActivity">
 
     <TextView
-        android:id="@+id/fileTextView"
+        android:id="@+id/appName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="35sp"
@@ -75,6 +75,7 @@
         android:layout_marginTop="16dp"/>
 
     <RelativeLayout
+        android:id="@+id/progressLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignBottom="@id/extractButton"

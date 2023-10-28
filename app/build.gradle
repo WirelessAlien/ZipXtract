@@ -49,7 +49,16 @@ dependencies {
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.1'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1'
 
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.4.0"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0"
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.4.0"
+
+
+
     implementation 'org.apache.commons:commons-compress:1.23.0'
     implementation 'org.tukaani:xz:1.9'
+
+    //zip4j
+    implementation 'net.lingala.zip4j:zip4j:2.11.5'
 
 }
