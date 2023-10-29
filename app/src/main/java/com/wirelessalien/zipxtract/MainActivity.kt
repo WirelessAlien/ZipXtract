@@ -66,8 +66,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private val directoryPicker =
-        registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
+    private val directoryPicker = registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
             uri?.let {
                 contentResolver.takePersistableUriPermission(
                     it,
@@ -88,7 +87,7 @@ class MainActivity : AppCompatActivity() {
                 editor.putString("outputDirectoryUri", uri.toString())
                 editor.apply()
             }
-        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -113,6 +112,12 @@ class MainActivity : AppCompatActivity() {
             } else {
                 Toast.makeText(this, "Please pick a file to extract", Toast.LENGTH_SHORT).show()
             }
+        }
+
+        binding.infoButton.setOnClickListener {
+
+            val infoDialog = AboutFragment()
+            infoDialog.show(supportFragmentManager, "infoDialog")
         }
 
         if (intent?.action == Intent.ACTION_VIEW) {

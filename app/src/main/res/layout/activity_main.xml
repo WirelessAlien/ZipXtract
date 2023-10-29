@@ -42,7 +42,6 @@
         android:marqueeRepeatLimit="marquee_forever"
         android:scrollHorizontally="true"
         android:singleLine="true"
-        android:text="@string/not_selected"
         android:textAlignment="center"
         android:textSize="18sp" />
 
@@ -68,9 +67,6 @@
         android:layout_height="wrap_content"
         android:scrollHorizontally="true"
         android:singleLine="true"
-        android:text="@string/not_selected"
-        android:textAlignment="center"
-        android:layout_gravity="center_horizontal"
         android:textSize="18sp" />
     </HorizontalScrollView>
 
@@ -104,7 +100,6 @@
             android:layout_below="@id/progressBar"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="4dp"
-            android:text="@string/percent"
             android:textSize="18sp" />
     </RelativeLayout>
 
