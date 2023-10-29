@@ -6,5 +6,9 @@
     <string name="not_selected">Not Selected</string>
     <string name="selected_file_text">Selected File: %1$s</string>
     <string name="directory_path">Selected Folder: %1$s</string>
+    <string name="percent">%</string>
+    <string name="version">Version:</string>
+    <string name="github_icon">Github Icon</string>
+    <string name="share_icon">Share Icon</string>
 
 </resources>

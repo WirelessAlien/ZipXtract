@@ -13,7 +13,8 @@ import android.provider.DocumentsContract
 import android.provider.OpenableColumns
 import android.text.InputType
 import android.view.View
-import android.widget.*
+import android.widget.EditText
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -28,6 +29,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.lingala.zip4j.ZipFile
+import net.lingala.zip4j.exception.ZipException
 import org.apache.commons.compress.archivers.sevenz.SevenZArchiveEntry
 import org.apache.commons.compress.archivers.sevenz.SevenZFile
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
@@ -36,9 +38,7 @@ import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream
 import org.apache.commons.compress.compressors.xz.XZCompressorInputStream
 import org.apache.commons.compress.compressors.z.ZCompressorInputStream
 import java.io.*
-import java.util.jar.JarEntry
 import java.util.jar.JarInputStream
-import java.util.zip.ZipEntry
 
 class MainActivity : AppCompatActivity() {
 
@@ -114,6 +114,13 @@ class MainActivity : AppCompatActivity() {
             } else {
                 Toast.makeText(this, "Please pick a file to extract", Toast.LENGTH_SHORT).show()
             }
+        }
+
+        binding.infoButton.setOnClickListener {
+
+            val dialog = AboutFragment()
+            dialog.show(supportFragmentManager, "AboutFragment")
+
         }
 
         if (intent?.action == Intent.ACTION_VIEW) {
@@ -297,7 +304,6 @@ class MainActivity : AppCompatActivity() {
         return@withContext tempFile
     }
 
-
     private fun isZipFileEncrypted(tempFile: File): Boolean {
         val zipFile = ZipFile(tempFile)
         return zipFile.isEncrypted
@@ -356,7 +362,7 @@ class MainActivity : AppCompatActivity() {
                    showExtractionCompletedSnackbar(outputDirectory)
                 }
 
-            } catch (e: Exception) {
+            } catch (e: ZipException) {
                 showToast("Extraction failed: ${e.message}")
             } finally {
 
@@ -471,6 +477,7 @@ class MainActivity : AppCompatActivity() {
 
         toggleExtractButtonEnabled(true)
     }
+
     private suspend fun createTemp7zFileInBackground(bufferedInputStream: BufferedInputStream): File = withContext(Dispatchers.IO) {
         return@withContext File.createTempFile("temp_", ".7z", cacheDir).apply {
             FileOutputStream(this).use { outputStream ->
@@ -518,10 +525,7 @@ class MainActivity : AppCompatActivity() {
                                             outputStream.write(buffer, 0, count)
                                             bytesRead += count
 
-                                            // Calculate and update the progress here
                                             val progress = (bytesRead.toFloat() / totalBytes) * 100
-
-                                            // Update the progress bar or any other UI element
                                             updateProgressBar(progress)
                                         }
                                     } catch (e: Exception) {
@@ -533,7 +537,6 @@ class MainActivity : AppCompatActivity() {
                         entry = sevenZFile.nextEntry
                     }
                 } catch (e: Exception) {
-                    // Handle any exceptions related to 7z file processing
                     e.printStackTrace()
                 } finally {
                     tempFile.delete()
@@ -705,7 +708,6 @@ class MainActivity : AppCompatActivity() {
 
         snackbar.show()
     }
-
 
     private fun getArchiveFileName(archiveFileUri: Uri?): String? {
         if (archiveFileUri != null) {

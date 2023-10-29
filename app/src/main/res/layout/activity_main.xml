@@ -2,9 +2,17 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:padding="16dp"
     tools:context=".MainActivity">
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/infoButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:icon="@drawable/ic_info"
+        style="?attr/materialIconButtonStyle"
+        android:layout_alignParentEnd="true"/>
     <TextView
         android:id="@+id/appName"
         android:layout_width="wrap_content"
@@ -36,7 +44,7 @@
         android:singleLine="true"
         android:text="@string/not_selected"
         android:textAlignment="center"
-        android:textSize="20sp" />
+        android:textSize="18sp" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/changeDirectoryButton"
@@ -62,6 +70,7 @@
         android:singleLine="true"
         android:text="@string/not_selected"
         android:textAlignment="center"
+        android:layout_gravity="center_horizontal"
         android:textSize="18sp" />
     </HorizontalScrollView>
 
@@ -95,7 +104,7 @@
             android:layout_below="@id/progressBar"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="4dp"
-            android:text="Progress"
+            android:text="@string/percent"
             android:textSize="18sp" />
     </RelativeLayout>
 
