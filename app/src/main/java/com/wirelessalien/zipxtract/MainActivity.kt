@@ -145,7 +145,7 @@ class MainActivity : AppCompatActivity() {
                 binding.directoryTextView.text = directoryText
             }
         } else {
-            chooseOutputDirectory()
+            //do nothing
         }
 
         binding.changeDirectoryButton.setOnClickListener {
