@@ -11,8 +11,8 @@ android {
         applicationId "com.wirelessalien.zipxtract"
         minSdk 23
         targetSdk 33
-        versionCode 4
-        versionName "2.2"
+        versionCode 5
+        versionName "3.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -25,6 +25,8 @@ android {
         }
         debug {
             debuggable = true
+            applicationIdSuffix '.debug'
+            versionNameSuffix '-debug'
         }
     }
     compileOptions {
@@ -53,12 +55,12 @@ dependencies {
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.1'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1'
 
+    //AndroidX Lifecycle
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.4.0"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0"
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.4.0"
 
-
-
+    //apache commons compress
     implementation 'org.apache.commons:commons-compress:1.23.0'
     implementation 'org.tukaani:xz:1.9'
 

@@ -46,7 +46,6 @@ class MainActivity : AppCompatActivity() {
     private var archiveFileUri: Uri? = null
     private var outputDirectory: DocumentFile? = null
     private lateinit var sharedPreferences: SharedPreferences
-
     private val requestPermissionCode = 1
 
     private val pickFileLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -114,13 +113,6 @@ class MainActivity : AppCompatActivity() {
             } else {
                 Toast.makeText(this, "Please pick a file to extract", Toast.LENGTH_SHORT).show()
             }
-        }
-
-        binding.infoButton.setOnClickListener {
-
-            val dialog = AboutFragment()
-            dialog.show(supportFragmentManager, "AboutFragment")
-
         }
 
         if (intent?.action == Intent.ACTION_VIEW) {
