@@ -6,9 +6,18 @@
     <string name="not_selected">Not Selected</string>
     <string name="selected_file_text">Selected File: %1$s</string>
     <string name="directory_path">Selected Folder: %1$s</string>
+    <string name="no_file_selected">No File Selected</string>
+    <string name="selected_files_text">Files Selected: %1$d</string>
+    <string name="no_directory_selected">No Directory Selected</string>
     <string name="percent">%</string>
     <string name="version">Version:</string>
     <string name="github_icon">Github Icon</string>
     <string name="share_icon">Share Icon</string>
+    <string name="save_zip_to">Save Zip To</string>
+    <string name="create_zip">Create Zip</string>
+    <string name="select">Select</string>
+    <string name="file">File</string>
+    <string name="files">Files</string>
+    <string name="folder">Folder</string>
 
 </resources>

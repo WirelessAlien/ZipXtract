@@ -5,25 +5,25 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
-import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.DocumentsContract
 import android.provider.OpenableColumns
+import android.provider.Settings
 import android.text.InputType
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
 import androidx.documentfile.provider.DocumentFile
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
-import com.wirelessalien.zipxtract.databinding.ActivityMainBinding
+import com.wirelessalien.zipxtract.databinding.FragmentExtractBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -40,19 +40,18 @@ import org.apache.commons.compress.compressors.z.ZCompressorInputStream
 import java.io.*
 import java.util.jar.JarInputStream
 
-class MainActivity : AppCompatActivity() {
+class ExtractFragment : Fragment() {
 
-    private lateinit var binding: ActivityMainBinding
+    private lateinit var binding: FragmentExtractBinding
     private var archiveFileUri: Uri? = null
     private var outputDirectory: DocumentFile? = null
     private lateinit var sharedPreferences: SharedPreferences
-    private val requestPermissionCode = 1
 
     private val pickFileLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             archiveFileUri = result.data?.data
             if (archiveFileUri != null) {
-                Toast.makeText(this, "File picked successfully", Toast.LENGTH_SHORT).show()
+                showToast("File Picked Successfully")
                 binding.extractButton.isEnabled = true
 
                 // Display the file name from the intent
@@ -68,11 +67,11 @@ class MainActivity : AppCompatActivity() {
 
     private val directoryPicker = registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
             uri?.let {
-                contentResolver.takePersistableUriPermission(
+                requireActivity().contentResolver.takePersistableUriPermission(
                     it,
                     Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                 )
-                outputDirectory = DocumentFile.fromTreeUri(this, uri)
+                outputDirectory = DocumentFile.fromTreeUri(requireContext(), uri)
                 val fullPath = outputDirectory?.uri?.path
                 val displayedPath = fullPath?.replace("/tree/primary", "")
 
@@ -89,14 +88,19 @@ class MainActivity : AppCompatActivity() {
             }
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?): View {
+        binding = FragmentExtractBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-        sharedPreferences = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
+        sharedPreferences = requireActivity().getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
         binding.progressBar.visibility = View.GONE
+
 
         binding.pickFileButton.setOnClickListener {
             val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
@@ -110,18 +114,41 @@ class MainActivity : AppCompatActivity() {
                 binding.progressBar.visibility = View.VISIBLE
                 extractArchiveFile(archiveFileUri!!)
             } else {
-                Toast.makeText(this, "Please pick a file to extract", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Please pick a file to extract", Toast.LENGTH_SHORT).show()
             }
+        }
+
+        binding.clearCacheBtnDP.setOnClickListener {
+
+            //clear selected directory uri
+            val editor = sharedPreferences.edit()
+            editor.remove("outputDirectoryUri")
+            editor.apply()
+            //clear selected directory
+            outputDirectory = null
+            binding.directoryTextView.text = getString(R.string.no_directory_selected)
+            binding.directoryTextView.isSelected = false
+            showToast("Output directory cleared")
+        }
+
+        binding.clearCacheBtnPF.setOnClickListener {
+
+            //clear selected file uri
+            archiveFileUri = null
+            binding.fileNameTextView.text = getString(R.string.no_file_selected)
+            binding.fileNameTextView.isSelected = false
+            binding.extractButton.isEnabled = false
+            showToast("Selected File Cleared")
         }
 
         binding.infoButton.setOnClickListener {
 
             val infoDialog = AboutFragment()
-            infoDialog.show(supportFragmentManager, "infoDialog")
+            infoDialog.show(requireActivity().supportFragmentManager, "infoDialog")
         }
 
-        if (intent?.action == Intent.ACTION_VIEW) {
-            val uri = intent.data
+        if (requireActivity().intent?.action == Intent.ACTION_VIEW) {
+            val uri = requireActivity().intent.data
 
             if (uri != null) {
                 archiveFileUri = uri
@@ -140,7 +167,7 @@ class MainActivity : AppCompatActivity() {
 
         val savedDirectoryUri = sharedPreferences.getString("outputDirectoryUri", null)
         if (savedDirectoryUri != null) {
-            outputDirectory = DocumentFile.fromTreeUri(this, Uri.parse(savedDirectoryUri))
+            outputDirectory = DocumentFile.fromTreeUri(requireContext(), Uri.parse(savedDirectoryUri))
             val fullPath = outputDirectory?.uri?.path
 
             val displayedPath = fullPath?.replace("/tree/primary:", "")
@@ -160,55 +187,41 @@ class MainActivity : AppCompatActivity() {
         requestPermissions()
     }
 
+    private val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+        if (permissions[Manifest.permission.READ_EXTERNAL_STORAGE] == true &&
+            permissions[Manifest.permission.WRITE_EXTERNAL_STORAGE] == true) {
+        // Permissions granted, nothing to do
+        } else {
+            showPermissionDeniedDialog()
+        }
+    }
+
     private fun requestPermissions() {
         val permissions = arrayOf(
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE
         )
-        val requestCode = requestPermissionCode
 
-        ActivityCompat.requestPermissions(this, permissions, requestCode)
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        when (requestCode) {
-            requestPermissionCode -> {
-                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    // Permissions granted, nothing to do
-                } else {
-                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
-                        showPermissionDeniedDialog()
-                    }
-                }
-            }
-        }
+        requestPermissionLauncher.launch(permissions)
     }
 
     private fun showPermissionDeniedDialog() {
-        AlertDialog.Builder(this)
-            .setTitle("Permission Denied")
-            .setMessage("You have denied the necessary permissions. Please grant them in the app settings to continue.")
-            .setPositiveButton("OK") { _, _ ->
-                // Open app settings
-                openAppSettings()
-            }
-            .setNegativeButton("Exit") { dialog, _ ->
-                dialog.dismiss()
-                finish()
-            }
-            .setCancelable(false)
-            .show()
+        val builder = MaterialAlertDialogBuilder(requireContext())
+        builder.setTitle("Permission Denied")
+        builder.setMessage("Storage permission is required to extract files")
+        builder.setPositiveButton("Open Settings") { _, _ ->
+            openAppSettings()
+        }
+        builder.setNegativeButton("Cancel") { dialog, _ ->
+            dialog.dismiss()
+        }
+        builder.show()
     }
 
     private fun openAppSettings() {
-        val packageName = packageName
-        val intent = Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-        intent.data = Uri.parse("package:$packageName")
+        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+        val uri = Uri.fromParts("package", requireContext().packageName, null)
+        intent.data = uri
         startActivity(intent)
     }
 
@@ -233,7 +246,7 @@ class MainActivity : AppCompatActivity() {
         archiveFileName?.let { fileName ->
             val outputDirectory = outputDirectory?.createDirectory(fileName.substringBeforeLast("."))
 
-            val inputStream = contentResolver.openInputStream(archiveFileUri)
+            val inputStream = requireActivity().contentResolver.openInputStream(archiveFileUri)
             val bufferedInputStream = BufferedInputStream(inputStream)
 
             when (fileName.substringAfterLast(".").lowercase()) {
@@ -264,10 +277,10 @@ class MainActivity : AppCompatActivity() {
                 if (isZipFileEncrypted(tempFile)) {
 
                     // Ask for password
-                    val passwordEditText = EditText(this@MainActivity)
+                    val passwordEditText = EditText(requireContext())
                     passwordEditText.inputType = InputType.TYPE_TEXT_VARIATION_PASSWORD
 
-                    val passwordDialog = MaterialAlertDialogBuilder(this@MainActivity)
+                    val passwordDialog = MaterialAlertDialogBuilder(requireContext())
                         .setTitle("Enter Password")
                         .setView(passwordEditText)
                         .setPositiveButton("Extract") { _, _ ->
@@ -290,7 +303,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private suspend fun createTempFileFromInputStreamAsync(inputStream: InputStream): File = withContext(Dispatchers.IO) {
-        val tempFile = File.createTempFile("temp_", ".zip", cacheDir)
+        val tempFile = File.createTempFile("temp_", ".zip", requireActivity().cacheDir)
         FileOutputStream(tempFile).use { outputStream ->
             val buffer = ByteArray(4096)
             var count: Int
@@ -327,7 +340,7 @@ class MainActivity : AppCompatActivity() {
                     if (header.isDirectory) {
                         outputFile?.createDirectory("UnZip")
                     } else {
-                        val bufferedOutputStream = BufferedOutputStream(outputFile?.uri?.let { contentResolver.openOutputStream(it) })
+                        val bufferedOutputStream = BufferedOutputStream(outputFile?.uri?.let { requireActivity().contentResolver.openOutputStream(it) })
 
                         zipFile.getInputStream(header).use { inputStream ->
                             val buffer = ByteArray(4096)
@@ -388,7 +401,7 @@ class MainActivity : AppCompatActivity() {
                 outputFile!!.createDirectory("UnTar")
             } else {
                 outputFile?.uri?.let { uri ->
-                    contentResolver.openOutputStream(uri)?.use { outputStream ->
+                    requireActivity().contentResolver.openOutputStream(uri)?.use { outputStream ->
                         val buffer = ByteArray(1024)
                         var count: Int
                         try {
@@ -422,7 +435,7 @@ class MainActivity : AppCompatActivity() {
         val outputFile = outputDirectory?.createFile("application/octet-stream", "output")
 
         outputFile?.uri?.let { uri ->
-            contentResolver.openOutputStream(uri)?.use { outputStream ->
+            requireActivity().contentResolver.openOutputStream(uri)?.use { outputStream ->
                 val buffer = ByteArray(1024)
                 var count: Int
                 try {
@@ -453,7 +466,7 @@ class MainActivity : AppCompatActivity() {
         val outputFile = outputDirectory?.createFile("application/octet-stream", "output")
 
         outputFile?.uri?.let { uri ->
-            contentResolver.openOutputStream(uri)?.use { outputStream ->
+            requireActivity().contentResolver.openOutputStream(uri)?.use { outputStream ->
                 val buffer = ByteArray(1024)
                 var count: Int
                 try {
@@ -476,7 +489,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private suspend fun createTemp7zFileInBackground(bufferedInputStream: BufferedInputStream): File = withContext(Dispatchers.IO) {
-        return@withContext File.createTempFile("temp_", ".7z", cacheDir).apply {
+        return@withContext File.createTempFile("temp_", ".7z", requireActivity().cacheDir).apply {
             FileOutputStream(this).use { outputStream ->
                 val buffer = ByteArray(4096)
                 var count: Int
@@ -514,7 +527,7 @@ class MainActivity : AppCompatActivity() {
                             outputFile?.createDirectory("Un7z")
                         } else {
                             outputFile?.uri?.let { uri ->
-                                contentResolver.openOutputStream(uri)?.use { outputStream ->
+                                requireActivity().contentResolver.openOutputStream(uri)?.use { outputStream ->
                                     val buffer = ByteArray(4096)
                                     try {
                                         var count: Int
@@ -548,11 +561,7 @@ class MainActivity : AppCompatActivity() {
 
             tempFileJob.invokeOnCompletion { throwable ->
                 if (throwable != null) {
-                    // Enable the extract button in case of an error in main thread
-                    runOnUiThread {
-                        toggleExtractButtonEnabled(true)
 
-                    }
                     showToast("Extraction failed: ${throwable.message}")
                 }
             }
@@ -561,7 +570,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateProgressBar(progress: Float) {
 
-        runOnUiThread {
+        requireActivity().runOnUiThread {
             binding.progressBar.progress = progress.toInt()
             binding.progressTextView.text = "${progress.toInt()}%"
 
@@ -569,20 +578,18 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showPasswordInputDialog(callback: (String?) -> Unit) {
-        val passwordInputView = EditText(this)
+        val passwordInputView = EditText(requireContext())
         passwordInputView.inputType = InputType.TYPE_TEXT_VARIATION_PASSWORD
 
-        MaterialAlertDialogBuilder(this)
+        MaterialAlertDialogBuilder(requireContext())
             .setTitle("Enter Password")
             .setView(passwordInputView)
             .setPositiveButton("Extract") { _, _ ->
                 val password = passwordInputView.text.toString()
                 callback(password.takeIf { it.isNotEmpty() })
-            }
-            .setNegativeButton("No Password") { _, _ ->
+            }.setNegativeButton("No Password") { _, _ ->
                 callback(null)
-            }
-            .show()
+            }.show()
     }
 
     private fun extractXz(bufferedInputStream: BufferedInputStream, outputDirectory: DocumentFile?) {
@@ -594,7 +601,7 @@ class MainActivity : AppCompatActivity() {
         val outputFile = outputDirectory?.createFile("application/octet-stream", "output")
 
         outputFile?.uri?.let { uri ->
-            contentResolver.openOutputStream(uri)?.use { outputStream ->
+            requireActivity().contentResolver.openOutputStream(uri)?.use { outputStream ->
                 val buffer = ByteArray(1024)
                 var count: Int
                 try {
@@ -630,7 +637,7 @@ class MainActivity : AppCompatActivity() {
                 outputFile?.createDirectory("Unjar")
             } else {
                 outputFile?.uri?.let { uri ->
-                    contentResolver.openOutputStream(uri)?.use { outputStream ->
+                    requireActivity().contentResolver.openOutputStream(uri)?.use { outputStream ->
                         val buffer = ByteArray(1024)
                         var count: Int
                         try {
@@ -665,7 +672,7 @@ class MainActivity : AppCompatActivity() {
         val outputFile = outputDirectory?.createFile("application/octet-stream", "output")
 
         outputFile?.uri?.let { uri ->
-            contentResolver.openOutputStream(uri)?.use { outputStream ->
+            requireActivity().contentResolver.openOutputStream(uri)?.use { outputStream ->
                 val buffer = ByteArray(1024)
                 var count: Int
                 try {
@@ -691,8 +698,7 @@ class MainActivity : AppCompatActivity() {
     private fun showExtractionCompletedSnackbar(outputDirectory: DocumentFile?) {
         binding.progressBar.visibility = View.GONE
 
-        val rootView = binding.root
-        val snackbar = Snackbar.make(rootView, "Extraction completed successfully", Snackbar.LENGTH_LONG)
+        val snackbar = Snackbar.make(binding.root, "ZIP file created successfully.", Snackbar.LENGTH_LONG)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             snackbar.setAction("Open Folder") {
@@ -708,7 +714,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun getArchiveFileName(archiveFileUri: Uri?): String? {
         if (archiveFileUri != null) {
-            val cursor = contentResolver.query(archiveFileUri, null, null, null, null)
+            val cursor = requireActivity().contentResolver.query(archiveFileUri, null, null, null, null)
             cursor?.use {
                 if (it.moveToFirst()) {
                     val displayNameIndex = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
@@ -722,8 +728,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showToast(message: String) {
-        runOnUiThread {
-            Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+        requireActivity().runOnUiThread {
+            Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
         }
     }
 }

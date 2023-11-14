@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/home"
+        android:icon="@drawable/ic_extract_z"
+        android:title="Extract" />
+
+    <item
+        android:id="@+id/zipCreate"
+        android:icon="@drawable/ic_create_z"
+        android:title="Create" />
+</menu>
