@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/parentLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="10dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="5dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="25sp"
+            android:text="@string/donate"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/libPayBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:icon="@drawable/ic_liberapay"
+            app:cornerRadius="10dp"
+            android:text="@string/liberapay" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/bitcoin"
+            android:padding="10dp"/>
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/Widget.Material3.CardView.Outlined"
+            android:padding="5dp">
+            <RelativeLayout
+                android:padding="10dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:id="@+id/btcAddress"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="15kD9AbhSDyYVmHvhhGv6o7epa6fogsoV5"
+                    android:textSize="14sp" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btcBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="?attr/materialIconButtonStyle"
+                    app:icon="@drawable/ic_copy_all"
+                    android:layout_alignParentEnd="true"/>
+            </RelativeLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/ethereum"
+            android:padding="10dp"/>
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/Widget.Material3.CardView.Outlined"
+            android:padding="5dp">
+            <RelativeLayout
+                android:padding="10dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:id="@+id/ethAddress"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0x0410b89c5faf57540ec6ccf55cdedb3a399c37b3"
+                    android:textSize="14sp" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/ethBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="?attr/materialIconButtonStyle"
+                    app:icon="@drawable/ic_copy_all"
+                    android:layout_alignParentEnd="true"/>
+            </RelativeLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/bnb_smart_chain"
+            android:padding="10dp"/>
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/Widget.Material3.CardView.Outlined"
+            android:padding="5dp">
+            <RelativeLayout
+                android:padding="10dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:id="@+id/bnbAddress"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0x0410b89c5faf57540ec6ccf55cdedb3a399c37b3"
+                    android:textSize="14sp" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/bnbBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="?attr/materialIconButtonStyle"
+                    app:icon="@drawable/ic_copy_all"
+                    android:layout_alignParentEnd="true"/>
+            </RelativeLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/solana"
+            android:padding="10dp"/>
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/Widget.Material3.CardView.Outlined"
+            android:padding="5dp">
+            <RelativeLayout
+                android:padding="10dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:id="@+id/solAddress"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="9YkX63RvArH8rACHwurTAX2tb3GN8nnGcwLxxTRukgFA"
+                    android:textSize="14sp" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/solBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="?attr/materialIconButtonStyle"
+                    app:icon="@drawable/ic_copy_all"
+                    android:layout_alignParentEnd="true"/>
+            </RelativeLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/monero"
+            android:padding="10dp"/>
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/Widget.Material3.CardView.Outlined"
+            android:padding="5dp">
+            <RelativeLayout
+                android:padding="10dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:id="@+id/xmrAddress"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="86q6Aw71D1CEX39XYJ6jFUPdPCCXwR9pWhawMYj56uYW1BBJXg6NT8kWjjeirRWUHnPE5wibic4MhTaw8p3VaakNBTqBunN"
+                    android:textSize="14sp" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/monBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="?attr/materialIconButtonStyle"
+                    app:icon="@drawable/ic_copy_all"
+                    android:layout_alignParentEnd="true"/>
+            </RelativeLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/tron"
+            android:padding="10dp"/>
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/Widget.Material3.CardView.Outlined"
+            android:padding="5dp">
+            <RelativeLayout
+                android:padding="10dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:id="@+id/tronAddress"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="TK4uRjF4mxqXW3UBaXt3SjHLLoahbDn1b2"
+                    android:textSize="14sp" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/tronBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="?attr/materialIconButtonStyle"
+                    app:icon="@drawable/ic_copy_all"
+                    android:layout_alignParentEnd="true"/>
+            </RelativeLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/doge_coin"
+            android:padding="10dp"/>
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/Widget.Material3.CardView.Outlined"
+            android:padding="5dp">
+            <RelativeLayout
+                android:padding="10dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:id="@+id/dogeAddress"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="DH63n1nANkSo8upDfm2gsRj1zm6ENHVWZL"
+                    android:textSize="14sp" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/dogeBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="?attr/materialIconButtonStyle"
+                    app:icon="@drawable/ic_copy_all"
+                    android:layout_alignParentEnd="true"/>
+            </RelativeLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/bitcoin_cash"
+            android:padding="10dp"/>
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/Widget.Material3.CardView.Outlined"
+            android:padding="5dp">
+            <RelativeLayout
+                android:padding="10dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:id="@+id/bchAddress"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="15kD9AbhSDyYVmHvhhGv6o7epa6fogsoV5"
+                    android:textSize="14sp" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/bchBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="?attr/materialIconButtonStyle"
+                    app:icon="@drawable/ic_copy_all"
+                    android:layout_alignParentEnd="true"
+                    tools:ignore="RelativeOverlap" />
+            </RelativeLayout>
+        </com.google.android.material.card.MaterialCardView>
+    </LinearLayout>
+</ScrollView>

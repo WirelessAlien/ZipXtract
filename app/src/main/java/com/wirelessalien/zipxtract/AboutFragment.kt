@@ -8,6 +8,7 @@ import androidx.fragment.app.DialogFragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.wirelessalien.zipxtract.databinding.FragmentAboutBinding
 
+
 class AboutFragment : DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -27,6 +28,13 @@ class AboutFragment : DialogFragment() {
         binding.licenseText.setOnClickListener {
             openUrl("https://www.apache.org/licenses/LICENSE-2.0.txt")
         }
+
+        binding.donate.setOnClickListener {
+            val donateFragment = DonationFragment()
+            donateFragment.show(requireActivity().supportFragmentManager, "donationFragment")
+        }
+
+
 
         binding.shareIcon.setOnClickListener {
             val githubUrl = "https://github.com/WirelessAlien/ZipXtract"

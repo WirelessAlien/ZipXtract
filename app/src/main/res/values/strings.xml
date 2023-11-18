@@ -19,5 +19,21 @@
     <string name="file">File</string>
     <string name="files">Files</string>
     <string name="folder">Folder</string>
+    <string name="donate">Donate</string>
+    <string name="liberapay">LiberaPay</string>
+    <string name="bitcoin">Bitcoin</string>
+    <string name="ethereum">Ethereum</string>
+    <string name="bnb_smart_chain">BNB Smart Chain</string>
+    <string name="polygon">Polygon</string>
+    <string name="solana">Solana</string>
+    <string name="monero">Monero</string>
+    <string name="tron">Tron</string>
+    <string name="doge_coin">Doge Coin</string>
+    <string name="bitcoin_cash">Bitcoin Cash</string>
+    <string name="create">Create</string>
+    <string name="encryption_method">Encryption Method</string>
+    <string name="compression_level">Compression Level</string>
+    <string name="compression_method">Compression Method</string>
+    <string name="compression_settings">Compression Settings</string>
 
 </resources>

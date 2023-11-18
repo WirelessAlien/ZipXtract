@@ -66,12 +66,21 @@
             android:textSize="16sp" />
 
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/donate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="?attr/materialIconButtonStyle"
+            android:layout_toEndOf="@id/licenseText"
+            app:icon="@drawable/ic_currency"
+            android:textSize="16sp" />
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/shareIcon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             style="?attr/materialIconButtonStyle"
             app:icon="@drawable/ic_share"
-            android:layout_toEndOf="@id/licenseText"
+            android:layout_toEndOf="@id/donate"
             android:contentDescription="@string/share_icon" />
     </RelativeLayout>
 </LinearLayout>

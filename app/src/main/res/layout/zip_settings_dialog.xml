@@ -8,7 +8,7 @@
         android:id="@+id/dialog_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Compression Settings"
+        android:text="@string/compression_settings"
         android:textStyle="bold"
         android:textSize="18sp"
         android:padding="16dp"/>
@@ -18,7 +18,7 @@
         android:layout_height="wrap_content"
         android:textSize="16sp"
         android:layout_marginStart="10dp"
-        android:text="Compression Method"/>
+        android:text="@string/compression_method"/>
 
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
@@ -35,7 +35,7 @@
         android:layout_height="wrap_content"
         android:textSize="16sp"
         android:layout_marginStart="10dp"
-        android:text="Compression Level"/>
+        android:text="@string/compression_level"/>
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -51,7 +51,7 @@
         android:layout_height="wrap_content"
         android:textSize="16sp"
         android:layout_marginStart="10dp"
-        android:text="Encryption Method"/>
+        android:text="@string/encryption_method"/>
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

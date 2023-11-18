@@ -4,10 +4,10 @@
     <item
         android:id="@+id/home"
         android:icon="@drawable/ic_extract_z"
-        android:title="Extract" />
+        android:title="@string/extract" />
 
     <item
         android:id="@+id/zipCreate"
         android:icon="@drawable/ic_create_z"
-        android:title="Create" />
+        android:title="@string/create" />
 </menu>
