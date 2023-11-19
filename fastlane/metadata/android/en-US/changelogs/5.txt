@@ -1,0 +1,3 @@
+Added ability to extract encrypted 7z & zip file
+Extended support to jar, z
+Added progress monitor for zip, 7z
