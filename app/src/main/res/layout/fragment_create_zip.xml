@@ -150,6 +150,15 @@
                 app:icon="@drawable/ic_settings"
                 android:layout_toEndOf="@+id/createZipMBtn"
                 tools:ignore="RelativeOverlap" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/settingsInfo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toEndOf="@id/zipSettingsBtn"
+                style="?attr/materialIconButtonStyle"
+                app:icon="@drawable/ic_help"
+                tools:ignore="RelativeOverlap" />
         </RelativeLayout>
 
         <RelativeLayout
@@ -169,6 +178,7 @@
                 app:indicatorColor="#00B8D4" />
 
         </RelativeLayout>
+
         <com.google.android.material.progressindicator.CircularProgressIndicator
             android:id="@+id/circularProgressBar"
             android:layout_width="100dp"

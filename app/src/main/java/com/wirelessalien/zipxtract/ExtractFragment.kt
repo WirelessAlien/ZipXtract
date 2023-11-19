@@ -192,7 +192,10 @@ class ExtractFragment : Fragment() {
             permissions[Manifest.permission.WRITE_EXTERNAL_STORAGE] == true) {
         // Permissions granted, nothing to do
         } else {
-            showPermissionDeniedDialog()
+            //show permission dialog under android R
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                showPermissionDeniedDialog()
+            }
         }
     }
 
@@ -374,6 +377,10 @@ class ExtractFragment : Fragment() {
 
             } catch (e: ZipException) {
                 showToast("Extraction failed: ${e.message}")
+                lifecycleScope.launch(Dispatchers.Main) {
+                    binding.progressBar.visibility = View.GONE
+                    binding.progressTextView.visibility = View.GONE
+                }
             } finally {
 
                 toggleExtractButtonEnabled(true)

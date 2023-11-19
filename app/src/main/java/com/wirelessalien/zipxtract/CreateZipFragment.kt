@@ -195,6 +195,17 @@ class CreateZipFragment : Fragment() {
             showCompressionSettingsDialog()
         }
 
+        binding.settingsInfo.setOnClickListener {
+            //show alert dialog with info
+            MaterialAlertDialogBuilder(requireContext())
+                .setMessage("Encrypting files with the AES encryption method is time-consuming. If you have a low end device, it is recommended to use the default method (ZIP_STANDARD).")
+                .setPositiveButton("Ok") { dialog, _ ->
+                    dialog.dismiss()
+                }
+                .show()
+
+        }
+
         binding.clearCacheBtnDP.setOnClickListener {
 
             val editor = sharedPreferences.edit()
