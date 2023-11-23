@@ -5,7 +5,7 @@ It can extract zip, tar, bz2, gz, 7z, jar, z & xz etc.
 
 - [x] Added the method to Extract password protected Zip, 7z
 
-###Planned Feature 
+### Planned Feature 
 - [ ] Support for RAR 
 
 * Contributions are greatly appreciated.
