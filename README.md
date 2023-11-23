@@ -3,9 +3,12 @@ It can extract zip, tar, bz2, gz, 7z, jar, z & xz etc.
 
 - [x] Added zip creation ability (encrypted & non encrypted)
 
-#### Planned Feature
-- [x] Extraction of password protected Zip, 7z
+- [x] Added the method to Extract password protected Zip, 7z
+
+###Planned Feature 
 - [ ] Support for RAR 
+
+* Contributions are greatly appreciated.
 
 
 [<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
