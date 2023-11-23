@@ -1,9 +1,20 @@
 # ZipXtract
+
+[![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/WirelessAlien/ZipXtract)](https://github.com/WirelessAlien/ZipXtract/releases/latest)
+[![GitHub license](https://img.shields.io/github/license/WirelessAlien/ZipXtract)](https://img.shields.io/github/license/WirelessAlien/ZipXtract)
+[![GitHub Repo stars](https://img.shields.io/github/stars/WirelessAlien/ZipXtract)](https://img.shields.io/github/stars/WirelessAlien/ZipXtract)
+[![GitHub all releases](https://img.shields.io/github/downloads/WirelessAlien/ZipXtract/total)](https://img.shields.io/github/downloads/WirelessAlien/ZipXtract/total)
+[![GitHub issues](https://img.shields.io/github/issues/WirelessAlien/ZipXtract)](https://img.shields.io/github/issues/WirelessAlien/ZipXtract)
+[![GitHub closed issues](https://img.shields.io/github/issues-closed/WirelessAlien/ZipXtract)](https://img.shields.io/github/issues-closed/WirelessAlien/ZipXtract)
+[![GitHub pull requests](https://img.shields.io/github/issues-pr/WirelessAlien/ZipXtract)](https://img.shields.io/github/issues-pr/WirelessAlien/ZipXtract)
+[![GitHub closed pull requests](https://img.shields.io/github/issues-pr-closed/mkckr0/audio-share)](https://img.shields.io/github/issues-pr-closed/mkckr0/audio-share)
+[![F-Droid](https://img.shields.io/f-droid/v/com.wirelessalien.zipxtract?logo=F-Droid)](https://f-droid.org/packages/com.wirelessalien.zipxtract)
+
 It can extract zip, tar, bz2, gz, 7z, jar, z & xz etc.
 
-- [x] Added zip creation ability (encrypted & non encrypted)
-
 - [x] Added the method to Extract password protected Zip, 7z
+
+- [x] Added zip creation ability (encrypted & non encrypted)
 
 ### Planned Feature 
 - [ ] Support for RAR 
