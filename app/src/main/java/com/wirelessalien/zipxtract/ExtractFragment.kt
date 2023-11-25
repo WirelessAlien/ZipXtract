@@ -722,7 +722,7 @@ class ExtractFragment : Fragment() {
     private fun showExtractionCompletedSnackbar(outputDirectory: DocumentFile?) {
         binding.progressBar.visibility = View.GONE
 
-        val snackbar = Snackbar.make(binding.root, "ZIP file created successfully.", Snackbar.LENGTH_LONG)
+        val snackbar = Snackbar.make(binding.root, "File extracted successfully.", Snackbar.LENGTH_LONG)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             snackbar.setAction("Open Folder") {
