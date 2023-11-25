@@ -1,0 +1,3 @@
+Added zip creation ability (encrypted & non encrypted) #9 
+Added a donation dialog #11 
+Added method to clear cache #8
