@@ -30,7 +30,6 @@ Or download the latest APK from the [Releases Section](https://github.com/Wirele
 
 ### Donate 
 
-
 <noscript><a href="https://liberapay.com/WirelessAlien/donate"><img alt="Donate using Liberapay" src="https://liberapay.com/assets/widgets/donate.svg"></a></noscript>  
 
 <a href="https://www.buymeacoffee.com/wirelessalien" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-blue.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
