@@ -1,3 +1,20 @@
+/*
+ *  Copyright (C) 2023  WirelessAlien <https://github.com/WirelessAlien>
+ *
+ *     This program is free software: you can redistribute it and/or modify
+ *     it under the terms of the GNU General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     any later version.
+ *
+ *     This program is distributed in the hope that it will be useful,
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *     GNU General Public License for more details.
+ *
+ *     You should have received a copy of the GNU General Public License
+ *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package com.wirelessalien.zipxtract
 
 import android.Manifest
@@ -66,26 +83,26 @@ class ExtractFragment : Fragment() {
     }
 
     private val directoryPicker = registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
-            uri?.let {
-                requireActivity().contentResolver.takePersistableUriPermission(
-                    it,
-                    Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-                )
-                outputDirectory = DocumentFile.fromTreeUri(requireContext(), uri)
-                val fullPath = outputDirectory?.uri?.path
-                val displayedPath = fullPath?.replace("/tree/primary", "")
+        uri?.let {
+            requireActivity().contentResolver.takePersistableUriPermission(
+                it,
+                Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+            )
+            outputDirectory = DocumentFile.fromTreeUri(requireContext(), uri)
+            val fullPath = outputDirectory?.uri?.path
+            val displayedPath = fullPath?.replace("/tree/primary", "")
 
-                if (displayedPath != null) {
+            if (displayedPath != null) {
 
-                    val directoryText = getString(R.string.directory_path, displayedPath)
-                    binding.directoryTextView.text = directoryText
-                }
-
-                // Save the output directory URI in SharedPreferences
-                val editor = sharedPreferences.edit()
-                editor.putString("outputDirectoryUri", uri.toString())
-                editor.apply()
+                val directoryText = getString(R.string.directory_path, displayedPath)
+                binding.directoryTextView.text = directoryText
             }
+
+            // Save the output directory URI in SharedPreferences
+            val editor = sharedPreferences.edit()
+            editor.putString("outputDirectoryUri", uri.toString())
+            editor.apply()
+        }
     }
 
     override fun onCreateView(
@@ -190,7 +207,7 @@ class ExtractFragment : Fragment() {
     private val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
         if (permissions[Manifest.permission.READ_EXTERNAL_STORAGE] == true &&
             permissions[Manifest.permission.WRITE_EXTERNAL_STORAGE] == true) {
-        // Permissions granted, nothing to do
+            // Permissions granted, nothing to do
         } else {
             //show permission dialog under android R
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
@@ -372,7 +389,7 @@ class ExtractFragment : Fragment() {
                 }
                 // Show the extraction completed snackbar
                 lifecycleScope.launch(Dispatchers.Main) {
-                   showExtractionCompletedSnackbar(outputDirectory)
+                    showExtractionCompletedSnackbar(outputDirectory)
                 }
 
             } catch (e: ZipException) {
@@ -740,4 +757,3 @@ class ExtractFragment : Fragment() {
         }
     }
 }
-
