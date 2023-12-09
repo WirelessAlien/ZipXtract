@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <!--
   ~  Copyright (C) 2023  WirelessAlien <https://github.com/WirelessAlien>
   ~
@@ -13,9 +14,7 @@
   ~
   ~     You should have received a copy of the GNU General Public License
   ~     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-  -->
-
-<resources>
+  --><resources>
     <string name="app_name">ZipXtract</string>
     <string name="pick_file">Pick File</string>
     <string name="extract">Extract</string>
@@ -52,5 +51,4 @@
     <string name="compression_level">Compression Level</string>
     <string name="compression_method">Compression Method</string>
     <string name="compression_settings">Compression Settings</string>
-
 </resources>
