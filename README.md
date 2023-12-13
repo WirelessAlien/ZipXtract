@@ -23,6 +23,12 @@ It can extract zip, tar, bz2, gz, 7z, jar, z & xz etc.
 
 Or download the latest APK from the [Releases Section](https://github.com/WirelessAlien/ZipXtract/releases/latest).
 
+### Translate
+
+<a href="https://hosted.weblate.org/engage/zipxtract/">
+<img src="https://hosted.weblate.org/widget/zipxtract/287x66-white.png" alt="Translation status" />
+</a>
+
 ### Donate 
 
 <noscript><a href="https://liberapay.com/WirelessAlien/donate"><img alt="Donate using Liberapay" src="https://liberapay.com/assets/widgets/donate.svg"></a></noscript>  
