@@ -30,7 +30,7 @@
     <string name="github_icon">Github Icon</string>
     <string name="share_icon">Share Icon</string>
     <string name="save_zip_to">Save Zip To</string>
-    <string name="create_zip">Create ZIP</string>
+    <string name="create_zip">Compress ZIP</string>
     <string name="select">Select</string>
     <string name="file">File</string>
     <string name="files">Files</string>
