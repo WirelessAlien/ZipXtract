@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <!--
   ~  Copyright (C) 2023  WirelessAlien <https://github.com/WirelessAlien>
   ~
@@ -13,9 +14,7 @@
   ~
   ~     You should have received a copy of the GNU General Public License
   ~     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-  -->
-
-<resources>
+  --><resources>
     <string name="app_name">ZipXtract</string>
     <string name="pick_file">Pick File</string>
     <string name="extract">Extract</string>
@@ -82,7 +81,6 @@
     <string name="invalid_uri">Invalid archive file URI</string>
     <string name="extraction_failed">Extraction Failed: %1$s</string>
     <string name="no_password">No Password</string>
-    <string name="extraction_success">"File extracted successfully</string>
+    <string name="extraction_success">File extracted successfully</string>
     <string name="share">Share App Link</string>
-
 </resources>
