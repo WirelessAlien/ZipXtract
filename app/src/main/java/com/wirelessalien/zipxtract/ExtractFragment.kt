@@ -68,7 +68,7 @@ class ExtractFragment : Fragment() {
         if (result.resultCode == Activity.RESULT_OK) {
             archiveFileUri = result.data?.data
             if (archiveFileUri != null) {
-                showToast("File Picked Successfully")
+                showToast(getString(R.string.file_picked_success))
                 binding.extractButton.isEnabled = true
 
                 // Display the file name from the intent
@@ -77,7 +77,7 @@ class ExtractFragment : Fragment() {
                 binding.fileNameTextView.text = selectedFileText
                 binding.fileNameTextView.isSelected = true
             } else {
-                showToast("No file selected")
+                showToast(getString(R.string.file_picked_fail))
             }
         }
     }
@@ -131,7 +131,7 @@ class ExtractFragment : Fragment() {
                 binding.progressBar.visibility = View.VISIBLE
                 extractArchiveFile(archiveFileUri!!)
             } else {
-                Toast.makeText(requireContext(), "Please pick a file to extract", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), getString(R.string.pick_file_extract), Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -145,7 +145,7 @@ class ExtractFragment : Fragment() {
             outputDirectory = null
             binding.directoryTextView.text = getString(R.string.no_directory_selected)
             binding.directoryTextView.isSelected = false
-            showToast("Output directory cleared")
+            showToast(getString(R.string.output_directory_cleared))
         }
 
         binding.clearCacheBtnPF.setOnClickListener {
@@ -155,7 +155,7 @@ class ExtractFragment : Fragment() {
             binding.fileNameTextView.text = getString(R.string.no_file_selected)
             binding.fileNameTextView.isSelected = false
             binding.extractButton.isEnabled = false
-            showToast("Selected File Cleared")
+            showToast(getString(R.string.selected_file_cleared))
         }
 
         binding.infoButton.setOnClickListener {
@@ -178,7 +178,7 @@ class ExtractFragment : Fragment() {
                 binding.fileNameTextView.isSelected = true
 
             } else {
-                showToast("No file selected")
+                showToast(getString(R.string.file_picked_fail))
             }
         }
 
@@ -227,12 +227,12 @@ class ExtractFragment : Fragment() {
 
     private fun showPermissionDeniedDialog() {
         val builder = MaterialAlertDialogBuilder(requireContext())
-        builder.setTitle("Permission Denied")
-        builder.setMessage("Storage permission is required to extract files")
-        builder.setPositiveButton("Open Settings") { _, _ ->
+        builder.setTitle(getString(R.string.permission_denied))
+        builder.setMessage(getString(R.string.permission_required))
+        builder.setPositiveButton(getString(R.string.open_settings)) { _, _ ->
             openAppSettings()
         }
-        builder.setNegativeButton("Cancel") { dialog, _ ->
+        builder.setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
             dialog.dismiss()
         }
         builder.show()
@@ -257,7 +257,7 @@ class ExtractFragment : Fragment() {
 
     private fun extractArchiveFile(archiveFileUri: Uri) {
         if (outputDirectory == null) {
-            showToast("Please select where to extract the files")
+            showToast(getString(R.string.select_output_directory_extract))
             return
         }
 
@@ -280,7 +280,7 @@ class ExtractFragment : Fragment() {
                 "z" -> extractZ(bufferedInputStream, outputDirectory)
                 else -> showToast("Unsupported archive format")
             }
-        } ?: showToast("Failed to get the archive file name")
+        } ?: showToast(getString(R.string.archive_file_name_failed))
     }
 
     private fun extractPasswordProtectedZipOrRegularZip(bufferedInputStream: BufferedInputStream, outputDirectory: DocumentFile?) {
@@ -301,14 +301,14 @@ class ExtractFragment : Fragment() {
                     passwordEditText.inputType = InputType.TYPE_TEXT_VARIATION_PASSWORD
 
                     val passwordDialog = MaterialAlertDialogBuilder(requireContext())
-                        .setTitle("Enter Password")
+                        .setTitle(getString(R.string.enter_password))
                         .setView(passwordEditText)
-                        .setPositiveButton("Extract") { _, _ ->
+                        .setPositiveButton(getString(R.string.extract)) { _, _ ->
                             val password = passwordEditText.text.toString()
 
                             zip4jExtractZipFile(tempFile, password, outputDirectory)
                         }
-                        .setNegativeButton("Cancel", null)
+                        .setNegativeButton(getString(R.string.cancel), null)
                         .create()
 
                     passwordDialog.show()
@@ -318,7 +318,7 @@ class ExtractFragment : Fragment() {
                 }
             }
         } else {
-            showToast("Invalid archive file URI")
+            showToast(getString(R.string.invalid_uri))
         }
     }
 
@@ -393,7 +393,7 @@ class ExtractFragment : Fragment() {
                 }
 
             } catch (e: ZipException) {
-                showToast("Extraction failed: ${e.message}")
+                showToast("${getString(R.string.extraction_failed)} ${e.message}")
                 lifecycleScope.launch(Dispatchers.Main) {
                     binding.progressBar.visibility = View.GONE
                     binding.progressTextView.visibility = View.GONE
@@ -433,7 +433,7 @@ class ExtractFragment : Fragment() {
                                 outputStream.write(buffer, 0, count)
                             }
                         } catch (e: Exception) {
-                            showToast("Extraction failed: ${e.message}")
+                            showToast("${getString(R.string.extraction_failed)} ${e.message}")
                             tarInputStream.close()
                             toggleExtractButtonEnabled(true)
                             return
@@ -467,7 +467,7 @@ class ExtractFragment : Fragment() {
                         outputStream.write(buffer, 0, count)
                     }
                 } catch (e: Exception) {
-                    showToast("Extraction failed: ${e.message}")
+                    showToast("${getString(R.string.extraction_failed)} ${e.message}")
                     bzip2InputStream.close()
                     toggleExtractButtonEnabled(true)
                     return
@@ -498,7 +498,7 @@ class ExtractFragment : Fragment() {
                         outputStream.write(buffer, 0, count)
                     }
                 } catch (e: Exception) {
-                    showToast("Extraction failed: ${e.message}")
+                    showToast("${getString(R.string.extraction_failed)} ${e.message}")
                     gzipInputStream.close()
                     toggleExtractButtonEnabled(true)
                     return
@@ -586,7 +586,7 @@ class ExtractFragment : Fragment() {
             tempFileJob.invokeOnCompletion { throwable ->
                 if (throwable != null) {
 
-                    showToast("Extraction failed: ${throwable.message}")
+                    showToast("${getString(R.string.extraction_failed)} ${throwable.message}")
                 }
             }
         }
@@ -606,12 +606,12 @@ class ExtractFragment : Fragment() {
         passwordInputView.inputType = InputType.TYPE_TEXT_VARIATION_PASSWORD
 
         MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Enter Password")
+            .setTitle(getString(R.string.enter_password))
             .setView(passwordInputView)
-            .setPositiveButton("Extract") { _, _ ->
+            .setPositiveButton(getString(R.string.extract)) { _, _ ->
                 val password = passwordInputView.text.toString()
                 callback(password.takeIf { it.isNotEmpty() })
-            }.setNegativeButton("No Password") { _, _ ->
+            }.setNegativeButton(getString(R.string.no_password)) { _, _ ->
                 callback(null)
             }.show()
     }
@@ -633,7 +633,7 @@ class ExtractFragment : Fragment() {
                         outputStream.write(buffer, 0, count)
                     }
                 } catch (e: Exception) {
-                    showToast("Extraction failed: ${e.message}")
+                    showToast("${getString(R.string.extraction_failed)} ${e.message}")
                     xzInputStream.close()
 
                     toggleExtractButtonEnabled(true)
@@ -669,7 +669,7 @@ class ExtractFragment : Fragment() {
                                 outputStream.write(buffer, 0, count)
                             }
                         } catch (e: Exception) {
-                            showToast("Extraction failed: ${e.message}")
+                            showToast("${getString(R.string.extraction_failed)} ${e.message}")
                             jarInputStream.close()
 
                             toggleExtractButtonEnabled(true)
@@ -704,7 +704,7 @@ class ExtractFragment : Fragment() {
                         outputStream.write(buffer, 0, count)
                     }
                 } catch (e: Exception) {
-                    showToast("Extraction failed: ${e.message}")
+                    showToast("${getString(R.string.extraction_failed)} ${e.message}")
                     zInputStream.close()
 
                     toggleExtractButtonEnabled(true)
@@ -722,10 +722,10 @@ class ExtractFragment : Fragment() {
     private fun showExtractionCompletedSnackbar(outputDirectory: DocumentFile?) {
         binding.progressBar.visibility = View.GONE
 
-        val snackbar = Snackbar.make(binding.root, "File extracted successfully.", Snackbar.LENGTH_LONG)
+        val snackbar = Snackbar.make(binding.root, getString(R.string.extraction_success), Snackbar.LENGTH_LONG)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            snackbar.setAction("Open Folder") {
+            snackbar.setAction(getString(R.string.open_folder)) {
                 val intent = Intent(Intent.ACTION_VIEW)
                 intent.setDataAndType(outputDirectory?.uri, DocumentsContract.Document.MIME_TYPE_DIR)
                 intent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION

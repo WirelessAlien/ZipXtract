@@ -58,7 +58,7 @@ class DonationFragment : DialogFragment() {
     private fun setCopyButtonListener(button: MaterialButton, textToCopy: String) {
         button.setOnClickListener {
             copyToClipboard(textToCopy)
-            Toast.makeText(requireContext(), "Copied to clipboard", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.copied_to_clipboard), Toast.LENGTH_SHORT).show()
         }
 
     }

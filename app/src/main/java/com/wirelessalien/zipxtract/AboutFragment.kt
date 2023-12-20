@@ -58,7 +58,7 @@ class AboutFragment : DialogFragment() {
             val shareIntent = Intent(Intent.ACTION_SEND)
             shareIntent.type = "text/plain"
             shareIntent.putExtra(Intent.EXTRA_TEXT, githubUrl)
-            startActivity(Intent.createChooser(shareIntent, "Share App Link"))
+            startActivity(Intent.createChooser(shareIntent, getString(R.string.share)))
         }
 
         return MaterialAlertDialogBuilder(requireContext())
