@@ -25,8 +25,8 @@ Or download the latest APK from the [Releases Section](https://github.com/Wirele
 
 ### Translate
 
-<a href="https://hosted.weblate.org/engage/zipxtract/">
-<img src="https://hosted.weblate.org/widget/zipxtract/287x66-white.png" alt="Translation status" />
+<a href="https://hosted.weblate.org/engage/zipxtract/-/en/">
+<img src="https://hosted.weblate.org/widget/zipxtract/translate/en/multi-auto.svg" alt="Translation status" />
 </a>
 
 ### Donate 
