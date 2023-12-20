@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <!--
   ~  Copyright (C) 2023  WirelessAlien <https://github.com/WirelessAlien>
   ~
@@ -13,9 +14,7 @@
   ~
   ~     You should have received a copy of the GNU General Public License
   ~     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-  -->
-
-<resources>
+  --><resources>
     <string name="app_name">ZipXtract</string>
     <string name="pick_file">Pick File</string>
     <string name="extract">Extract</string>
@@ -52,37 +51,4 @@
     <string name="compression_level">Compression Level</string>
     <string name="compression_method">Compression Method</string>
     <string name="compression_settings">Compression Settings</string>
-    <string name="file_picked_success">File Picked Successfully</string>
-    <string name="file_picked_fail">No file selected</string>
-    <string name="settings_info_text">Encrypting files with the AES encryption method is time-consuming. If you have a low end device, it is recommended to use the default method (ZIP_STANDARD).</string>
-    <string name="ok">OK</string>
-    <string name="output_directory_cleared">Output directory cleared</string>
-    <string name="selected_file_cleared">Selected File Cleared</string>
-    <string name="enter_password">Enter Password</string>
-    <string name="password">password</string>
-    <string name="zip_without_zip">Zip Name (without .zip)</string>
-    <string name="encrypt">Encrypt</string>
-    <string name="output_file_name">outputZip.zip</string>
-    <string name="not_encrypted">Non Encrypted</string>
-    <string name="zip_creation_success">Zip file created successfully</string>
-    <string name="please_select_files">Please select files</string>
-    <string name="zip_creation_failed">Error creating zip file</string>
-    <string name="select_output_directory">Please select output directory</string>
-    <string name="files_select_request">Please select files</string>
-    <string name="open_folder">Open Folder</string>
-    <string name="save">Save</string>
-    <string name="copied_to_clipboard">Copied to clipboard</string>
-    <string name="pick_file_extract">Please pick a file to extract</string>
-    <string name="permission_denied">Permission Denied</string>
-    <string name="permission_required">Storage permission is required to extract files</string>
-    <string name="open_settings">Open Settings</string>
-    <string name="cancel">Cancel</string>
-    <string name="select_output_directory_extract">Please select where to extract the files</string>
-    <string name="archive_file_name_failed">Failed to get the archive file name</string>
-    <string name="invalid_uri">Invalid archive file URI</string>
-    <string name="extraction_failed">Extraction Failed: %1$s</string>
-    <string name="no_password">No Password</string>
-    <string name="extraction_success">"File extracted successfully</string>
-    <string name="share">Share App Link</string>
-
 </resources>

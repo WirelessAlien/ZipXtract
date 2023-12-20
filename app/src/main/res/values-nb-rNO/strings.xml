@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="extract_to">Pakk ut til</string>
+    <string name="save_zip_to">Lagre ZIP til</string>
+    <string name="directory_path">Valgt mappe: %1$s</string>
+    <string name="bitcoin">Bitcoin</string>
+    <string name="selected_files_text">Valgte filer: %1$d</string>
+    <string name="ethereum">Ethereum</string>
+    <string name="folder">Mappe</string>
+    <string name="no_file_selected">Ingen fil valgt</string>
+    <string name="selected_file_text">Valgt fil: %1$s</string>
+    <string name="liberapay">Liberapay</string>
+    <string name="version">Versjon:</string>
+    <string name="not_selected">Ikke valgt</string>
+    <string name="create_zip">Opprett ZIP</string>
+    <string name="github_icon">GitHub-ikon</string>
+    <string name="pick_file">Velg fil</string>
+    <string name="files">Filer</string>
+    <string name="select">Velg</string>
+    <string name="percent">%</string>
+    <string name="extract">Pakk ut</string>
+    <string name="donate">Doner</string>
+    <string name="no_directory_selected">Ingen mapper valgt</string>
+    <string name="share_icon">Delingsikon</string>
+    <string name="file">Fil</string>
+</resources>
