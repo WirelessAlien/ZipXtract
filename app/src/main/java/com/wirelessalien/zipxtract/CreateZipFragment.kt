@@ -121,7 +121,7 @@ class CreateZipFragment : Fragment() {
         if (result.resultCode == RESULT_OK) {
             selectedFileUri = result.data?.data
             if (selectedFileUri != null) {
-                showToast("File Picked Successfully")
+                showToast(getString(R.string.file_picked_success))
                 binding.createZipMBtn.isEnabled = true
 
                 // Display the file name from the intent
@@ -130,7 +130,7 @@ class CreateZipFragment : Fragment() {
                 binding.fileNameTextView.text = selectedFileText
                 binding.fileNameTextView.isSelected = true
             } else {
-                showToast("No file selected")
+                showToast(getString(R.string.file_picked_fail))
             }
         }
     }
@@ -172,7 +172,8 @@ class CreateZipFragment : Fragment() {
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?): View {
+        savedInstanceState: Bundle?,
+    ): View {
         binding = FragmentCreateZipBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -215,8 +216,8 @@ class CreateZipFragment : Fragment() {
         binding.settingsInfo.setOnClickListener {
             //show alert dialog with info
             MaterialAlertDialogBuilder(requireContext())
-                .setMessage("Encrypting files with the AES encryption method is time-consuming. If you have a low end device, it is recommended to use the default method (ZIP_STANDARD).")
-                .setPositiveButton("Ok") { dialog, _ ->
+                .setMessage(getString(R.string.settings_info_text))
+                .setPositiveButton(getString(R.string.ok)) { dialog, _ ->
                     dialog.dismiss()
                 }
                 .show()
@@ -233,7 +234,7 @@ class CreateZipFragment : Fragment() {
             outputDirectory = null
             binding.directoryTextView.text = getString(R.string.no_directory_selected)
             binding.directoryTextView.isSelected = false
-            showToast("Output directory cleared")
+            showToast(getString(R.string.output_directory_cleared))
         }
 
         binding.clearCacheBtnPF.setOnClickListener {
@@ -244,7 +245,7 @@ class CreateZipFragment : Fragment() {
             binding.fileNameTextView.text = getString(R.string.no_file_selected)
             binding.fileNameTextView.isSelected = false
             binding.createZipMBtn.isEnabled = false
-            showToast("Selected File Cleared")
+            showToast(getString(R.string.selected_file_cleared))
 
         }
 
@@ -261,7 +262,7 @@ class CreateZipFragment : Fragment() {
                     createZipFile()
                 }
                 else -> {
-                    showToast("No file selected")
+                    showToast(getString(R.string.file_picked_fail))
                 }
             }
 
@@ -281,7 +282,7 @@ class CreateZipFragment : Fragment() {
                 binding.fileNameTextView.isSelected = true
 
             } else {
-                showToast("No file selected")
+                showToast(getString(R.string.file_picked_fail))
             }
         }
 
@@ -369,16 +370,16 @@ class CreateZipFragment : Fragment() {
         val selectedEncryptionMethod = getSavedEncryptionMethod()
 
         val alertDialogBuilder = MaterialAlertDialogBuilder(requireContext())
-        alertDialogBuilder.setTitle("Enter Password")
+        alertDialogBuilder.setTitle(getString(R.string.enter_password))
 
         // Set up the input for password
         val passwordInput = EditText(context)
         passwordInput.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
-        passwordInput.hint = "Password"
+        passwordInput.hint = getString(R.string.password)
 
         // Set up the input for output file name
         val outputFileNameInput = EditText(context)
-        outputFileNameInput.hint = "Zip Name (without .zip)"
+        outputFileNameInput.hint = getString(R.string.zip_without_zip)
 
         // Set up the layout for both inputs
         val layout = LinearLayout(context)
@@ -388,13 +389,13 @@ class CreateZipFragment : Fragment() {
         alertDialogBuilder.setView(layout)
 
         // Set up the buttons
-        alertDialogBuilder.setPositiveButton("Encrypt") { _, _ ->
+        alertDialogBuilder.setPositiveButton(getString(R.string.encrypt)) { _, _ ->
             val password = passwordInput.text.toString()
             var outputFileName = outputFileNameInput.text.toString()
 
             if (outputFileName.isEmpty()) {
                 // Use default name if empty
-                outputFileName = "outputZip.zip"
+                outputFileName = getString(R.string.output_file_name)
             } else if (!outputFileName.endsWith(".zip", ignoreCase = true)) {
                 // Automatically add .zip extension
                 outputFileName += ".zip"
@@ -417,12 +418,12 @@ class CreateZipFragment : Fragment() {
             }
         }
 
-        alertDialogBuilder.setNegativeButton("Non Encrypted") { _, _ ->
+        alertDialogBuilder.setNegativeButton(getString(R.string.not_encrypted)) { _, _ ->
             var outputFileName = outputFileNameInput.text.toString()
 
             if (outputFileName.isEmpty()) {
                 // Use default name if empty
-                outputFileName = "outputZip.zip"
+                outputFileName = getString(R.string.output_file_name)
             } else if (!outputFileName.endsWith(".zip", ignoreCase = true)) {
                 // Automatically add .zip extension
                 outputFileName += ".zip"
@@ -465,15 +466,15 @@ class CreateZipFragment : Fragment() {
                         }
                     }
                     else -> {
-                        showToast("Please select files")
+                        showToast(getString(R.string.please_select_files))
                     }
                 }
 
-                showToast("Zip file created successfully")
+                showToast(getString(R.string.zip_creation_success))
                 showExtractionCompletedSnackbar(outputDirectory)
 
             } catch (e: Exception) {
-                showToast("Error creating zip file: ${e.message}")
+                showToast("${getString(R.string.zip_creation_failed)} ${e.message}")
 
             } finally {
 
@@ -512,10 +513,10 @@ class CreateZipFragment : Fragment() {
                 }
 
                 showExtractionCompletedSnackbar(outputDirectory)
-                showToast("Zip file created successfully")
+                showToast(getString(R.string.zip_creation_success))
 
             } else {
-                showToast("Please select output directory")
+                showToast(getString(R.string.select_output_directory))
             }
 
             if (tempZipFile.exists())
@@ -553,7 +554,7 @@ class CreateZipFragment : Fragment() {
                         }
                     }
                     else -> {
-                        showToast("Please select files")
+                        showToast(getString(R.string.files_select_request))
                     }
                 }
 
@@ -561,7 +562,7 @@ class CreateZipFragment : Fragment() {
 
             } catch (e: ZipException) {
 
-                showToast("Error creating zip file ${e.message}")
+                showToast("${getString(R.string.zip_creation_failed)} ${e.message}")
 
             } finally {
 
@@ -600,7 +601,7 @@ class CreateZipFragment : Fragment() {
                 }
 
             } else {
-                showToast("Please select output directory")
+                showToast(getString(R.string.select_output_directory))
             }
 
             if (tempZipFile.exists())
@@ -620,12 +621,12 @@ class CreateZipFragment : Fragment() {
             val selectedCompressionLevel = getSavedCompressionLevel()
             val selectedEncryptionMethod = getSavedEncryptionMethod()
             val builder = MaterialAlertDialogBuilder(requireContext())
-            builder.setTitle("Enter Password")
+            builder.setTitle(getString(R.string.enter_password))
             val input = EditText(requireContext())
             input.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
             builder.setView(input)
 
-            builder.setPositiveButton("Encrypt") { _, _ ->
+            builder.setPositiveButton(getString(R.string.encrypt)) { _, _ ->
                 val password = input.text.toString()
                 if (password.isNotEmpty()) {
                     // Show a progress dialog or other UI indication here if desired
@@ -681,19 +682,19 @@ class CreateZipFragment : Fragment() {
                                 showProgressBar(false)
                             }
                         }
-                        showToast("ZIP file created successfully.")
+                        showToast(getString(R.string.extraction_success))
                         showExtractionCompletedSnackbar(outputDirectory)
                         selectedFileUri = null
 
                     }
                 } else {
-                    showToast("Failed to create ZIP file.")
+                    showToast(getString(R.string.zip_creation_failed))
                     binding.progressBar.visibility = View.GONE
 
                 }
             }
 
-            builder.setNegativeButton("Non-Encrypted") { _, _ ->
+            builder.setNegativeButton(getString(R.string.not_encrypted)) { _, _ ->
 
                 if (selectedFileUri != null) {
                     lifecycleScope.launch(Dispatchers.IO) {
@@ -745,20 +746,20 @@ class CreateZipFragment : Fragment() {
                                 showProgressBar(false)
                             }
                         }
-                        showToast("ZIP file created successfully.")
+                        showToast(getString(R.string.zip_creation_success))
                         showExtractionCompletedSnackbar(outputDirectory)
                         selectedFileUri = null
                     }
                 }
                 else {
-                    showToast("Failed to create ZIP file.")
+                    showToast(getString(R.string.zip_creation_failed))
                     binding.progressBar.visibility = View.GONE
                 }
             }
 
             builder.show()
         } else {
-            showToast("No file selected")
+            showToast(getString(R.string.file_picked_fail))
         }
     }
 
@@ -768,10 +769,10 @@ class CreateZipFragment : Fragment() {
             binding.progressBar.visibility = View.GONE
 
             // Show a snackbar with a button to open the ZIP file
-            val snackbar = Snackbar.make(binding.root, "ZIP file created successfully.", Snackbar.LENGTH_LONG)
+            val snackbar = Snackbar.make(binding.root, getString(R.string.zip_creation_success), Snackbar.LENGTH_LONG)
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                snackbar.setAction("Open Folder") {
+                snackbar.setAction(getString(R.string.open_folder)) {
                     val intent = Intent(Intent.ACTION_VIEW)
                     intent.setDataAndType(outputDirectory?.uri, DocumentsContract.Document.MIME_TYPE_DIR)
                     intent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
@@ -805,7 +806,7 @@ class CreateZipFragment : Fragment() {
         builder.setView(view)
 
         val title = view.findViewById<TextView>(R.id.dialog_title)
-        title.text = "Compression Settings"
+        title.text = getString(R.string.compression_settings)
 
         val compressionMethodInput = view.findViewById<Spinner>(R.id.compression_method_input)
         val compressionLevelInput = view.findViewById<Spinner>(R.id.compression_level_input)
@@ -838,7 +839,7 @@ class CreateZipFragment : Fragment() {
         val defaultEncryptionMethodIndex = encryptionMethods.indexOf(savedEncryptionMethod.name)
         encryptionMethodInput.setSelection(if (defaultEncryptionMethodIndex != -1) defaultEncryptionMethodIndex else 0)
 
-        builder.setPositiveButton("Save") { _, _ ->
+        builder.setPositiveButton(getString(R.string.save)) { _, _ ->
             val selectedCompressionMethod =
                 CompressionMethod.valueOf(compressionMethods[compressionMethodInput.selectedItemPosition])
             val selectedCompressionLevel =
