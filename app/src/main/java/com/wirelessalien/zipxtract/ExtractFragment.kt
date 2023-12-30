@@ -29,6 +29,7 @@ import android.provider.DocumentsContract
 import android.provider.OpenableColumns
 import android.provider.Settings
 import android.text.InputType
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -47,6 +48,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.lingala.zip4j.ZipFile
 import net.lingala.zip4j.exception.ZipException
+import net.sf.sevenzipjbinding.*
+import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream
 import org.apache.commons.compress.archivers.sevenz.SevenZArchiveEntry
 import org.apache.commons.compress.archivers.sevenz.SevenZFile
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
@@ -57,12 +60,15 @@ import org.apache.commons.compress.compressors.z.ZCompressorInputStream
 import java.io.*
 import java.util.jar.JarInputStream
 
+
 class ExtractFragment : Fragment() {
 
     private lateinit var binding: FragmentExtractBinding
     private var archiveFileUri: Uri? = null
     private var outputDirectory: DocumentFile? = null
     private lateinit var sharedPreferences: SharedPreferences
+    private var archiveFormat: ArchiveFormat? = null
+    private var password: CharArray? = null
 
     private val pickFileLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
@@ -107,7 +113,8 @@ class ExtractFragment : Fragment() {
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?): View {
+        savedInstanceState: Bundle?,
+    ): View {
         binding = FragmentExtractBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -263,9 +270,14 @@ class ExtractFragment : Fragment() {
 
         val archiveFileName = getArchiveFileName(archiveFileUri)
 
-        archiveFileName?.let { fileName ->
-            val outputDirectory = outputDirectory?.createDirectory(fileName.substringBeforeLast("."))
-
+        archiveFileName.let { fileName ->
+            val outputDirectory = outputDirectory?.let {
+                if (fileName.substringAfterLast(".").lowercase() != "rar") {
+                    it.createDirectory(fileName.substringBeforeLast("."))
+                } else {
+                    it
+                }
+            }
             val inputStream = requireActivity().contentResolver.openInputStream(archiveFileUri)
             val bufferedInputStream = BufferedInputStream(inputStream)
 
@@ -278,9 +290,10 @@ class ExtractFragment : Fragment() {
                 "xz" -> extractXz(bufferedInputStream, outputDirectory)
                 "jar" -> extractJar(bufferedInputStream, outputDirectory)
                 "z" -> extractZ(bufferedInputStream, outputDirectory)
+                "rar" -> extractRar(archiveFormat, archiveFileUri)
                 else -> showToast("Unsupported archive format")
             }
-        } ?: showToast(getString(R.string.archive_file_name_failed))
+        }
     }
 
     private fun extractPasswordProtectedZipOrRegularZip(bufferedInputStream: BufferedInputStream, outputDirectory: DocumentFile?) {
@@ -719,6 +732,196 @@ class ExtractFragment : Fragment() {
         toggleExtractButtonEnabled(true)
     }
 
+
+    private fun showPasswordInputDialogRar(onPasswordEntered: (String?) -> Unit) {
+        val passwordEditText = EditText(requireContext())
+        passwordEditText.hint = "Enter Password"
+
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Enter Password")
+            .setView(passwordEditText)
+            .setPositiveButton("OK") { _, _ ->
+                val password = passwordEditText.text.toString()
+                onPasswordEntered.invoke(password.ifBlank { null })
+            }
+            .setNegativeButton("No Password") { _, _ ->
+                onPasswordEntered.invoke(null)
+            }
+            .show()
+    }
+
+    //Thanks for the sample code
+    //https://github.com/omicronapps/7-Zip-JBinding-4Android/issues/5#issuecomment-744128480
+    private fun extractRar(archiveFormat: ArchiveFormat?, archiveFileUri: Uri) {
+        showPasswordInputDialogRar { password ->
+            this.password = password?.toCharArray()
+
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    withContext(Dispatchers.Main) {
+
+                        binding.progressBar.visibility = View.VISIBLE
+                        toggleExtractButtonEnabled(false)
+                    }
+
+                    val inputStream = context?.contentResolver?.openInputStream(archiveFileUri)
+                    val cacheDir = requireActivity().cacheDir
+
+                    inputStream?.use { input ->
+                        val originalFileName = getArchiveFileName(archiveFileUri)
+                        val tempRarFile = File(cacheDir, originalFileName)
+
+                        tempRarFile.outputStream().use { output ->
+                            input.copyTo(output)
+                        }
+
+                        val inStream = RandomAccessFileInStream(RandomAccessFile(tempRarFile, "r"))
+                        val cacheDirr = requireActivity().cacheDir
+                        val newFileName =
+                            tempRarFile.name.substring(0, tempRarFile.name.lastIndexOf('.'))
+
+                        try {
+                            val inArchive =
+                                SevenZip.openInArchive(archiveFormat, inStream, OpenCallback())
+                            val cacheDstDir = File(cacheDirr, newFileName)
+                            cacheDstDir.mkdir()
+                            try {
+                                inArchive.extract(null,
+                                    false,
+                                    ExtractCallback(inArchive, cacheDstDir))
+                            } catch (e: SevenZipException) {
+                                return@launch
+                            }
+                        } catch (e: SevenZipException) {
+                            e.printStackTrace()
+                            toggleExtractButtonEnabled(true)
+                        } finally {
+
+                            saveCacheFile(tempRarFile)
+                            toggleExtractButtonEnabled(true)
+                        }
+                    }
+                } finally {
+                    withContext(Dispatchers.Main) {
+                        // Hide the progress bar here
+                        binding.progressBar.visibility = View.GONE
+                        toggleExtractButtonEnabled(true)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun saveCacheFile(tempRarFile: File) {
+        val cacheDir = requireActivity().cacheDir
+        val newFileName = tempRarFile.name.substring(0, tempRarFile.name.lastIndexOf('.'))
+        val cacheDstDir = File(cacheDir, newFileName)
+
+        val files = cacheDstDir.listFiles()
+        if (files != null) {
+            val destinationDir = outputDirectory?.createDirectory(newFileName)
+
+            for (file in files) {
+                val outputFile = destinationDir?.createFile("application/octet-stream", file.name)
+                if (file.isDirectory) {
+                    outputFile?.createDirectory("Unrar")
+                } else {
+                    outputFile?.uri?.let { uri ->
+                        requireActivity().contentResolver.openOutputStream(uri)?.use { outputStream ->
+                            val buffer = ByteArray(1024)
+                            var count: Int
+                            try {
+                                FileInputStream(file).use { inputStream ->
+                                    while (inputStream.read(buffer).also { count = it } != -1) {
+                                        outputStream.write(buffer, 0, count)
+                                    }
+                                }
+                            } catch (e: Exception) {
+                                showToast("${getString(R.string.extraction_failed)} ${e.message}")
+                                return
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private inner class OpenCallback : IArchiveOpenCallback, ICryptoGetTextPassword {
+        override fun setCompleted(p0: Long?, p1: Long?) { }
+
+        override fun setTotal(p0: Long?, p1: Long?) { }
+
+        override fun cryptoGetTextPassword(): String {
+            return String(password ?: CharArray(0))
+        }
+    }
+
+    private inner class ExtractCallback(
+        private val inArchive: IInArchive,
+        private val dstDir: File
+    ) : IArchiveExtractCallback, ICryptoGetTextPassword {
+        private lateinit var unpackedFile: File
+        private lateinit var uos: OutputStream
+
+        override fun setOperationResult(p0: ExtractOperationResult?) {
+            if (p0 == ExtractOperationResult.OK) {
+                if (!unpackedFile.isDirectory)
+                    try {
+                        uos.close()
+                        showToast(getString(R.string.extraction_success))
+                    } catch (e: IOException) {
+                        showToast("${getString(R.string.extraction_failed)} ${e.message}")
+                    }
+            } else {
+                unpackedFile.delete()
+                showToast("${getString(R.string.extraction_failed)} ${p0?.name}")
+            }
+        }
+
+        override fun getStream(p0: Int, p1: ExtractAskMode?): ISequentialOutStream {
+            val path: String = inArchive.getStringProperty(p0, PropID.PATH)
+            val isDir: Boolean = inArchive.getProperty(p0, PropID.IS_FOLDER) as Boolean
+            unpackedFile = File(dstDir.path, path)
+            if (isDir) {
+                unpackedFile.mkdir()
+            } else {
+                try {
+                    val dir = File(unpackedFile.parent)
+                    if (!dir.isDirectory) {
+                        dir.mkdir()
+                    }
+                    unpackedFile.createNewFile()
+                } catch (e: IOException) {
+                    // TODO Auto-generated catch block
+                }
+                try {
+                    uos = FileOutputStream(unpackedFile)
+                } catch (e: FileNotFoundException) {
+                    // TODO Auto-generated catch block
+                }
+            }
+            return ISequentialOutStream { data: ByteArray ->
+                try {
+                    uos.write(data)
+                } catch (e: IOException) {
+                    // TODO Auto-generated catch block
+                }
+                return@ISequentialOutStream data.size
+            }
+        }
+
+        override fun prepareOperation(p0: ExtractAskMode?) { }
+
+        override fun setCompleted(p0: Long) { }
+
+        override fun setTotal(p0: Long) { }
+
+        override fun cryptoGetTextPassword(): String {
+            return String(password ?: CharArray(0))
+        }
+    }
+
     private fun showExtractionCompletedSnackbar(outputDirectory: DocumentFile?) {
         binding.progressBar.visibility = View.GONE
 
@@ -736,7 +939,7 @@ class ExtractFragment : Fragment() {
         snackbar.show()
     }
 
-    private fun getArchiveFileName(archiveFileUri: Uri?): String? {
+    private fun getArchiveFileName(archiveFileUri: Uri?): String {
         if (archiveFileUri != null) {
             val cursor = requireActivity().contentResolver.query(archiveFileUri, null, null, null, null)
             cursor?.use {
@@ -748,7 +951,7 @@ class ExtractFragment : Fragment() {
                 }
             }
         }
-        return null
+        return  "archive_file"
     }
 
     private fun showToast(message: String) {
