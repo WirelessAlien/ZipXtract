@@ -11,8 +11,8 @@ android {
         applicationId "com.wirelessalien.zipxtract"
         minSdk 23
         targetSdk 33
-        versionCode 8
-        versionName "4.0.2"
+        versionCode 9
+        versionName "4.1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -62,12 +62,13 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.4.0"
 
     //apache commons compress
-    implementation 'org.apache.commons:commons-compress:1.25.0'
+    implementation 'org.apache.commons:commons-compress:1.24.0'
     implementation 'org.tukaani:xz:1.9'
 
     //zip4j
     implementation 'net.lingala.zip4j:zip4j:2.11.5'
 
+    //7-Zip-Jbinding-4Android
     implementation 'com.github.omicronapps:7-Zip-JBinding-4Android:Release-16.02-2.02'
 
 }
