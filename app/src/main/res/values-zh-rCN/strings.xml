@@ -42,7 +42,7 @@
     <string name="permission_denied">没有权限</string>
     <string name="output_directory_cleared">输出目录已清空</string>
     <string name="zip_creation_failed">创建 zip 文件出错</string>
-    <string name="extract">提取</string>
+    <string name="extract">解压</string>
     <string name="donate">捐赠</string>
     <string name="not_encrypted">不加密</string>
     <string name="no_directory_selected">未选择目录</string>
