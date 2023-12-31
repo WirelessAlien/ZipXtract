@@ -12,8 +12,9 @@ It can extract zip, tar, bz2, gz, 7z, jar, z & xz etc.
 
 - [x] Added zip creation ability (encrypted & non encrypted)
 
-### Planned Feature 
-- [ ] Support for RAR 
+- [x] Added extraction support for RAR (RAR5 supported)
+
+### Contribution
 
 * Contributions are greatly appreciated.
 
