@@ -1,0 +1,2 @@
+Added extraction support for RAR (RAR5 supported)
+Dependency updated
