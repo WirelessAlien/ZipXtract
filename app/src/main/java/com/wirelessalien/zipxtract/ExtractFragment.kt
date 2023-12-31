@@ -795,7 +795,6 @@ class ExtractFragment : Fragment() {
                             e.printStackTrace()
                             toggleExtractButtonEnabled(true)
                         } finally {
-
                             saveCacheFile(tempRarFile)
                             toggleExtractButtonEnabled(true)
                         }
@@ -847,7 +846,7 @@ class ExtractFragment : Fragment() {
                                     outputStream.write(buffer, 0, count)
                                 }
                             }
-                        } catch (e: Exception) {
+                        } catch (e: IOException) {
                             showToast("${getString(R.string.extraction_failed)} ${e.message}")
                             return
                         }
@@ -873,15 +872,13 @@ class ExtractFragment : Fragment() {
         private val dstDir: File
     ) : IArchiveExtractCallback, ICryptoGetTextPassword {
         private lateinit var uos: OutputStream
-        private var successMessageShown = false
 
         override fun setOperationResult(p0: ExtractOperationResult?) {
-            if (p0 == ExtractOperationResult.OK && !successMessageShown) {
+            if (p0 == ExtractOperationResult.OK ) {
                 try {
                     uos.close()
                     showToast(getString(R.string.extraction_success))
-                    successMessageShown = true
-                } catch (e: IOException) {
+                } catch (e: SevenZipException) {
                     showToast("${getString(R.string.extraction_failed)} ${e.message}")
                 }
             }
@@ -911,7 +908,7 @@ class ExtractFragment : Fragment() {
             return ISequentialOutStream { data: ByteArray ->
                 try {
                     uos.write(data)
-                } catch (e: IOException) {
+                } catch (e: SevenZipException) {
                     showToast("${getString(R.string.extraction_failed)} ${e.message}")
                 }
                 data.size
