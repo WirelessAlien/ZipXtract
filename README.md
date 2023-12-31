@@ -6,7 +6,7 @@
 [![GitHub all releases](https://img.shields.io/github/downloads/WirelessAlien/ZipXtract/total)](https://img.shields.io/github/downloads/WirelessAlien/ZipXtract/total)
 [![F-Droid](https://img.shields.io/f-droid/v/com.wirelessalien.zipxtract?logo=F-Droid)](https://f-droid.org/packages/com.wirelessalien.zipxtract)
 
-It can extract zip, tar, bz2, gz, 7z, jar, z & xz etc.
+It can extract rar, zip, tar, bz2, gz, 7z, jar, z & xz etc.
 
 - [x] Added the method to Extract password protected Zip, 7z
 
