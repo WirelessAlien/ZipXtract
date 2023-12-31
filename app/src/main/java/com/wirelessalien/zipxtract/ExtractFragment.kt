@@ -29,7 +29,6 @@ import android.provider.DocumentsContract
 import android.provider.OpenableColumns
 import android.provider.Settings
 import android.text.InputType
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -735,16 +734,16 @@ class ExtractFragment : Fragment() {
 
     private fun showPasswordInputDialogRar(onPasswordEntered: (String?) -> Unit) {
         val passwordEditText = EditText(requireContext())
-        passwordEditText.hint = "Enter Password"
+        passwordEditText.hint = getString(R.string.enter_password)
 
         MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Enter Password")
+            .setTitle(getString(R.string.enter_password))
             .setView(passwordEditText)
-            .setPositiveButton("OK") { _, _ ->
+            .setPositiveButton(getString(R.string.ok)) { _, _ ->
                 val password = passwordEditText.text.toString()
                 onPasswordEntered.invoke(password.ifBlank { null })
             }
-            .setNegativeButton("No Password") { _, _ ->
+            .setNegativeButton(getString(R.string.no_password)) { _, _ ->
                 onPasswordEntered.invoke(null)
             }
             .show()
