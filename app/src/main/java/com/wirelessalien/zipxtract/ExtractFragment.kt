@@ -819,32 +819,44 @@ class ExtractFragment : Fragment() {
         val files = cacheDstDir.listFiles()
         if (files != null) {
             val destinationDir = outputDirectory?.createDirectory(newFileName)
+            saveFilesToOutputDirectory(files, destinationDir)
+        }
+    }
 
-            for (file in files) {
-                val outputFile = destinationDir?.createFile("application/octet-stream", file.name)
-                if (file.isDirectory) {
-                    outputFile?.createDirectory("Unrar")
-                } else {
-                    outputFile?.uri?.let { uri ->
-                        requireActivity().contentResolver.openOutputStream(uri)?.use { outputStream ->
-                            val buffer = ByteArray(1024)
-                            var count: Int
-                            try {
-                                FileInputStream(file).use { inputStream ->
-                                    while (inputStream.read(buffer).also { count = it } != -1) {
-                                        outputStream.write(buffer, 0, count)
-                                    }
+    private fun saveFilesToOutputDirectory(files: Array<File>, destinationDir: DocumentFile?) {
+        for (file in files) {
+            val outputFile = if (file.isDirectory) {
+                destinationDir?.createDirectory(file.name)
+            } else {
+                destinationDir?.createFile("application/octet-stream", file.name)
+            }
+
+            if (file.isDirectory) {
+                val nestedFiles = file.listFiles()
+                if (nestedFiles != null && nestedFiles.isNotEmpty()) {
+                    saveFilesToOutputDirectory(nestedFiles, outputFile)
+                }
+            } else {
+                outputFile?.uri?.let { uri ->
+                    requireActivity().contentResolver.openOutputStream(uri)?.use { outputStream ->
+                        val buffer = ByteArray(1024)
+                        var count: Int
+                        try {
+                            FileInputStream(file).use { inputStream ->
+                                while (inputStream.read(buffer).also { count = it } != -1) {
+                                    outputStream.write(buffer, 0, count)
                                 }
-                            } catch (e: Exception) {
-                                showToast("${getString(R.string.extraction_failed)} ${e.message}")
-                                return
                             }
+                        } catch (e: Exception) {
+                            showToast("${getString(R.string.extraction_failed)} ${e.message}")
+                            return
                         }
                     }
                 }
             }
         }
     }
+
 
     private inner class OpenCallback : IArchiveOpenCallback, ICryptoGetTextPassword {
         override fun setCompleted(p0: Long?, p1: Long?) { }
@@ -860,53 +872,49 @@ class ExtractFragment : Fragment() {
         private val inArchive: IInArchive,
         private val dstDir: File
     ) : IArchiveExtractCallback, ICryptoGetTextPassword {
-        private lateinit var unpackedFile: File
         private lateinit var uos: OutputStream
+        private var successMessageShown = false
 
         override fun setOperationResult(p0: ExtractOperationResult?) {
-            if (p0 == ExtractOperationResult.OK) {
-                if (!unpackedFile.isDirectory)
-                    try {
-                        uos.close()
-                        showToast(getString(R.string.extraction_success))
-                    } catch (e: IOException) {
-                        showToast("${getString(R.string.extraction_failed)} ${e.message}")
-                    }
-            } else {
-                unpackedFile.delete()
-                showToast("${getString(R.string.extraction_failed)} ${p0?.name}")
+            if (p0 == ExtractOperationResult.OK && !successMessageShown) {
+                try {
+                    uos.close()
+                    showToast(getString(R.string.extraction_success))
+                    successMessageShown = true
+                } catch (e: IOException) {
+                    showToast("${getString(R.string.extraction_failed)} ${e.message}")
+                }
             }
         }
 
         override fun getStream(p0: Int, p1: ExtractAskMode?): ISequentialOutStream {
             val path: String = inArchive.getStringProperty(p0, PropID.PATH)
             val isDir: Boolean = inArchive.getProperty(p0, PropID.IS_FOLDER) as Boolean
-            unpackedFile = File(dstDir.path, path)
+
+            val unpackedFile = File(dstDir.path, path)
+
             if (isDir) {
                 unpackedFile.mkdir()
             } else {
                 try {
                     val dir = File(unpackedFile.parent)
                     if (!dir.isDirectory) {
-                        dir.mkdir()
+                        dir.mkdirs()
                     }
                     unpackedFile.createNewFile()
-                } catch (e: IOException) {
-                    // TODO Auto-generated catch block
-                }
-                try {
                     uos = FileOutputStream(unpackedFile)
-                } catch (e: FileNotFoundException) {
-                    // TODO Auto-generated catch block
+                } catch (e: IOException) {
+                   showToast("${getString(R.string.extraction_failed)} ${e.message}")
                 }
             }
+
             return ISequentialOutStream { data: ByteArray ->
                 try {
                     uos.write(data)
                 } catch (e: IOException) {
-                    // TODO Auto-generated catch block
+                    showToast("${getString(R.string.extraction_failed)} ${e.message}")
                 }
-                return@ISequentialOutStream data.size
+                data.size
             }
         }
 
