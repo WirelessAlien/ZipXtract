@@ -356,7 +356,7 @@ class ExtractFragment : Fragment() {
 
         zipFile.isRunInThread = true
 
-        if (password != null && password.isNotEmpty()) {
+        if (!password.isNullOrEmpty()) {
             zipFile.setPassword(password.toCharArray())
         }
 

@@ -31,7 +31,12 @@ import android.text.InputType
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.ArrayAdapter
+import android.widget.EditText
+import android.widget.LinearLayout
+import android.widget.Spinner
+import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.documentfile.provider.DocumentFile
@@ -65,6 +70,7 @@ class CreateZipFragment : Fragment() {
     private val tempFiles = mutableListOf<File>()
     private var selectedFileUri: Uri? = null
     private val cachedFiles = mutableListOf<File>()
+    private var cachedDirectoryName: String? = null
 
 
     private val pickFilesLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -198,7 +204,7 @@ class CreateZipFragment : Fragment() {
         }
 
         binding.pickFilesButton.setOnClickListener {
-           openFile()
+            openFile()
         }
 
         binding.changeDirectoryButton.setOnClickListener {
@@ -328,25 +334,63 @@ class CreateZipFragment : Fragment() {
         // Create a DocumentFile from the directoryUri
         val directory = DocumentFile.fromTreeUri(requireContext(), directoryUri)
 
-        // Get all files recursively
-        val allFiles = mutableListOf<DocumentFile>()
-        getAllFilesInDirectory(directory, allFiles)
+        // Save the directory name for later use
+        cachedDirectoryName = directory?.name
 
-        // Copy each file to the cache directory
-        for (file in allFiles) {
-            val inputStream = contentResolver.openInputStream(file.uri)
-            val cachedFile = File(requireContext().cacheDir, file.name!!)
-            val outputStream = FileOutputStream(cachedFile)
+        // Check if directory is null
+        if (directory != null && cachedDirectoryName != null) {
+            // Create a virtual directory in the cache
+            val cachedDirectory = File(requireContext().cacheDir, cachedDirectoryName!!)
+            cachedDirectory.mkdirs()
 
-            inputStream?.use { input ->
-                outputStream.use { output ->
-                    input.copyTo(output)
+            // Get all files recursively
+            val allFiles = mutableListOf<DocumentFile>()
+            getAllFilesInDirectory(directory, allFiles)
+
+            // Copy each file to the cache directory with the preserved folder structure
+            for (file in allFiles) {
+                val relativePath = getRelativePath(directory, file)
+                val outputFile = File(cachedDirectory, relativePath)
+
+                // Ensure parent directories are created
+                outputFile.parentFile?.mkdirs()
+
+                val inputStream = contentResolver.openInputStream(file.uri)
+                val outputStream = FileOutputStream(outputFile)
+
+                inputStream?.use { input ->
+                    outputStream.use { output ->
+                        input.copyTo(output)
+                    }
                 }
+
+                cachedFiles.add(outputFile)
+            }
+        }
+    }
+
+    private fun getRelativePath(baseDirectory: DocumentFile, file: DocumentFile): String {
+        // Get the relative path of the file with respect to the base directory
+        val basePath = baseDirectory.uri.path ?: ""
+        val filePath = file.uri.path ?: ""
+        return if (filePath.startsWith(basePath)) {
+            filePath.substring(basePath.length)
+        } else {
+            // Handle the case where the file is not within the base directory
+            file.name ?: ""
+        }
+    }
+
+
+
+    private val cachedDirectory: File? get() {
+            return if (cachedDirectoryName != null) {
+                File(requireContext().cacheDir, cachedDirectoryName!!)
+
+            } else {
+                null
             }
 
-            cachedFiles.add(cachedFile)
-
-        }
     }
 
     private fun getAllFilesInDirectory(directory: DocumentFile?, fileList: MutableList<DocumentFile>) {
@@ -450,14 +494,12 @@ class CreateZipFragment : Fragment() {
 
             val tempZipFile = File.createTempFile("tempZip", ".zip")
             val zipFile = ZipFile(tempZipFile)
+            val cachedDirectory = cachedDirectory
 
             try {
                 when {
-                    cachedFiles.isNotEmpty() -> {
-                        for (cachedFile in cachedFiles) {
-                            // Add the file to the zip
-                            zipFile.addFile(cachedFile, zipParameters)
-                        }
+                    cachedDirectory != null -> {
+                        zipFile.addFolder(cachedDirectory, zipParameters)
                     }
                     tempFiles.isNotEmpty() -> {
                         for (tempFile in tempFiles) {
@@ -535,21 +577,18 @@ class CreateZipFragment : Fragment() {
 
             val tempZipFile = File.createTempFile("tempZip", ".zip")
             val zipFile = ZipFile(tempZipFile)
+            val cachedDirectory = cachedDirectory
 
             try {
                 // Set the password for the entire zip file
                 zipFile.setPassword(password.toCharArray())
 
                 when {
-                    cachedFiles.isNotEmpty() -> {
-                        for (cachedFile in cachedFiles) {
-                            // Add the file to the zip
-                            zipFile.addFile(cachedFile, zipParameters)
-                        }
+                    cachedDirectory != null -> {
+                        zipFile.addFolder(cachedDirectory, zipParameters)
                     }
                     tempFiles.isNotEmpty() -> {
                         for (tempFile in tempFiles) {
-                            // Add the file to the zip
                             zipFile.addFile(tempFile, zipParameters)
                         }
                     }
@@ -595,7 +634,7 @@ class CreateZipFragment : Fragment() {
                         val buffer = ByteArray(1024)
                         var bytesRead: Int
                         while (tempInputStream.read(buffer).also { bytesRead = it } != -1) {
-                                outputStream!!.write(buffer, 0, bytesRead)
+                            outputStream!!.write(buffer, 0, bytesRead)
                         }
                     }
                 }
@@ -901,7 +940,7 @@ class CreateZipFragment : Fragment() {
 
     private fun showToast(message: String) {
         // Show toast on the main thread
-       requireActivity().runOnUiThread {
+        requireActivity().runOnUiThread {
             Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
         }
     }
@@ -913,4 +952,3 @@ class CreateZipFragment : Fragment() {
         private const val KEY_ENCRYPTION_METHOD = "encryptionMethod"
     }
 }
-
