@@ -42,32 +42,14 @@ class DonationFragment : DialogFragment() {
             startActivity(intent)
         }
 
-        setCopyButtonListener(binding.btcBtn, binding.btcAddress.text.toString())
-        setCopyButtonListener(binding.ethBtn, binding.ethAddress.text.toString())
-        setCopyButtonListener(binding.dogeBtn, binding.dogeAddress.text.toString())
-        setCopyButtonListener(binding.bnbBtn, binding.bnbAddress.text.toString())
-        setCopyButtonListener(binding.solBtn, binding.solAddress.text.toString())
-        setCopyButtonListener(binding.monBtn, binding.xmrAddress.text.toString())
-        setCopyButtonListener(binding.tronBtn, binding.tronAddress.text.toString())
+        binding.githubSBtn.setOnClickListener {
+            val url = "https://github.com/sponsors/WirelessAlien"
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            startActivity(intent)
+        }
 
         return MaterialAlertDialogBuilder(requireContext())
             .setView(dView)
             .create()
     }
-
-    private fun setCopyButtonListener(button: MaterialButton, textToCopy: String) {
-        button.setOnClickListener {
-            copyToClipboard(textToCopy)
-            Toast.makeText(requireContext(), getString(R.string.copied_to_clipboard), Toast.LENGTH_SHORT).show()
-        }
-
-    }
-
-    private fun copyToClipboard(textToCopy: String) {
-        val clipboardManager =
-            requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        val clipData = ClipData.newPlainText("Crypto Address", textToCopy)
-        clipboardManager.setPrimaryClip(clipData)
-    }
-
 }
