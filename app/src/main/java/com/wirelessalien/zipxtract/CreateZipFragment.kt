@@ -28,6 +28,7 @@ import android.os.Bundle
 import android.provider.DocumentsContract
 import android.provider.OpenableColumns
 import android.text.InputType
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -42,6 +43,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.wirelessalien.zipxtract.databinding.FragmentCreateZipBinding
@@ -60,7 +63,7 @@ import java.io.FileInputStream
 import java.io.FileOutputStream
 
 
-class CreateZipFragment : Fragment() {
+class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAdapter.OnFileClickListener {
 
     private lateinit var binding: FragmentCreateZipBinding
     private var outputDirectory: DocumentFile? = null
@@ -71,6 +74,10 @@ class CreateZipFragment : Fragment() {
     private var selectedFileUri: Uri? = null
     private val cachedFiles = mutableListOf<File>()
     private var cachedDirectoryName: String? = null
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var adapter: FileAdapter
+    private lateinit var fileList: MutableList<File>
+
 
 
     private val pickFilesLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -116,6 +123,8 @@ class CreateZipFragment : Fragment() {
                         // Hide the progress bar on the main thread
                         withContext(Dispatchers.Main) {
                             binding.circularProgressBar.visibility = View.GONE
+                            val fileList = getFilesInCacheDirectory(requireContext().cacheDir)
+                            adapter.updateFileList(fileList)
                         }
                     }
                 }
@@ -192,6 +201,8 @@ class CreateZipFragment : Fragment() {
         prefs = requireActivity().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
 
+        fileList = getFilesInCacheDirectory(requireContext().cacheDir)
+
         binding.progressBar.visibility = View.GONE
 
         binding.circularProgressBar.visibility = View.GONE
@@ -245,12 +256,22 @@ class CreateZipFragment : Fragment() {
 
         binding.clearCacheBtnPF.setOnClickListener {
 
-            tempFiles.clear()
-            cachedFiles.clear()
+            //delete the complete cache directory folder, files and subdirectories
+            val cacheDir = requireContext().cacheDir
+            if (cacheDir.isDirectory) {
+                val children: Array<String> = cacheDir.list()
+                for (i in children.indices) {
+                    File(cacheDir, children[i]).deleteRecursively()
+                }
+            }
+
+
+            val fileList = getFilesInCacheDirectory(requireContext().cacheDir)
+            adapter.updateFileList(fileList)
+
             selectedFileUri = null
             binding.fileNameTextView.text = getString(R.string.no_file_selected)
             binding.fileNameTextView.isSelected = false
-            binding.createZipMBtn.isEnabled = false
             showToast(getString(R.string.selected_file_cleared))
 
         }
@@ -306,6 +327,67 @@ class CreateZipFragment : Fragment() {
         } else {
             //do nothing
         }
+
+        recyclerView = binding.recyclerViewFiles
+        recyclerView.layoutManager = LinearLayoutManager(requireContext())
+
+        // Replace getFilesInCacheDirectory with a function to get the initial list of files
+        val fileList = getFilesInCacheDirectory(requireContext().cacheDir)
+
+        adapter = FileAdapter(fileList, this, this)
+        recyclerView.adapter = adapter
+
+    }
+
+    private fun getFilesInCacheDirectory(directory: File): MutableList<File> {
+        val filesList = mutableListOf<File>()
+
+        // Recursive function to traverse the directory
+        fun traverseDirectory(file: File) {
+            if (file.isDirectory) {
+                file.listFiles()?.forEach {
+                    traverseDirectory(it)
+                }
+            } else {
+                filesList.add(file)
+            }
+        }
+
+        traverseDirectory(directory)
+        return filesList
+    }
+
+    //on resume
+    override fun onResume() {
+        super.onResume()
+        val fileList = getFilesInCacheDirectory(requireContext().cacheDir)
+        adapter.updateFileList(fileList)
+    }
+
+    override fun onFileClick(file: File) {
+        //open activity
+        val intent = Intent(requireContext(), PickedFilesActivity::class.java)
+        startActivity(intent)
+    }
+
+    override fun onDeleteClick(file: File) {
+
+        val cacheFile = File(requireContext().cacheDir, file.name)
+        cacheFile.delete()
+
+       // use relative path to delete the file from cache directory
+        val relativePath = file.path.replace("${requireContext().cacheDir}/", "")
+        val fileToDelete = File(requireContext().cacheDir, relativePath)
+        fileToDelete.delete()
+        val parentFolder = fileToDelete.parentFile
+        if (parentFolder != null) {
+            if (parentFolder.listFiles()?.isEmpty() == true) {
+                parentFolder.delete()
+            }
+        }
+
+        adapter.fileList.remove(file)
+        adapter.notifyDataSetChanged()
     }
 
     private fun changeDirectoryFilesPicker() {
@@ -367,6 +449,8 @@ class CreateZipFragment : Fragment() {
                 cachedFiles.add(outputFile)
             }
         }
+        val fileList = getFilesInCacheDirectory(requireContext().cacheDir)
+        adapter.updateFileList(fileList)
     }
 
     private fun getRelativePath(baseDirectory: DocumentFile, file: DocumentFile): String {
@@ -380,8 +464,6 @@ class CreateZipFragment : Fragment() {
             file.name ?: ""
         }
     }
-
-
 
     private val cachedDirectory: File? get() {
             return if (cachedDirectoryName != null) {

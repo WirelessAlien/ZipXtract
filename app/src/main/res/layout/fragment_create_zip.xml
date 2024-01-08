@@ -41,13 +41,14 @@
                 android:layout_height="wrap_content"
                 android:text="@string/select"
                 android:textSize="20sp"
+                android:layout_centerVertical="true"
                 android:textStyle="bold"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/clear_cache_btnPF"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                style="?attr/materialIconButtonStyle"
+                style="@style/Widget.Material3.Button.IconButton"
                 android:layout_alignParentEnd="true"
                 app:icon="@drawable/ic_cache_delete"
                 tools:ignore="RelativeOverlap" />
@@ -111,12 +112,22 @@
             android:singleLine="true"
             android:textAlignment="center"
             android:textSize="18sp" />
+        <RelativeLayout
+            android:id="@+id/relativeLayout3"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:layout_below="@id/fileNameTextView" >
 
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerViewFiles"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+        </RelativeLayout>
         <RelativeLayout
             android:id="@+id/relativeLayout2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/fileNameTextView"
+            android:layout_below="@id/relativeLayout3"
             android:layout_marginTop="20dp">
 
             <com.google.android.material.button.MaterialButton

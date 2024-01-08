@@ -55,6 +55,23 @@
                 android:value="" />
         </activity>
 
+        <activity
+            android:name=".PickedFilesActivity"
+            android:exported="true" >
+            <intent-filter
+                android:label="Extract files"
+                tools:ignore="AppLinkUrlError">
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.DEFAULT" />
+            <data android:mimeType="*/*"/>
+
+            </intent-filter>
+
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="" />
+        </activity>
+
     </application>
 
 </manifest>
