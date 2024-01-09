@@ -367,11 +367,17 @@ class ExtractFragment : Fragment() {
                 var extractedEntries = 0
 
                 for (header in fileHeaders) {
-                    val outputFile = outputDirectory?.createFile("application/octet-stream", header.fileName)
+                    val relativePath = header.fileName
+                    val pathParts = relativePath.split("/")
+                    var currentDirectory = outputDirectory
 
-                    if (header.isDirectory) {
-                        outputFile?.createDirectory("UnZip")
-                    } else {
+                    for (part in pathParts.dropLast(1)) {
+                        currentDirectory = currentDirectory?.findFile(part) ?: currentDirectory?.createDirectory(part)
+                    }
+
+                    if (!header.isDirectory) {
+
+                        val outputFile = currentDirectory?.createFile("application/octet-stream", pathParts.last())
                         val bufferedOutputStream = BufferedOutputStream(outputFile?.uri?.let { requireActivity().contentResolver.openOutputStream(it) })
 
                         zipFile.getInputStream(header).use { inputStream ->
@@ -387,9 +393,7 @@ class ExtractFragment : Fragment() {
                                 // Calculate and update the progress
                                 val progress = (totalBytesRead * 100 / fileSize).toInt()
                                 updateProgress(progress)
-
                             }
-
                             bufferedOutputStream.close()
                         }
                     }
@@ -399,6 +403,7 @@ class ExtractFragment : Fragment() {
                     val progress = (extractedEntries * 100 / totalEntries)
                     updateProgress(progress)
                 }
+
                 // Show the extraction completed snackbar
                 lifecycleScope.launch(Dispatchers.Main) {
                     showExtractionCompletedSnackbar(outputDirectory)
