@@ -215,6 +215,14 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
 
         binding.pickFilesButton.setOnClickListener {
             openFile()
+
+            val cacheDir = requireContext().cacheDir
+            if (cacheDir.isDirectory) {
+                val children: Array<String> = cacheDir.list()!!
+                for (i in children.indices) {
+                    File(cacheDir, children[i]).deleteRecursively()
+                }
+            }
         }
 
         binding.changeDirectoryButton.setOnClickListener {
@@ -223,6 +231,14 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
 
         binding.pickFolderButton.setOnClickListener {
             changeDirectoryFilesPicker()
+
+            val cacheDir = requireContext().cacheDir
+            if (cacheDir.isDirectory) {
+                val children: Array<String> = cacheDir.list()!!
+                for (i in children.indices) {
+                    File(cacheDir, children[i]).deleteRecursively()
+                }
+            }
         }
 
         binding.zipSettingsBtn.setOnClickListener {
@@ -401,7 +417,6 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
         intent.addCategory(Intent.CATEGORY_OPENABLE)
         intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
 
-        // Set the request code
         pickFilesLauncher.launch(intent)
     }
 
