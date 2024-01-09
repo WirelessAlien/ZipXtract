@@ -17,6 +17,7 @@
 
 package com.wirelessalien.zipxtract
 
+import android.annotation.SuppressLint
 import android.app.Activity.RESULT_OK
 import android.content.Context
 import android.content.Intent
@@ -28,7 +29,6 @@ import android.os.Bundle
 import android.provider.DocumentsContract
 import android.provider.OpenableColumns
 import android.text.InputType
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -77,7 +77,6 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: FileAdapter
     private lateinit var fileList: MutableList<File>
-
 
 
     private val pickFilesLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -259,7 +258,7 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
             //delete the complete cache directory folder, files and subdirectories
             val cacheDir = requireContext().cacheDir
             if (cacheDir.isDirectory) {
-                val children: Array<String> = cacheDir.list()
+                val children: Array<String> = cacheDir.list()!!
                 for (i in children.indices) {
                     File(cacheDir, children[i]).deleteRecursively()
                 }
@@ -370,6 +369,7 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
         startActivity(intent)
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     override fun onDeleteClick(file: File) {
 
         val cacheFile = File(requireContext().cacheDir, file.name)
@@ -393,7 +393,6 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
     private fun changeDirectoryFilesPicker() {
 
         directoryFilesPicker.launch(null)
-
     }
 
     private fun openFile() {
@@ -466,13 +465,11 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
     }
 
     private val cachedDirectory: File? get() {
-            return if (cachedDirectoryName != null) {
-                File(requireContext().cacheDir, cachedDirectoryName!!)
-
-            } else {
-                null
-            }
-
+        return if (cachedDirectoryName != null) {
+            File(requireContext().cacheDir, cachedDirectoryName!!)
+        } else {
+            null
+        }
     }
 
     private fun getAllFilesInDirectory(directory: DocumentFile?, fileList: MutableList<DocumentFile>) {

@@ -407,6 +407,7 @@ class ExtractFragment : Fragment() {
                 // Show the extraction completed snackbar
                 lifecycleScope.launch(Dispatchers.Main) {
                     showExtractionCompletedSnackbar(outputDirectory)
+                    tempFile.delete()
                 }
 
             } catch (e: ZipException) {
@@ -562,11 +563,24 @@ class ExtractFragment : Fragment() {
 
                     var entry: SevenZArchiveEntry? = sevenZFile.nextEntry
                     while (entry != null) {
-                        val outputFile =
-                            outputDirectory?.createFile("application/octet-stream", entry.name)
-                        if (entry.isDirectory) {
-                            outputFile?.createDirectory("Un7z")
-                        } else {
+                        val relativePath = entry.name
+
+                        // Split the relative path into individual parts
+                        val pathParts = relativePath.split("/")
+
+                        // Initialize the root directory
+                        var currentDirectory = outputDirectory
+
+                        // Iterate through the path parts to create directories
+                        for (part in pathParts.dropLast(1)) {
+                            currentDirectory = currentDirectory?.findFile(part) ?: currentDirectory?.createDirectory(part)
+                        }
+
+                        // Only create a file if the entry is not a directory
+                        if (!entry.isDirectory) {
+                            // Create the output file within the last directory
+                            val outputFile = currentDirectory?.createFile("application/octet-stream", pathParts.last())
+
                             outputFile?.uri?.let { uri ->
                                 requireActivity().contentResolver.openOutputStream(uri)?.use { outputStream ->
                                     val buffer = ByteArray(4096)
@@ -585,6 +599,7 @@ class ExtractFragment : Fragment() {
                                 }
                             }
                         }
+
                         entry = sevenZFile.nextEntry
                     }
                 } catch (e: Exception) {
@@ -602,12 +617,12 @@ class ExtractFragment : Fragment() {
 
             tempFileJob.invokeOnCompletion { throwable ->
                 if (throwable != null) {
-
                     showToast("${getString(R.string.extraction_failed)} ${throwable.message}")
                 }
             }
         }
     }
+
 
     private fun updateProgressBar(progress: Float) {
 
