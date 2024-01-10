@@ -372,7 +372,18 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
         return filesList
     }
 
-    //on resume
+    override fun onDetach() {
+        super.onDetach()
+
+        val cacheDir = requireContext().cacheDir
+        if (cacheDir.isDirectory) {
+            val children: Array<String> = cacheDir.list()!!
+            for (i in children.indices) {
+                File(cacheDir, children[i]).deleteRecursively()
+            }
+        }
+    }
+
     override fun onResume() {
         super.onResume()
         val fileList = getFilesInCacheDirectory(requireContext().cacheDir)

@@ -130,6 +130,14 @@ class ExtractFragment : Fragment() {
             intent.addCategory(Intent.CATEGORY_OPENABLE)
             intent.type = "*/*"
             pickFileLauncher.launch(intent)
+
+            val cacheDir = requireContext().cacheDir
+            if (cacheDir.isDirectory) {
+                val children: Array<String> = cacheDir.list()!!
+                for (i in children.indices) {
+                    File(cacheDir, children[i]).deleteRecursively()
+                }
+            }
         }
 
         binding.extractButton.setOnClickListener {
@@ -208,6 +216,18 @@ class ExtractFragment : Fragment() {
         }
 
         requestPermissions()
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+
+        val cacheDir = requireContext().cacheDir
+        if (cacheDir.isDirectory) {
+            val children: Array<String> = cacheDir.list()!!
+            for (i in children.indices) {
+                File(cacheDir, children[i]).deleteRecursively()
+            }
+        }
     }
 
     private val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
