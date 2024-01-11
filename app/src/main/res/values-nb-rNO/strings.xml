@@ -23,4 +23,5 @@
     <string name="no_directory_selected">Ingen mapper valgt</string>
     <string name="share_icon">Delingsikon</string>
     <string name="file">Fil</string>
+    <string name="file_picked_fail">Ingen fil valgt</string>
 </resources>
