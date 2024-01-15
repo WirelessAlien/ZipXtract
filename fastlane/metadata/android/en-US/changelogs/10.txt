@@ -1,0 +1,4 @@
+Now created zip preserve directory structure
+Now user can delete files after picking (within the app) for ZIP creation
+Bug fix: Directory structure not preserved for ZIP, 7z extraction
+Added support for four new languages: German (de), Portuguese (pt), Brazilian Portuguese (pt-rBR), and Simplified Chinese (zh-rCN)
