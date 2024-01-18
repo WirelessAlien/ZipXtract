@@ -230,6 +230,14 @@
                 android:layout_height="wrap_content"
                 android:layout_centerHorizontal="true"
                 android:indeterminate="true"
+                app:indicatorColor="#00B8D4"
+                android:visibility="gone"/>
+
+            <com.google.android.material.progressindicator.LinearProgressIndicator
+                android:id="@+id/progressBarNI"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
                 app:indicatorColor="#00B8D4" />
 
         </RelativeLayout>

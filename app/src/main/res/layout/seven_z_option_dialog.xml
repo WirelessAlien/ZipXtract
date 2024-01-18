@@ -15,13 +15,32 @@
   ~     along with this program.  If not, see <https://www.gnu.org/licenses/>.
   -->
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:padding="10dp">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="10dp">
+
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        app:cardCornerRadius="10dp"
+        android:layout_margin="5dp"
+        style="@style/Widget.Material3.CardView.Outlined"
+        android:layout_height="wrap_content">
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/archiveNameEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/Widget.Material3.TextInputEditText.OutlinedBox"
+            android:hint="Enter Name of Archive (Optional)"/>
+    </com.google.android.material.card.MaterialCardView>
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -62,7 +81,7 @@
         <Spinner
             android:id="@+id/compressionSpinner"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
             android:padding="5dp"
             android:entries="@array/compression_levels"
             android:spinnerMode="dropdown"/>
@@ -82,18 +101,13 @@
         android:text="Solid Compression"/>
     </com.google.android.material.card.MaterialCardView>
 
-    <com.google.android.material.card.MaterialCardView
-        android:layout_width="match_parent"
-        app:cardCornerRadius="10dp"
-        android:layout_margin="5dp"
-        style="@style/Widget.Material3.CardView.Outlined"
-        android:layout_height="wrap_content">
-    <com.google.android.material.checkbox.MaterialCheckBox
-        android:id="@+id/encryptHeaderCheckBox"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Encrypt Header"/>
-    </com.google.android.material.card.MaterialCardView>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:text="Thread Count"
+            android:layout_margin="5dp"/>
 
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
@@ -101,14 +115,18 @@
         android:layout_margin="5dp"
         style="@style/Widget.Material3.CardView.Outlined"
         android:layout_height="wrap_content">
-    <com.google.android.material.textfield.TextInputEditText
+
+
+        <com.google.android.material.textfield.TextInputEditText
         android:id="@+id/threadCountEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
         style="@style/Widget.Material3.TextInputEditText.OutlinedBox.Dense"
-        android:hint="Thread Count (0 for auto)"
+        android:hint="0 for maximum available threads"
         android:inputType="number"/>
     </com.google.android.material.card.MaterialCardView>
 
 </LinearLayout>
+
+</ScrollView>

@@ -29,7 +29,6 @@ import android.os.Bundle
 import android.provider.DocumentsContract
 import android.provider.OpenableColumns
 import android.text.InputType
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -68,8 +67,8 @@ import net.sf.sevenzipjbinding.ISequentialInStream
 import net.sf.sevenzipjbinding.SevenZip
 import net.sf.sevenzipjbinding.SevenZipException
 import net.sf.sevenzipjbinding.impl.OutItemFactory
+import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream
 import net.sf.sevenzipjbinding.impl.RandomAccessFileOutStream
-import net.sf.sevenzipjbinding.util.ByteArrayStream
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -227,6 +226,8 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
 
         binding.circularProgressBar.visibility = View.GONE
 
+        binding.progressBarNI.visibility = View.GONE
+
         binding.pickFileButton.setOnClickListener {
             val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
             intent.addCategory(Intent.CATEGORY_OPENABLE)
@@ -337,7 +338,10 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
                 cacheFile != null -> {
                     create7zSingleFile()
                 }
-                tempFiles.isNotEmpty() && cachedFiles.isNotEmpty() -> {
+                tempFiles.isNotEmpty() -> {
+                    create7zFile()
+                }
+                cachedFiles.isNotEmpty() -> {
                     create7zFile()
                 }
                 else -> {
@@ -465,6 +469,8 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
         intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
 
         pickFilesLauncher.launch(intent)
+
+
     }
 
     private fun chooseOutputDirectory() {
@@ -559,8 +565,9 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
     }
 
     private fun create7zSingleFile() {
-        // Show the password input dialog at the start of the function
-        showPasswordInputDialog7z { password, level, solid, thread, encrypt ->
+
+        binding.progressBarNI.visibility = View.VISIBLE
+        showPasswordInputDialog7z { password, _, level, solid, thread ->
             CoroutineScope(Dispatchers.IO).launch {
                 try {
                     val tempZipFile = File(requireContext().cacheDir, "temp_archive.7z")
@@ -585,14 +592,19 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
 
                                     override fun setOperationResult(operationResultOk: Boolean) {
                                         // Track each operation result here
+
                                     }
 
                                     override fun setTotal(total: Long) {
-                                        // Track operation progress here
+                                        CoroutineScope(Dispatchers.Main).launch {
+                                            binding.progressBarNI.max = total.toInt()
+                                        }
                                     }
 
                                     override fun setCompleted(complete: Long) {
-                                        // Track operation progress here
+                                        CoroutineScope(Dispatchers.Main).launch {
+                                            binding.progressBarNI.progress = complete.toInt()
+                                        }
                                     }
 
                                     override fun getItemInformation(index: Int, outItemFactory: OutItemFactory<IOutItem7z>): IOutItem7z {
@@ -606,36 +618,19 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
                                             item.dataSize = fileToArchive.length()
                                         }
 
-                                        // Set the file structure inside the archive
-                                        if (cachedFiles.contains(fileToArchive)) {
-                                            val relativePath = getRelativePathForFile(
-                                                cachedDirectory!!,
-                                                fileToArchive
-                                            )
-                                            item.propertyPath = relativePath + (if (fileToArchive.isDirectory) File.separator else "")
-                                        } else {
-                                            // Use the file name for tempFiles
-                                            item.propertyPath = fileToArchive.name
-                                        }
+                                        item.propertyPath = fileToArchive.name
 
                                         return item
                                     }
 
-                                    override fun getStream(i: Int): ISequentialInStream? {
-                                        return if (fileToArchive.isDirectory) {
-                                            null
-                                        } else {
-                                            ByteArrayStream(fileToArchive.readBytes(), true)
-                                        }
+                                    override fun getStream(i: Int): RandomAccessFileInStream {
+
+                                        return RandomAccessFileInStream(RandomAccessFile(fileToArchive, "r"))
                                     }
 
                                     override fun setHeaderEncryption(enabled: Boolean) {
-                                        // Enable header encryption
-                                        if (encrypt) {
-                                            outArchive.setHeaderEncryption(enabled)
-                                        }else{
-                                            outArchive.setHeaderEncryption(false)
-                                        }
+
+                                        outArchive.setHeaderEncryption(enabled)
                                     }
                                 })
                             outArchive.close()
@@ -660,6 +655,14 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
                             }
                         }
 
+                        val cacheDir = requireContext().cacheDir
+                        if (cacheDir.isDirectory) {
+                            val children: Array<String> = cacheDir.list()!!
+                            for (i in children.indices) {
+                                File(cacheDir, children[i]).deleteRecursively()
+                            }
+                        }
+
                         // Notify the user about the success
                         withContext(Dispatchers.Main) {
                             Toast.makeText(
@@ -667,46 +670,43 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
                                 "7-Zip archive created and saved successfully",
                                 Toast.LENGTH_SHORT
                             ).show()
+                            binding.progressBarNI.visibility = View.GONE
                         }
                     }
                 } catch (e: SevenZipException) {
                     e.printStackTraceExtended()
                     withContext(Dispatchers.Main) {
                         // Notify the user about the error
-                        Toast.makeText(requireContext(), "Error creating 7-Zip archive", Toast.LENGTH_SHORT)
+                        Toast.makeText(
+                            requireContext(),
+                            "Error creating 7-Zip archive",
+                            Toast.LENGTH_SHORT
+                        )
                             .show()
+                        binding.progressBarNI.visibility = View.GONE
                     }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    withContext(Dispatchers.Main) {
-                        // Notify the user about the error
-                        Toast.makeText(requireContext(), "Error creating 7-Zip archive", Toast.LENGTH_SHORT)
-                            .show()
-                    }
+
                 }
             }
         }
     }
 
     private fun create7zFile() {
-        // Show the password input dialog at the start of the function
-        showPasswordInputDialog7z { password, level, solid, thread, encrypt ->
+
+        binding.progressBarNI.visibility = View.VISIBLE
+        showPasswordInputDialog7z { password, archiveName, level, solid, thread ->
             CoroutineScope(Dispatchers.IO).launch {
                 try {
+                    val filesToArchive = tempFiles.ifEmpty { cachedFiles }
                     val tempZipFile = File(requireContext().cacheDir, "temp_archive.7z")
-                    val outputFileName = "archive.7z"
+                    val outputFileName = "$archiveName.7z"
                     withContext(Dispatchers.IO) {
                         RandomAccessFile(tempZipFile, "rw").use { raf ->
                             val outArchive = SevenZip.openOutArchive7z()
 
                             outArchive.setLevel(level)
-                            Log.d("TAG", "create7zFile: $level")
                             outArchive.setSolid(solid)
-                            Log.d("TAG", "create7zFile: $solid")
                             outArchive.setThreadCount(thread)
-                            Log.d("TAG", "create7zFile: $thread")
-
-                            val filesToArchive = tempFiles.ifEmpty { cachedFiles }
 
                             outArchive.createArchive(RandomAccessFileOutStream(raf), filesToArchive.size,
                                 object : IOutCreateCallback<IOutItem7z>, ICryptoGetTextPassword,
@@ -715,16 +715,18 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
                                         return password
                                     }
 
-                                    override fun setOperationResult(operationResultOk: Boolean) {
-                                        // Track each operation result here
-                                    }
+                                    override fun setOperationResult(operationResultOk: Boolean) { }
 
                                     override fun setTotal(total: Long) {
-                                        // Track operation progress here
+                                        CoroutineScope(Dispatchers.Main).launch {
+                                            binding.progressBarNI.max = total.toInt()
+                                        }
                                     }
 
                                     override fun setCompleted(complete: Long) {
-                                        // Track operation progress here
+                                        CoroutineScope(Dispatchers.Main).launch {
+                                            binding.progressBarNI.progress = complete.toInt()
+                                        }
                                     }
 
                                     override fun getItemInformation(index: Int, outItemFactory: OutItemFactory<IOutItem7z>): IOutItem7z {
@@ -739,6 +741,8 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
                                             item.dataSize = file.length()
                                         }
 
+                                        item.propertyPath = file.name
+
                                         // Set the file structure inside the archive
                                         if (cachedFiles.contains(file)) {
                                             val relativePath = getRelativePathForFile(cachedDirectory!!, file)
@@ -751,21 +755,14 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
                                         return item
                                     }
 
-                                    override fun getStream(i: Int): ISequentialInStream? {
-                                        return if (filesToArchive[i].isDirectory) {
-                                            null
-                                        } else {
-                                            ByteArrayStream(filesToArchive[i].readBytes(), true)
-                                        }
+                                    override fun getStream(i: Int): ISequentialInStream {
+
+                                        return RandomAccessFileInStream(RandomAccessFile(filesToArchive[i], "r"))
                                     }
 
                                     override fun setHeaderEncryption(enabled: Boolean) {
-                                        // Enable header encryption
-                                        if (encrypt) {
-                                            outArchive.setHeaderEncryption(enabled)
-                                        }else{
-                                            outArchive.setHeaderEncryption(false)
-                                        }
+
+                                        outArchive.setHeaderEncryption(enabled)
                                     }
                                 })
 
@@ -791,6 +788,14 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
                             }
                         }
 
+                        val cacheDir = requireContext().cacheDir
+                        if (cacheDir.isDirectory) {
+                            val children: Array<String> = cacheDir.list()!!
+                            for (i in children.indices) {
+                                File(cacheDir, children[i]).deleteRecursively()
+                            }
+                        }
+
                         // Notify the user about the success
                         withContext(Dispatchers.Main) {
                             Toast.makeText(
@@ -798,6 +803,7 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
                                 "7-Zip archive created and saved successfully",
                                 Toast.LENGTH_SHORT
                             ).show()
+                            binding.progressBarNI.visibility = View.GONE
                         }
                     }
                 } catch (e: SevenZipException) {
@@ -807,13 +813,7 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
                         Toast.makeText(requireContext(), "Error creating 7-Zip archive", Toast.LENGTH_SHORT)
                             .show()
                     }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    withContext(Dispatchers.Main) {
-                        // Notify the user about the error
-                        Toast.makeText(requireContext(), "Error creating 7-Zip archive", Toast.LENGTH_SHORT)
-                            .show()
-                    }
+                    binding.progressBarNI.visibility = View.GONE
                 }
             }
         }
@@ -1350,7 +1350,7 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
         }
     }
 
-    private fun showPasswordInputDialog7z(onPasswordEntered: (String?, Int, Boolean, Int, Boolean) -> Unit) {
+    private fun showPasswordInputDialog7z(onPasswordEntered: (String?, String, Int, Boolean, Int) -> Unit) {
         val layoutInflater = LayoutInflater.from(requireContext())
         val customView = layoutInflater.inflate(R.layout.seven_z_option_dialog, null)
 
@@ -1358,11 +1358,18 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
         val compressionSpinner = customView.findViewById<Spinner>(R.id.compressionSpinner)
         val solidCheckBox = customView.findViewById<CheckBox>(R.id.solidCheckBox)
         val threadCountEditText = customView.findViewById<EditText>(R.id.threadCountEditText)
-        val headerEncryptionCheckBox = customView.findViewById<CheckBox>(R.id.encryptHeaderCheckBox)
-
+        val archiveNameEditText = customView.findViewById<EditText>(R.id.archiveNameEditText)
+        val filesToArchive = tempFiles.ifEmpty { cachedFiles }
         MaterialAlertDialogBuilder(requireContext())
             .setView(customView)
             .setPositiveButton(getString(R.string.ok)) { _, _ ->
+
+                val defaultName = if (filesToArchive.isNotEmpty()) {
+                    filesToArchive[0].nameWithoutExtension
+                } else {
+                    "archive"
+                }
+                val archiveName = archiveNameEditText.text.toString().ifBlank { defaultName }
                 val password = passwordEditText.text.toString()
                 val compressionLevel = when (compressionSpinner.selectedItemPosition) {
                     0 -> 0
@@ -1374,17 +1381,25 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
                     else -> -1
                 }
                 val solid = solidCheckBox.isChecked
-                val threadCount = threadCountEditText.text.toString().toIntOrNull() ?: 0
-                val headerEncryption = headerEncryptionCheckBox.isChecked
+                val threadCount = threadCountEditText.text.toString().toIntOrNull() ?: -1
+
                 onPasswordEntered.invoke(
                     password.ifBlank { null },
+                    archiveName,
                     compressionLevel,
                     solid,
-                    threadCount,
-                    headerEncryption
+                    threadCount
+
                 )
             }
             .setNegativeButton(getString(R.string.no_password)) { _, _ ->
+
+                val defaultName = if (filesToArchive.isNotEmpty()) {
+                    filesToArchive[0].nameWithoutExtension
+                } else {
+                    "archive"
+                }
+                val archiveName = archiveNameEditText.text.toString().ifBlank { defaultName }
                 val compressionLevel = when (compressionSpinner.selectedItemPosition) {
                     0 -> 0
                     1 -> 1
@@ -1395,14 +1410,13 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
                     else -> -1
                 }
                 val solid = solidCheckBox.isChecked
-                val threadCount = threadCountEditText.text.toString().toIntOrNull() ?: 0
-                val headerEncryption = headerEncryptionCheckBox.isChecked
+                val threadCount = threadCountEditText.text.toString().toIntOrNull() ?: -1
                 onPasswordEntered.invoke(
                     null,
+                    archiveName,
                     compressionLevel,
                     solid,
-                    threadCount,
-                    headerEncryption
+                    threadCount
                 )
             }
             .show()
