@@ -56,4 +56,7 @@
     <string name="extraction_failed">A Extração Falhou: %1$s</string>
     <string name="no_password">Sem Palavra-passe</string>
     <string name="extraction_success">Ficheiro extraído com sucesso</string>
+    <string name="sevenz_creation_success">Ficheiro 7z criado com sucesso</string>
+    <string name="sevenz_creation_failed">Erro ao criar ficheiro 7z</string>
+    <string name="compress_sevenz">Comprimir o 7z</string>
 </resources>

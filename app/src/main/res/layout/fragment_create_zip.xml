@@ -214,7 +214,7 @@
             app:icon="@drawable/ic_round_archive"
             app:cornerRadius="10dp"
             style="@style/Widget.Material3.Button.OutlinedButton"
-            android:text="Compress 7z"/>
+            android:text="@string/compress_sevenz"/>
 
         <RelativeLayout
             android:id="@+id/progressLayout"

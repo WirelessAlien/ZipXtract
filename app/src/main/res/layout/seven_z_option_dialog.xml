@@ -39,7 +39,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             style="@style/Widget.Material3.TextInputEditText.OutlinedBox"
-            android:hint="Enter Name of Archive (Optional)"/>
+            android:hint="@string/enter_name_of_archive_optional"/>
     </com.google.android.material.card.MaterialCardView>
     <TextView
         android:layout_width="wrap_content"
@@ -98,7 +98,7 @@
         android:id="@+id/solidCheckBox"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Solid Compression"/>
+        android:text="@string/solid_compression"/>
     </com.google.android.material.card.MaterialCardView>
 
         <TextView
@@ -106,7 +106,7 @@
             android:layout_height="wrap_content"
             android:textSize="16sp"
             android:textStyle="bold"
-            android:text="Thread Count"
+            android:text="@string/thread_count"
             android:layout_margin="5dp"/>
 
     <com.google.android.material.card.MaterialCardView
@@ -123,7 +123,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
         style="@style/Widget.Material3.TextInputEditText.OutlinedBox.Dense"
-        android:hint="0 for maximum available threads"
+        android:hint="@string/max_available_thread"
         android:inputType="number"/>
     </com.google.android.material.card.MaterialCardView>
 

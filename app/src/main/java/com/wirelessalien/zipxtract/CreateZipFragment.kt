@@ -150,6 +150,7 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
             if (selectedFileUri != null) {
                 showToast(getString(R.string.file_picked_success))
                 binding.createZipMBtn.isEnabled = true
+                binding.circularProgressBar.visibility = View.VISIBLE
 
                 // Display the file name from the intent
                 val fileName = getZipFileName(selectedFileUri!!)
@@ -157,11 +158,19 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
                 binding.fileNameTextView.text = selectedFileText
                 binding.fileNameTextView.isSelected = true
 
-                // Copy the file to the cache directory
-                cacheFile = File(requireContext().cacheDir, fileName)
-                cacheFile!!.outputStream().use { cache ->
-                    requireContext().contentResolver.openInputStream(selectedFileUri!!)?.use { it.copyTo(cache) }
+                // Copy the file to the cache directory in background
+
+                CoroutineScope(Dispatchers.IO).launch {
+                    cacheFile = File(requireContext().cacheDir, fileName)
+                    cacheFile!!.outputStream().use { cache ->
+                        requireContext().contentResolver.openInputStream(selectedFileUri!!)?.use { it.copyTo(cache) }
+                    }
+
+                    withContext(Dispatchers.Main) {
+                        binding.circularProgressBar.visibility = View.GONE
+                    }
                 }
+
             } else {
                 showToast(getString(R.string.file_picked_fail))
             }
@@ -478,6 +487,8 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
     }
 
     private fun copyFilesToCache(directoryUri: Uri) {
+
+        binding.circularProgressBar.visibility = View.VISIBLE
         val contentResolver = requireContext().contentResolver
 
         // Create a DocumentFile from the directoryUri
@@ -496,28 +507,36 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
             val allFiles = mutableListOf<DocumentFile>()
             getAllFilesInDirectory(directory, allFiles)
 
-            // Copy each file to the cache directory with the preserved folder structure
-            for (file in allFiles) {
-                val relativePath = getRelativePath(directory, file)
-                val outputFile = File(cachedDirectory, relativePath)
+            // Launch a coroutine in the IO dispatcher
+            lifecycleScope.launch(Dispatchers.IO) {
+                // Copy each file to the cache directory with the preserved folder structure
+                for (file in allFiles) {
+                    val relativePath = getRelativePath(directory, file)
+                    val outputFile = File(cachedDirectory, relativePath)
 
-                // Ensure parent directories are created
-                outputFile.parentFile?.mkdirs()
+                    // Ensure parent directories are created
+                    outputFile.parentFile?.mkdirs()
 
-                val inputStream = contentResolver.openInputStream(file.uri)
-                val outputStream = FileOutputStream(outputFile)
+                    val inputStream = contentResolver.openInputStream(file.uri)
+                    val outputStream = FileOutputStream(outputFile)
 
-                inputStream?.use { input ->
-                    outputStream.use { output ->
-                        input.copyTo(output)
+                    inputStream?.use { input ->
+                        outputStream.use { output ->
+                            input.copyTo(output)
+                        }
                     }
+
+                    cachedFiles.add(outputFile)
                 }
 
-                cachedFiles.add(outputFile)
+                // Switch to the Main dispatcher to update the UI
+                withContext(Dispatchers.Main) {
+                    val fileList = getFilesInCacheDirectory(requireContext().cacheDir)
+                    adapter.updateFileList(fileList)
+                    binding.circularProgressBar.visibility = View.GONE
+                }
             }
         }
-        val fileList = getFilesInCacheDirectory(requireContext().cacheDir)
-        adapter.updateFileList(fileList)
     }
 
     private fun getRelativePath(baseDirectory: DocumentFile, file: DocumentFile): String {
@@ -563,6 +582,11 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
             file.name
         }
     }
+
+    //Not so happy with this function
+    //Sometimes it fails to create the 7z file
+    //I will try to improve it in the future
+    //But for now it works
 
     private fun create7zSingleFile() {
 
@@ -665,11 +689,7 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
 
                         // Notify the user about the success
                         withContext(Dispatchers.Main) {
-                            Toast.makeText(
-                                requireContext(),
-                                "7-Zip archive created and saved successfully",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                           showToast(getString(R.string.sevenz_creation_success))
                             binding.progressBarNI.visibility = View.GONE
                         }
                     }
@@ -677,12 +697,7 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
                     e.printStackTraceExtended()
                     withContext(Dispatchers.Main) {
                         // Notify the user about the error
-                        Toast.makeText(
-                            requireContext(),
-                            "Error creating 7-Zip archive",
-                            Toast.LENGTH_SHORT
-                        )
-                            .show()
+                       showToast(getString(R.string.sevenz_creation_failed))
                         binding.progressBarNI.visibility = View.GONE
                     }
 
@@ -798,11 +813,7 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
 
                         // Notify the user about the success
                         withContext(Dispatchers.Main) {
-                            Toast.makeText(
-                                requireContext(),
-                                "7-Zip archive created and saved successfully",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            showToast(getString(R.string.sevenz_creation_success))
                             binding.progressBarNI.visibility = View.GONE
                         }
                     }
@@ -810,10 +821,9 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
                     e.printStackTraceExtended()
                     withContext(Dispatchers.Main) {
                         // Notify the user about the error
-                        Toast.makeText(requireContext(), "Error creating 7-Zip archive", Toast.LENGTH_SHORT)
-                            .show()
+                        showToast(getString(R.string.sevenz_creation_failed))
+                        binding.progressBarNI.visibility = View.GONE
                     }
-                    binding.progressBarNI.visibility = View.GONE
                 }
             }
         }

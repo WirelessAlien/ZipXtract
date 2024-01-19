@@ -83,4 +83,11 @@
     <string name="no_password">No Password</string>
     <string name="extraction_success">File extracted successfully</string>
     <string name="share">Share App Link</string>
+    <string name="sevenz_creation_success">7z file created successfully</string>
+    <string name="sevenz_creation_failed">Error creating 7z file</string>
+    <string name="compress_sevenz">Compress 7z</string>
+    <string name="thread_count">Thread Count</string>
+    <string name="max_available_thread">0 for maximum available threads</string>
+    <string name="solid_compression">Solid Compression</string>
+    <string name="enter_name_of_archive_optional">Enter Name of Archive (Optional)</string>
 </resources>

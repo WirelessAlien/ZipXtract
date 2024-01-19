@@ -66,4 +66,7 @@
     <string name="enter_password">Introduzca la contraseña</string>
     <string name="extraction_failed">Error de extracción: %1$s</string>
     <string name="zip_creation_success">El archivo Zip fue creado correctamente</string>
+    <string name="sevenz_creation_success">El archivo 7z fue creado correctamente</string>
+    <string name="sevenz_creation_failed">Error al crear el archivo 7z</string>
+    <string name="compress_sevenz">Comprimir en 7z</string>
 </resources>
