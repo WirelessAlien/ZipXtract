@@ -1,1 +1,1 @@
-ZipXtract can extract archive files
+ZipXtract can extract and create archive
