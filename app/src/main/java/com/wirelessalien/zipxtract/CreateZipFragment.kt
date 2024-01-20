@@ -28,6 +28,8 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.DocumentsContract
 import android.provider.OpenableColumns
+import android.system.ErrnoException
+import android.system.OsConstants
 import android.text.InputType
 import android.view.LayoutInflater
 import android.view.View
@@ -72,6 +74,7 @@ import net.sf.sevenzipjbinding.impl.RandomAccessFileOutStream
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.io.IOException
 import java.io.RandomAccessFile
 
 
@@ -700,7 +703,22 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
                        showToast(getString(R.string.sevenz_creation_failed))
                         binding.progressBarNI.visibility = View.GONE
                     }
-
+                } catch (e: IOException) {
+                    if (isNoStorageSpaceException(e)) {
+                        withContext(Dispatchers.Main) {
+                            binding.progressBar.visibility = View.GONE
+                            showToast("No storage available")
+                        }
+                    } else {
+                        showToast("${getString(R.string.extraction_failed)} ${e.message}")
+                    }
+                } catch (e: OutOfMemoryError) {
+                    e.printStackTrace()
+                    withContext(Dispatchers.Main) {
+                        // Notify the user about the error
+                        showToast("Out of memory")
+                        binding.progressBarNI.visibility = View.GONE
+                    }
                 }
             }
         }
@@ -824,9 +842,29 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
                         showToast(getString(R.string.sevenz_creation_failed))
                         binding.progressBarNI.visibility = View.GONE
                     }
+                } catch (e: IOException) {
+                    if (isNoStorageSpaceException(e)) {
+                        withContext(Dispatchers.Main) {
+                            binding.progressBar.visibility = View.GONE
+                            showToast("No storage available")
+                        }
+                    } else {
+                        showToast("${getString(R.string.extraction_failed)} ${e.message}")
+                    }
+                } catch (e: OutOfMemoryError) {
+                    e.printStackTrace()
+                    withContext(Dispatchers.Main) {
+                        // Notify the user about the error
+                        showToast("Out of memory")
+                        binding.progressBarNI.visibility = View.GONE
+                    }
                 }
             }
         }
+    }
+
+    private fun isNoStorageSpaceException(e: IOException): Boolean {
+        return e.message?.contains("ENOSPC") == true || e.cause is ErrnoException && (e.cause as ErrnoException).errno == OsConstants.ENOSPC
     }
 
     private fun createZipFile() {
@@ -937,7 +975,7 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
                 showToast(getString(R.string.zip_creation_success))
                 showExtractionCompletedSnackbar(outputDirectory)
 
-            } catch (e: Exception) {
+            } catch (e: ZipException) {
                 showToast("${getString(R.string.zip_creation_failed)} ${e.message}")
 
             } finally {

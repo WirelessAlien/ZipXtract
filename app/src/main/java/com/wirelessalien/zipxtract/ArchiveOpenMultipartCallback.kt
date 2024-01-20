@@ -24,6 +24,7 @@ import net.sf.sevenzipjbinding.IInStream
 import net.sf.sevenzipjbinding.PropID
 import net.sf.sevenzipjbinding.SevenZipException
 import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream
+import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.RandomAccessFile
@@ -47,13 +48,18 @@ class ArchiveOpenMultipartCallback : IArchiveOpenVolumeCallback, IArchiveOpenCal
                 name = filename
                 RandomAccessFileInStream(randomAccessFile)
             } else {
-                randomAccessFile = RandomAccessFile(filename, "r")
-                openedRandomAccessFileList[filename] = randomAccessFile
-                name = filename
-                RandomAccessFileInStream(randomAccessFile)
+                val file = File(filename)
+                if (file.exists()) {
+                    randomAccessFile = RandomAccessFile(filename, "r")
+                    openedRandomAccessFileList[filename] = randomAccessFile
+                    name = filename
+                    RandomAccessFileInStream(randomAccessFile)
+                } else {
+                    null
+                }
             }
         } catch (e: FileNotFoundException) {
-            null
+            throw SevenZipException("Error opening file", e)
         } catch (e: Exception) {
             throw RuntimeException(e)
         }
@@ -71,9 +77,9 @@ class ArchiveOpenMultipartCallback : IArchiveOpenVolumeCallback, IArchiveOpenCal
     }
 
     @Throws(SevenZipException::class)
-    override fun setCompleted(files: Long?, bytes: Long?) {}
+    override fun setCompleted(files: Long?, bytes: Long?) { }
 
     @Throws(SevenZipException::class)
-    override fun setTotal(files: Long?, bytes: Long?) {}
+    override fun setTotal(files: Long?, bytes: Long?) { }
 }
 
