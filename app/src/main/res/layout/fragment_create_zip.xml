@@ -24,230 +24,239 @@
     android:padding="16dp"
     tools:context=".CreateZipFragment">
 
-    <RelativeLayout
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="30dp"
-        tools:ignore="UselessParent">
-
-        <RelativeLayout
-            android:id="@+id/relativeLayout1"
+        android:scrollbars="none">
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="30dp"
+                tools:ignore="UselessParent">
 
-            <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/select"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/select"
-                android:textSize="20sp"
-                android:layout_centerVertical="true"
-                android:textStyle="bold"/>
+                <RelativeLayout
+                    android:id="@+id/relativeLayout1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/clear_cache_btnPF"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                style="@style/Widget.Material3.Button.IconButton"
-                android:layout_alignParentEnd="true"
-                app:icon="@drawable/ic_cache_delete"
-                tools:ignore="RelativeOverlap" />
-        </RelativeLayout>
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/select"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/select"
+                        android:textSize="20sp"
+                        android:layout_centerVertical="true"
+                        android:textStyle="bold"/>
 
-        <HorizontalScrollView
-            android:id="@+id/relativeLayout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:scrollbars="none"
-            android:layout_below="@+id/relativeLayout1">
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/clear_cache_btnPF"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/Widget.Material3.Button.IconButton"
+                        android:layout_alignParentEnd="true"
+                        app:icon="@drawable/ic_cache_delete"
+                        tools:ignore="RelativeOverlap" />
+                </RelativeLayout>
 
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal">
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/pickFileButton"
+                <HorizontalScrollView
+                    android:id="@+id/relativeLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_margin="2dp"
-                    android:layout_weight="1"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
-                    android:text="@string/file"
-                    app:cornerRadius="10dp"
-                    app:icon="@drawable/ic_copy_file" />
+                    android:layout_marginTop="10dp"
+                    android:scrollbars="none"
+                    android:layout_below="@+id/relativeLayout1">
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/pickFilesButton"
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/pickFileButton"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="2dp"
+                            android:layout_weight="1"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:text="@string/file"
+                            app:cornerRadius="10dp"
+                            app:icon="@drawable/ic_copy_file" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/pickFilesButton"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="2dp"
+                            android:layout_weight="1"
+                            android:text="@string/files"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            app:cornerRadius="10dp"
+                            app:icon="@drawable/ic_files_copy" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/pickFolderButton"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="2dp"
+                            android:layout_weight="1"
+                            android:text="@string/folder"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            app:cornerRadius="10dp"
+                            app:icon="@drawable/ic_folder_copy" />
+                    </LinearLayout>
+                </HorizontalScrollView>
+
+                <TextView
+                    android:id="@+id/fileNameTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="25dp"
+                    android:layout_below="@id/relativeLayout"
+                    android:layout_centerInParent="true"
+                    android:layout_marginTop="10dp"
+                    android:ellipsize="marquee"
+                    android:marqueeRepeatLimit="marquee_forever"
+                    android:scrollHorizontally="true"
+                    android:singleLine="true"
+                    android:textAlignment="center"
+                    android:textSize="18sp" />
+                <RelativeLayout
+                    android:id="@+id/relativeLayout3"
+                    android:layout_width="match_parent"
+                    android:layout_height="100dp"
+                    android:layout_below="@id/fileNameTextView" >
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/recyclerViewFiles"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"/>
+                </RelativeLayout>
+                <RelativeLayout
+                    android:id="@+id/relativeLayout2"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_margin="2dp"
-                    android:layout_weight="1"
-                    android:text="@string/files"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
-                    app:cornerRadius="10dp"
-                    app:icon="@drawable/ic_files_copy" />
+                    android:layout_below="@id/relativeLayout3"
+                    android:layout_marginTop="20dp">
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/pickFolderButton"
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/changeDirectoryButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/save_zip_to"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        app:icon="@drawable/ic_round_subdirectory"
+                        android:layout_centerHorizontal="true"
+                        app:cornerRadius="10dp"/>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/clear_cache_btnDP"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/Widget.Material3.Button.IconButton"
+                        android:layout_toEndOf="@id/changeDirectoryButton"
+                        app:icon="@drawable/ic_cache_delete" />
+                </RelativeLayout>
+
+                <HorizontalScrollView
+                    android:id="@+id/directoryScrollView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_margin="2dp"
-                    android:layout_weight="1"
-                    android:text="@string/folder"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_marginTop="16dp"
+                    android:layout_centerVertical="true"
+                    android:layout_below="@id/relativeLayout2">
+                    <TextView
+                        android:id="@+id/directoryTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:scrollHorizontally="true"
+                        android:singleLine="true"
+                        android:textSize="18sp" />
+                </HorizontalScrollView>
+
+                <RelativeLayout
+                    android:id="@+id/linearlayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/directoryScrollView"
+                    android:layout_marginTop="16dp">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/createZipMBtn"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerHorizontal="true"
+                        android:text="@string/create_zip"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        app:icon="@drawable/ic_round_archive"
+                        app:cornerRadius="10dp"/>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/zipSettingsBtn"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/Widget.Material3.Button.IconButton"
+                        app:icon="@drawable/ic_settings"
+                        android:layout_toEndOf="@+id/createZipMBtn"
+                        tools:ignore="RelativeOverlap" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/settingsInfo"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_toEndOf="@id/zipSettingsBtn"
+                        style="@style/Widget.Material3.Button.IconButton"
+                        app:icon="@drawable/ic_help"
+                        tools:ignore="RelativeOverlap" />
+                </RelativeLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/create7zBtn"
+                    android:layout_below="@id/linearlayout"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="10dp"
+                    app:icon="@drawable/ic_round_archive"
                     app:cornerRadius="10dp"
-                    app:icon="@drawable/ic_folder_copy" />
-            </LinearLayout>
-        </HorizontalScrollView>
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:text="@string/compress_sevenz"/>
 
-        <TextView
-            android:id="@+id/fileNameTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="25dp"
-            android:layout_below="@id/relativeLayout"
-            android:layout_centerInParent="true"
-            android:layout_marginTop="10dp"
-            android:ellipsize="marquee"
-            android:marqueeRepeatLimit="marquee_forever"
-            android:scrollHorizontally="true"
-            android:singleLine="true"
-            android:textAlignment="center"
-            android:textSize="18sp" />
-        <RelativeLayout
-            android:id="@+id/relativeLayout3"
-            android:layout_width="match_parent"
-            android:layout_height="100dp"
-            android:layout_below="@id/fileNameTextView" >
+                <RelativeLayout
+                    android:id="@+id/progressLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/create7zBtn"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="20dp">
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recyclerViewFiles"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"/>
-        </RelativeLayout>
-        <RelativeLayout
-            android:id="@+id/relativeLayout2"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/relativeLayout3"
-            android:layout_marginTop="20dp">
+                    <com.google.android.material.progressindicator.LinearProgressIndicator
+                        android:id="@+id/progressBar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_centerHorizontal="true"
+                        android:indeterminate="true"
+                        app:indicatorColor="#00B8D4"
+                        android:visibility="gone"/>
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/changeDirectoryButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/save_zip_to"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                app:icon="@drawable/ic_round_subdirectory"
-                android:layout_centerHorizontal="true"
-                app:cornerRadius="10dp"/>
+                    <com.google.android.material.progressindicator.LinearProgressIndicator
+                        android:id="@+id/progressBarNI"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_centerHorizontal="true"
+                        app:indicatorColor="#00B8D4" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/clear_cache_btnDP"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                style="@style/Widget.Material3.Button.IconButton"
-                android:layout_toEndOf="@id/changeDirectoryButton"
-                app:icon="@drawable/ic_cache_delete" />
-        </RelativeLayout>
+                </RelativeLayout>
 
-        <HorizontalScrollView
-            android:id="@+id/directoryScrollView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:layout_centerVertical="true"
-            android:layout_below="@id/relativeLayout2">
-            <TextView
-                android:id="@+id/directoryTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:scrollHorizontally="true"
-                android:singleLine="true"
-                android:textSize="18sp" />
-        </HorizontalScrollView>
-
-        <RelativeLayout
-            android:id="@+id/linearlayout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/directoryScrollView"
-            android:layout_marginTop="16dp">
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/createZipMBtn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerHorizontal="true"
-                android:text="@string/create_zip"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                app:icon="@drawable/ic_round_archive"
-                app:cornerRadius="10dp"/>
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/zipSettingsBtn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                style="@style/Widget.Material3.Button.IconButton.Outlined"
-                app:icon="@drawable/ic_settings"
-                android:layout_toEndOf="@+id/createZipMBtn"
-                tools:ignore="RelativeOverlap" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/settingsInfo"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_toEndOf="@id/zipSettingsBtn"
-                style="@style/Widget.Material3.Button.IconButton"
-                app:icon="@drawable/ic_help"
-                tools:ignore="RelativeOverlap" />
-        </RelativeLayout>
-
-        <com.google.android.material.button.MaterialButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/create7zBtn"
-            android:layout_below="@id/linearlayout"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="10dp"
-            app:icon="@drawable/ic_round_archive"
-            app:cornerRadius="10dp"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            android:text="@string/compress_sevenz"/>
-
-        <RelativeLayout
-            android:id="@+id/progressLayout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/create7zBtn"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="20dp">
-
-            <com.google.android.material.progressindicator.LinearProgressIndicator
-                android:id="@+id/progressBar"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_centerHorizontal="true"
-                android:indeterminate="true"
-                app:indicatorColor="#00B8D4"
-                android:visibility="gone"/>
-
-            <com.google.android.material.progressindicator.LinearProgressIndicator
-                android:id="@+id/progressBarNI"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_centerHorizontal="true"
-                app:indicatorColor="#00B8D4" />
-
-        </RelativeLayout>
-
-        <com.google.android.material.progressindicator.CircularProgressIndicator
-            android:id="@+id/circularProgressBar"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:layout_centerInParent="true"
-            android:indeterminate="true" />
-    </RelativeLayout>
+                <com.google.android.material.progressindicator.CircularProgressIndicator
+                    android:id="@+id/circularProgressBar"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:layout_centerInParent="true"
+                    android:indeterminate="true" />
+            </RelativeLayout>
+    </LinearLayout>
+    </ScrollView>
 
 </FrameLayout>
