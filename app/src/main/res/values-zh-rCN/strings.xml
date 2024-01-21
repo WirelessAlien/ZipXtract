@@ -56,4 +56,11 @@
     <string name="enter_password">输入密码</string>
     <string name="extraction_failed">提取失败: %1$s</string>
     <string name="zip_creation_success">Zip 文件创建成功</string>
+    <string name="thread_count">线程数</string>
+    <string name="sevenz_creation_success">7z 文件创建成功</string>
+    <string name="max_available_thread">0 代表最大可用线程</string>
+    <string name="enter_name_of_archive_optional">输入归档名称（可选）</string>
+    <string name="solid_compression">固实压缩</string>
+    <string name="sevenz_creation_failed">创建 7z 文件出错</string>
+    <string name="compress_sevenz">压缩 7z</string>
 </resources>
