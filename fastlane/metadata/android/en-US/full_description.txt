@@ -1,1 +1,1 @@
-It can extract zip, tar, bz2, gz, 7z, xz, jar & z etc. Encrypted .zip and .7z file also supported.
+A fully open-source tool to extract zip, rar, tar, bz2, gz, 7z, xz, jar & z etc. Encrypted .zip, .7z and .rar file also supported. It can be used to compress zip & 7z. This app is still in development, any feature request, report issue in Github: https://github.com/WirelessAlien/ZipXtract
