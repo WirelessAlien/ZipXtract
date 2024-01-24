@@ -1419,11 +1419,11 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
 
     private fun getSavedEncryptionMethod(): EncryptionMethod {
         prefs = requireContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val savedValue = prefs.getString(KEY_ENCRYPTION_METHOD, "ZIP_STANDARD") ?: "ZIP_STANDARD"
+        val savedValue = prefs.getString(KEY_ENCRYPTION_METHOD, "AES") ?: "AES"
         return try {
             EncryptionMethod.valueOf(savedValue)
         } catch (e: IllegalArgumentException) {
-            EncryptionMethod.ZIP_STANDARD // Default value if the saved string is not a valid enum constant
+            EncryptionMethod.AES // Default value if the saved string is not a valid enum constant
         }
     }
 
