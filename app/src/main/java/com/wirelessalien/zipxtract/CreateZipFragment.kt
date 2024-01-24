@@ -31,6 +31,7 @@ import android.provider.OpenableColumns
 import android.system.ErrnoException
 import android.system.OsConstants
 import android.text.InputType
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -58,6 +59,8 @@ import kotlinx.coroutines.withContext
 import net.lingala.zip4j.ZipFile
 import net.lingala.zip4j.exception.ZipException
 import net.lingala.zip4j.model.ZipParameters
+import net.lingala.zip4j.model.enums.AesKeyStrength
+import net.lingala.zip4j.model.enums.AesVersion
 import net.lingala.zip4j.model.enums.CompressionLevel
 import net.lingala.zip4j.model.enums.CompressionMethod
 import net.lingala.zip4j.model.enums.EncryptionMethod
@@ -607,6 +610,7 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
                             outArchive.setLevel(level)
                             outArchive.setSolid(solid)
                             outArchive.setThreadCount(thread)
+                            outArchive.setHeaderEncryption(true)
 
                             val fileToArchive = cacheFile!!
 
@@ -740,6 +744,8 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
                             outArchive.setLevel(level)
                             outArchive.setSolid(solid)
                             outArchive.setThreadCount(thread)
+                            outArchive.setHeaderEncryption(true)
+
 
                             outArchive.createArchive(RandomAccessFileOutStream(raf), filesToArchive.size,
                                 object : IOutCreateCallback<IOutItem7z>, ICryptoGetTextPassword,
@@ -872,6 +878,7 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
         val selectedCompressionMethod = getSavedCompressionMethod()
         val selectedCompressionLevel = getSavedCompressionLevel()
         val selectedEncryptionMethod = getSavedEncryptionMethod()
+        val selectedEncryptionStrength = getSavedEncryptionStrength()
 
         val alertDialogBuilder = MaterialAlertDialogBuilder(requireContext())
         alertDialogBuilder.setTitle(getString(R.string.enter_password))
@@ -909,7 +916,7 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
                 // User entered a password, proceed to create the password-protected zip
                 CoroutineScope(Dispatchers.Main).launch {
                     showProgressBar(true)
-                    createEncryptedZipMFiles(password, outputFileName, selectedCompressionMethod, selectedCompressionLevel, selectedEncryptionMethod)
+                    createEncryptedZipMFiles(password, outputFileName, selectedCompressionMethod, selectedCompressionLevel, selectedEncryptionMethod, selectedEncryptionStrength)
                     showProgressBar(false)
                 }
             } else {
@@ -951,6 +958,7 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
             zipParameters.compressionMethod = compressionMethod
             zipParameters.compressionLevel = compressionLevel
             zipParameters.isEncryptFiles = false
+            zipParameters.aesKeyStrength = AesKeyStrength.KEY_STRENGTH_192
 
             val tempZipFile = File.createTempFile("tempZip", ".zip")
             val zipFile = ZipFile(tempZipFile)
@@ -1026,7 +1034,7 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
         }
     }
 
-    private suspend fun createEncryptedZipMFiles(password: String, outputFileName: String, compressionMethod: CompressionMethod, compressionLevel: CompressionLevel, encryptionMethod: EncryptionMethod) {
+    private suspend fun createEncryptedZipMFiles(password: String, outputFileName: String, compressionMethod: CompressionMethod, compressionLevel: CompressionLevel, encryptionMethod: EncryptionMethod, encryptionStrength: AesKeyStrength) {
         withContext(Dispatchers.IO) {
 
             val zipParameters = ZipParameters()
@@ -1034,6 +1042,7 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
             zipParameters.compressionLevel = compressionLevel
             zipParameters.isEncryptFiles = true
             zipParameters.encryptionMethod = encryptionMethod
+            zipParameters.aesKeyStrength = encryptionStrength
 
             val tempZipFile = File.createTempFile("tempZip", ".zip")
             val zipFile = ZipFile(tempZipFile)
@@ -1119,6 +1128,7 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
             val selectedCompressionMethod = getSavedCompressionMethod()
             val selectedCompressionLevel = getSavedCompressionLevel()
             val selectedEncryptionMethod = getSavedEncryptionMethod()
+            val selectedEncryptionStrength = getSavedEncryptionStrength()
             val builder = MaterialAlertDialogBuilder(requireContext())
             builder.setTitle(getString(R.string.enter_password))
             val input = EditText(requireContext())
@@ -1142,6 +1152,7 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
                                 parameters.compressionMethod = selectedCompressionMethod
                                 parameters.compressionLevel = selectedCompressionLevel
                                 parameters.fileNameInZip = getZipFileName(selectedFileUri)
+                                parameters.aesKeyStrength = selectedEncryptionStrength
 
                                 val tempZipFile = File.createTempFile("tempZipP", ".zip")
 
@@ -1310,6 +1321,7 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
         val compressionMethodInput = view.findViewById<Spinner>(R.id.compression_method_input)
         val compressionLevelInput = view.findViewById<Spinner>(R.id.compression_level_input)
         val encryptionMethodInput = view.findViewById<Spinner>(R.id.encryption_method_input)
+        val encryptionStrengthInput = view.findViewById<Spinner>(R.id.encryption_strength_input)
 
         val compressionMethods = CompressionMethod.values().map { it.name }
         val compressionMethodAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, compressionMethods)
@@ -1338,6 +1350,15 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
         val defaultEncryptionMethodIndex = encryptionMethods.indexOf(savedEncryptionMethod.name)
         encryptionMethodInput.setSelection(if (defaultEncryptionMethodIndex != -1) defaultEncryptionMethodIndex else 0)
 
+        val encryptionStrengths = AesKeyStrength.values().map { it.name }
+        val encryptionStrengthAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, encryptionStrengths)
+        encryptionStrengthAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        encryptionStrengthInput.adapter = encryptionStrengthAdapter
+
+        val savedEncryptionStrength = getSavedEncryptionStrength()
+        val defaultEncryptionStrengthIndex = encryptionStrengths.indexOf(savedEncryptionStrength.name)
+        encryptionStrengthInput.setSelection(if (defaultEncryptionStrengthIndex != -1) defaultEncryptionStrengthIndex else 0)
+
         builder.setPositiveButton(getString(R.string.save)) { _, _ ->
             val selectedCompressionMethod =
                 CompressionMethod.valueOf(compressionMethods[compressionMethodInput.selectedItemPosition])
@@ -1345,9 +1366,12 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
                 CompressionLevel.valueOf(compressionLevels[compressionLevelInput.selectedItemPosition])
             val selectedEncryptionMethod =
                 EncryptionMethod.valueOf(encryptionMethods[encryptionMethodInput.selectedItemPosition])
+            val selectedEncryptionStrength =
+                AesKeyStrength.valueOf(encryptionStrengths[encryptionStrengthInput.selectedItemPosition])
             saveCompressionMethod(selectedCompressionMethod)
             saveCompressionLevel(selectedCompressionLevel)
             saveEncryptionMethod(selectedEncryptionMethod)
+            saveEncryptionStrength(selectedEncryptionStrength)
         }
 
         builder.show()
@@ -1366,6 +1390,11 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
     private fun saveEncryptionMethod(encryptionMethod: EncryptionMethod) {
         prefs = requireContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         prefs.edit().putString(KEY_ENCRYPTION_METHOD, encryptionMethod.name).apply()
+    }
+
+    private fun saveEncryptionStrength(encryptionStrength: AesKeyStrength) {
+        prefs = requireContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit().putString(KEY_ENCRYPTION_METHOD, encryptionStrength.name).apply()
     }
 
     private fun getSavedCompressionMethod(): CompressionMethod {
@@ -1395,6 +1424,16 @@ class CreateZipFragment : Fragment(),  FileAdapter.OnDeleteClickListener, FileAd
             EncryptionMethod.valueOf(savedValue)
         } catch (e: IllegalArgumentException) {
             EncryptionMethod.ZIP_STANDARD // Default value if the saved string is not a valid enum constant
+        }
+    }
+
+    private fun getSavedEncryptionStrength(): AesKeyStrength {
+        prefs = requireContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val savedValue = prefs.getString(KEY_ENCRYPTION_METHOD, "KEY_STRENGTH_256") ?: "KEY_STRENGTH_256"
+        return try {
+            AesKeyStrength.valueOf(savedValue)
+        } catch (e: IllegalArgumentException) {
+            AesKeyStrength.KEY_STRENGTH_256 // Default value if the saved string is not a valid enum constant
         }
     }
 
