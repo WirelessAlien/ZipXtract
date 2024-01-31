@@ -293,6 +293,36 @@ class ExtractFragment : Fragment() {
             }
         }
 
+        val intent = requireActivity().intent
+        if (intent.action == Intent.ACTION_SEND) {
+            val fileUri = intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
+            archiveFileUri = fileUri
+            binding.extractButton.isEnabled = true
+
+            // Display the file name from the intent
+            val fileName = getArchiveFileName(archiveFileUri)
+            val selectedFileText = getString(R.string.selected_file_text, fileName)
+            binding.fileNameTextView.text = selectedFileText
+            binding.fileNameTextView.isSelected = true
+
+        } else if (intent.action == Intent.ACTION_SEND_MULTIPLE) {
+            val fileUris = intent.getParcelableArrayListExtra<Uri>(Intent.EXTRA_STREAM)
+            fileUris?.forEach { fileUri ->
+                val file = File(requireActivity().cacheDir, getArchiveFileName(fileUri))
+                file.outputStream().use { outputStream ->
+                    requireActivity().contentResolver.openInputStream(fileUri)?.use { inputStream ->
+                        inputStream.copyTo(outputStream)
+                    }
+                }
+                tempFiles.add(file)
+            }
+
+            val selectedFilesText = getString(R.string.selected_files_text, tempFiles.size)
+            binding.fileNameTextView.text = selectedFilesText
+            binding.fileNameTextView.isSelected = true
+            binding.extractButton.isEnabled = true
+        }
+
         val savedDirectoryUri = sharedPreferences.getString("outputDirectoryUri", null)
         if (savedDirectoryUri != null) {
             outputDirectory = DocumentFile.fromTreeUri(requireContext(), Uri.parse(savedDirectoryUri))
@@ -313,18 +343,6 @@ class ExtractFragment : Fragment() {
         }
 
         requestPermissions()
-    }
-
-    override fun onDetach() {
-        super.onDetach()
-
-        val cacheDir = requireContext().cacheDir
-        if (cacheDir.isDirectory) {
-            val children: Array<String> = cacheDir.list()!!
-            for (i in children.indices) {
-                File(cacheDir, children[i]).deleteRecursively()
-            }
-        }
     }
 
     private val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
@@ -1156,19 +1174,32 @@ class ExtractFragment : Fragment() {
         override fun setCompleted(p0: Long) {
             CoroutineScope(Dispatchers.Main).launch {
                 binding.progressBar.progress = p0.toInt()
-                binding.progressTextView.text = "${p0.toInt() / 1024 / 1024} MB"
+                binding.progressTextView.text = formatFileSize(p0)
             }
         }
 
         override fun setTotal(p0: Long) {
             CoroutineScope(Dispatchers.Main).launch {
                 binding.progressBar.max = p0.toInt()
-                binding.progressTextView.text = "${p0.toInt() / 1024 / 1024} MB"
+                binding.progressTextView.text = formatFileSize(p0)
             }
         }
 
         override fun cryptoGetTextPassword(): String {
             return String(password ?: CharArray(0))
+        }
+    }
+
+    fun formatFileSize(bytes: Long): String {
+        val kilobyte = 1024
+        val megabyte = kilobyte * 1024
+        val gigabyte = megabyte * 1024
+
+        return when {
+            bytes < kilobyte -> "$bytes B"
+            bytes < megabyte -> String.format("%.2f KB", bytes.toFloat() / kilobyte)
+            bytes < gigabyte -> String.format("%.2f MB", bytes.toFloat() / megabyte)
+            else -> String.format("%.2f GB", bytes.toFloat() / gigabyte)
         }
     }
 
