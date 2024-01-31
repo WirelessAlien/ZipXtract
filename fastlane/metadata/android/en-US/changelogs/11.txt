@@ -1,0 +1,4 @@
+Added support for extraction of multi-volume RAR #24
+Added support for 7z compression
+Added localisation- Polish (pl), Traditional Chinese (zh-rTW) 
+Added method to save the crash log file to selected directory so that user can share with developer.
