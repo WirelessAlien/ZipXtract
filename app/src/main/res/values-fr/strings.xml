@@ -66,4 +66,11 @@
     <string name="enter_password">Entrez le mot de passe</string>
     <string name="extraction_failed">Échec de l\'extraction : %1$s</string>
     <string name="zip_creation_success">Fichier Zip créé avec succès</string>
+    <string name="sevenz_creation_success">Archive 7z créée avec succès</string>
+    <string name="sevenz_creation_failed">Erreur lors de la création de l\'archive 7z</string>
+    <string name="compress_sevenz">Compresser en 7z</string>
+    <string name="thread_count">Nombre de fils d\'exécution</string>
+    <string name="max_available_thread">0 pour le numbre maximum de fils disponible</string>
+    <string name="enter_name_of_archive_optional">Entrez le nom de l\'archive (facultatif)</string>
+    <string name="solid_compression">Compression compacte</string>
 </resources>
