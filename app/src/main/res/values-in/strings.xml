@@ -1,2 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <string name="extract_to">Ekstrak ke</string>
+    <string name="not_selected">Tidak ada yg dipilh</string>
+    <string name="selected_file_text">Berkas yg dipilih: %1$s</string>
+    <string name="directory_path">Folder yg dipilih: %1$s</string>
+    <string name="select">Pilih</string>
+    <string name="file">Berkas</string>
+    <string name="save_zip_to">Lokasi Zip</string>
+    <string name="no_directory_selected">Tidak ada direktori yg dipili</string>
+    <string name="create_zip">ZIP Kompresi</string>
+    <string name="files">Paket</string>
+    <string name="folder">Folder</string>
+    <string name="donate">Donasi</string>
+    <string name="liberapay">Liberapay</string>
+    <string name="solid_compression">Kompresi Padat</string>
+    <string name="max_available_thread">0 dari maks thread tersedia</string>
+    <string name="compress_sevenz">7z Kompresi</string>
+    <string name="extract">Ekstrak</string>
+    <string name="pick_file">Pilih Berkas</string>
+    <string name="enter_name_of_archive_optional">Isikan nama arsip (opsional)</string>
+    <string name="no_file_selected">Tidak ada berkas yg dipilih</string>
+    <string name="selected_files_text">Berkas yg dipilih: %1$d</string>
+    <string name="percent">%</string>
+    <string name="version">Versi:</string>
+</resources>
