@@ -1,0 +1,4 @@
+Added option to choose Aes strength (AES128, AES256) #25
+Changed default encryption to AES (zip) #25
+Added method to share file/files to the app (Folder cannot be shared) #26
+Bug fix: App is not responding during tar extraction #27
