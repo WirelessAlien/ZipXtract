@@ -40,7 +40,7 @@
     <string name="password">mot de passe</string>
     <string name="selected_file_cleared">Fichier sélectionné annulé</string>
     <string name="pick_file_extract">Veuillez choisir un fichier à extraire</string>
-    <string name="settings_info_text">La méthode AES est lente à encrypter les fichiers. Si votre appareil est plutôt bas de gamme, il est recommandé d\'utiliser la méthode par défaut (ZIP_STANDARD).</string>
+    <string name="settings_info_text">La méthode de cryptage par défaut pour les fichiers est AES, qui fournit un niveau élevé de sécurité. Cependant, sachez que le cryptage AES peut prendre du temps, en particulier sur les dispositifs bas de gamme. Pour les utilisateurs avec des appareils moins puissants, une alternative comme Zip_standard peut être utilisée. Cependant, veuillez noter que cette méthode n\'offre pas le même niveau de sécurité que les AES. Si la sécurité est votre principale préoccupation, nous vous recommandons fortement d\'utiliser AES malgré son temps de traitement plus long.</string>
     <string name="file_picked_success">Fichiier sélectionné avec succès</string>
     <string name="output_file_name">extrantZip.zip</string>
     <string name="select_output_directory">Veuillez choisir le dossier de sortie</string>
