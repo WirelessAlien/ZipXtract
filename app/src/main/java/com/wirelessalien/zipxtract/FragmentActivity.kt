@@ -19,9 +19,13 @@ package com.wirelessalien.zipxtract
 
 import android.net.Uri
 import android.os.Bundle
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.Fragment
+import androidx.navigation.NavController
+import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.wirelessalien.zipxtract.databinding.ActivityFragmentBinding
 import java.io.File
@@ -34,6 +38,7 @@ class FragmentActivity : AppCompatActivity() {
 
     private lateinit var bottomNav: BottomNavigationView
     private lateinit var binding: ActivityFragmentBinding
+    private lateinit var navController: NavController
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -71,23 +76,38 @@ class FragmentActivity : AppCompatActivity() {
         binding = ActivityFragmentBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        loadFragment(ExtractFragment())
+        val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
+        navController = navHostFragment.navController
+
         bottomNav = binding.bottomNavI
-        bottomNav.setOnItemSelectedListener {
-            when (it.itemId) {
+        bottomNav.setupWithNavController(navController)
+
+        bottomNav.setOnItemSelectedListener { item ->
+            when (item.itemId) {
                 R.id.home -> {
-                    loadFragment(ExtractFragment())
+                    navController.navigate(R.id.ExtractFragment)
                     true
                 }
                 R.id.zipCreate -> {
-                    loadFragment(CreateZipFragment())
+                    navController.navigate(R.id.CreateZipFragment)
                     true
                 }
-                else -> {
-                    false
+
+                else -> false
+            }
+        }
+
+        val callback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (navController.currentDestination?.id != R.id.ExtractFragment) {
+                    navController.navigate(R.id.ExtractFragment)
+                } else {
+                    finish()
                 }
             }
         }
+
+        onBackPressedDispatcher.addCallback(this, callback)
     }
 
     private fun getOutputDirectoryUriFromPreferences(): Uri? {
@@ -98,19 +118,5 @@ class FragmentActivity : AppCompatActivity() {
         } else {
             null
         }
-    }
-
-    private fun loadFragment(fragment: Fragment) {
-        val transaction = supportFragmentManager.beginTransaction()
-
-        transaction.setCustomAnimations(
-            R.anim.slide_in_from_right,
-            R.anim.slide_out_to_left,
-            R.anim.slide_in_from_left,
-            R.anim.slide_out_to_right
-        )
-
-        transaction.replace(R.id.container, fragment)
-        transaction.commit()
     }
 }

@@ -12,7 +12,7 @@
     <string name="directory_path">Ausgewählter Ordner: %1$s</string>
     <string name="selected_file_cleared">Ausgewählte Datei geleert</string>
     <string name="pick_file_extract">Bitte Datei zum Extrahieren auswählen</string>
-    <string name="settings_info_text">Das Verschlüsseln von Dateien mit der AES-Verschlüsselungsmethode ist zeitaufwändig. Wenn Sie ein Low-End-Gerät haben, wird empfohlen, die Standardmethode zu verwenden (ZIP_STANDARD).</string>
+    <string name="settings_info_text">Die Standardverschlüsselungsmethode für Dateien ist AES, die ein hohes Maß an Sicherheit bietet. Bitte beachten Sie jedoch, dass die AES-Verschlüsselung insbesondere auf Geräten der unteren Preisklasse zeitaufwändig sein kann.\n\nFür Benutzer mit weniger leistungsstarken Geräten kann eine Alternative wie ZIP_STANDARD verwendet werden. Bitte beachten Sie jedoch, dass diese Methode nicht das gleiche Sicherheitsniveau wie AES bietet.\n\nWenn Sicherheit Ihr Hauptanliegen ist, empfehlen wir trotz der längeren Verarbeitungszeit dringend die Verwendung von AES.</string>
     <string name="file_picked_success">Datei erfolgreich ausgewählt</string>
     <string name="selected_files_text">Ausgewählte Dateien: %1$d</string>
     <string name="folder">Verzeichnis</string>

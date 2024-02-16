@@ -14,7 +14,7 @@
     <string name="directory_path">Pasta Selecionada: %1$s</string>
     <string name="selected_file_cleared">Arquivo Selecionado Limpado</string>
     <string name="pick_file_extract">Por favor selecione um arquivo para extrair</string>
-    <string name="settings_info_text">Encriptar arquivos com a encriptação AES é demorado. Se você tem um dispositivo mais fraco, é recomendado usar a encriptação padrão (ZIP_STANDARD).</string>
+    <string name="settings_info_text">O método de criptografia padrão para arquivos é o AES, que oferece um alto nível de segurança. No entanto, esteja ciente de que a criptografia AES pode ser demorada, especialmente em dispositivos de baixo custo.\n\nPara usuários com dispositivos menos potentes, uma alternativa como ZIP_STANDARD pode ser usada. No entanto, observe que esse método não oferece o mesmo nível de segurança que o AES.\n\nSe a segurança for sua principal preocupação, recomendamos enfaticamente o uso do AES, apesar de seu tempo de processamento mais longo.</string>
     <string name="file_picked_success">Arquivo Selecionado com Sucesso</string>
     <string name="selected_files_text">Arquivos Selecionados: %1$d</string>
     <string name="folder">Pasta</string>

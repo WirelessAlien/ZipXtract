@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="file_picked_success">Pomyślnie wybrano plik</string>
-    <string name="settings_info_text">Szyfrowanie plików metodą AES jest czasochłonne. Jeżeli korzystasz z niższej klasy urządzenia, zalecane jest używanie domyślnej metody (ZIP_STANDARD).</string>
+    <string name="settings_info_text">Domyślną metodą szyfrowania plików jest AES, który zapewnia wysoki poziom bezpieczeństwa. Należy jednak pamiętać, że szyfrowanie AES może być czasochłonne, szczególnie na urządzeniach z niższej półki.\n\nW przypadku użytkowników ze słabszymi urządzeniami można zastosować alternatywę, taką jak ZIP_STANDARD. Należy jednak pamiętać, że ta metoda nie zapewnia tego samego poziomu bezpieczeństwa co AES.\n\nJeśli bezpieczeństwo jest dla Ciebie najważniejsze, zdecydowanie zalecamy użycie AES pomimo dłuższego czasu przetwarzania.</string>
     <string name="extract">Wypakuj</string>
     <string name="extract_to">Wypakuj do</string>
     <string name="directory_path">Wybrany folder: %1$s</string>

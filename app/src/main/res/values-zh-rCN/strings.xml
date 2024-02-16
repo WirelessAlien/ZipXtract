@@ -12,7 +12,7 @@
     <string name="directory_path">已选目录: %1$s</string>
     <string name="selected_file_cleared">文件选择已清空</string>
     <string name="pick_file_extract">请选择要提取的文件</string>
-    <string name="settings_info_text">以AES方式加密文件很耗时。如果你用的是低端设备，我们建议使用默认方式（ZIP_STANDARD）。</string>
+    <string name="settings_info_text">文件的默认加密方法是 AES，它提供了高级别的安全性。 但是，请注意，AES 加密可能非常耗时，尤其是在低端设备上。\n\n对于设备功能较弱的用户，可以使用 ZIP_STANDARD 等替代方案。 但是，请注意，此方法无法提供与 AES 相同级别的安全性。\n\n如果安全性是您最关心的问题，我们强烈建议使用 AES，尽管其处理时间较长。</string>
     <string name="file_picked_success">文件选取成功</string>
     <string name="selected_files_text">已选择文件: %1$d</string>
     <string name="folder">文件夹</string>

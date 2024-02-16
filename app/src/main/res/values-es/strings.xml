@@ -40,7 +40,7 @@
     <string name="password">contraseña</string>
     <string name="selected_file_cleared">Archivo seleccionado borrado</string>
     <string name="pick_file_extract">Por favor, elija un archivo para extraer</string>
-    <string name="settings_info_text">Cifrar archivos con el método de cifrado AES lleva mucho tiempo. Si tienes un dispositivo de gama baja, se recomienda utilizar el método por defecto (ZIP_STANDARD).</string>
+    <string name="settings_info_text">El método de cifrado predeterminado para archivos es AES, que proporciona un alto nivel de seguridad. Sin embargo, tenga en cuenta que el cifrado AES puede llevar mucho tiempo, especialmente en dispositivos de gama baja.\n\nPara usuarios con dispositivos menos potentes, se puede utilizar una alternativa como ZIP_STANDARD. Sin embargo, tenga en cuenta que este método no ofrece el mismo nivel de seguridad que AES.\n\nSi la seguridad es su principal preocupación, le recomendamos encarecidamente utilizar AES a pesar de su mayor tiempo de procesamiento.</string>
     <string name="file_picked_success">Fichero seleccionado con éxito</string>
     <string name="output_file_name">outputZip.zip</string>
     <string name="select_output_directory">Por favor, seleccione la ruta de salida</string>

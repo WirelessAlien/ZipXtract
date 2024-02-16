@@ -60,6 +60,10 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0"
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.4.0"
 
+    //AndroidX Navigation
+    implementation 'androidx.navigation:navigation-fragment-ktx:2.4.0'
+    implementation 'androidx.navigation:navigation-ui-ktx:2.4.0'
+
     //apache commons compress
     implementation 'org.apache.commons:commons-compress:1.24.0'
     implementation 'org.tukaani:xz:1.9'

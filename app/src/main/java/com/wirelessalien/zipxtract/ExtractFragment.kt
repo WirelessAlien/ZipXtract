@@ -40,6 +40,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.transition.TransitionInflater
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.wirelessalien.zipxtract.databinding.FragmentExtractBinding
@@ -192,6 +193,9 @@ class ExtractFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        val inflater = TransitionInflater.from(requireContext())
+        exitTransition = inflater.inflateTransition(R.transition.slide_right)
 
         sharedPreferences = requireActivity().getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
         binding.progressBar.visibility = View.GONE
@@ -646,104 +650,115 @@ class ExtractFragment : Fragment() {
         }
     }
 
-    private fun extractTar(bufferedInputStream: BufferedInputStream, outputDirectory: DocumentFile?) {
+   private fun extractTar(bufferedInputStream: BufferedInputStream, outputDirectory: DocumentFile?) {
+       toggleExtractButtonEnabled(false)
 
-        toggleExtractButtonEnabled(false)
+       CoroutineScope(Dispatchers.IO).launch {
+           val tarInputStream = TarArchiveInputStream(bufferedInputStream)
 
-        val tarInputStream = TarArchiveInputStream(bufferedInputStream)
+           var entry = tarInputStream.nextTarEntry
+           while (entry != null) {
+               val outputFile = outputDirectory?.createFile("application/octet-stream", entry.name)
+               if (entry.isDirectory) {
+                   outputFile!!.createDirectory("UnTar")
+               } else {
+                   outputFile?.uri?.let { uri ->
+                       requireActivity().contentResolver.openOutputStream(uri)
+                           ?.use { outputStream ->
+                               val buffer = ByteArray(1024)
+                               var count: Int
+                               try {
+                                   while (tarInputStream.read(buffer).also { count = it } != -1) {
+                                       outputStream.write(buffer, 0, count)
+                                   }
+                               } catch (e: Exception) {
+                                   withContext(Dispatchers.Main) {
+                                       showToast("${getString(R.string.extraction_failed)} ${e.message}")
+                                       tarInputStream.close()
+                                       toggleExtractButtonEnabled(true)
+                                   }
+                                   return@launch
+                               }
+                           }
+                   }
+               }
+               entry = tarInputStream.nextTarEntry
+           }
 
-        var entry = tarInputStream.nextTarEntry
-        while (entry != null) {
-            val outputFile = outputDirectory?.createFile("application/octet-stream", entry.name)
-            if (entry.isDirectory) {
-                outputFile!!.createDirectory("UnTar")
-            } else {
-                outputFile?.uri?.let { uri ->
-                    requireActivity().contentResolver.openOutputStream(uri)?.use { outputStream ->
-                        val buffer = ByteArray(1024)
-                        var count: Int
-                        try {
-                            while (tarInputStream.read(buffer).also { count = it } != -1) {
-                                outputStream.write(buffer, 0, count)
-                            }
-                        } catch (e: Exception) {
-                            showToast("${getString(R.string.extraction_failed)} ${e.message}")
-                            tarInputStream.close()
-                            toggleExtractButtonEnabled(true)
-                            return
-                        }
-                    }
-                }
-            }
-            entry = tarInputStream.nextTarEntry
-        }
+           tarInputStream.close()
+           withContext(Dispatchers.Main) {
+               showExtractionCompletedSnackbar(outputDirectory)
+               toggleExtractButtonEnabled(true)
+           }
+       }
+   }
 
-        tarInputStream.close()
-        showExtractionCompletedSnackbar(outputDirectory)
+   private fun extractBzip2(bufferedInputStream: BufferedInputStream, outputDirectory: DocumentFile?) {
+       toggleExtractButtonEnabled(false)
 
-        toggleExtractButtonEnabled(true)
-    }
+       CoroutineScope(Dispatchers.IO).launch {
+           val bzip2InputStream = BZip2CompressorInputStream(bufferedInputStream)
+           val outputFile = outputDirectory?.createFile("application/octet-stream", "output")
 
-    private fun extractBzip2(bufferedInputStream: BufferedInputStream, outputDirectory: DocumentFile?) {
+           outputFile?.uri?.let { uri ->
+               requireActivity().contentResolver.openOutputStream(uri)?.use { outputStream ->
+                   val buffer = ByteArray(1024)
+                   var count: Int
+                   try {
+                       while (bzip2InputStream.read(buffer).also { count = it } != -1) {
+                           outputStream.write(buffer, 0, count)
+                       }
+                   } catch (e: Exception) {
+                       withContext(Dispatchers.Main) {
+                           showToast("${getString(R.string.extraction_failed)} ${e.message}")
+                           bzip2InputStream.close()
+                           toggleExtractButtonEnabled(true)
+                       }
+                       return@launch
+                   }
+               }
+           }
 
-        toggleExtractButtonEnabled(false)
-
-        val bzip2InputStream = BZip2CompressorInputStream(bufferedInputStream)
-
-        val outputFile = outputDirectory?.createFile("application/octet-stream", "output")
-
-        outputFile?.uri?.let { uri ->
-            requireActivity().contentResolver.openOutputStream(uri)?.use { outputStream ->
-                val buffer = ByteArray(1024)
-                var count: Int
-                try {
-                    while (bzip2InputStream.read(buffer).also { count = it } != -1) {
-                        outputStream.write(buffer, 0, count)
-                    }
-                } catch (e: Exception) {
-                    showToast("${getString(R.string.extraction_failed)} ${e.message}")
-                    bzip2InputStream.close()
-                    toggleExtractButtonEnabled(true)
-                    return
-                }
-            }
-        }
-
-        bzip2InputStream.close()
-        showExtractionCompletedSnackbar(outputDirectory)
-
-        toggleExtractButtonEnabled(true)
-    }
+           bzip2InputStream.close()
+           withContext(Dispatchers.Main) {
+               showExtractionCompletedSnackbar(outputDirectory)
+               toggleExtractButtonEnabled(true)
+           }
+       }
+   }
 
     private fun extractGzip(bufferedInputStream: BufferedInputStream, outputDirectory: DocumentFile?) {
-
         toggleExtractButtonEnabled(false)
 
-        val gzipInputStream = GzipCompressorInputStream(bufferedInputStream)
+        CoroutineScope(Dispatchers.IO).launch {
+            val gzipInputStream = GzipCompressorInputStream(bufferedInputStream)
+            val outputFile = outputDirectory?.createFile("application/octet-stream", "output")
 
-        val outputFile = outputDirectory?.createFile("application/octet-stream", "output")
-
-        outputFile?.uri?.let { uri ->
-            requireActivity().contentResolver.openOutputStream(uri)?.use { outputStream ->
-                val buffer = ByteArray(1024)
-                var count: Int
-                try {
-                    while (gzipInputStream.read(buffer).also { count = it } != -1) {
-                        outputStream.write(buffer, 0, count)
+            outputFile?.uri?.let { uri ->
+                requireActivity().contentResolver.openOutputStream(uri)?.use { outputStream ->
+                    val buffer = ByteArray(1024)
+                    var count: Int
+                    try {
+                        while (gzipInputStream.read(buffer).also { count = it } != -1) {
+                            outputStream.write(buffer, 0, count)
+                        }
+                    } catch (e: Exception) {
+                        withContext(Dispatchers.Main) {
+                            showToast("${getString(R.string.extraction_failed)} ${e.message}")
+                            gzipInputStream.close()
+                            toggleExtractButtonEnabled(true)
+                        }
+                        return@launch
                     }
-                } catch (e: Exception) {
-                    showToast("${getString(R.string.extraction_failed)} ${e.message}")
-                    gzipInputStream.close()
-                    toggleExtractButtonEnabled(true)
-                    return
                 }
             }
+
+            gzipInputStream.close()
+            withContext(Dispatchers.Main) {
+                showExtractionCompletedSnackbar(outputDirectory)
+                toggleExtractButtonEnabled(true)
+            }
         }
-
-        gzipInputStream.close()
-        showExtractionCompletedSnackbar(outputDirectory)
-
-        toggleExtractButtonEnabled(true)
     }
 
     private suspend fun createTemp7zFileInBackground(bufferedInputStream: BufferedInputStream): File = withContext(Dispatchers.IO) {
@@ -864,108 +879,109 @@ class ExtractFragment : Fragment() {
     }
 
     private fun extractXz(bufferedInputStream: BufferedInputStream, outputDirectory: DocumentFile?) {
-
         toggleExtractButtonEnabled(false)
 
-        val xzInputStream = XZCompressorInputStream(bufferedInputStream)
+        CoroutineScope(Dispatchers.IO).launch {
+            val xzInputStream = XZCompressorInputStream(bufferedInputStream)
+            val outputFile = outputDirectory?.createFile("application/octet-stream", "output")
 
-        val outputFile = outputDirectory?.createFile("application/octet-stream", "output")
-
-        outputFile?.uri?.let { uri ->
-            requireActivity().contentResolver.openOutputStream(uri)?.use { outputStream ->
-                val buffer = ByteArray(1024)
-                var count: Int
-                try {
-                    while (xzInputStream.read(buffer).also { count = it } != -1) {
-                        outputStream.write(buffer, 0, count)
+            outputFile?.uri?.let { uri ->
+                requireActivity().contentResolver.openOutputStream(uri)?.use { outputStream ->
+                    val buffer = ByteArray(1024)
+                    var count: Int
+                    try {
+                        while (xzInputStream.read(buffer).also { count = it } != -1) {
+                            outputStream.write(buffer, 0, count)
+                        }
+                    } catch (e: Exception) {
+                        withContext(Dispatchers.Main) {
+                            showToast("${getString(R.string.extraction_failed)} ${e.message}")
+                            xzInputStream.close()
+                            toggleExtractButtonEnabled(true)
+                        }
+                        return@launch
                     }
-                } catch (e: Exception) {
-                    showToast("${getString(R.string.extraction_failed)} ${e.message}")
-                    xzInputStream.close()
-
-                    toggleExtractButtonEnabled(true)
-                    return
                 }
             }
+
+            xzInputStream.close()
+            withContext(Dispatchers.Main) {
+                showExtractionCompletedSnackbar(outputDirectory)
+                toggleExtractButtonEnabled(true)
+            }
         }
-
-        xzInputStream.close()
-        showExtractionCompletedSnackbar(outputDirectory)
-
-        toggleExtractButtonEnabled(true)
     }
 
     private fun extractJar(bufferedInputStream: BufferedInputStream, outputDirectory: DocumentFile?) {
+        CoroutineScope(Dispatchers.IO).launch {
+            val jarInputStream = JarInputStream(bufferedInputStream)
+            var entry = jarInputStream.nextEntry
 
-        toggleExtractButtonEnabled(false)
-
-        val jarInputStream = JarInputStream(bufferedInputStream)
-        var entry = jarInputStream.nextEntry
-
-        while (entry != null) {
-            val outputFile = outputDirectory?.createFile("application/octet-stream", entry.name)
-            if (entry.isDirectory) {
-                outputFile?.createDirectory("Unjar")
-            } else {
-                outputFile?.uri?.let { uri ->
-                    requireActivity().contentResolver.openOutputStream(uri)?.use { outputStream ->
-                        val buffer = ByteArray(1024)
-                        var count: Int
-                        try {
-                            while (jarInputStream.read(buffer).also { count = it } != -1) {
-                                outputStream.write(buffer, 0, count)
+            while (entry != null) {
+                val outputFile = outputDirectory?.createFile("application/octet-stream", entry.name)
+                if (entry.isDirectory) {
+                    outputFile?.createDirectory("Unjar")
+                } else {
+                    outputFile?.uri?.let { uri ->
+                        requireActivity().contentResolver.openOutputStream(uri)?.use { outputStream ->
+                            val buffer = ByteArray(1024)
+                            var count: Int
+                            try {
+                                while (jarInputStream.read(buffer).also { count = it } != -1) {
+                                    outputStream.write(buffer, 0, count)
+                                }
+                            } catch (e: Exception) {
+                                withContext(Dispatchers.Main) {
+                                    showToast("${getString(R.string.extraction_failed)} ${e.message}")
+                                    toggleExtractButtonEnabled(true)
+                                }
+                                return@launch
                             }
-                        } catch (e: Exception) {
-                            showToast("${getString(R.string.extraction_failed)} ${e.message}")
-                            jarInputStream.close()
-
-                            toggleExtractButtonEnabled(true)
-                            return
                         }
                     }
                 }
+                entry = jarInputStream.nextEntry
             }
-            entry = jarInputStream.nextEntry
+
+            jarInputStream.close()
+            withContext(Dispatchers.Main) {
+                showExtractionCompletedSnackbar(outputDirectory)
+                toggleExtractButtonEnabled(true)
+            }
         }
-
-        jarInputStream.close()
-        showExtractionCompletedSnackbar(outputDirectory)
-
-        toggleExtractButtonEnabled(true)
     }
 
     private fun extractZ(bufferedInputStream: BufferedInputStream, outputDirectory: DocumentFile?) {
+        CoroutineScope(Dispatchers.IO).launch {
+            val zInputStream = ZCompressorInputStream(bufferedInputStream)
 
-        toggleExtractButtonEnabled(false)
+            val outputFile = outputDirectory?.createFile("application/octet-stream", "output")
 
-        val zInputStream = ZCompressorInputStream(bufferedInputStream)
-
-        val outputFile = outputDirectory?.createFile("application/octet-stream", "output")
-
-        outputFile?.uri?.let { uri ->
-            requireActivity().contentResolver.openOutputStream(uri)?.use { outputStream ->
-                val buffer = ByteArray(1024)
-                var count: Int
-                try {
-                    while (zInputStream.read(buffer).also { count = it } != -1) {
-                        outputStream.write(buffer, 0, count)
+            outputFile?.uri?.let { uri ->
+                requireActivity().contentResolver.openOutputStream(uri)?.use { outputStream ->
+                    val buffer = ByteArray(1024)
+                    var count: Int
+                    try {
+                        while (zInputStream.read(buffer).also { count = it } != -1) {
+                            outputStream.write(buffer, 0, count)
+                        }
+                    } catch (e: Exception) {
+                        withContext(Dispatchers.Main) {
+                            showToast("${getString(R.string.extraction_failed)} ${e.message}")
+                            toggleExtractButtonEnabled(true)
+                        }
+                        return@launch
                     }
-                } catch (e: Exception) {
-                    showToast("${getString(R.string.extraction_failed)} ${e.message}")
-                    zInputStream.close()
-
-                    toggleExtractButtonEnabled(true)
-                    return
                 }
             }
+
+            zInputStream.close()
+            withContext(Dispatchers.Main) {
+                showExtractionCompletedSnackbar(outputDirectory)
+                toggleExtractButtonEnabled(true)
+            }
         }
-
-        zInputStream.close()
-        showExtractionCompletedSnackbar(outputDirectory)
-
-        toggleExtractButtonEnabled(true)
     }
-
 
     private fun showPasswordInputDialogRar(onPasswordEntered: (String?) -> Unit) {
         val passwordEditText = EditText(requireContext())
