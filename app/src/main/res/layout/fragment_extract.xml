@@ -198,6 +198,16 @@
                         android:layout_centerHorizontal="true"
                         app:indicatorColor="#00B8D4"/>
 
+                    <ProgressBar
+                        android:id="@+id/progressBarIdt"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_centerHorizontal="true"
+                        style="@style/Widget.Material3.LinearProgressIndicator"
+                        android:indeterminate="true"
+                        android:visibility="gone"
+                        app:indicatorColor="#00B8D4" />
+
                     <TextView
                         android:id="@+id/progressTextView"
                         android:layout_width="wrap_content"
