@@ -158,24 +158,20 @@
                     android:id="@+id/progressLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_alignBottom="@id/extractButton"
-                    android:layout_centerHorizontal="true"
-                    android:layout_marginBottom="-50dp">
+                    android:layout_below="@id/extractButton"
+                    android:layout_centerHorizontal="true">
 
-                    <ProgressBar
+                    <com.google.android.material.progressindicator.LinearProgressIndicator
                         android:id="@+id/progressBar"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_centerHorizontal="true"
-                        style="@style/Widget.Material3.LinearProgressIndicator"
-                        app:indicatorColor="#00B8D4"/>
+                        app:indicatorColor="#00B8D4"
+                        android:visibility="gone"/>
 
-                    <ProgressBar
+                    <com.google.android.material.progressindicator.LinearProgressIndicator
                         android:id="@+id/progressBarIdt"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_centerHorizontal="true"
-                        style="@style/Widget.Material3.LinearProgressIndicator"
                         android:indeterminate="true"
                         android:visibility="gone"
                         app:indicatorColor="#00B8D4" />
