@@ -56,21 +56,24 @@
                     android:textStyle="bold"
                     android:layout_centerHorizontal="true"/>
 
-                <RelativeLayout
-                    android:id="@+id/relativeLayout1"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@id/appName"
-                    android:layout_marginBottom="10dp">
 
-                    <TextView
+
+                <RelativeLayout
+                    android:id="@+id/relativeLayout"
+                    android:layout_width="match_parent"
+                    android:layout_marginTop="20dp"
+                    android:layout_below="@id/appName"
+                    android:layout_height="wrap_content">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/pickFileButton"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_centerVertical="true"
-                        android:layout_marginStart="10dp"
-                        android:text="@string/select"
-                        android:textSize="20sp"
-                        android:textStyle="bold" />
+                        android:layout_centerHorizontal="true"
+                        android:text="@string/pick_file"
+                        app:cornerRadius="10dp"
+                        app:icon="@drawable/ic_copy_file" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/clear_cache_btnPF"
@@ -79,41 +82,9 @@
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
                         android:layout_centerVertical="true"
-                        android:layout_margin="5dp"
                         app:icon="@drawable/ic_cache_delete" />
+
                 </RelativeLayout>
-
-                <LinearLayout
-                    android:id="@+id/relativeLayout"
-                    android:layout_width="match_parent"
-                    android:gravity="center_horizontal"
-                    android:layout_margin="10dp"
-                    android:layout_below="@id/relativeLayout1"
-                    android:layout_height="wrap_content">
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/pickFileButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="5dp"
-                        android:text="@string/file"
-                        app:cornerRadius="10dp"
-                        style="@style/Widget.Material3.Button.OutlinedButton"
-                        android:layout_weight="1"
-                        app:icon="@drawable/ic_copy_file" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/pickMFilesButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="5dp"
-                        style="@style/Widget.Material3.Button.OutlinedButton"
-                        app:icon="@drawable/ic_files_copy"
-                        android:text="@string/files"
-                        android:layout_weight="1"
-                        app:cornerRadius="10dp" />
-
-                </LinearLayout>
 
                 <TextView
                     android:id="@+id/fileNameTextView"
@@ -191,11 +162,12 @@
                     android:layout_centerHorizontal="true"
                     android:layout_marginBottom="-50dp">
 
-                    <com.google.android.material.progressindicator.LinearProgressIndicator
+                    <ProgressBar
                         android:id="@+id/progressBar"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_centerHorizontal="true"
+                        style="@style/Widget.Material3.LinearProgressIndicator"
                         app:indicatorColor="#00B8D4"/>
 
                     <ProgressBar

@@ -28,8 +28,6 @@ import android.os.Bundle
 import android.provider.DocumentsContract
 import android.provider.OpenableColumns
 import android.provider.Settings
-import android.system.ErrnoException
-import android.system.OsConstants
 import android.text.InputType
 import android.view.LayoutInflater
 import android.view.View
@@ -50,19 +48,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.lingala.zip4j.ZipFile
 import net.lingala.zip4j.exception.ZipException
-import net.sf.sevenzipjbinding.ArchiveFormat
-import net.sf.sevenzipjbinding.ExtractAskMode
-import net.sf.sevenzipjbinding.ExtractOperationResult
-import net.sf.sevenzipjbinding.IArchiveExtractCallback
-import net.sf.sevenzipjbinding.IArchiveOpenCallback
-import net.sf.sevenzipjbinding.ICryptoGetTextPassword
-import net.sf.sevenzipjbinding.IInArchive
-import net.sf.sevenzipjbinding.IInStream
-import net.sf.sevenzipjbinding.ISequentialOutStream
-import net.sf.sevenzipjbinding.PropID
-import net.sf.sevenzipjbinding.SevenZip
-import net.sf.sevenzipjbinding.SevenZipException
-import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream
 import org.apache.commons.compress.archivers.sevenz.SevenZArchiveEntry
 import org.apache.commons.compress.archivers.sevenz.SevenZFile
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
@@ -73,12 +58,8 @@ import org.apache.commons.compress.compressors.z.ZCompressorInputStream
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
 import java.io.File
-import java.io.FileInputStream
 import java.io.FileOutputStream
-import java.io.IOException
 import java.io.InputStream
-import java.io.OutputStream
-import java.io.RandomAccessFile
 import java.util.jar.JarInputStream
 
 
@@ -88,8 +69,6 @@ class ExtractFragment : Fragment() {
     private var archiveFileUri: Uri? = null
     private var outputDirectory: DocumentFile? = null
     private lateinit var sharedPreferences: SharedPreferences
-    private var archiveFormat: ArchiveFormat? = null
-    private var password: CharArray? = null
     private val tempFiles = mutableListOf<File>()
 
     private val pickFileLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -110,55 +89,6 @@ class ExtractFragment : Fragment() {
         }
     }
 
-    private val pickFilesLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            if (result.data != null) {
-                val clipData = result.data!!.clipData
-
-                if (clipData != null) {
-                    tempFiles.clear()
-
-                    binding.circularProgressBar.visibility = View.VISIBLE
-
-                    lifecycleScope.launch(Dispatchers.IO) {
-                        for (i in 0 until clipData.itemCount) {
-                            val filesUri = clipData.getItemAt(i).uri
-
-                            val cursor = requireContext().contentResolver.query(filesUri, null, null, null, null)
-                            if (cursor != null && cursor.moveToFirst()) {
-                                val displayNameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-                                val displayName = cursor.getString(displayNameIndex)
-                                val tempFile = File(requireContext().cacheDir, displayName)
-
-                                // Copy the content from the selected file URI to a temporary file
-                                requireContext().contentResolver.openInputStream(filesUri)?.use { input ->
-                                    tempFile.outputStream().use { output ->
-                                        input.copyTo(output)
-                                    }
-                                }
-
-                                tempFiles.add(tempFile)
-
-                                // show picked files name
-                                val selectedFilesText = getString(R.string.selected_files_text, tempFiles.size)
-                                withContext(Dispatchers.Main) {
-                                    binding.fileNameTextView.text = selectedFilesText
-                                    binding.fileNameTextView.isSelected = true
-                                }
-
-                                cursor.close()
-                            }
-                        }
-
-                        withContext(Dispatchers.Main) {
-                            binding.circularProgressBar.visibility = View.GONE
-                            binding.extractButton.isEnabled = true
-                        }
-                    }
-                }
-            }
-        }
-    }
 
     private val directoryPicker = registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
         uri?.let {
@@ -217,36 +147,12 @@ class ExtractFragment : Fragment() {
             }
         }
 
-        binding.pickMFilesButton.setOnClickListener {
-            val intent = Intent(Intent.ACTION_GET_CONTENT)
-            intent.type = "*/*"
-            intent.addCategory(Intent.CATEGORY_OPENABLE)
-            intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
-
-            pickFilesLauncher.launch(intent)
-
-            val cacheDir = requireContext().cacheDir
-            if (cacheDir.isDirectory) {
-                val children: Array<String> = cacheDir.list()!!
-                for (i in children.indices) {
-                    File(cacheDir, children[i]).deleteRecursively()
-                }
-            }
-        }
-
         binding.extractButton.setOnClickListener {
-            when {
-                archiveFileUri != null -> {
-                    binding.progressBar.visibility = View.VISIBLE
-                    extractArchiveFile(archiveFileUri!!)
-                }
-
-                tempFiles.isNotEmpty() -> {
-                    extractMultiPartRar(archiveFormat)
-
-                }else -> {
-                    showToast(getString(R.string.pick_file_extract))
-                }
+            if (archiveFileUri != null) {
+                binding.progressBar.visibility = View.VISIBLE
+                extractArchiveFile(archiveFileUri!!)
+            } else {
+                showToast(getString(R.string.no_file_selected))
             }
         }
 
@@ -428,92 +334,11 @@ class ExtractFragment : Fragment() {
                 "xz" -> extractXz(bufferedInputStream, outputDirectory)
                 "jar" -> extractJar(bufferedInputStream, outputDirectory)
                 "z" -> extractZ(bufferedInputStream, outputDirectory)
-                "rar" -> extractRar(archiveFormat, archiveFileUri)
                 else -> showToast("Unsupported archive format")
             }
         }
     }
 
-    private fun extractMultiPartRar(archiveFormat: ArchiveFormat?) {
-        showPasswordInputDialogRar { password ->
-            this.password = password?.toCharArray()
-
-            if (tempFiles.isNotEmpty()) {
-                CoroutineScope(Dispatchers.IO).launch {
-                    try {
-                        withContext(Dispatchers.Main) {
-                            binding.progressBar.visibility = View.VISIBLE
-                            toggleExtractButtonEnabled(false)
-                        }
-
-                        for (tempFile in tempFiles) {
-                            val archiveOpenVolumeCallback = ArchiveOpenMultipartCallback()
-                            val inStream: IInStream? = archiveOpenVolumeCallback.getStream(tempFile.absolutePath)
-                            if (inStream != null) {
-                                val inArchive: IInArchive = SevenZip.openInArchive(
-                                    archiveFormat,
-                                    inStream,
-                                    archiveOpenVolumeCallback
-                                )
-
-                                try {
-                                    val itemCount = inArchive.numberOfItems
-                                    for (i in 0 until itemCount) {
-                                        val path = inArchive.getProperty(i, PropID.PATH) as String
-                                        val cacheDir = requireActivity().cacheDir
-                                        val newFileName =
-                                            tempFile.name.substring(
-                                                0,
-                                                tempFile.name.lastIndexOf('.')
-                                            )
-                                        val cacheDstDir = File(cacheDir, newFileName)
-
-                                        cacheDstDir.mkdir()
-
-                                        inArchive.extract(
-                                            intArrayOf(i),
-                                            false,
-                                            ExtractCallback(inArchive, cacheDstDir)
-                                        )
-                                    }
-                                } catch (e: SevenZipException) {
-                                    e.printStackTrace()
-                                    withContext(Dispatchers.Main) {
-                                        binding.progressBar.visibility = View.GONE
-                                        showToast("${getString(R.string.extraction_failed)} ${e.message}")
-                                        binding.progressTextView.visibility = View.GONE
-                                        toggleExtractButtonEnabled(true)
-                                    }
-                                } finally {
-                                    inArchive.close()
-                                    archiveOpenVolumeCallback.close()
-                                    saveCacheFile(tempFile)
-                                    withContext(Dispatchers.Main) {
-                                        binding.progressBar.visibility = View.GONE
-                                        binding.progressTextView.visibility = View.GONE
-                                        toggleExtractButtonEnabled(true)
-                                    }
-                                }
-                            }
-                        }
-                    } catch (e: IOException) {
-                        if (isNoStorageSpaceException(e)) {
-                            withContext(Dispatchers.Main) {
-                                binding.progressBar.visibility = View.GONE
-                                showToast("No storage available")
-                            }
-                        } else {
-                            showToast("${getString(R.string.extraction_failed)} ${e.message}")
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private fun isNoStorageSpaceException(e: IOException): Boolean {
-        return e.message?.contains("ENOSPC") == true || e.cause is ErrnoException && (e.cause as ErrnoException).errno == OsConstants.ENOSPC
-    }
 
     private fun extractPasswordProtectedZipOrRegularZip(bufferedInputStream: BufferedInputStream, outputDirectory: DocumentFile?) {
 
@@ -1018,241 +843,6 @@ class ExtractFragment : Fragment() {
         }
     }
 
-    private fun showPasswordInputDialogRar(onPasswordEntered: (String?) -> Unit) {
-        val passwordEditText = EditText(requireContext())
-        passwordEditText.hint = getString(R.string.enter_password)
-
-        MaterialAlertDialogBuilder(requireContext())
-            .setTitle(getString(R.string.enter_password))
-            .setView(passwordEditText)
-            .setPositiveButton(getString(R.string.ok)) { _, _ ->
-                val password = passwordEditText.text.toString()
-                onPasswordEntered.invoke(password.ifBlank { null })
-            }
-            .setNegativeButton(getString(R.string.no_password)) { _, _ ->
-                onPasswordEntered.invoke(null)
-            }
-            .show()
-    }
-
-    //Thanks for the sample code
-    //https://github.com/omicronapps/7-Zip-JBinding-4Android/issues/5#issuecomment-744128480
-    private fun extractRar(archiveFormat: ArchiveFormat?, archiveFileUri: Uri) {
-        showPasswordInputDialogRar { password ->
-            this.password = password?.toCharArray()
-
-            CoroutineScope(Dispatchers.IO).launch {
-                try {
-                    withContext(Dispatchers.Main) {
-
-                        binding.progressBar.visibility = View.VISIBLE
-                        toggleExtractButtonEnabled(false)
-                    }
-
-                    val inputStream = context?.contentResolver?.openInputStream(archiveFileUri)
-                    val cacheDir = requireActivity().cacheDir
-
-                    inputStream?.use { input ->
-                        val originalFileName = getArchiveFileName(archiveFileUri)
-                        val tempRarFile = File(cacheDir, originalFileName)
-
-                        tempRarFile.outputStream().use { output ->
-                            input.copyTo(output)
-                        }
-
-                        val inStream = RandomAccessFileInStream(RandomAccessFile(tempRarFile, "r"))
-                        val cacheDirr = requireActivity().cacheDir
-                        val newFileName = tempRarFile.name.substring(0, tempRarFile.name.lastIndexOf('.'))
-
-                        try {
-                            val inArchive = SevenZip.openInArchive(archiveFormat, inStream, OpenCallback())
-                            val cacheDstDir = File(cacheDirr, newFileName)
-                            cacheDstDir.mkdir()
-                            try {
-                                inArchive.extract(null,
-                                    false,
-                                    ExtractCallback(inArchive, cacheDstDir))
-                            } catch (e: SevenZipException) {
-                                return@launch
-                            }
-                        } catch (e: SevenZipException) {
-                            e.printStackTrace()
-                            withContext(Dispatchers.Main) {
-                                binding.progressBar.visibility = View.GONE
-                                showToast("${getString(R.string.extraction_failed)} ${e.message}")
-                                toggleExtractButtonEnabled(true)
-                                binding.progressTextView.visibility = View.GONE
-                            }
-                        } finally {
-                            saveCacheFile(tempRarFile)
-                        }
-                    }
-                } catch (e: IOException) {
-                    if (isNoStorageSpaceException(e)) {
-                        withContext(Dispatchers.Main) {
-                            binding.progressBar.visibility = View.GONE
-                            showToast("No storage available")
-                        }
-                    } else {
-                        showToast("${getString(R.string.extraction_failed)} ${e.message}")
-                    }
-                } finally {
-                    toggleExtractButtonEnabled(true)
-                }
-            }
-        }
-    }
-
-    private fun saveCacheFile(tempRarFile: File) {
-        val cacheDir = requireActivity().cacheDir
-        val newFileName = tempRarFile.name.substring(0, tempRarFile.name.lastIndexOf('.'))
-        val cacheDstDir = File(cacheDir, newFileName)
-
-        val files = cacheDstDir.listFiles()
-        if (files != null) {
-            val destinationDir = outputDirectory?.createDirectory(newFileName)
-            saveFilesToOutputDirectory(files, destinationDir)
-        }
-    }
-
-    private fun saveFilesToOutputDirectory(files: Array<File>, destinationDir: DocumentFile?) {
-        for (file in files) {
-            val outputFile = if (file.isDirectory) {
-                destinationDir?.createDirectory(file.name)
-            } else {
-                destinationDir?.createFile("application/octet-stream", file.name)
-            }
-
-            if (file.isDirectory) {
-                val nestedFiles = file.listFiles()
-                if (nestedFiles != null && nestedFiles.isNotEmpty()) {
-                    saveFilesToOutputDirectory(nestedFiles, outputFile)
-                }
-            } else {
-                outputFile?.uri?.let { uri ->
-                    requireActivity().contentResolver.openOutputStream(uri)?.use { outputStream ->
-                        val buffer = ByteArray(4096)
-                        var count: Int
-                        try {
-                            FileInputStream(file).use { inputStream ->
-                                while (inputStream.read(buffer).also { count = it } != -1) {
-                                    outputStream.write(buffer, 0, count)
-                                }
-                            }
-                        } catch (e: IOException) {
-                            showToast("${getString(R.string.extraction_failed)} ${e.message}")
-                            return
-                        }
-                    }
-                }
-            }
-        }
-        CoroutineScope(Dispatchers.Main).launch {
-            binding.progressTextView.visibility = View.GONE
-            binding.progressBar.visibility = View.GONE
-        }
-    }
-
-
-    private inner class OpenCallback : IArchiveOpenCallback, ICryptoGetTextPassword {
-        override fun setCompleted(p0: Long?, p1: Long?) { }
-
-        override fun setTotal(p0: Long?, p1: Long?) { }
-
-        override fun cryptoGetTextPassword(): String {
-            return String(password ?: CharArray(0))
-        }
-    }
-
-    private inner class ExtractCallback(
-        private val inArchive: IInArchive,
-        private val dstDir: File
-    ) : IArchiveExtractCallback, ICryptoGetTextPassword {
-        private lateinit var uos: OutputStream
-
-        override fun setOperationResult(p0: ExtractOperationResult?) {
-            if (p0 == ExtractOperationResult.OK ) {
-                try {
-                    uos.close()
-                    showToast(getString(R.string.extraction_success))
-                    CoroutineScope(Dispatchers.Main).launch {
-                        binding.progressBar.max = 100
-                        binding.progressBar.progress = 100
-                    }
-                } catch (e: SevenZipException) {
-                    showToast("${getString(R.string.extraction_failed)} ${e.message}")
-                }
-            }
-        }
-
-        override fun getStream(p0: Int, p1: ExtractAskMode?): ISequentialOutStream {
-            val path: String = inArchive.getStringProperty(p0, PropID.PATH)
-            val isDir: Boolean = inArchive.getProperty(p0, PropID.IS_FOLDER) as Boolean
-            val unpackedFile = File(dstDir.path, path)
-
-            if (isDir) {
-                unpackedFile.mkdir()
-            } else {
-                try {
-                    val dir = unpackedFile.parent?.let { File(it) }
-                    if (dir != null) {
-                        if (!dir.isDirectory) {
-                            dir.mkdirs()
-                        }
-                    }
-                    unpackedFile.createNewFile()
-                    uos = FileOutputStream(unpackedFile)
-                } catch (e: IOException) {
-                   showToast("${getString(R.string.extraction_failed)} ${e.message}")
-                }
-            }
-
-            return ISequentialOutStream { data: ByteArray ->
-                try {
-                    if (!isDir) {
-                        uos.write(data)
-                    }
-                } catch (e: SevenZipException) {
-                    showToast("${getString(R.string.extraction_failed)} ${e.message}")
-                }
-                data.size
-            }
-        }
-
-
-        override fun prepareOperation(p0: ExtractAskMode?) { }
-
-        override fun setCompleted(p0: Long) {
-            CoroutineScope(Dispatchers.Main).launch {
-                binding.progressBar.progress = p0.toInt()
-                binding.progressTextView.text = formatFileSize(p0)
-            }
-        }
-
-        override fun setTotal(p0: Long) {
-            CoroutineScope(Dispatchers.Main).launch {
-                binding.progressBar.max = p0.toInt()
-                binding.progressTextView.text = formatFileSize(p0)
-            }
-        }
-
-        override fun cryptoGetTextPassword(): String {
-            return String(password ?: CharArray(0))
-        }
-    }
-
-    fun formatFileSize(bytes: Long): String {
-        val kilobyte = 1024
-        val megabyte = kilobyte * 1024
-        val gigabyte = megabyte * 1024
-
-        return when {
-            bytes < kilobyte -> "$bytes B"
-            bytes < megabyte -> String.format("%.2f KB", bytes.toFloat() / kilobyte)
-            bytes < gigabyte -> String.format("%.2f MB", bytes.toFloat() / megabyte)
-            else -> String.format("%.2f GB", bytes.toFloat() / gigabyte)
-        }
-    }
 
     private fun showExtractionCompletedSnackbar(outputDirectory: DocumentFile?) {
         binding.progressBar.visibility = View.GONE

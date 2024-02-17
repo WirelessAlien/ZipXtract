@@ -211,23 +211,11 @@
                         tools:ignore="RelativeOverlap" />
                 </RelativeLayout>
 
-                <com.google.android.material.button.MaterialButton
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/create7zBtn"
-                    android:layout_below="@id/linearlayout"
-                    android:layout_centerHorizontal="true"
-                    android:layout_marginTop="10dp"
-                    app:icon="@drawable/ic_round_archive"
-                    app:cornerRadius="10dp"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
-                    android:text="@string/compress_sevenz"/>
-
                 <RelativeLayout
                     android:id="@+id/progressLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_below="@id/create7zBtn"
+                    android:layout_below="@id/linearlayout"
                     android:layout_centerHorizontal="true"
                     android:layout_marginTop="20dp">
 
