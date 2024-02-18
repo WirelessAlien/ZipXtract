@@ -25,7 +25,9 @@ It can extract rar, zip, tar, bz2, gz, 7z, jar, z & xz etc.
      alt="Get it on F-Droid"
      height="80">](https://f-droid.org/packages/com.wirelessalien.zipxtract/)
 
-Or download the latest APK from the [Releases Section](https://github.com/WirelessAlien/ZipXtract/releases/latest).
+### RAR extraction and 7z compression feature not available in F-Droid version of the app
+
+Download the latest APK from the [Releases Section](https://github.com/WirelessAlien/ZipXtract/releases/latest).
 
 ### Translate
 
