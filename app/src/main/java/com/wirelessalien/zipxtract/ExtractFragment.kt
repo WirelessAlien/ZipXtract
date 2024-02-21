@@ -31,6 +31,7 @@ import android.provider.Settings
 import android.system.ErrnoException
 import android.system.OsConstants
 import android.text.InputType
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -235,20 +236,31 @@ class ExtractFragment : Fragment() {
         }
 
         binding.extractButton.setOnClickListener {
-            when {
-                archiveFileUri != null -> {
-                    binding.progressBar.visibility = View.VISIBLE
-                    extractArchiveFile(archiveFileUri!!)
-                }
+            if (archiveFileUri != null) {
+                binding.progressBar.visibility = View.VISIBLE
+                extractArchiveFile(archiveFileUri!!)
+            } else {
+                showToast(getString(R.string.pick_file_extract))
 
-                tempFiles.isNotEmpty() -> {
-                    extractMultiPartRar(archiveFormat)
-
-                }else -> {
-                    showToast(getString(R.string.pick_file_extract))
-                }
             }
         }
+
+        binding.mVRarExtrctBtn.setOnClickListener {
+            if (tempFiles.isNotEmpty()) {
+                extractMultiPartRar(archiveFormat)
+            } else {
+                showToast(getString(R.string.pick_file_extract))
+            }
+        }
+
+        binding.mVZipExtrctBtn.setOnClickListener {
+            if (tempFiles.isNotEmpty()) {
+                extractSplitZipEncNEnc(outputDirectory)
+            } else {
+                showToast(getString(R.string.pick_file_extract))
+            }
+        }
+
 
         binding.clearCacheBtnDP.setOnClickListener {
 
@@ -433,6 +445,130 @@ class ExtractFragment : Fragment() {
             }
         }
     }
+
+    private fun extractSplitZipEncNEnc(outputDirectory: DocumentFile?) {
+
+        toggleExtractButtonEnabled(false)
+
+        lifecycleScope.launch {
+                val passwordEditText = EditText(requireContext())
+                passwordEditText.inputType = InputType.TYPE_TEXT_VARIATION_PASSWORD
+
+                val passwordDialog = MaterialAlertDialogBuilder(requireContext())
+                    .setTitle(getString(R.string.enter_password))
+                    .setView(passwordEditText)
+                    .setPositiveButton(getString(R.string.extract)) { _, _ ->
+                        val password = passwordEditText.text.toString()
+
+                        extractSplitZipFile(password, outputDirectory)
+                    }.setNegativeButton(getString(R.string.no_password)) { _, _ ->
+
+                        extractSplitZipFile(null, outputDirectory)
+
+                    }
+                passwordDialog.show()
+        }
+    }
+
+
+    private fun isSplitZipFileEncrypted(): Boolean {
+        val sortedTempFiles = tempFiles.sortedBy { file ->
+            val fileName = file.name.lowercase()
+            when {
+                fileName.lastIndexOf(".zip.") != -1 -> fileName.substringAfterLast(".zip.").toIntOrNull() ?: Int.MAX_VALUE
+                fileName.lastIndexOf(".z") != -1 -> fileName.substringAfterLast(".z").toIntOrNull() ?: Int.MAX_VALUE
+                else -> Int.MAX_VALUE
+            }
+        }
+        for (file in sortedTempFiles) {
+            val zipFile = ZipFile(file)
+            if (zipFile.isEncrypted) {
+                return true
+            }
+        }
+        return false
+    }
+
+    private fun extractSplitZipFile(password: String?, outputDirectory: DocumentFile?) {
+        toggleExtractButtonEnabled(false)
+
+        val sortedTempFiles = tempFiles.sortedBy { file ->
+            val fileName = file.name.lowercase()
+            when {
+                fileName.lastIndexOf(".zip.") != -1 -> fileName.substringAfterLast(".zip.")
+                    .toIntOrNull() ?: Int.MAX_VALUE
+
+                fileName.lastIndexOf(".z") != -1 -> fileName.substringAfterLast(".z").toIntOrNull()
+                    ?: Int.MAX_VALUE
+
+                else -> Int.MAX_VALUE
+            }
+        }
+
+        val zipFile = ZipFile(sortedTempFiles.first())
+        zipFile.isRunInThread = true
+
+        if (!password.isNullOrEmpty()) {
+            zipFile.setPassword(password.toCharArray())
+        }
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val fileHeaders = zipFile.fileHeaders
+                val totalEntries = fileHeaders.size
+                var extractedEntries = 0
+
+                for (header in fileHeaders) {
+                    val relativePath = header.fileName
+                    val pathParts = relativePath.split("/")
+                    var currentDirectory = outputDirectory
+
+                    for (part in pathParts.dropLast(1)) {
+                        currentDirectory =
+                            currentDirectory?.findFile(part) ?: currentDirectory?.createDirectory(
+                                part
+                            )
+                    }
+
+                    if (!header.isDirectory) {
+                        val outputFile = currentDirectory?.createFile(
+                            "application/octet-stream",
+                            pathParts.last()
+                        )
+                        val bufferedOutputStream = BufferedOutputStream(outputFile?.uri?.let {
+                            requireActivity().contentResolver.openOutputStream(it)
+                        })
+
+                        zipFile.getInputStream(header).use { inputStream ->
+                            val buffer = ByteArray(4096)
+                            var bytesRead: Int
+
+                            while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                                bufferedOutputStream.write(buffer, 0, bytesRead)
+                            }
+                            bufferedOutputStream.close()
+                        }
+                    }
+
+                    extractedEntries++
+
+                    val progress = (extractedEntries * 100 / totalEntries)
+                    updateProgress(progress)
+                }
+
+                // Show the extraction completed snackbar
+                lifecycleScope.launch(Dispatchers.Main) {
+                    showExtractionCompletedSnackbar(outputDirectory)
+                }
+
+            } catch (e: ZipException) {
+                showToast("${getString(R.string.extraction_failed)} ${e.message}")
+            } finally {
+                toggleExtractButtonEnabled(true)
+            }
+        }
+    }
+
 
     private fun extractMultiPartRar(archiveFormat: ArchiveFormat?) {
         showPasswordInputDialogRar { password ->
