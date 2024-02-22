@@ -1,2 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <string name="extract">സത്തെടുക്കുക</string>
+    <string name="not_selected">തിരഞ്ഞെടുത്തിട്ടില്ല</string>
+    <string name="percent">%</string>
+    <string name="version">പതിപ്പ്:</string>
+    <string name="select">തിരഞ്ഞെടുക്കുക</string>
+    <string name="donate">സംഭാവനചെയ്യുക</string>
+    <string name="create">സൃഷ്ടിക്കുക</string>
+    <string name="ok">ശരി</string>
+    <string name="save">സംരക്ഷിക്കുക</string>
+    <string name="permission_denied">അനുമതി നിഷേധിച്ചിരിക്കുന്നു</string>
+    <string name="cancel">റദ്ദാക്കുക</string>
+    <string name="thread_count">ചരട് എണ്ണം</string>
+    <string name="open_settings">ക്രമീകരണങ്ങൾ തുറക്കുക</string>
+</resources>
