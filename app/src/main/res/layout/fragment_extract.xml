@@ -214,48 +214,6 @@
                         android:textSize="18sp" />
                 </RelativeLayout>
 
-                <TextView
-                    android:id="@+id/multiVolumeTextView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@id/progressLayout"
-                    android:text="Multi-Volume Extraction"
-                    android:layout_marginStart="10dp"
-                    android:textSize="20sp"
-                    android:textStyle="bold"/>
-
-                <LinearLayout
-                    android:id="@+id/multiVolumeLayout"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@id/multiVolumeTextView"
-                    android:layout_centerInParent="true"
-                    android:layout_marginTop="15dp"
-                    android:gravity="center_horizontal">
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/mVRarExtrctBtn"
-                        style="@style/Widget.Material3.Button.OutlinedButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="5dp"
-                        android:text="RAR"
-                        app:cornerRadius="10dp"
-                        app:icon="@drawable/ic_round_unarchive" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/mVZipExtrctBtn"
-                        style="@style/Widget.Material3.Button.OutlinedButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_centerVertical="true"
-                        android:layout_marginStart="5dp"
-                        android:layout_toEndOf="@id/mVRarExtrctBtn"
-                        android:text="ZIP"
-                        app:cornerRadius="10dp"
-                        app:icon="@drawable/ic_round_unarchive" />
-                </LinearLayout>
-
                 <com.google.android.material.progressindicator.CircularProgressIndicator
                     android:id="@+id/circularProgressBar"
                     android:layout_width="100dp"

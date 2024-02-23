@@ -126,5 +126,33 @@
                 android:hint="@string/enter_password"/>
         </com.google.android.material.card.MaterialCardView>
 
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            app:cardCornerRadius="10dp"
+            android:layout_margin="5dp"
+            style="@style/Widget.Material3.CardView.Outlined"
+            android:layout_height="wrap_content">
+
+            <com.google.android.material.checkbox.MaterialCheckBox
+                android:id="@+id/splitZipCheckbox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            app:cardCornerRadius="10dp"
+            android:layout_margin="5dp"
+            style="@style/Widget.Material3.CardView.Outlined"
+            android:layout_height="wrap_content">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/splitSizeEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                style="@style/Widget.Material3.TextInputEditText.OutlinedBox"
+                android:hint="10"/>
+        </com.google.android.material.card.MaterialCardView>
+
 </LinearLayout>
 </ScrollView>

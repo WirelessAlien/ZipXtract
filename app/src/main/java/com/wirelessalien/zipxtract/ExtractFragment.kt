@@ -31,7 +31,6 @@ import android.provider.Settings
 import android.system.ErrnoException
 import android.system.OsConstants
 import android.text.InputType
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -236,31 +235,31 @@ class ExtractFragment : Fragment() {
         }
 
         binding.extractButton.setOnClickListener {
-            if (archiveFileUri != null) {
-                binding.progressBar.visibility = View.VISIBLE
-                extractArchiveFile(archiveFileUri!!)
-            } else {
-                showToast(getString(R.string.pick_file_extract))
+            when {
+                archiveFileUri != null -> {
+                    binding.progressBar.visibility = View.VISIBLE
+                    extractArchiveFile(archiveFileUri!!)
+                }
+                tempFiles.isNotEmpty() -> {
+                    val file = tempFiles.first()
+                    val fileName = file.name
+                    val zipExtension = ".zip."
+                    val zipIndex = fileName.lastIndexOf(zipExtension)
 
+                    if (zipIndex != -1 && zipIndex + zipExtension.length < fileName.length) {
+                        val afterZipDot = fileName.substring(zipIndex + zipExtension.length)
+                        if (afterZipDot.toIntOrNull() != null) {
+                            extractSplitZipEncNEnc(outputDirectory)
+                        } else {
+                            extractMultiPartRar(archiveFormat)
+                        }
+                    } else {
+                        extractMultiPartRar(archiveFormat)
+                    }
+                }
+                else -> showToast(getString(R.string.pick_file_extract))
             }
         }
-
-        binding.mVRarExtrctBtn.setOnClickListener {
-            if (tempFiles.isNotEmpty()) {
-                extractMultiPartRar(archiveFormat)
-            } else {
-                showToast(getString(R.string.pick_file_extract))
-            }
-        }
-
-        binding.mVZipExtrctBtn.setOnClickListener {
-            if (tempFiles.isNotEmpty()) {
-                extractSplitZipEncNEnc(outputDirectory)
-            } else {
-                showToast(getString(R.string.pick_file_extract))
-            }
-        }
-
 
         binding.clearCacheBtnDP.setOnClickListener {
 
@@ -498,8 +497,8 @@ class ExtractFragment : Fragment() {
                 fileName.lastIndexOf(".zip.") != -1 -> fileName.substringAfterLast(".zip.")
                     .toIntOrNull() ?: Int.MAX_VALUE
 
-                fileName.lastIndexOf(".z") != -1 -> fileName.substringAfterLast(".z").toIntOrNull()
-                    ?: Int.MAX_VALUE
+                fileName.lastIndexOf(".z") != -1 -> fileName.substringAfterLast(".z")
+                    .toIntOrNull() ?: Int.MAX_VALUE
 
                 else -> Int.MAX_VALUE
             }
@@ -569,10 +568,20 @@ class ExtractFragment : Fragment() {
         }
     }
 
-
     private fun extractMultiPartRar(archiveFormat: ArchiveFormat?) {
         showPasswordInputDialogRar { password ->
             this.password = password?.toCharArray()
+
+            val sortedTempFiles = tempFiles.sortedBy { file ->
+                val fileName = file.name.lowercase()
+                when {
+
+                    fileName.lastIndexOf(".z") != -1 -> fileName.substringAfterLast(".z")
+                        .toIntOrNull() ?: Int.MAX_VALUE
+
+                    else -> Int.MAX_VALUE
+                }
+            }
 
             if (tempFiles.isNotEmpty()) {
                 CoroutineScope(Dispatchers.IO).launch {
@@ -582,7 +591,7 @@ class ExtractFragment : Fragment() {
                             toggleExtractButtonEnabled(false)
                         }
 
-                        for (tempFile in tempFiles) {
+                        for (tempFile in sortedTempFiles) {
                             val archiveOpenVolumeCallback = ArchiveOpenMultipartCallback()
                             val inStream: IInStream? = archiveOpenVolumeCallback.getStream(tempFile.absolutePath)
                             if (inStream != null) {
