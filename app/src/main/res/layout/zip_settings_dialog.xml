@@ -28,6 +28,17 @@
         android:layout_marginTop="10dp"
         android:padding="5dp">
 
+       <com.google.android.material.card.MaterialCardView
+           android:layout_width="match_parent"
+           android:layout_height="wrap_content"
+           android:layout_margin="5dp">
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/zipNameEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/Widget.Material3.TextInputEditText.OutlinedBox.Dense"
+            android:hint="@string/output_file_name"/>
+        </com.google.android.material.card.MaterialCardView>
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -133,11 +144,36 @@
             style="@style/Widget.Material3.CardView.Outlined"
             android:layout_height="wrap_content">
 
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
             <com.google.android.material.checkbox.MaterialCheckBox
                 android:id="@+id/splitZipCheckbox"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Split Zip"
+                    android:layout_toEndOf="@id/splitZipCheckbox"
+                    android:layout_marginStart="5dp"
+                    android:layout_centerVertical="true"
+                    android:textSize="16sp"
+                    android:textStyle="bold"/>
+            </RelativeLayout>
+
         </com.google.android.material.card.MaterialCardView>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginTop="10dp"
+            android:text="Split Size (MB)"
+            android:layout_margin="5dp"/>
+
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
@@ -148,10 +184,12 @@
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/splitSizeEditText"
+                style="@style/Widget.Material3.TextInputEditText.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                style="@style/Widget.Material3.TextInputEditText.OutlinedBox"
-                android:hint="10"/>
+                android:hint="10"
+                android:digits="1234567890"
+                android:inputType="number" />
         </com.google.android.material.card.MaterialCardView>
 
 </LinearLayout>
