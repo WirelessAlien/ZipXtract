@@ -54,7 +54,7 @@
     <string name="file">文件</string>
     <string name="share">分享应用链接</string>
     <string name="enter_password">输入密码</string>
-    <string name="extraction_failed">提取失败: %1$s</string>
+    <string name="extraction_failed">提取失败:</string>
     <string name="zip_creation_success">Zip 文件创建成功</string>
     <string name="sevenz_creation_success">7z 文件创建成功</string>
     <string name="sevenz_creation_failed">创建 7z 文件出错</string>

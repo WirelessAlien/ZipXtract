@@ -54,7 +54,7 @@
     <string name="file">Arquivo</string>
     <string name="share">Compartilhar o Link pro Aplicativo</string>
     <string name="enter_password">Digite a Senha</string>
-    <string name="extraction_failed">A Extração Falhou: %1$s</string>
+    <string name="extraction_failed">A Extração Falhou:</string>
     <string name="zip_creation_success">Arquivo Zip criado com sucesso</string>
     <string name="sevenz_creation_success">Arquivo 7z criado com sucesso</string>
     <string name="sevenz_creation_failed">Erro ao criar arquivo 7z</string>

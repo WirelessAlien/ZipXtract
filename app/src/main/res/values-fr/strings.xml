@@ -64,7 +64,7 @@
     <string name="encrypt">Encrypter</string>
     <string name="share">Partager le lien vers l\'application</string>
     <string name="enter_password">Entrez le mot de passe</string>
-    <string name="extraction_failed">Échec de l\'extraction : %1$s</string>
+    <string name="extraction_failed">Échec de l\'extraction :</string>
     <string name="zip_creation_success">Fichier Zip créé avec succès</string>
     <string name="sevenz_creation_success">Fichier 7z créé avec succès</string>
     <string name="sevenz_creation_failed">Erreur pendant la création du fichier 7z</string>

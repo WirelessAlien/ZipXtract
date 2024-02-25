@@ -64,7 +64,7 @@
     <string name="encrypt">Cifrar</string>
     <string name="share">Compartir el enlace de la aplicación</string>
     <string name="enter_password">Introduzca la contraseña</string>
-    <string name="extraction_failed">Error de extracción: %1$s</string>
+    <string name="extraction_failed">Error de extracción:</string>
     <string name="zip_creation_success">El archivo Zip fue creado correctamente</string>
     <string name="compress_sevenz">Comprimir en 7z</string>
     <string name="thread_count">Número de hilos</string>

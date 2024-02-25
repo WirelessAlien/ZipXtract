@@ -36,8 +36,8 @@
             android:id="@+id/zipNameEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            style="@style/Widget.Material3.TextInputEditText.OutlinedBox.Dense"
-            android:hint="@string/output_file_name"/>
+            style="@style/Widget.Material3.TextInputEditText.OutlinedBox"
+            android:hint="Custom archive name (Optional)"/>
         </com.google.android.material.card.MaterialCardView>
     <TextView
         android:layout_width="wrap_content"

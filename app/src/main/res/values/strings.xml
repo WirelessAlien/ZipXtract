@@ -79,7 +79,7 @@
     <string name="select_output_directory_extract">Please select where to extract the files</string>
     <string name="archive_file_name_failed">Failed to get the archive file name</string>
     <string name="invalid_uri">Invalid archive file URI</string>
-    <string name="extraction_failed">Extraction Failed: %1$s</string>
+    <string name="extraction_failed">Extraction Failed:</string>
     <string name="no_password">No Password</string>
     <string name="extraction_success">File extracted successfully</string>
     <string name="share">Share App Link</string>

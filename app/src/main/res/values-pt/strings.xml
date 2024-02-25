@@ -53,7 +53,7 @@
     <string name="select_output_directory_extract">Por favor selecione onde extrair os ficheiros</string>
     <string name="archive_file_name_failed">Falha ao buscar o nome do ficheiro de arquivo</string>
     <string name="invalid_uri">URI do ficheiro de arquivo inválido</string>
-    <string name="extraction_failed">A Extração Falhou: %1$s</string>
+    <string name="extraction_failed">A Extração Falhou:</string>
     <string name="no_password">Sem Palavra-passe</string>
     <string name="extraction_success">Ficheiro extraído com sucesso</string>
     <string name="sevenz_creation_success">Ficheiro 7z criado com sucesso</string>

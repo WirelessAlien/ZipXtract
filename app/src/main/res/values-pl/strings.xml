@@ -33,7 +33,7 @@
     <string name="create_zip">Skompresuj do ZIP</string>
     <string name="select_output_directory_extract">Wybierz, gdzie chcesz wypakować pliki</string>
     <string name="invalid_uri">Błędny URI pliku archiwum</string>
-    <string name="extraction_failed">Nie udało się wypakować : %1$s</string>
+    <string name="extraction_failed">Nie udało się wypakować :</string>
     <string name="no_password">Brak hasła</string>
     <string name="extraction_success">Plik wypakowany pomyślnie</string>
     <string name="share">Udostępnij link do aplikacji</string>

@@ -517,10 +517,13 @@ class ExtractFragment : Fragment() {
                 val totalEntries = fileHeaders.size
                 var extractedEntries = 0
 
+                val directoryName = sortedTempFiles.first().name.substringBefore(".")
+                val directory = outputDirectory?.createDirectory(directoryName)
+
                 for (header in fileHeaders) {
                     val relativePath = header.fileName
                     val pathParts = relativePath.split("/")
-                    var currentDirectory = outputDirectory
+                    var currentDirectory = directory
 
                     for (part in pathParts.dropLast(1)) {
                         currentDirectory =
@@ -567,6 +570,7 @@ class ExtractFragment : Fragment() {
             }
         }
     }
+
 
     private fun extractMultiPartRar(archiveFormat: ArchiveFormat?) {
         showPasswordInputDialogRar { password ->
@@ -1024,12 +1028,13 @@ class ExtractFragment : Fragment() {
     }
 
     private fun showPasswordInputDialog(callback: (String?) -> Unit) {
-        val passwordInputView = EditText(requireContext())
-        passwordInputView.inputType = InputType.TYPE_TEXT_VARIATION_PASSWORD
+        val inflater = layoutInflater
+        val dialogView = inflater.inflate(R.layout.password_input_dialog, null)
+        val passwordInputView = dialogView.findViewById<EditText>(R.id.passwordInput)
 
         MaterialAlertDialogBuilder(requireContext())
             .setTitle(getString(R.string.enter_password))
-            .setView(passwordInputView)
+            .setView(dialogView)
             .setPositiveButton(getString(R.string.extract)) { _, _ ->
                 val password = passwordInputView.text.toString()
                 callback(password.takeIf { it.isNotEmpty() })
@@ -1164,14 +1169,15 @@ class ExtractFragment : Fragment() {
     }
 
     private fun showPasswordInputDialogRar(onPasswordEntered: (String?) -> Unit) {
-        val passwordEditText = EditText(requireContext())
-        passwordEditText.hint = getString(R.string.enter_password)
+        val inflater = layoutInflater
+        val dialogView = inflater.inflate(R.layout.password_input_dialog, null)
+        val passwordInputView = dialogView.findViewById<EditText>(R.id.passwordInput)
 
         MaterialAlertDialogBuilder(requireContext())
             .setTitle(getString(R.string.enter_password))
-            .setView(passwordEditText)
+            .setView(dialogView)
             .setPositiveButton(getString(R.string.ok)) { _, _ ->
-                val password = passwordEditText.text.toString()
+                val password = passwordInputView.text.toString()
                 onPasswordEntered.invoke(password.ifBlank { null })
             }
             .setNegativeButton(getString(R.string.no_password)) { _, _ ->

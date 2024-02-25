@@ -38,7 +38,7 @@
     <string name="open_settings">開啟設定</string>
     <string name="select_output_directory_extract">請選取要解壓縮檔案到何處</string>
     <string name="invalid_uri">封存檔 URI 無效</string>
-    <string name="extraction_failed">解壓縮失敗：%1$s</string>
+    <string name="extraction_failed">解壓縮失敗：</string>
     <string name="no_password">無密碼</string>
     <string name="extraction_success">檔案解壓縮成功</string>
     <string name="share">分享應用程式連結</string>
