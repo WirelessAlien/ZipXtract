@@ -37,7 +37,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             style="@style/Widget.Material3.TextInputEditText.OutlinedBox"
-            android:hint="Custom archive name (Optional)"/>
+            android:hint="@string/enter_name_of_archive_optional"/>
         </com.google.android.material.card.MaterialCardView>
     <TextView
         android:layout_width="wrap_content"
@@ -102,7 +102,7 @@
         android:textStyle="bold"
         android:layout_marginStart="5dp"
         android:layout_marginBottom="5dp"
-        android:text="Encryption Strength"/>
+        android:text="@string/encryption_strength"/>
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -155,7 +155,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Split Zip"
+                    android:text="@string/split_zip"
                     android:layout_toEndOf="@id/splitZipCheckbox"
                     android:layout_marginStart="5dp"
                     android:layout_centerVertical="true"
@@ -171,7 +171,7 @@
             android:textSize="16sp"
             android:textStyle="bold"
             android:layout_marginTop="10dp"
-            android:text="Split Size (MB)"
+            android:text="@string/split_size_mb"
             android:layout_margin="5dp"/>
 
 
@@ -187,7 +187,7 @@
                 style="@style/Widget.Material3.TextInputEditText.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="10"
+                android:hint="@string/_ten"
                 android:digits="1234567890"
                 android:inputType="number" />
         </com.google.android.material.card.MaterialCardView>

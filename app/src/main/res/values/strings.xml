@@ -90,4 +90,8 @@
     <string name="max_available_thread">0 for maximum available threads</string>
     <string name="solid_compression">Solid Compression</string>
     <string name="enter_name_of_archive_optional">Enter Name of Archive (Optional)</string>
+    <string name="split_size_mb">Split Size (MB)</string>
+    <string name="split_zip">Split Zip</string>
+    <string name="encryption_strength">Encryption Strength</string>
+    <string name="_ten">10</string>
 </resources>

@@ -22,7 +22,6 @@ import android.os.Bundle
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.documentfile.provider.DocumentFile
-import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
@@ -85,11 +84,19 @@ class FragmentActivity : AppCompatActivity() {
         bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.home -> {
-                    navController.navigate(R.id.ExtractFragment)
+                    if (navController.currentDestination?.id != R.id.ExtractFragment) {
+                        navController.navigate(R.id.ExtractFragment)
+                    } else {
+                        navController.popBackStack(R.id.ExtractFragment, false)
+                    }
                     true
                 }
                 R.id.zipCreate -> {
-                    navController.navigate(R.id.CreateZipFragment)
+                    if (navController.currentDestination?.id != R.id.CreateZipFragment) {
+                        navController.navigate(R.id.CreateZipFragment)
+                    } else {
+                        navController.popBackStack(R.id.CreateZipFragment, false)
+                    }
                     true
                 }
 

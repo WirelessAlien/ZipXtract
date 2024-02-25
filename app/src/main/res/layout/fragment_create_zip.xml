@@ -192,20 +192,12 @@
                         app:icon="@drawable/ic_round_archive"
                         app:cornerRadius="10dp"/>
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/zipSettingsBtn"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        style="@style/Widget.Material3.Button.IconButton"
-                        app:icon="@drawable/ic_settings"
-                        android:layout_toEndOf="@+id/createZipMBtn"
-                        tools:ignore="RelativeOverlap" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/settingsInfo"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_toEndOf="@id/zipSettingsBtn"
+                        android:layout_toEndOf="@id/createZipMBtn"
                         style="@style/Widget.Material3.Button.IconButton"
                         app:icon="@drawable/ic_help"
                         tools:ignore="RelativeOverlap" />

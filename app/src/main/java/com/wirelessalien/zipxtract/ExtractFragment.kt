@@ -195,7 +195,7 @@ class ExtractFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val inflater = TransitionInflater.from(requireContext())
-        exitTransition = inflater.inflateTransition(R.transition.slide_right)
+        exitTransition = inflater.inflateTransition(R.transition.slide_left)
 
         sharedPreferences = requireActivity().getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
         binding.progressBar.visibility = View.GONE
@@ -1301,6 +1301,13 @@ class ExtractFragment : Fragment() {
         CoroutineScope(Dispatchers.Main).launch {
             binding.progressTextView.visibility = View.GONE
             binding.progressBar.visibility = View.GONE
+        }
+        val cacheDir = requireContext().cacheDir
+        if (cacheDir.isDirectory) {
+            val children: Array<String> = cacheDir.list()!!
+            for (i in children.indices) {
+                File(cacheDir, children[i]).deleteRecursively()
+            }
         }
     }
 
