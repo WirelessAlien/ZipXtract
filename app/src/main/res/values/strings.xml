@@ -94,4 +94,6 @@
     <string name="split_zip">Split Zip</string>
     <string name="encryption_strength">Encryption Strength</string>
     <string name="_ten">10</string>
+    <string name="percent_complete">%d %%</string>
+    <string name="please_wait_end_of_job">Please Wait...If you have selected large files, it may take a few moments</string>
 </resources>

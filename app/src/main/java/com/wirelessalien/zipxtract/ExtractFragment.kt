@@ -579,10 +579,8 @@ class ExtractFragment : Fragment() {
             val sortedTempFiles = tempFiles.sortedBy { file ->
                 val fileName = file.name.lowercase()
                 when {
-
                     fileName.lastIndexOf(".z") != -1 -> fileName.substringAfterLast(".z")
                         .toIntOrNull() ?: Int.MAX_VALUE
-
                     else -> Int.MAX_VALUE
                 }
             }
@@ -628,22 +626,19 @@ class ExtractFragment : Fragment() {
                                 } catch (e: SevenZipException) {
                                     e.printStackTrace()
                                     withContext(Dispatchers.Main) {
-                                        binding.progressBar.visibility = View.GONE
                                         showToast("${getString(R.string.extraction_failed)} ${e.message}")
-                                        binding.progressTextView.visibility = View.GONE
-                                        toggleExtractButtonEnabled(true)
                                     }
                                 } finally {
                                     inArchive.close()
                                     archiveOpenVolumeCallback.close()
                                     saveCacheFile(tempFile)
-                                    withContext(Dispatchers.Main) {
-                                        binding.progressBar.visibility = View.GONE
-                                        binding.progressTextView.visibility = View.GONE
-                                        toggleExtractButtonEnabled(true)
-                                    }
                                 }
                             }
+                        }
+                        withContext(Dispatchers.Main) {
+                            binding.progressBar.visibility = View.GONE
+                            binding.progressTextView.visibility = View.GONE
+                            toggleExtractButtonEnabled(true)
                         }
                     } catch (e: IOException) {
                         if (isNoStorageSpaceException(e)) {
@@ -659,6 +654,7 @@ class ExtractFragment : Fragment() {
             }
         }
     }
+
 
     private fun isNoStorageSpaceException(e: IOException): Boolean {
         return e.message?.contains("ENOSPC") == true || e.cause is ErrnoException && (e.cause as ErrnoException).errno == OsConstants.ENOSPC
@@ -1032,7 +1028,7 @@ class ExtractFragment : Fragment() {
         val dialogView = inflater.inflate(R.layout.password_input_dialog, null)
         val passwordInputView = dialogView.findViewById<EditText>(R.id.passwordInput)
 
-        MaterialAlertDialogBuilder(requireContext())
+        MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
             .setTitle(getString(R.string.enter_password))
             .setView(dialogView)
             .setPositiveButton(getString(R.string.extract)) { _, _ ->
@@ -1173,7 +1169,7 @@ class ExtractFragment : Fragment() {
         val dialogView = inflater.inflate(R.layout.password_input_dialog, null)
         val passwordInputView = dialogView.findViewById<EditText>(R.id.passwordInput)
 
-        MaterialAlertDialogBuilder(requireContext())
+        MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
             .setTitle(getString(R.string.enter_password))
             .setView(dialogView)
             .setPositiveButton(getString(R.string.ok)) { _, _ ->
@@ -1195,7 +1191,6 @@ class ExtractFragment : Fragment() {
             CoroutineScope(Dispatchers.IO).launch {
                 try {
                     withContext(Dispatchers.Main) {
-
                         binding.progressBar.visibility = View.VISIBLE
                         toggleExtractButtonEnabled(false)
                     }
@@ -1219,20 +1214,19 @@ class ExtractFragment : Fragment() {
                             val inArchive = SevenZip.openInArchive(archiveFormat, inStream, OpenCallback())
                             val cacheDstDir = File(cacheDirr, newFileName)
                             cacheDstDir.mkdir()
-                            try {
-                                inArchive.extract(null,
-                                    false,
-                                    ExtractCallback(inArchive, cacheDstDir))
-                            } catch (e: SevenZipException) {
-                                return@launch
-                            }
+
+                            inArchive.extract(
+                                null,
+                                false,
+                                ExtractCallback(inArchive, cacheDstDir)
+                            )
                         } catch (e: SevenZipException) {
                             e.printStackTrace()
                             withContext(Dispatchers.Main) {
                                 binding.progressBar.visibility = View.GONE
                                 showToast("${getString(R.string.extraction_failed)} ${e.message}")
-                                toggleExtractButtonEnabled(true)
                                 binding.progressTextView.visibility = View.GONE
+                                toggleExtractButtonEnabled(true)
                             }
                         } finally {
                             saveCacheFile(tempRarFile)
@@ -1248,7 +1242,11 @@ class ExtractFragment : Fragment() {
                         showToast("${getString(R.string.extraction_failed)} ${e.message}")
                     }
                 } finally {
-                    toggleExtractButtonEnabled(true)
+                    withContext(Dispatchers.Main) {
+                        binding.progressBar.visibility = View.GONE
+                        binding.progressTextView.visibility = View.GONE
+                        toggleExtractButtonEnabled(true)
+                    }
                 }
             }
         }
@@ -1296,17 +1294,6 @@ class ExtractFragment : Fragment() {
                         }
                     }
                 }
-            }
-        }
-        CoroutineScope(Dispatchers.Main).launch {
-            binding.progressTextView.visibility = View.GONE
-            binding.progressBar.visibility = View.GONE
-        }
-        val cacheDir = requireContext().cacheDir
-        if (cacheDir.isDirectory) {
-            val children: Array<String> = cacheDir.list()!!
-            for (i in children.indices) {
-                File(cacheDir, children[i]).deleteRecursively()
             }
         }
     }
