@@ -35,6 +35,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.documentfile.provider.DocumentFile
@@ -453,6 +454,22 @@ class ExtractFragment : Fragment() {
             val inflater = layoutInflater
             val dialogView = inflater.inflate(R.layout.password_input_dialog, null)
             val passwordEditText = dialogView.findViewById<EditText>(R.id.passwordInput)
+            val showPasswordButton = dialogView.findViewById<ImageButton>(R.id.showPasswordButton)
+
+            var isPasswordVisible = false
+
+            showPasswordButton.setOnClickListener {
+                isPasswordVisible = !isPasswordVisible
+                if (isPasswordVisible) {
+                    // Show password
+                    passwordEditText.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+                    showPasswordButton.setImageResource(R.drawable.ic_visibility_on)
+                } else {
+                    // Hide password
+                    passwordEditText.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+                    showPasswordButton.setImageResource(R.drawable.ic_visibility_off)
+                }
+            }
 
             val passwordDialog = MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
                 .setTitle(getString(R.string.enter_password))
@@ -464,6 +481,7 @@ class ExtractFragment : Fragment() {
                     extractSplitZipFile(null, outputDirectory)
                 }
             passwordDialog.show()
+
         }
     }
 
@@ -685,22 +703,42 @@ class ExtractFragment : Fragment() {
                 val tempFile = createTempFileFromInputStreamAsync(bufferedInputStream)
 
                 if (isZipFileEncrypted(tempFile)) {
+                    val inflater = layoutInflater
+                    val dialogView = inflater.inflate(R.layout.password_input_dialog, null)
 
-                    // Ask for password
-                    val passwordEditText = EditText(requireContext())
-                    passwordEditText.inputType = InputType.TYPE_TEXT_VARIATION_PASSWORD
+                    // Find the password EditText and show password button in the custom layout
+                    val passwordEditText = dialogView.findViewById<EditText>(R.id.passwordInput)
+                    val showPasswordButton = dialogView.findViewById<ImageButton>(R.id.showPasswordButton)
 
-                    val passwordDialog = MaterialAlertDialogBuilder(requireContext())
+                    var isPasswordVisible = false
+
+                    showPasswordButton.setOnClickListener {
+                        isPasswordVisible = !isPasswordVisible
+                        if (isPasswordVisible) {
+                            // Show password
+                            passwordEditText.inputType =
+                                InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+                            showPasswordButton.setImageResource(R.drawable.ic_visibility_on)
+                        } else {
+                            // Hide password
+                            passwordEditText.inputType =
+                                InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+                            showPasswordButton.setImageResource(R.drawable.ic_visibility_off)
+                        }
+                    }
+
+                    // Create the password input dialog
+                    val passwordDialog = MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
                         .setTitle(getString(R.string.enter_password))
-                        .setView(passwordEditText)
+                        .setView(dialogView) // Set the custom layout as the dialog view
                         .setPositiveButton(getString(R.string.extract)) { _, _ ->
                             val password = passwordEditText.text.toString()
-
                             zip4jExtractZipFile(tempFile, password, outputDirectory)
                         }
                         .setNegativeButton(getString(R.string.cancel), null)
                         .create()
 
+                    // Show the password input dialog
                     passwordDialog.show()
                 } else {
 
@@ -1037,6 +1075,24 @@ class ExtractFragment : Fragment() {
         val inflater = layoutInflater
         val dialogView = inflater.inflate(R.layout.password_input_dialog, null)
         val passwordInputView = dialogView.findViewById<EditText>(R.id.passwordInput)
+        val showPasswordButton = dialogView.findViewById<ImageButton>(R.id.showPasswordButton)
+
+        var isPasswordVisible = false
+
+        showPasswordButton.setOnClickListener {
+            isPasswordVisible = !isPasswordVisible
+            if (isPasswordVisible) {
+                // Show password
+                passwordInputView.inputType =
+                    InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+                showPasswordButton.setImageResource(R.drawable.ic_visibility_on)
+            } else {
+                // Hide password
+                passwordInputView.inputType =
+                    InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+                showPasswordButton.setImageResource(R.drawable.ic_visibility_off)
+            }
+        }
 
         MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
             .setTitle(getString(R.string.enter_password))
@@ -1044,10 +1100,13 @@ class ExtractFragment : Fragment() {
             .setPositiveButton(getString(R.string.extract)) { _, _ ->
                 val password = passwordInputView.text.toString()
                 callback(password.takeIf { it.isNotEmpty() })
-            }.setNegativeButton(getString(R.string.no_password)) { _, _ ->
+            }
+            .setNegativeButton(getString(R.string.no_password)) { _, _ ->
                 callback(null)
-            }.show()
+            }
+            .show()
     }
+
 
     private fun extractXz(bufferedInputStream: BufferedInputStream, outputDirectory: DocumentFile?) {
         toggleExtractButtonEnabled(false)
@@ -1178,6 +1237,24 @@ class ExtractFragment : Fragment() {
         val inflater = layoutInflater
         val dialogView = inflater.inflate(R.layout.password_input_dialog, null)
         val passwordInputView = dialogView.findViewById<EditText>(R.id.passwordInput)
+        val showPasswordButton = dialogView.findViewById<ImageButton>(R.id.showPasswordButton)
+
+        var isPasswordVisible = false
+
+        showPasswordButton.setOnClickListener {
+            isPasswordVisible = !isPasswordVisible
+            if (isPasswordVisible) {
+                // Show password
+                passwordInputView.inputType =
+                    InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+                showPasswordButton.setImageResource(R.drawable.ic_visibility_on)
+            } else {
+                // Hide password
+                passwordInputView.inputType =
+                    InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+                showPasswordButton.setImageResource(R.drawable.ic_visibility_off)
+            }
+        }
 
         MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
             .setTitle(getString(R.string.enter_password))
@@ -1191,6 +1268,7 @@ class ExtractFragment : Fragment() {
             }
             .show()
     }
+
 
     //Thanks for the sample code
     //https://github.com/omicronapps/7-Zip-JBinding-4Android/issues/5#issuecomment-744128480
