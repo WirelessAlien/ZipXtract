@@ -450,46 +450,46 @@ class ExtractFragment : Fragment() {
         toggleExtractButtonEnabled(false)
 
         lifecycleScope.launch {
-                val passwordEditText = EditText(requireContext())
-                passwordEditText.inputType = InputType.TYPE_TEXT_VARIATION_PASSWORD
+            val inflater = layoutInflater
+            val dialogView = inflater.inflate(R.layout.password_input_dialog, null)
+            val passwordEditText = dialogView.findViewById<EditText>(R.id.passwordInput)
 
-                val passwordDialog = MaterialAlertDialogBuilder(requireContext())
-                    .setTitle(getString(R.string.enter_password))
-                    .setView(passwordEditText)
-                    .setPositiveButton(getString(R.string.extract)) { _, _ ->
-                        val password = passwordEditText.text.toString()
-
-                        extractSplitZipFile(password, outputDirectory)
-                    }.setNegativeButton(getString(R.string.no_password)) { _, _ ->
-
-                        extractSplitZipFile(null, outputDirectory)
-
-                    }
-                passwordDialog.show()
+            val passwordDialog = MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
+                .setTitle(getString(R.string.enter_password))
+                .setView(dialogView)
+                .setPositiveButton(getString(R.string.extract)) { _, _ ->
+                    val password = passwordEditText.text.toString()
+                    extractSplitZipFile(password, outputDirectory)
+                }.setNegativeButton(getString(R.string.no_password)) { _, _ ->
+                    extractSplitZipFile(null, outputDirectory)
+                }
+            passwordDialog.show()
         }
     }
 
 
-    private fun isSplitZipFileEncrypted(): Boolean {
-        val sortedTempFiles = tempFiles.sortedBy { file ->
-            val fileName = file.name.lowercase()
-            when {
-                fileName.lastIndexOf(".zip.") != -1 -> fileName.substringAfterLast(".zip.").toIntOrNull() ?: Int.MAX_VALUE
-                fileName.lastIndexOf(".z") != -1 -> fileName.substringAfterLast(".z").toIntOrNull() ?: Int.MAX_VALUE
-                else -> Int.MAX_VALUE
-            }
-        }
-        for (file in sortedTempFiles) {
-            val zipFile = ZipFile(file)
-            if (zipFile.isEncrypted) {
-                return true
-            }
-        }
-        return false
-    }
+//    private fun isSplitZipFileEncrypted(): Boolean {
+//        val sortedTempFiles = tempFiles.sortedBy { file ->
+//            val fileName = file.name.lowercase()
+//            when {
+//                fileName.lastIndexOf(".zip.") != -1 -> fileName.substringAfterLast(".zip.").toIntOrNull() ?: Int.MAX_VALUE
+//                fileName.lastIndexOf(".z") != -1 -> fileName.substringAfterLast(".z").toIntOrNull() ?: Int.MAX_VALUE
+//                else -> Int.MAX_VALUE
+//            }
+//        }
+//        for (file in sortedTempFiles) {
+//            val zipFile = ZipFile(file)
+//            if (zipFile.isEncrypted) {
+//                return true
+//            }
+//        }
+//        return false
+//    }
 
     private fun extractSplitZipFile(password: String?, outputDirectory: DocumentFile?) {
         toggleExtractButtonEnabled(false)
+        binding.progressBar.visibility = View.VISIBLE
+        binding.progressTextView.visibility = View.VISIBLE
 
         val sortedTempFiles = tempFiles.sortedBy { file ->
             val fileName = file.name.lowercase()
@@ -542,11 +542,18 @@ class ExtractFragment : Fragment() {
                         })
 
                         zipFile.getInputStream(header).use { inputStream ->
-                            val buffer = ByteArray(4096)
+                            val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
                             var bytesRead: Int
+                            var totalBytesRead = 0L
+                            val fileSize = header.uncompressedSize
 
                             while (inputStream.read(buffer).also { bytesRead = it } != -1) {
                                 bufferedOutputStream.write(buffer, 0, bytesRead)
+                                totalBytesRead += bytesRead
+
+                                // Calculate and update the progress
+                                val progress = (totalBytesRead * 100 / fileSize).toInt()
+                                updateProgress(progress)
                             }
                             bufferedOutputStream.close()
                         }
@@ -558,15 +565,20 @@ class ExtractFragment : Fragment() {
                     updateProgress(progress)
                 }
 
-                // Show the extraction completed snackbar
+            } catch (e: ZipException) {
                 lifecycleScope.launch(Dispatchers.Main) {
-                    showExtractionCompletedSnackbar(outputDirectory)
+                    showToast("${getString(R.string.extraction_failed)} ${e.message}")
+                    binding.progressBar.visibility = View.GONE
+                    binding.progressTextView.visibility = View.GONE
                 }
 
-            } catch (e: ZipException) {
-                showToast("${getString(R.string.extraction_failed)} ${e.message}")
             } finally {
-                toggleExtractButtonEnabled(true)
+                lifecycleScope.launch(Dispatchers.Main) {
+                    toggleExtractButtonEnabled(true)
+                    binding.progressBar.visibility = View.GONE
+                    binding.progressTextView.visibility = View.GONE
+                    showExtractionCompletedSnackbar(outputDirectory)
+                }
             }
         }
     }
@@ -639,6 +651,7 @@ class ExtractFragment : Fragment() {
                             binding.progressBar.visibility = View.GONE
                             binding.progressTextView.visibility = View.GONE
                             toggleExtractButtonEnabled(true)
+                            showExtractionCompletedSnackbar(outputDirectory)
                         }
                     } catch (e: IOException) {
                         if (isNoStorageSpaceException(e)) {
@@ -702,7 +715,7 @@ class ExtractFragment : Fragment() {
     private suspend fun createTempFileFromInputStreamAsync(inputStream: InputStream): File = withContext(Dispatchers.IO) {
         val tempFile = File.createTempFile("temp_", ".zip", requireActivity().cacheDir)
         FileOutputStream(tempFile).use { outputStream ->
-            val buffer = ByteArray(4096)
+            val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
             var count: Int
             while (inputStream.read(buffer).also { count = it } != -1) {
                 outputStream.write(buffer, 0, count)
@@ -746,7 +759,7 @@ class ExtractFragment : Fragment() {
                         val bufferedOutputStream = BufferedOutputStream(outputFile?.uri?.let { requireActivity().contentResolver.openOutputStream(it) })
 
                         zipFile.getInputStream(header).use { inputStream ->
-                            val buffer = ByteArray(4096)
+                            val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
                             var bytesRead: Int
                             var totalBytesRead = 0L
                             val fileSize = header.uncompressedSize
@@ -768,12 +781,7 @@ class ExtractFragment : Fragment() {
                     val progress = (extractedEntries * 100 / totalEntries)
                     updateProgress(progress)
                 }
-
-                // Show the extraction completed snackbar
-                lifecycleScope.launch(Dispatchers.Main) {
-                    showExtractionCompletedSnackbar(outputDirectory)
-                    tempFile.delete()
-                }
+                tempFile.delete()
 
             } catch (e: ZipException) {
                 showToast("${getString(R.string.extraction_failed)} ${e.message}")
@@ -782,8 +790,10 @@ class ExtractFragment : Fragment() {
                     binding.progressTextView.visibility = View.GONE
                 }
             } finally {
-
-                toggleExtractButtonEnabled(true)
+                lifecycleScope.launch(Dispatchers.Main) {
+                    toggleExtractButtonEnabled(true)
+                    showExtractionCompletedSnackbar(outputDirectory)
+                }
             }
         }
     }
@@ -818,7 +828,7 @@ class ExtractFragment : Fragment() {
                   outputFile?.uri?.let { uri ->
                       requireActivity().contentResolver.openOutputStream(uri)
                           ?.use { outputStream ->
-                              val buffer = ByteArray(1024)
+                              val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
                               var count: Int
                               try {
                                   while (tarInputStream.read(buffer).also { count = it } != -1) {
@@ -857,7 +867,7 @@ class ExtractFragment : Fragment() {
 
            outputFile?.uri?.let { uri ->
                requireActivity().contentResolver.openOutputStream(uri)?.use { outputStream ->
-                   val buffer = ByteArray(1024)
+                   val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
                    var count: Int
                    try {
                        while (bzip2InputStream.read(buffer).also { count = it } != -1) {
@@ -894,7 +904,7 @@ class ExtractFragment : Fragment() {
 
             outputFile?.uri?.let { uri ->
                 requireActivity().contentResolver.openOutputStream(uri)?.use { outputStream ->
-                    val buffer = ByteArray(1024)
+                    val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
                     var count: Int
                     try {
                         while (gzipInputStream.read(buffer).also { count = it } != -1) {
@@ -924,7 +934,7 @@ class ExtractFragment : Fragment() {
     private suspend fun createTemp7zFileInBackground(bufferedInputStream: BufferedInputStream): File = withContext(Dispatchers.IO) {
         return@withContext File.createTempFile("temp_", ".7z", requireActivity().cacheDir).apply {
             FileOutputStream(this).use { outputStream ->
-                val buffer = ByteArray(4096)
+                val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
                 var count: Int
                 while (bufferedInputStream.read(buffer).also { count = it } != -1) {
                     outputStream.write(buffer, 0, count)
@@ -974,7 +984,7 @@ class ExtractFragment : Fragment() {
 
                             outputFile?.uri?.let { uri ->
                                 requireActivity().contentResolver.openOutputStream(uri)?.use { outputStream ->
-                                    val buffer = ByteArray(4096)
+                                    val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
                                     try {
                                         var count: Int
                                         while (sevenZFile.read(buffer).also { count = it } != -1) {
@@ -1049,7 +1059,7 @@ class ExtractFragment : Fragment() {
 
             outputFile?.uri?.let { uri ->
                 requireActivity().contentResolver.openOutputStream(uri)?.use { outputStream ->
-                    val buffer = ByteArray(1024)
+                    val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
                     var count: Int
                     try {
                         while (xzInputStream.read(buffer).also { count = it } != -1) {
@@ -1099,7 +1109,7 @@ class ExtractFragment : Fragment() {
                     outputFile?.uri?.let { uri ->
                         requireActivity().contentResolver.openOutputStream(uri)
                             ?.use { outputStream ->
-                                val buffer = ByteArray(1024)
+                                val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
                                 var count: Int
                                 try {
                                     while (jarInputStream.read(buffer).also { count = it } != -1) {
@@ -1138,7 +1148,7 @@ class ExtractFragment : Fragment() {
 
             outputFile?.uri?.let { uri ->
                 requireActivity().contentResolver.openOutputStream(uri)?.use { outputStream ->
-                    val buffer = ByteArray(1024)
+                    val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
                     var count: Int
                     try {
                         while (zInputStream.read(buffer).also { count = it } != -1) {
@@ -1246,6 +1256,7 @@ class ExtractFragment : Fragment() {
                         binding.progressBar.visibility = View.GONE
                         binding.progressTextView.visibility = View.GONE
                         toggleExtractButtonEnabled(true)
+                        showExtractionCompletedSnackbar(outputDirectory)
                     }
                 }
             }
@@ -1280,7 +1291,7 @@ class ExtractFragment : Fragment() {
             } else {
                 outputFile?.uri?.let { uri ->
                     requireActivity().contentResolver.openOutputStream(uri)?.use { outputStream ->
-                        val buffer = ByteArray(4096)
+                        val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
                         var count: Int
                         try {
                             FileInputStream(file).use { inputStream ->

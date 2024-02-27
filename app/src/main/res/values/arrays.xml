@@ -24,4 +24,9 @@
         <item>Maximum</item>
         <item>Ultra</item>
     </array>
+    <array name="split_size_units">
+        <item>KB</item>
+        <item>MB</item>
+        <item>GB</item>
+    </array>
 </resources>

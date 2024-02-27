@@ -90,10 +90,10 @@
     <string name="max_available_thread">0 for maximum available threads</string>
     <string name="solid_compression">Solid Compression</string>
     <string name="enter_name_of_archive_optional">Enter Name of Archive (Optional)</string>
-    <string name="split_size_mb">Split Size (MB)</string>
+    <string name="split_size_mb">Split Size</string>
     <string name="split_zip">Split Zip</string>
     <string name="encryption_strength">Encryption Strength</string>
-    <string name="_ten">10</string>
+    <string name="_ten">Default is 64kb</string>
     <string name="percent_complete">%d %%</string>
-    <string name="please_wait_end_of_job">Please Wait...If you have selected large files, it may take a few moments</string>
+    <string name="please_wait_end_of_job">Please Wait…If you have selected large files, it may take a few moments</string>
 </resources>
