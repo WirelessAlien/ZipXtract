@@ -28,91 +28,91 @@
         android:layout_marginTop="10dp"
         android:padding="5dp">
 
-       <com.google.android.material.card.MaterialCardView
-           android:layout_width="match_parent"
-           android:layout_height="wrap_content"
-           android:layout_margin="5dp">
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/zipNameEditText"
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            style="@style/Widget.Material3.TextInputEditText.OutlinedBox"
-            android:hint="@string/enter_name_of_archive_optional"/>
+            android:layout_margin="5dp">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/zipNameEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                style="@style/Widget.Material3.TextInputEditText.OutlinedBox"
+                android:hint="@string/enter_name_of_archive_optional"/>
         </com.google.android.material.card.MaterialCardView>
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:layout_marginStart="5dp"
-        android:layout_marginBottom="5dp"
-        android:text="@string/compression_method"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginStart="5dp"
+            android:layout_marginBottom="5dp"
+            android:text="@string/compression_method"/>
 
-    <com.google.android.material.card.MaterialCardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="5dp">
-    <Spinner
-        android:id="@+id/compression_method_input"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:padding="5dp"/>
-    </com.google.android.material.card.MaterialCardView>
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:layout_marginStart="5dp"
-        android:layout_marginBottom="5dp"
-        android:text="@string/compression_level"/>
-    <com.google.android.material.card.MaterialCardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="5dp">
-    <Spinner
-        android:id="@+id/compression_level_input"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:padding="5dp"/>
-    </com.google.android.material.card.MaterialCardView>
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:layout_marginStart="5dp"
-        android:layout_marginBottom="5dp"
-        android:text="@string/encryption_method"/>
-    <com.google.android.material.card.MaterialCardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="5dp">
-        <Spinner
-            android:id="@+id/encryption_method_input"
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:padding="5dp"/>
-    </com.google.android.material.card.MaterialCardView>
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp">
+            <Spinner
+                android:id="@+id/compression_method_input"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:padding="5dp"/>
+        </com.google.android.material.card.MaterialCardView>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginStart="5dp"
+            android:layout_marginBottom="5dp"
+            android:text="@string/compression_level"/>
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp">
+            <Spinner
+                android:id="@+id/compression_level_input"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:padding="5dp"/>
+        </com.google.android.material.card.MaterialCardView>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginStart="5dp"
+            android:layout_marginBottom="5dp"
+            android:text="@string/encryption_method"/>
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp">
+            <Spinner
+                android:id="@+id/encryption_method_input"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:padding="5dp"/>
+        </com.google.android.material.card.MaterialCardView>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:layout_marginStart="5dp"
-        android:layout_marginBottom="5dp"
-        android:text="@string/encryption_strength"/>
-    <com.google.android.material.card.MaterialCardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="5dp">
-        <Spinner
-            android:id="@+id/encryption_strength_input"
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginStart="5dp"
+            android:layout_marginBottom="5dp"
+            android:text="@string/encryption_strength"/>
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:padding="5dp"/>
-    </com.google.android.material.card.MaterialCardView>
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp">
+            <Spinner
+                android:id="@+id/encryption_strength_input"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:padding="5dp"/>
+        </com.google.android.material.card.MaterialCardView>
 
         <TextView
             android:layout_width="wrap_content"
@@ -128,15 +128,27 @@
             android:layout_margin="5dp"
             style="@style/Widget.Material3.CardView.Outlined"
             android:layout_height="wrap_content">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/passwordEditText"
-                style="@style/Widget.Material3.TextInputEditText.OutlinedBox"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/enter_password"
-                android:hyphenationFrequency="none"
-                android:inputType="textPassword"/>
+                android:orientation="horizontal">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/passwordEditText"
+                    style="@style/Widget.Material3.TextInputEditText.OutlinedBox"
+                    android:layout_width="0dp"                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="@string/enter_password"
+                    android:hyphenationFrequency="none"
+                    android:inputType="textPassword"/>
+                <ImageButton
+                    android:id="@+id/showPasswordButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    style="@style/Widget.Material3.Button.IconButton"
+                    android:src="@drawable/ic_visibility_off"
+                    android:contentDescription="Show password" />
+            </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
         <com.google.android.material.card.MaterialCardView
@@ -149,11 +161,10 @@
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
-            <com.google.android.material.checkbox.MaterialCheckBox
-                android:id="@+id/splitZipCheckbox"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-
+                <com.google.android.material.checkbox.MaterialCheckBox
+                    android:id="@+id/splitZipCheckbox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -164,7 +175,6 @@
                     android:textSize="16sp"
                     android:textStyle="bold"/>
             </RelativeLayout>
-
         </com.google.android.material.card.MaterialCardView>
 
         <TextView
@@ -176,30 +186,28 @@
             android:text="@string/split_size_mb"
             android:layout_margin="5dp"/>
 
-
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:layout_margin="5dp">
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="wrap_content"
-            app:cardCornerRadius="10dp"
-            android:layout_margin="5dp"
-            android:layout_weight="8"
-            style="@style/Widget.Material3.CardView.Outlined"
-            android:layout_height="wrap_content">
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="wrap_content"
+                app:cardCornerRadius="10dp"
+                android:layout_margin="5dp"
+                android:layout_weight="8"
+                style="@style/Widget.Material3.CardView.Outlined"
+                android:layout_height="wrap_content">
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/splitSizeEditText"
-                style="@style/Widget.Material3.TextInputEditText.OutlinedBox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="@string/_ten"
-                android:digits="1234567890"
-                android:inputType="number" />
-        </com.google.android.material.card.MaterialCardView>
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/splitSizeEditText"
+                    style="@style/Widget.Material3.TextInputEditText.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/_ten"
+                    android:digits="1234567890"
+                    android:inputType="number" />
+            </com.google.android.material.card.MaterialCardView>
 
             <com.google.android.material.card.MaterialCardView
                 style="@style/Widget.Material3.CardView.Outlined"
@@ -209,7 +217,6 @@
                 android:layout_gravity="center_vertical"
                 android:layout_weight="1"
                 app:cardCornerRadius="10dp">
-
                 <Spinner
                     android:id="@+id/splitSizeUnitSpinner"
                     android:layout_width="wrap_content"
@@ -217,5 +224,5 @@
                     android:entries="@array/split_size_units" />
             </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
-</LinearLayout>
+    </LinearLayout>
 </ScrollView>

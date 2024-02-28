@@ -69,4 +69,6 @@
     <string name="sevenz_creation_success">Fichier 7z créé avec succès</string>
     <string name="sevenz_creation_failed">Erreur pendant la création du fichier 7z</string>
     <string name="compress_sevenz">Compresser au format 7z</string>
+    <string name="please_wait_end_of_job">Veuillez patienter… si vous avez sélectionné des fichiers volumineux, cela peut prendre quelques instants</string>
+
 </resources>
