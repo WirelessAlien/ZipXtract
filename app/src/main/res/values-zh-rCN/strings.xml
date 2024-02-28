@@ -12,7 +12,11 @@
     <string name="directory_path">已选目录: %1$s</string>
     <string name="selected_file_cleared">文件选择已清空</string>
     <string name="pick_file_extract">请选择要提取的文件</string>
-    <string name="settings_info_text">以AES方式加密文件很耗时。如果你用的是低端设备，我们建议使用默认方式（ZIP_STANDARD）。</string>
+    <string name="settings_info_text">文件的默认加密方法是 AES，它提供了高级别的安全性。但是，请注意，AES 加密可能非常耗时，尤其是在低端设备上。
+\n
+\n对于设备功能较弱的用户，可以使用ZIP_STANDARD等替代方案。但是，请注意，此方法不提供与 AES 相同的安全级别。
+\n
+\n如果安全性是您最关心的问题，我们强烈建议您使用 AES，尽管它的处理时间较长。</string>
     <string name="file_picked_success">文件选取成功</string>
     <string name="selected_files_text">已选择文件: %1$d</string>
     <string name="folder">文件夹</string>
@@ -54,7 +58,7 @@
     <string name="file">文件</string>
     <string name="share">分享应用链接</string>
     <string name="enter_password">输入密码</string>
-    <string name="extraction_failed">提取失败: %1$s</string>
+    <string name="extraction_failed">提取失败:</string>
     <string name="zip_creation_success">Zip 文件创建成功</string>
     <string name="thread_count">线程数</string>
     <string name="sevenz_creation_success">7z 文件创建成功</string>
@@ -63,4 +67,9 @@
     <string name="solid_compression">固实压缩</string>
     <string name="sevenz_creation_failed">创建 7z 文件出错</string>
     <string name="compress_sevenz">压缩 7z</string>
+    <string name="please_wait_end_of_job">请等一会...如果您选择的是大文件，可能需要一些时间</string>
+    <string name="encryption_strength">加密强度</string>
+    <string name="_ten">默认为64KB</string>
+    <string name="split_zip">Zip分卷</string>
+    <string name="split_size_mb">分卷大小</string>
 </resources>
