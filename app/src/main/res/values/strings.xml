@@ -53,7 +53,7 @@
     <string name="compression_settings">Compression Settings</string>
     <string name="file_picked_success">File Picked Successfully</string>
     <string name="file_picked_fail">No file selected</string>
-    <string name="settings_info_text">Encrypting files with the AES encryption method is time-consuming. If you have a low end device, it is recommended to use the default method (ZIP_STANDARD).</string>
+    <string name="settings_info_text">The default encryption method for files is AES, which provides a high level of security. However, please be aware that AES encryption can be time-consuming, particularly on lower-end devices.\n\nFor users with less powerful devices, an alternative like ZIP_STANDARD can be use. However, please note that this method does not offer the same level of security as AES.\n\nIf security is your primary concern, we strongly recommend using AES despite its longer processing time.</string>
     <string name="ok">OK</string>
     <string name="output_directory_cleared">Output directory cleared</string>
     <string name="selected_file_cleared">Selected File Cleared</string>
@@ -79,7 +79,7 @@
     <string name="select_output_directory_extract">Please select where to extract the files</string>
     <string name="archive_file_name_failed">Failed to get the archive file name</string>
     <string name="invalid_uri">Invalid archive file URI</string>
-    <string name="extraction_failed">Extraction Failed: %1$s</string>
+    <string name="extraction_failed">Extraction Failed:</string>
     <string name="no_password">No Password</string>
     <string name="extraction_success">File extracted successfully</string>
     <string name="share">Share App Link</string>
@@ -90,4 +90,10 @@
     <string name="max_available_thread">0 for maximum available threads</string>
     <string name="solid_compression">Solid Compression</string>
     <string name="enter_name_of_archive_optional">Enter Name of Archive (Optional)</string>
+    <string name="split_size_mb">Split Size</string>
+    <string name="split_zip">Split Zip</string>
+    <string name="encryption_strength">Encryption Strength</string>
+    <string name="_ten">Default is 64kb</string>
+    <string name="percent_complete">%d %%</string>
+    <string name="please_wait_end_of_job">Please Wait…If you have selected large files, it may take a few moments</string>
 </resources>
