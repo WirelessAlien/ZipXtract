@@ -14,6 +14,10 @@ It can extract rar, zip, tar, bz2, gz, 7z, jar, z & xz etc.
 
 - [x] Added extraction support for RAR (RAR5 supported) with multi-volume
 
+- [x] Added extraction support for Split Zip
+
+- [x] Added Split Zip creation ability
+
 
 - [ ] Multi-volume 7z extraction ability will be added.
 
