@@ -40,7 +40,11 @@
     <string name="password">contraseña</string>
     <string name="selected_file_cleared">Archivo seleccionado borrado</string>
     <string name="pick_file_extract">Por favor, elija un archivo para extraer</string>
-    <string name="settings_info_text">Cifrar archivos con el método de cifrado AES lleva mucho tiempo. Si tienes un dispositivo de gama baja, se recomienda utilizar el método por defecto (ZIP_STANDARD).</string>
+    <string name="settings_info_text">El método de cifrado predeterminado para los archivos es AES, que proporciona un alto nivel de seguridad. Sin embargo, ten en cuenta que el cifrado AES puede llevar mucho tiempo, sobre todo en dispositivos de gama baja.
+\n
+\nPara usuarios con dispositivos menos potentes, se puede utilizar una alternativa como ZIP_STANDARD. Sin embargo, ten en cuenta que este método no ofrece el mismo nivel de seguridad que AES.
+\n
+\nSi la seguridad es su principal preocupación, le recomendamos encarecidamente que utilice AES a pesar de su mayor tiempo de procesamiento.</string>
     <string name="file_picked_success">Fichero seleccionado con éxito</string>
     <string name="output_file_name">outputZip.zip</string>
     <string name="select_output_directory">Por favor, seleccione la ruta de salida</string>
@@ -64,7 +68,7 @@
     <string name="encrypt">Cifrar</string>
     <string name="share">Compartir el enlace de la aplicación</string>
     <string name="enter_password">Introduzca la contraseña</string>
-    <string name="extraction_failed">Error de extracción: %1$s</string>
+    <string name="extraction_failed">La extracción ha fallado:</string>
     <string name="zip_creation_success">El archivo Zip fue creado correctamente</string>
     <string name="compress_sevenz">Comprimir en 7z</string>
     <string name="thread_count">Número de hilos</string>
@@ -73,4 +77,9 @@
     <string name="sevenz_creation_failed">Error al crear el archivo 7z</string>
     <string name="max_available_thread">0 para el máximo de hilos disponibles</string>
     <string name="solid_compression">Compresión sólida</string>
+    <string name="split_size_mb">Tamaño partido</string>
+    <string name="split_zip">Tamaño del zip</string>
+    <string name="encryption_strength">Fuerza del cifrado</string>
+    <string name="_ten">Por defecto es 64kb</string>
+    <string name="please_wait_end_of_job">Por favor, espere... Si ha seleccionado archivos de gran tamaño, puede tardar unos instantes</string>
 </resources>
