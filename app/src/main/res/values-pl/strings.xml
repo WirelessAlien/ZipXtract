@@ -33,7 +33,7 @@
     <string name="create_zip">Skompresuj do ZIP</string>
     <string name="select_output_directory_extract">Wybierz, gdzie chcesz wypakować pliki</string>
     <string name="invalid_uri">Błędny URI pliku archiwum</string>
-    <string name="extraction_failed">Nie udało się wypakować : %1$s</string>
+    <string name="extraction_failed">Nie udało się wypakować:</string>
     <string name="no_password">Brak hasła</string>
     <string name="extraction_success">Plik wypakowany pomyślnie</string>
     <string name="share">Udostępnij link do aplikacji</string>
@@ -55,4 +55,14 @@
     <string name="pick_file">Wybierz plik</string>
     <string name="selected_file_text">Wybrany plik: %1$s</string>
     <string name="folder">Folder</string>
+    <string name="sevenz_creation_success">Pomyślnie stworzono plik 7z</string>
+    <string name="sevenz_creation_failed">Błąd przy tworzeniu pliku 7z</string>
+    <string name="compress_sevenz">Kompresuj do pliku 7z</string>
+    <string name="thread_count">Liczba wątków</string>
+    <string name="max_available_thread">0 dla wszystkich dostępnych wątków</string>
+    <string name="enter_name_of_archive_optional">Wprowadź nazwę archiwum (opcjonalnie)</string>
+    <string name="archive_file_name_failed">Nie udało się uzyskać nazwy pliku archiwum</string>
+    <string name="encryption_strength">Siła szyfrowania</string>
+    <string name="_ten">Domyślnie 64kb</string>
+    <string name="please_wait_end_of_job">Proszę poczekać… Jeżeli wybrano pliki o dużym rozmiarze może to potrwać kilka chwil</string>
 </resources>
