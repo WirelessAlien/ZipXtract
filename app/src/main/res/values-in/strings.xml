@@ -7,7 +7,7 @@
     <string name="select">Pilih</string>
     <string name="file">Berkas</string>
     <string name="save_zip_to">Lokasi Zip</string>
-    <string name="no_directory_selected">Tidak ada direktori yg dipili</string>
+    <string name="no_directory_selected">Tidak ada direktori yg dipilih</string>
     <string name="create_zip">ZIP Kompresi</string>
     <string name="files">Paket</string>
     <string name="folder">Folder</string>
@@ -23,11 +23,11 @@
     <string name="selected_files_text">Berkas yg dipilih: %1$d</string>
     <string name="percent">%</string>
     <string name="version">Versi:</string>
-    <string name="zip_creation_failed">Gagal memuat berkas zip</string>
+    <string name="zip_creation_failed">Gagal membuat berkas zip</string>
     <string name="_ten">Bawaan di 64kb</string>
     <string name="create">Buat</string>
     <string name="encryption_method">Metode Enkripsi</string>
-    <string name="compression_level">Level kompresi</string>
+    <string name="compression_level">Level Kompresi</string>
     <string name="compression_method">Metode Kompresi</string>
     <string name="compression_settings">Pengaturan Kompresi</string>
     <string name="file_picked_success">Berhasil Memilih Berkas</string>
@@ -40,8 +40,8 @@
     <string name="ok">Oke</string>
     <string name="output_directory_cleared">Direktori tujuan dihapus</string>
     <string name="selected_file_cleared">Berkas dipilih dihapus</string>
-    <string name="enter_password">Masukkan Kata Kunci</string>
-    <string name="password">Kata Kunci</string>
+    <string name="enter_password">Masukkan Kata Sandi</string>
+    <string name="password">Kata Sandi</string>
     <string name="zip_without_zip">Nama berkas ZIP (tanpa .zip)</string>
     <string name="encrypt">Enkripsi</string>
     <string name="output_file_name">hasilZip.zip</string>
@@ -49,7 +49,7 @@
     <string name="please_select_files">Pilih berkas</string>
     <string name="select_output_directory">Pilih direktori tujuan</string>
     <string name="files_select_request">Pilih berkas</string>
-    <string name="open_folder">Buka Direktori</string>
+    <string name="open_folder">Buka Folder</string>
     <string name="save">Simpan</string>
     <string name="zip_creation_success">Berhasil membuat berkas Zip</string>
     <string name="copied_to_clipboard">Salin ke Papan Klip</string>
@@ -61,7 +61,7 @@
     <string name="select_output_directory_extract">Pilih lokasi tujuan ekstraksi berkas</string>
     <string name="archive_file_name_failed">Gagal memperoleh nama arsip</string>
     <string name="invalid_uri">URI Arsip tidak valid</string>
-    <string name="no_password">Tidak Ada Kata Kunci</string>
+    <string name="no_password">Tidak Ada Kata Sandi</string>
     <string name="extraction_failed">Gagal Ekstraksi:</string>
     <string name="share">Berbagi Link Aplikasi</string>
     <string name="sevenz_creation_failed">Gagal membuat berkas 7z</string>
