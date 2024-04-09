@@ -1,2 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <string name="extract">Estrai</string>
+    <string name="selected_file_text">File selezionato:%1$s</string>
+    <string name="directory_path">Cartella selezionata:%1$s</string>
+    <string name="not_selected">Non selezionato</string>
+    <string name="version">Versione:</string>
+    <string name="save_zip_to">Salva zip in</string>
+    <string name="create_zip">Comprimi in ZIP</string>
+    <string name="select">Seleziona</string>
+    <string name="files">File multipli</string>
+    <string name="create">Crea</string>
+    <string name="encryption_method">Metodo cifratura</string>
+    <string name="compression_level">Livello di compressione</string>
+    <string name="compression_method">Metodo di compressione</string>
+    <string name="compression_settings">Opzioni di compressione</string>
+    <string name="output_directory_cleared">Cartella di destinazione cancellata</string>
+    <string name="password">password</string>
+    <string name="zip_creation_success">File zip cancellato correttamente</string>
+    <string name="permission_required">È richiesto il permesso di accesso all\'archivio per estrarre i file</string>
+    <string name="open_settings">Apri impostazioni</string>
+    <string name="cancel">Annulla</string>
+    <string name="extraction_failed">Estrazione fallita:</string>
+    <string name="no_password">Senza password</string>
+    <string name="sevenz_creation_failed">Errore durante la creazione del file 7z</string>
+    <string name="compress_sevenz">Comprimi in 7z</string>
+    <string name="solid_compression">Compressione solida</string>
+    <string name="enter_name_of_archive_optional">Inserisci nome dell\'archivio (facoltativo)</string>
+    <string name="split_size_mb">Dimensione da dividere</string>
+    <string name="split_zip">Dividi zip</string>
+    <string name="encryption_strength">Forza cifratura</string>
+    <string name="_ten">Predefinito 64kb</string>
+    <string name="please_wait_end_of_job">Attendere... se hai selezionato file grandi, potrebbe volerci qualche momento</string>
+    <string name="pick_file">Seleziona file</string>
+    <string name="extract_to">Estrai in</string>
+    <string name="no_file_selected">Nessun file selezionato</string>
+    <string name="selected_files_text">File selezionati:%1$d</string>
+    <string name="no_directory_selected">Nessuna cartella selezionata</string>
+    <string name="percent">%</string>
+    <string name="donate">Dona</string>
+    <string name="file">File singolo</string>
+    <string name="folder">Cartella</string>
+    <string name="liberapay">Liberapay</string>
+    <string name="file_picked_success">File selezionato correttamente</string>
+    <string name="file_picked_fail">Nessun file selezionato</string>
+    <string name="settings_info_text">Il metodo di cifratura predefinito per i file è AES, che offre un alto livello di sicurezza. Tuttavia, tieni a mente che la cifratura con AES può richiedere molto tempo, soprattutto su dispositivi di bassa gamma.
+\n
+\nPer gli utenti con dispositivi meno potenti, è possibile utilizzare un\'alternativa come ZIP_STANDARD. Tuttavia, tieni a mente che questo metodo non offre lo stesso livello di sicurezza di AES.
+\n
+\nSe la sicurezza è la priorità, consigliamo fortemente di usare AES nonostante i tempi di elaborazione più lunghi.</string>
+    <string name="ok">OK</string>
+    <string name="selected_file_cleared">File selezionato cancellato</string>
+    <string name="enter_password">Inserisci password</string>
+    <string name="zip_without_zip">Nome del zip (senza .zip)</string>
+    <string name="encrypt">Cifra</string>
+    <string name="output_file_name">outputZip.zip</string>
+    <string name="not_encrypted">Non cifrato</string>
+    <string name="please_select_files">Selezionare i file</string>
+    <string name="files_select_request">Seleziona i file</string>
+    <string name="save">Salva</string>
+    <string name="permission_denied">Permesso negato</string>
+    <string name="zip_creation_failed">Errore durante la creazione del file zip</string>
+    <string name="select_output_directory">Seleziona la cartella d\'uscita</string>
+    <string name="open_folder">Apri cartella</string>
+    <string name="copied_to_clipboard">Copiato negli appunti</string>
+    <string name="pick_file_extract">Seleziona un file da estrarre</string>
+    <string name="select_output_directory_extract">Selezionare dove estrarre i file</string>
+    <string name="archive_file_name_failed">Errore durante l\'ottenimento del nome del file dell\'archivio</string>
+    <string name="invalid_uri">URI del file dell\'archivio non valido</string>
+    <string name="extraction_success">File estratto correttamente</string>
+    <string name="share">Condividi link app</string>
+    <string name="sevenz_creation_success">File 7z creato correttamente</string>
+    <string name="thread_count">Numero thread</string>
+    <string name="max_available_thread">0 per il numero massimo di thread</string>
+</resources>
