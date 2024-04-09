@@ -20,7 +20,7 @@
     <string name="pick_file">Pilih Berkas</string>
     <string name="enter_name_of_archive_optional">Isikan nama arsip (opsional)</string>
     <string name="no_file_selected">Tidak ada berkas yg dipilih</string>
-    <string name="selected_files_text">Berkas yg dipilih: %1$d</string>
+    <string name="selected_files_text">Paket yg dipilih: %1$d</string>
     <string name="percent">%</string>
     <string name="version">Versi:</string>
     <string name="zip_creation_failed">Gagal membuat berkas zip</string>
