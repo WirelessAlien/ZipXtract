@@ -24,4 +24,6 @@
     <string name="settings_info_text">Mã hóa tệp bằng phương pháp mã hóa AES tốn nhiều thời gian. Nếu bạn có thiết bị cấp thấp, bạn nên sử dụng phương pháp mặc định (ZIP_TIÊU CHUẨN).</string>
     <string name="no_file_selected">Chưa chọn tệp nào</string>
     <string name="encryption_method">Phương pháp mã hóa</string>
+    <string name="file_picked_fail">Chưa chọn tệp nào</string>
+    <string name="cancel">Hủy</string>
 </resources>
