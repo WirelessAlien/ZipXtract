@@ -39,7 +39,7 @@ It can extract rar, zip, tar, bz2, gz, 7z, jar, z & xz etc.
 
 
 ###  RAR extraction and 7z compression feature not available in F-Droid version of the app
-###  Complete version can be get from IzzyOnDroid and Github Release
+###  Complete version is available on IzzyOnDroid and Github Release
 
 ### Translate
 
