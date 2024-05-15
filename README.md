@@ -4,6 +4,7 @@
 [![GitHub license](https://img.shields.io/github/license/WirelessAlien/ZipXtract)](https://github.com/WirelessAlien/ZipXtract/blob/master/License)
 [![GitHub Repo stars](https://img.shields.io/github/stars/WirelessAlien/ZipXtract)](https://img.shields.io/github/stars/WirelessAlien/ZipXtract)
 [![GitHub all releases](https://img.shields.io/github/downloads/WirelessAlien/ZipXtract/total)](https://img.shields.io/github/downloads/WirelessAlien/ZipXtract/total)
+![IzzyOnDroid](https://img.shields.io/endpoint?url=https://apt.izzysoft.de/fdroid/api/v1/shield/com.wirelessalien.zipxtract)
 [![F-Droid](https://img.shields.io/f-droid/v/com.wirelessalien.zipxtract?logo=F-Droid)](https://f-droid.org/packages/com.wirelessalien.zipxtract)
 
 It can extract rar, zip, tar, bz2, gz, 7z, jar, z & xz etc.
@@ -25,13 +26,20 @@ It can extract rar, zip, tar, bz2, gz, 7z, jar, z & xz etc.
 
 * Contributions are greatly appreciated.
 
+[<img src="https://github.com/WirelessAlien/ZipXtract/assets/121420261/3857dcf6-8560-4b1a-bfcd-0e12afa18b95"
+    alt="Get it on GitHub"
+    height="80">](https://github.com/WirelessAlien/ZipXtract/releases)
+[<img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png"
+     alt="Get it on IzzyOnDroid"
+     height="80">](https://apt.izzysoft.de/fdroid/index/apk/com.wirelessalien.zipxtract/)
 [<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
-     alt="Get it on F-Droid"
-     height="80">](https://f-droid.org/packages/com.wirelessalien.zipxtract/)
+    alt="Get it on F-Droid"
+    height="80">](https://f-droid.org/en/packages/com.wirelessalien.zipxtract/)
 
-### RAR extraction and 7z compression feature not available in F-Droid version of the app
 
-Download the latest APK from the [Releases Section](https://github.com/WirelessAlien/ZipXtract/releases/latest).
+
+###  RAR extraction and 7z compression feature not available in F-Droid version of the app
+###  Complete version can be get from IzzyOnDroid and Github Release
 
 ### Translate
 
