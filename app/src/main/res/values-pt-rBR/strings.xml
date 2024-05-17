@@ -56,4 +56,16 @@
     <string name="enter_password">Digite a Senha</string>
     <string name="extraction_failed">A Extração Falhou: %1$s</string>
     <string name="zip_creation_success">Arquivo Zip criado com sucesso</string>
+    <string name="sevenz_creation_success">Arquivo 7z criado com sucesso</string>
+    <string name="sevenz_creation_failed">Erro ao criar o arquivo 7z</string>
+    <string name="compress_sevenz">Comprimir 7z</string>
+    <string name="thread_count">Contagem de Threads</string>
+    <string name="max_available_thread">0 para o máximo de threads disponíveis</string>
+    <string name="enter_name_of_archive_optional">Digite o nome do arquivo (opcional)</string>
+    <string name="solid_compression">Compactação sólida</string>
+    <string name="split_zip">Dividir Zip</string>
+    <string name="split_size_mb">Dividir Tamanho</string>
+    <string name="encryption_strength">Intensidade da encriptação</string>
+    <string name="_ten">O padrão é 64kb</string>
+    <string name="please_wait_end_of_job">Aguarde... Se você selecionou arquivos grandes, isso pode levar alguns minutos</string>
 </resources>
