@@ -31,7 +31,7 @@
     <string name="compression_method">Metode Kompresi</string>
     <string name="compression_settings">Pengaturan Kompresi</string>
     <string name="file_picked_success">Berhasil Memilih Berkas</string>
-    <string name="settings_info_text">Metode enkripsi bawaan adalah AES, level keamanan data tinggi. Namun, AES membutuhkan proses yang memakan waktu, terutama pada gawai kelas bawah.
+    <string name="settings_info_text">Metode enkripsi bawaan adalah AES, dengan keamanan data level tinggi. Namun, AES membutuhkan proses yang memakan waktu, terutama pada gawai kelas bawah.
 \n
 \nUntuk pengguna dengan gawai dimaksud, pilih metode ZIP_STANDARD. Metode enkripsi ini tidak menyediakan level keamanan yang sama dengan AES.
 \n
@@ -71,5 +71,5 @@
     <string name="please_wait_end_of_job">Silahkan Tunggu...Jika berkas berukuran besar, akan memakan waktu sebentar</string>
     <string name="encryption_strength">Kekuatan Enkripsi</string>
     <string name="split_size_mb">Ukuran Split</string>
-    <string name="split_zip">Split Zip</string>
+    <string name="split_zip">Zip Split</string>
 </resources>
