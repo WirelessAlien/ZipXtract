@@ -1,0 +1,1 @@
+Fritt verktøy for utpakking av ZIP, RAR, TAR, BZ2, GZ, 7z, JAR og Z osv. Kryptert .zip og, .7z og .rar -filer støttes også. Kan brukes til å pakke sammen ZIP og 7z. Fremdeles under utvikling. Send feilrapporter på GitHub : https://github.com/WirelessAlien/ZipXtract
