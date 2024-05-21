@@ -12,7 +12,7 @@
     <string name="liberapay">Liberapay</string>
     <string name="version">Versjon:</string>
     <string name="not_selected">Ikke valgt</string>
-    <string name="create_zip">Opprett ZIP</string>
+    <string name="create_zip">Pakk sammen ZIP</string>
     <string name="github_icon">GitHub-ikon</string>
     <string name="pick_file">Velg fil</string>
     <string name="files">Filer</string>
@@ -24,4 +24,10 @@
     <string name="share_icon">Delingsikon</string>
     <string name="file">Fil</string>
     <string name="file_picked_fail">Ingen fil valgt</string>
+    <string name="ok">OK</string>
+    <string name="create">Opprett</string>
+    <string name="encryption_method">Krypteringsmetode</string>
+    <string name="compression_level">Sammenpakkingsnivå</string>
+    <string name="compression_method">Sammenpakkingsmetode</string>
+    <string name="compression_settings">Sammenpakkingsinnstillinger</string>
 </resources>
