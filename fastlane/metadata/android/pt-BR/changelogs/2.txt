@@ -1,0 +1,1 @@
+Ampliar o suporte a tar, bz2, gz, 7z e xz.

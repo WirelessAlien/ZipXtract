@@ -1,0 +1,3 @@
+Adição do recurso de criação de zip (criptografado e não criptografado) #9 
+Adicionada uma caixa de diálogo de doação #11 
+Adicionado método para limpar o cache #8

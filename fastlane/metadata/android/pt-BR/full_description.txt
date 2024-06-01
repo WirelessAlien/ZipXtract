@@ -1,0 +1,1 @@
+Uma ferramenta totalmente de código aberto para extrair arquivos zip, rar, tar, bz2, gz, 7z, xz, jar e z etc. Também oferece suporte a arquivos .zip, .7z e .rar criptografados. Ele pode ser usado para compactar zip e 7z. Este aplicativo ainda está em desenvolvimento, qualquer solicitação de recurso, informe o problema no Github: https://github.com/WirelessAlien/ZipXtract

@@ -1,0 +1,1 @@
+Foi adicionada a capacidade de abrir arquivos a partir do gerenciador de arquivos #4 #6
