@@ -14,7 +14,11 @@
     <string name="directory_path">Pasta Selecionada: %1$s</string>
     <string name="selected_file_cleared">Arquivo Selecionado Limpado</string>
     <string name="pick_file_extract">Por favor selecione um arquivo para extrair</string>
-    <string name="settings_info_text">Encriptar arquivos com a encriptação AES é demorado. Se você tem um dispositivo mais fraco, é recomendado usar a encriptação padrão (ZIP_STANDARD).</string>
+    <string name="settings_info_text">O método de criptografia padrão para arquivos é o AES, que oferece um alto nível de segurança. No entanto, esteja ciente de que a criptografia AES pode ser demorada, principalmente em dispositivos de baixa performance.
+\n
+\nPara usuários com dispositivos menos potentes, é possível usar uma alternativa como o ZIP_STANDARD. No entanto, saiba que esse método não oferece o mesmo nível de segurança que o AES.
+\n
+\nSe a segurança for sua principal preocupação, recomendamos fortemente o uso do AES, apesar de seu tempo de processamento mais longo.</string>
     <string name="file_picked_success">Arquivo Selecionado com Sucesso</string>
     <string name="selected_files_text">Arquivos Selecionados: %1$d</string>
     <string name="folder">Pasta</string>
@@ -54,7 +58,7 @@
     <string name="file">Arquivo</string>
     <string name="share">Compartilhar o Link pro Aplicativo</string>
     <string name="enter_password">Digite a Senha</string>
-    <string name="extraction_failed">A Extração Falhou: %1$s</string>
+    <string name="extraction_failed">A Extração Falhou:</string>
     <string name="zip_creation_success">Arquivo Zip criado com sucesso</string>
     <string name="sevenz_creation_success">Arquivo 7z criado com sucesso</string>
     <string name="sevenz_creation_failed">Erro ao criar o arquivo 7z</string>
