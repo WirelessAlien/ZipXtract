@@ -1,0 +1,1 @@
+Aplikasi terbuka yang berfungsi untuk mengekstak zip, rar, tar, bz2, gz, 7z, xz, jar & z dll. Mendukung file zip, 7z, dan rar terenkripsi. Dapat digunakan untuk mengompresi zip dan 7z. Aplikasi masih dalam tahap pengembangan, laporan masalah dan permintaan fitur disampaikan di Github: https://github.com/WirelessAlien/ZipXtract

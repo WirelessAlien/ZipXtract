@@ -1,0 +1,1 @@
+Tambahan dukungan untuk tar, bz2, gz, 7z dan xz.

@@ -1,0 +1,3 @@
+Tambahan kemampuan membuat zip (Terenkripsi dan tidak) #9
+Tambahan dialog untuk donasi #11
+Tambahan metode untuk membersihkan cache #8

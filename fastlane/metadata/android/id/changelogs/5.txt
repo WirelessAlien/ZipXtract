@@ -1,0 +1,3 @@
+Tambahan kemampuan untuk mengekstraksi berkas 7z & zip terenkripsi
+Tambahan dukungan untuk jar, z
+Tambahan kemampuan pantau progres untuk zip, 7z
