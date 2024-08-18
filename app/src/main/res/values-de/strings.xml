@@ -58,7 +58,7 @@
     <string name="file">Datei</string>
     <string name="share">App-Link teilen</string>
     <string name="enter_password">Password eingeben</string>
-    <string name="extraction_failed">Entpacken fehlgeschlagen: %1$s</string>
+    <string name="extraction_failed">Entpacken fehlgeschlagen:</string>
     <string name="zip_creation_success">Zip-Datei erfolgreich erstellt</string>
     <string name="sevenz_creation_success">7z-Datei erfolgreich erstellt</string>
     <string name="sevenz_creation_failed">Erstellen der 7z-Datei fehlgeschlagen</string>
