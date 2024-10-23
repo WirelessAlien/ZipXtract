@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="selected_files_text">Избрани файлове: %1$d</string>
-    <string name="extract_to">Извлечение от</string>
+    <string name="extract_to">Извлечи от</string>
     <string name="directory_path">Избрана папка: %1$s</string>
     <string name="no_file_selected">Няма избран файл</string>
     <string name="percent">%</string>
@@ -38,7 +38,7 @@
     <string name="_ten">По подразбиране е 64kb</string>
     <string name="please_wait_end_of_job">Моля, изчакайте... Ако сте избрали големи файлове, може да отнеме няколко минути</string>
     <string name="pick_file">Избери файл</string>
-    <string name="extract">Извлечение</string>
+    <string name="extract">Извлечи</string>
     <string name="no_directory_selected">Няма избрана директория</string>
     <string name="version">Версия:</string>
     <string name="not_selected">Няма избран</string>
@@ -66,6 +66,6 @@
     <string name="pick_file_extract">Моля, изберете файл за извличане</string>
     <string name="permission_denied">Разрешението е отказано</string>
     <string name="extraction_failed">Неуспешно извличане:</string>
-    <string name="archive_file_name_failed">Неуспешно получаване на името на архивния файл</string>
+    <string name="archive_file_name_failed">Неуспешно получаване името на архивния файл</string>
     <string name="sevenz_creation_success">7z файлът е създаден успешно</string>
 </resources>
