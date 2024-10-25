@@ -3,7 +3,7 @@
     <string name="selected_files_text">Избрани файлове: %1$d</string>
     <string name="extract_to">Извлечи от</string>
     <string name="directory_path">Избрана папка: %1$s</string>
-    <string name="no_file_selected">Няма избран файл</string>
+    <string name="no_file_selected">Няма Избран Файл</string>
     <string name="percent">%</string>
     <string name="save_zip_to">Запази Zip в</string>
     <string name="create_zip">Компресирай ZIP</string>
