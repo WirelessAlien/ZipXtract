@@ -1,0 +1,3 @@
+Şifrelenmiş 7z ve zip dosyasını çıkarma özelliği eklendi
+Kavanoza genişletilmiş destek, z
+Zip, 7z için ilerleme monitörü eklendi

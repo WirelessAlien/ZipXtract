@@ -1,0 +1,1 @@
+Hata Düzeltme: Büyük 7z arşivlerini açarken BellekBittiHatası

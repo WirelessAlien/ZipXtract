@@ -1,0 +1,1 @@
+ZipXtract arşiv çıkarabilir ve oluşturabilir

@@ -1,0 +1,1 @@
+Dosya yöneticisinden dosya açma özelliği eklendi #4 #6

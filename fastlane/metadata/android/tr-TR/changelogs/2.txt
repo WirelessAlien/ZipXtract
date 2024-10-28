@@ -1,0 +1,1 @@
+Desteği tar, bz2, gz, 7z ve xz'ye genişletin.

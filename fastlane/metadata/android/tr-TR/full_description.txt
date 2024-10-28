@@ -1,0 +1,1 @@
+Zip, rar, tar, bz2, gz, 7z, xz, jar ve z vb. ayıklamak için tamamen açık kaynaklı bir araç. Şifrelenmiş .zip, .7z ve .rar dosyası da desteklenir. Zip ve 7z sıkıştırmak için kullanılabilir. Bu uygulama hâlâ geliştirme aşamasındadır, herhangi bir özellik isteği, Github'da sorunu bildirin: https://github.com/WirelessAlien/ZipXtract

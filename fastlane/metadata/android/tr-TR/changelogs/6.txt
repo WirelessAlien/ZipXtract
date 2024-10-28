@@ -1,0 +1,3 @@
+Zip oluşturma yeteneği eklendi (şifreli ve şifresiz) #9 
+Bağış iletişim kutusu eklendi #11 
+Önbelleği temizlemek için yöntem eklendi #8
