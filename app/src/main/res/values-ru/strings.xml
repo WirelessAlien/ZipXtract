@@ -4,7 +4,7 @@
     <string name="extract_to">Распаковать в</string>
     <string name="not_selected">Не выбрано</string>
     <string name="save_zip_to">Сохранить Zip в</string>
-    <string name="donate">Пожертовать</string>
+    <string name="donate">Пожертвовать</string>
     <string name="create">Создать</string>
     <string name="encryption_method">Метод шифрования</string>
     <string name="compression_level">Уровень сжатия</string>
@@ -71,4 +71,5 @@
     <string name="liberapay">Liberapay</string>
     <string name="output_file_name">outputZip.zip</string>
     <string name="solid_compression">Непрерывный архив</string>
+    <string name="percent">%</string>
 </resources>
