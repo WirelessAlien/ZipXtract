@@ -1,0 +1,1 @@
+完全開放原始碼的工具，能夠解壓縮 zip、rar、tar、bz2、gz、7z、xz、jar 和 z 等。亦支援加密的 .zip、.7z 和 .rar 檔案。可壓縮成 zip 和 7z。此應用程式仍在開發中，如有功能請求或問題報告，請移步至 Github: https://github.com/WirelessAlien/ZipXtract
