@@ -13,10 +13,10 @@
     <string name="file_picked_success">கோப்பு வெற்றிகரமாக எடுக்கப்பட்டது</string>
     <string name="extract_to">பிரித்தெடுக்க</string>
     <string name="not_selected">தேர்ந்தெடுக்கப்படவில்லை</string>
-    <string name="selected_file_text">தேர்ந்தெடுக்கப்பட்ட கோப்பு: %1 $ s</string>
-    <string name="directory_path">தேர்ந்தெடுக்கப்பட்ட கோப்புறை: %1 $ s</string>
-    <string name="no_file_selected">எந்த கோப்பும் தேர்வு செய்ய படவில்லை</string>
-    <string name="selected_files_text">தேர்ந்தெடுக்கப்பட்ட கோப்புகள்: %1 $ டி</string>
+    <string name="selected_file_text">தேர்ந்தெடுக்கப்பட்ட கோப்பு: %1$s</string>
+    <string name="directory_path">தேர்ந்தெடுக்கப்பட்ட கோப்புறை: %1$s</string>
+    <string name="no_file_selected">எந்தக் கோப்பும் தேர்வு செய்யப் படவில்லை</string>
+    <string name="selected_files_text">தேர்ந்தெடுக்கப்பட்ட கோப்புகள்: %1$d</string>
     <string name="no_directory_selected">எந்த கோப்பகமும் தேர்ந்தெடுக்கப்படவில்லை</string>
     <string name="percent">%</string>
     <string name="version">பதிப்பு:</string>
@@ -29,7 +29,7 @@
     <string name="compression_method">சுருக்க முறை</string>
     <string name="compression_settings">சுருக்க அமைப்புகள்</string>
     <string name="donate">நன்கொடை</string>
-    <string name="file_picked_fail">எந்த கோப்பும் தேர்வு செய்ய படவில்லை</string>
+    <string name="file_picked_fail">எந்தக் கோப்பும் தேர்வு செய்யப் படவில்லை</string>
     <string name="sevenz_creation_failed">7Z கோப்பை உருவாக்கும் பிழை</string>
     <string name="compress_sevenz">சுருக்க 7Z</string>
     <string name="thread_count">நூல் எண்ணிக்கை</string>
@@ -41,9 +41,7 @@
     <string name="encryption_strength">குறியாக்க வலிமை</string>
     <string name="_ten">இயல்புநிலை 64KB</string>
     <string name="please_wait_end_of_job">தயவுசெய்து காத்திருங்கள்… நீங்கள் பெரிய கோப்புகளைத் தேர்ந்தெடுத்திருந்தால், அதற்கு சில தருணங்கள் ஆகலாம்</string>
-    <string name="settings_info_text">கோப்புகளுக்கான இயல்புநிலை குறியாக்க முறை AES ஆகும், இது உயர் மட்ட பாதுகாப்பை வழங்குகிறது. இருப்பினும், AES குறியாக்கம் நேரத்தை எடுத்துக்கொள்ளும் என்பதை நினைவில் கொள்க, குறிப்பாக குறைந்த-இறுதி சாதனங்களில்.
-\n குறைந்த சக்திவாய்ந்த சாதனங்களைக் கொண்ட பயனர்களுக்கு, zip_standard போன்ற மாற்று பயன்படுத்தப்படலாம். இருப்பினும், இந்த முறை AES இன் அதே அளவிலான பாதுகாப்பை வழங்காது என்பதை நினைவில் கொள்க.
-\n பாதுகாப்பு உங்கள் முதன்மை அக்கறையாக இருந்தால், AES அதன் நீண்ட செயலாக்க நேரம் இருந்தபோதிலும் பயன்படுத்த நாங்கள் கடுமையாக பரிந்துரைக்கிறோம்.</string>
+    <string name="settings_info_text">கோப்புகளுக்கான இயல்புநிலை குறியாக்க முறை AES ஆகும், இது உயர் மட்ட பாதுகாப்பை வழங்குகிறது. இருப்பினும், AES குறியாக்கம் நேரத்தை எடுத்துக்கொள்ளும் என்பதை நினைவில் கொள்க, குறிப்பாக குறைந்த-இறுதி சாதனங்களில்.\n\n குறைந்த சக்திவாய்ந்த சாதனங்களைக் கொண்ட பயனர்களுக்கு, zip_standard போன்ற மாற்று பயன்படுத்தப்படலாம். இருப்பினும், இந்த முறை AES இன் அதே அளவிலான பாதுகாப்பை வழங்காது என்பதை நினைவில் கொள்க.\n\n பாதுகாப்பு உங்கள் முதன்மை அக்கறையாக இருந்தால், AES அதன் நீண்ட செயலாக்க நேரம் இருந்தபோதிலும் பயன்படுத்த நாங்கள் கடுமையாகப் பரிந்துரைக்கிறோம்.</string>
     <string name="ok">சரி</string>
     <string name="output_directory_cleared">வெளியீட்டு அடைவு அழிக்கப்பட்டது</string>
     <string name="selected_file_cleared">தேர்ந்தெடுக்கப்பட்ட கோப்பு அழிக்கப்பட்டது</string>
