@@ -22,6 +22,8 @@ It can extract rar, zip, tar, bz2, gz, 7z, jar, z & xz etc.
 
 - [ ] Multi-volume 7z extraction ability will be added.
 
+#### I am currently rewriting the app's source code. A new version will be released shortly.
+
 ### Contribution
 
 * Contributions are greatly appreciated.
