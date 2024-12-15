@@ -30,12 +30,10 @@ import android.provider.OpenableColumns
 import android.provider.Settings
 import android.system.ErrnoException
 import android.system.OsConstants
-import android.text.InputType
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
-import android.widget.ImageButton
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.documentfile.provider.DocumentFile
@@ -58,15 +56,11 @@ import net.sf.sevenzipjbinding.IArchiveExtractCallback
 import net.sf.sevenzipjbinding.IArchiveOpenCallback
 import net.sf.sevenzipjbinding.ICryptoGetTextPassword
 import net.sf.sevenzipjbinding.IInArchive
-import net.sf.sevenzipjbinding.IInStream
 import net.sf.sevenzipjbinding.ISequentialOutStream
 import net.sf.sevenzipjbinding.PropID
 import net.sf.sevenzipjbinding.SevenZip
 import net.sf.sevenzipjbinding.SevenZipException
 import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream
-import org.apache.commons.compress.archivers.sevenz.SevenZArchiveEntry
-import org.apache.commons.compress.archivers.sevenz.SevenZFile
-import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream
 import org.apache.commons.compress.compressors.xz.XZCompressorInputStream
@@ -422,7 +416,7 @@ class ExtractFragment : Fragment() {
 
         archiveFileName.let { fileName ->
             val outputDirectory = outputDirectory?.let {
-                if (fileName.substringAfterLast(".").lowercase() != "rar") {
+                if (fileName.substringAfterLast(".").lowercase() != "rar" && fileName.substringAfterLast(".").lowercase() != "7z" && fileName.substringAfterLast(".").lowercase() != "tar") {
                     it.createDirectory(fileName.substringBeforeLast("."))
                 } else {
                     it
@@ -433,15 +427,15 @@ class ExtractFragment : Fragment() {
 
             when (fileName.substringAfterLast(".").lowercase()) {
                 "zip" -> extractPasswordProtectedZipOrRegularZip(bufferedInputStream, outputDirectory)
-                "tar" -> extractTar(bufferedInputStream, outputDirectory)
+                "tar" -> extractRar(archiveFormat, archiveFileUri)
                 "bz2" -> extractBzip2(bufferedInputStream, outputDirectory)
                 "gz" -> extractGzip(bufferedInputStream, outputDirectory)
-                "7z" -> extract7z(bufferedInputStream, outputDirectory)
+                "7z" -> extractRar(archiveFormat, archiveFileUri)
                 "xz" -> extractXz(bufferedInputStream, outputDirectory)
                 "jar" -> extractJar(bufferedInputStream, outputDirectory)
                 "z" -> extractZ(bufferedInputStream, outputDirectory)
                 "rar" -> extractRar(archiveFormat, archiveFileUri)
-                else -> showToast("Unsupported archive format")
+                else -> extractRar(archiveFormat, archiveFileUri)
             }
         }
     }
@@ -454,22 +448,22 @@ class ExtractFragment : Fragment() {
             val inflater = layoutInflater
             val dialogView = inflater.inflate(R.layout.password_input_dialog, null)
             val passwordEditText = dialogView.findViewById<EditText>(R.id.passwordInput)
-            val showPasswordButton = dialogView.findViewById<ImageButton>(R.id.showPasswordButton)
-
-            var isPasswordVisible = false
-
-            showPasswordButton.setOnClickListener {
-                isPasswordVisible = !isPasswordVisible
-                if (isPasswordVisible) {
-                    // Show password
-                    passwordEditText.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-                    showPasswordButton.setImageResource(R.drawable.ic_visibility_on)
-                } else {
-                    // Hide password
-                    passwordEditText.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
-                    showPasswordButton.setImageResource(R.drawable.ic_visibility_off)
-                }
-            }
+//            val showPasswordButton = dialogView.findViewById<ImageButton>(R.id.showPasswordButton)
+//
+//            var isPasswordVisible = false
+//
+//            showPasswordButton.setOnClickListener {
+//                isPasswordVisible = !isPasswordVisible
+//                if (isPasswordVisible) {
+//                    // Show password
+//                    passwordEditText.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+//                    showPasswordButton.setImageResource(R.drawable.ic_visibility_on)
+//                } else {
+//                    // Hide password
+//                    passwordEditText.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+//                    showPasswordButton.setImageResource(R.drawable.ic_visibility_off)
+//                }
+//            }
 
             val passwordDialog = MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
                 .setTitle(getString(R.string.enter_password))
@@ -615,74 +609,74 @@ class ExtractFragment : Fragment() {
                 }
             }
 
-            if (tempFiles.isNotEmpty()) {
-                CoroutineScope(Dispatchers.IO).launch {
-                    try {
-                        withContext(Dispatchers.Main) {
-                            binding.progressBar.visibility = View.VISIBLE
-                            toggleExtractButtonEnabled(false)
-                        }
-
-                        for (tempFile in sortedTempFiles) {
-                            val archiveOpenVolumeCallback = ArchiveOpenMultipartCallback()
-                            val inStream: IInStream? = archiveOpenVolumeCallback.getStream(tempFile.absolutePath)
-                            if (inStream != null) {
-                                val inArchive: IInArchive = SevenZip.openInArchive(
-                                    archiveFormat,
-                                    inStream,
-                                    archiveOpenVolumeCallback
-                                )
-
-                                try {
-                                    val itemCount = inArchive.numberOfItems
-                                    for (i in 0 until itemCount) {
-                                        val path = inArchive.getProperty(i, PropID.PATH) as String
-                                        val cacheDir = requireActivity().cacheDir
-                                        val newFileName =
-                                            tempFile.name.substring(
-                                                0,
-                                                tempFile.name.lastIndexOf('.')
-                                            )
-                                        val cacheDstDir = File(cacheDir, newFileName)
-
-                                        cacheDstDir.mkdir()
-
-                                        inArchive.extract(
-                                            intArrayOf(i),
-                                            false,
-                                            ExtractCallback(inArchive, cacheDstDir)
-                                        )
-                                    }
-                                } catch (e: SevenZipException) {
-                                    e.printStackTrace()
-                                    withContext(Dispatchers.Main) {
-                                        showToast("${getString(R.string.extraction_failed)} ${e.message}")
-                                    }
-                                } finally {
-                                    inArchive.close()
-                                    archiveOpenVolumeCallback.close()
-                                    saveCacheFile(tempFile)
-                                }
-                            }
-                        }
-                        withContext(Dispatchers.Main) {
-                            binding.progressBar.visibility = View.GONE
-                            binding.progressTextView.visibility = View.GONE
-                            toggleExtractButtonEnabled(true)
-                            showExtractionCompletedSnackbar(outputDirectory)
-                        }
-                    } catch (e: IOException) {
-                        if (isNoStorageSpaceException(e)) {
-                            withContext(Dispatchers.Main) {
-                                binding.progressBar.visibility = View.GONE
-                                showToast("No storage available")
-                            }
-                        } else {
-                            showToast("${getString(R.string.extraction_failed)} ${e.message}")
-                        }
-                    }
-                }
-            }
+//            if (tempFiles.isNotEmpty()) {
+//                CoroutineScope(Dispatchers.IO).launch {
+//                    try {
+//                        withContext(Dispatchers.Main) {
+//                            binding.progressBar.visibility = View.VISIBLE
+//                            toggleExtractButtonEnabled(false)
+//                        }
+//
+//                        for (tempFile in sortedTempFiles) {
+//                            val archiveOpenVolumeCallback = ArchiveOpenMultipartRarCallback()
+//                            val inStream: IInStream? = archiveOpenVolumeCallback.getStream(tempFile.absolutePath)
+//                            if (inStream != null) {
+//                                val inArchive: IInArchive = SevenZip.openInArchive(
+//                                    archiveFormat,
+//                                    inStream,
+//                                    archiveOpenVolumeCallback
+//                                )
+//
+//                                try {
+//                                    val itemCount = inArchive.numberOfItems
+//                                    for (i in 0 until itemCount) {
+//                                        val path = inArchive.getProperty(i, PropID.PATH) as String
+//                                        val cacheDir = requireActivity().cacheDir
+//                                        val newFileName =
+//                                            tempFile.name.substring(
+//                                                0,
+//                                                tempFile.name.lastIndexOf('.')
+//                                            )
+//                                        val cacheDstDir = File(cacheDir, newFileName)
+//
+//                                        cacheDstDir.mkdir()
+//
+//                                        inArchive.extract(
+//                                            intArrayOf(i),
+//                                            false,
+//                                            ExtractCallback(inArchive, cacheDstDir)
+//                                        )
+//                                    }
+//                                } catch (e: SevenZipException) {
+//                                    e.printStackTrace()
+//                                    withContext(Dispatchers.Main) {
+//                                        showToast("${getString(R.string.extraction_failed)} ${e.message}")
+//                                    }
+//                                } finally {
+//                                    inArchive.close()
+//                                    archiveOpenVolumeCallback.close()
+//                                    saveCacheFile(tempFile)
+//                                }
+//                            }
+//                        }
+//                        withContext(Dispatchers.Main) {
+//                            binding.progressBar.visibility = View.GONE
+//                            binding.progressTextView.visibility = View.GONE
+//                            toggleExtractButtonEnabled(true)
+//                            showExtractionCompletedSnackbar(outputDirectory)
+//                        }
+//                    } catch (e: IOException) {
+//                        if (isNoStorageSpaceException(e)) {
+//                            withContext(Dispatchers.Main) {
+//                                binding.progressBar.visibility = View.GONE
+//                                showToast("No storage available")
+//                            }
+//                        } else {
+//                            showToast("${getString(R.string.extraction_failed)} ${e.message}")
+//                        }
+//                    }
+//                }
+//            }
         }
     }
 
@@ -708,24 +702,24 @@ class ExtractFragment : Fragment() {
 
                     // Find the password EditText and show password button in the custom layout
                     val passwordEditText = dialogView.findViewById<EditText>(R.id.passwordInput)
-                    val showPasswordButton = dialogView.findViewById<ImageButton>(R.id.showPasswordButton)
-
-                    var isPasswordVisible = false
-
-                    showPasswordButton.setOnClickListener {
-                        isPasswordVisible = !isPasswordVisible
-                        if (isPasswordVisible) {
-                            // Show password
-                            passwordEditText.inputType =
-                                InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-                            showPasswordButton.setImageResource(R.drawable.ic_visibility_on)
-                        } else {
-                            // Hide password
-                            passwordEditText.inputType =
-                                InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
-                            showPasswordButton.setImageResource(R.drawable.ic_visibility_off)
-                        }
-                    }
+//                    val showPasswordButton = dialogView.findViewById<ImageButton>(R.id.showPasswordButton)
+//
+//                    var isPasswordVisible = false
+//
+//                    showPasswordButton.setOnClickListener {
+//                        isPasswordVisible = !isPasswordVisible
+//                        if (isPasswordVisible) {
+//                            // Show password
+//                            passwordEditText.inputType =
+//                                InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+//                            showPasswordButton.setImageResource(R.drawable.ic_visibility_on)
+//                        } else {
+//                            // Hide password
+//                            passwordEditText.inputType =
+//                                InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+//                            showPasswordButton.setImageResource(R.drawable.ic_visibility_off)
+//                        }
+//                    }
 
                     // Create the password input dialog
                     val passwordDialog = MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
@@ -843,58 +837,6 @@ class ExtractFragment : Fragment() {
         }
     }
 
-    private fun extractTar(bufferedInputStream: BufferedInputStream, outputDirectory: DocumentFile?) {
-        toggleExtractButtonEnabled(false)
-        binding.progressBarIdt.visibility = View.VISIBLE
-        CoroutineScope(Dispatchers.IO).launch {
-          val tarInputStream = TarArchiveInputStream(bufferedInputStream)
-
-          var entry = tarInputStream.nextTarEntry
-          while (entry != null) {
-              val pathParts = entry.name.split("/")
-
-              var currentDirectory = outputDirectory
-              for (part in pathParts.dropLast(1)) {
-                  currentDirectory =
-                      currentDirectory?.findFile(part) ?: currentDirectory?.createDirectory(part)
-              }
-
-              if (!entry.isDirectory) {
-                  val outputFile =
-                      currentDirectory?.createFile("application/octet-stream", pathParts.last())
-
-                  outputFile?.uri?.let { uri ->
-                      requireActivity().contentResolver.openOutputStream(uri)
-                          ?.use { outputStream ->
-                              val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
-                              var count: Int
-                              try {
-                                  while (tarInputStream.read(buffer).also { count = it } != -1) {
-                                      outputStream.write(buffer, 0, count)
-                                  }
-                              } catch (e: Exception) {
-                                  withContext(Dispatchers.Main) {
-                                      showToast("${getString(R.string.extraction_failed)} ${e.message}")
-                                      tarInputStream.close()
-                                      toggleExtractButtonEnabled(true)
-                                      binding.progressBarIdt.visibility = View.GONE
-                                  }
-                                  return@launch
-                              }
-                          }
-                  }
-              }
-              entry = tarInputStream.nextTarEntry
-          }
-
-          tarInputStream.close()
-          withContext(Dispatchers.Main) {
-              showExtractionCompletedSnackbar(outputDirectory)
-              toggleExtractButtonEnabled(true)
-              binding.progressBarIdt.visibility = View.GONE
-          }
-        }
-    }
 
     private fun extractBzip2(bufferedInputStream: BufferedInputStream, outputDirectory: DocumentFile?) {
        toggleExtractButtonEnabled(false)
@@ -967,144 +909,6 @@ class ExtractFragment : Fragment() {
                 binding.progressBarIdt.visibility = View.GONE
             }
         }
-    }
-
-    private suspend fun createTemp7zFileInBackground(bufferedInputStream: BufferedInputStream): File = withContext(Dispatchers.IO) {
-        return@withContext File.createTempFile("temp_", ".7z", requireActivity().cacheDir).apply {
-            FileOutputStream(this).use { outputStream ->
-                val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
-                var count: Int
-                while (bufferedInputStream.read(buffer).also { count = it } != -1) {
-                    outputStream.write(buffer, 0, count)
-                }
-            }
-        }
-    }
-
-    private fun extract7z(bufferedInputStream: BufferedInputStream, outputDirectory: DocumentFile?) {
-
-        toggleExtractButtonEnabled(false)
-
-        showPasswordInputDialog { password ->
-            val tempFileJob = CoroutineScope(Dispatchers.Default).launch {
-                val tempFile = createTemp7zFileInBackground(bufferedInputStream)
-
-                try {
-                    val sevenZFile: SevenZFile = if (password != null) {
-                        val passwordCharArray = password.toCharArray()
-                        SevenZFile(tempFile, passwordCharArray)
-                    } else {
-                        SevenZFile(tempFile)
-                    }
-
-                    val totalBytes = sevenZFile.entries.sumOf { it.size.toInt() }
-                    var bytesRead = 0
-
-                    var entry: SevenZArchiveEntry? = sevenZFile.nextEntry
-                    while (entry != null) {
-                        val relativePath = entry.name
-
-                        // Split the relative path into individual parts
-                        val pathParts = relativePath.split("/")
-
-                        // Initialize the root directory
-                        var currentDirectory = outputDirectory
-
-                        // Iterate through the path parts to create directories
-                        for (part in pathParts.dropLast(1)) {
-                            currentDirectory = currentDirectory?.findFile(part) ?: currentDirectory?.createDirectory(part)
-                        }
-
-                        // Only create a file if the entry is not a directory
-                        if (!entry.isDirectory) {
-                            // Create the output file within the last directory
-                            val outputFile = currentDirectory?.createFile("application/octet-stream", pathParts.last())
-
-                            outputFile?.uri?.let { uri ->
-                                requireActivity().contentResolver.openOutputStream(uri)?.use { outputStream ->
-                                    val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
-                                    try {
-                                        var count: Int
-                                        while (sevenZFile.read(buffer).also { count = it } != -1) {
-                                            outputStream.write(buffer, 0, count)
-                                            bytesRead += count
-
-                                            val progress = (bytesRead.toFloat() / totalBytes) * 100
-                                            updateProgressBar(progress)
-                                        }
-                                    } catch (e: Exception) {
-                                        sevenZFile.close()
-                                    }
-                                }
-                            }
-                        }
-
-                        entry = sevenZFile.nextEntry
-                    }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                } finally {
-                    tempFile.delete()
-                }
-
-                // Show a completion message after extraction is done
-                withContext(Dispatchers.Main) {
-                    toggleExtractButtonEnabled(true)
-                    showExtractionCompletedSnackbar(outputDirectory)
-                }
-            }
-
-            tempFileJob.invokeOnCompletion { throwable ->
-                if (throwable != null) {
-                    showToast("${getString(R.string.extraction_failed)} ${throwable.message}")
-                }
-            }
-        }
-    }
-
-    private fun updateProgressBar(progress: Float) {
-
-        requireActivity().runOnUiThread {
-            binding.progressBar.progress = progress.toInt()
-            binding.progressTextView.text = "${progress.toInt()}%"
-
-        }
-    }
-
-    private fun showPasswordInputDialog(callback: (String?) -> Unit) {
-        val inflater = layoutInflater
-        val dialogView = inflater.inflate(R.layout.password_input_dialog, null)
-        val passwordInputView = dialogView.findViewById<EditText>(R.id.passwordInput)
-        val showPasswordButton = dialogView.findViewById<ImageButton>(R.id.showPasswordButton)
-
-        var isPasswordVisible = false
-
-        showPasswordButton.setOnClickListener {
-            isPasswordVisible = !isPasswordVisible
-            if (isPasswordVisible) {
-                // Show password
-                passwordInputView.inputType =
-                    InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-                showPasswordButton.setImageResource(R.drawable.ic_visibility_on)
-            } else {
-                // Hide password
-                passwordInputView.inputType =
-                    InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
-                showPasswordButton.setImageResource(R.drawable.ic_visibility_off)
-            }
-        }
-
-        MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
-            .setTitle(getString(R.string.enter_password))
-            .setView(dialogView)
-            .setPositiveButton(getString(R.string.extract)) { _, _ ->
-                val password = passwordInputView.text.toString()
-                callback(password.takeIf { it.isNotEmpty() })
-            }
-            .setNegativeButton(getString(R.string.no_password)) { _, _ ->
-                callback(null)
-            }
-            .show()
     }
 
 
@@ -1237,24 +1041,24 @@ class ExtractFragment : Fragment() {
         val inflater = layoutInflater
         val dialogView = inflater.inflate(R.layout.password_input_dialog, null)
         val passwordInputView = dialogView.findViewById<EditText>(R.id.passwordInput)
-        val showPasswordButton = dialogView.findViewById<ImageButton>(R.id.showPasswordButton)
-
-        var isPasswordVisible = false
-
-        showPasswordButton.setOnClickListener {
-            isPasswordVisible = !isPasswordVisible
-            if (isPasswordVisible) {
-                // Show password
-                passwordInputView.inputType =
-                    InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-                showPasswordButton.setImageResource(R.drawable.ic_visibility_on)
-            } else {
-                // Hide password
-                passwordInputView.inputType =
-                    InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
-                showPasswordButton.setImageResource(R.drawable.ic_visibility_off)
-            }
-        }
+//        val showPasswordButton = dialogView.findViewById<ImageButton>(R.id.showPasswordButton)
+//
+//        var isPasswordVisible = false
+//
+//        showPasswordButton.setOnClickListener {
+//            isPasswordVisible = !isPasswordVisible
+//            if (isPasswordVisible) {
+//                // Show password
+//                passwordInputView.inputType =
+//                    InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+//                showPasswordButton.setImageResource(R.drawable.ic_visibility_on)
+//            } else {
+//                // Hide password
+//                passwordInputView.inputType =
+//                    InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+//                showPasswordButton.setImageResource(R.drawable.ic_visibility_off)
+//            }
+//        }
 
         MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
             .setTitle(getString(R.string.enter_password))
@@ -1424,10 +1228,12 @@ class ExtractFragment : Fragment() {
             val isDir: Boolean = inArchive.getProperty(p0, PropID.IS_FOLDER) as Boolean
             val unpackedFile = File(dstDir.path, path)
 
-            if (isDir) {
-                unpackedFile.mkdir()
-            } else {
-                try {
+            try {
+                uos = if (isDir) {
+                    unpackedFile.mkdir()
+                    val tempFile = File.createTempFile("temp", null)
+                    FileOutputStream(tempFile)
+                } else {
                     val dir = unpackedFile.parent?.let { File(it) }
                     if (dir != null) {
                         if (!dir.isDirectory) {
@@ -1435,10 +1241,10 @@ class ExtractFragment : Fragment() {
                         }
                     }
                     unpackedFile.createNewFile()
-                    uos = FileOutputStream(unpackedFile)
-                } catch (e: IOException) {
-                   showToast("${getString(R.string.extraction_failed)} ${e.message}")
+                    FileOutputStream(unpackedFile)
                 }
+            } catch (e: IOException) {
+                showToast("${getString(R.string.extraction_failed)} ${e.message}")
             }
 
             return ISequentialOutStream { data: ByteArray ->

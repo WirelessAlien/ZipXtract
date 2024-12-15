@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- bottom_sheet_options.xml -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:padding="10dp"
+    android:orientation="vertical">
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnExtract"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="5dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="20dp"
+        app:cornerRadius="5dp"
+        android:textSize="18sp"
+        android:text="Extract" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnMultiExtract"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="5dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="20dp"
+        app:cornerRadius="5dp"
+        android:textSize="18sp"
+        android:text="Multi Part Extract" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnMulti7zExtract"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="5dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="20dp"
+        app:cornerRadius="5dp"
+        android:textSize="18sp"
+        android:text="Multi Part 7z Extract" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnMultiZipExtract"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="5dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="20dp"
+        app:cornerRadius="5dp"
+        android:textSize="18sp"
+        android:text="Multi Part Zip Extract" />
+
+     <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnCompressZip"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="5dp"
+         android:layout_marginTop="10dp"
+         android:layout_marginStart="16dp"
+         android:layout_marginEnd="16dp"
+         android:textSize="18sp"
+         app:cornerRadius="5dp"
+         android:text="Compress Zip" />
+
+     <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnCompress7z"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="5dp"
+         app:cornerRadius="5dp"
+         android:layout_marginTop="10dp"
+         android:layout_marginStart="16dp"
+         android:layout_marginEnd="16dp"
+         android:textSize="18sp"
+        android:text="Compress 7z" />
+
+     <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnCompressTar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="5dp"
+         app:cornerRadius="5dp"
+         android:layout_marginTop="10dp"
+         android:layout_marginStart="16dp"
+         android:layout_marginEnd="16dp"
+         android:textSize="18sp"
+        android:text="Compress Tar" />
+
+     <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnFileInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="5dp"
+         app:cornerRadius="5dp"
+         android:layout_marginTop="10dp"
+         android:layout_marginStart="16dp"
+         android:layout_marginEnd="16dp"
+         android:textSize="18sp"
+        android:text="File Information" />
+</LinearLayout>

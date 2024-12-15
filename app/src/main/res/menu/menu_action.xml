@@ -1,0 +1,24 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/menu_action_select_all"
+        android:title="Select All"
+        android:icon="@drawable/ic_round_select_all"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/m_archive_7z"
+        android:title="Archive 7z"
+        android:icon="@drawable/ic_create_z"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/m_archive_zip"
+        android:title="Archive Zip"
+        android:icon="@drawable/ic_folder_zip"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/m_extract_multipart"
+        android:title="Extract Multipart"
+        android:icon="@drawable/ic_folder_zip"
+        app:showAsAction="ifRoom" />
+</menu>

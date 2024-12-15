@@ -1,0 +1,30 @@
+<!--
+  ~  Copyright (C) 2023  WirelessAlien <https://github.com/WirelessAlien>
+  ~
+  ~     This program is free software: you can redistribute it and/or modify
+  ~     it under the terms of the GNU General Public License as published by
+  ~     the Free Software Foundation, either version 3 of the License, or
+  ~     any later version.
+  ~
+  ~     This program is distributed in the hope that it will be useful,
+  ~     but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~     GNU General Public License for more details.
+  ~
+  ~     You should have received a copy of the GNU General Public License
+  ~     along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="512"
+    android:viewportHeight="512"
+    android:tint="?attr/colorControlNormal">
+  <path
+      android:pathData="M458,118.2L346.5,8.4C345,6.9 342.9,6 340.7,6H135c-31.1,0 -56.3,26.6 -56.3,59.4v219.2H51.3v148.6h27.4v13.4c0,32.7 25.3,59.4 56.3,59.4h269.4c31.1,0 56.3,-26.6 56.3,-59.4V124.7C460.7,122.3 459.8,119.9 458,118.2zM337.9,24.4l97,95.6h-52.8c-24.4,0 -44.2,-19.5 -44.2,-43.4V24.4zM95.3,327.3h40.4v8.5h-29.9v19.3h25.5v8.5h-25.5v26.9H95.3V327.3zM443.7,446.6c0,22.9 -17.6,41.5 -39.3,41.5H135c-21.7,0 -39.3,-18.6 -39.3,-41.5v-13.4h187c36.5,0 66,-33.3 66,-74.3s-29.6,-74.3 -66,-74.3h-187V65.4c0,-22.9 17.6,-41.5 39.3,-41.5h185.9v52.7c0,33.8 27.4,61.3 61.2,61.3h61.6V446.6zM187.3,382.1v8.4h-40.1v-63.2h10.5v54.8H187.3zM194.5,390.5l22,-63.2h10l21.8,63.2h-10.9l-4.8,-14.8h-22.4l-4.9,14.8H194.5zM270.7,377.9c2.5,3.4 6,5.1 10.4,5.1c4.3,0 7.6,-1.1 9.8,-3.4c2.2,-2.3 3.4,-5.5 3.4,-9.8h10.2l0.1,0.3c0.1,6.4 -2,11.5 -6.2,15.4c-4.3,3.9 -10,5.9 -17.2,5.9c-7.3,0 -13.3,-2.5 -17.9,-7.4c-4.6,-5 -6.9,-11.3 -6.9,-19v-12c0,-7.7 2.3,-14 6.8,-19s10.4,-7.5 17.7,-7.5c7.4,0 13.3,1.9 17.6,5.7c4.3,3.8 6.3,9 6.2,15.6l-0.1,0.3h-10.2c0,-4.2 -1.1,-7.5 -3.4,-9.7c-2.3,-2.2 -5.6,-3.4 -10.1,-3.4c-4.3,0 -7.7,1.7 -10.2,5.1c-2.5,3.4 -3.8,7.7 -3.8,12.9v12.1C266.9,370.2 268.2,374.5 270.7,377.9z"
+      android:fillColor="#ED1C24"/>
+  <path
+      android:pathData="M221.6,342l-0.2,0l-8.3,24.9l16.7,0z"
+      android:fillColor="#ED1C24"/>
+</vector>

@@ -96,4 +96,9 @@
     <string name="_ten">Default is 64kb</string>
     <string name="percent_complete">%d %%</string>
     <string name="please_wait_end_of_job">Please Wait…If you have selected large files, it may take a few moments</string>
+    <string name="sort_by">Sort by</string>
+    <string name="name">Name</string>
+    <string name="size">Size</string>
+    <string name="time_of_creation">Time of creation</string>
+    <string name="extension">Extension</string>
 </resources>

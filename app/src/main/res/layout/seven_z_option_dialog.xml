@@ -17,7 +17,9 @@
 
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    android:background="@color/md_theme_surface"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:padding="5dp">
 
@@ -134,5 +136,18 @@
                 android:hint="@string/max_available_thread"
                 android:inputType="number"/>
         </com.google.android.material.card.MaterialCardView>
+
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/okButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/ok" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/noPasswordButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/no_password" />
     </LinearLayout>
 </ScrollView>

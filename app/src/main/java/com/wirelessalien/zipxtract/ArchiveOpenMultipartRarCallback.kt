@@ -17,22 +17,18 @@
 
 package com.wirelessalien.zipxtract
 
-import net.sf.sevenzipjbinding.IArchiveOpenCallback
-import net.sf.sevenzipjbinding.IArchiveOpenVolumeCallback
-import net.sf.sevenzipjbinding.ICryptoGetTextPassword
-import net.sf.sevenzipjbinding.IInStream
-import net.sf.sevenzipjbinding.PropID
-import net.sf.sevenzipjbinding.SevenZipException
+
+import kotlinx.coroutines.Job
+import net.sf.sevenzipjbinding.*
 import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.RandomAccessFile
 
-class ArchiveOpenMultipartCallback : IArchiveOpenVolumeCallback, IArchiveOpenCallback, ICryptoGetTextPassword  {
+class ArchiveOpenMultipartRarCallback(private val parentDir: File, private val extractionJob: Job?) : IArchiveOpenVolumeCallback, IArchiveOpenCallback {
     private val openedRandomAccessFileList = HashMap<String, RandomAccessFile>()
     private var name: String? = null
-    private var password: CharArray? = null
 
     @Throws(SevenZipException::class)
     override fun getProperty(propID: PropID): Any? {
@@ -41,32 +37,28 @@ class ArchiveOpenMultipartCallback : IArchiveOpenVolumeCallback, IArchiveOpenCal
 
     @Throws(SevenZipException::class)
     override fun getStream(filename: String): IInStream? {
-        return try {
+        if (extractionJob?.isCancelled == true) throw SevenZipException("Extraction cancelled")
+        try {
             var randomAccessFile = openedRandomAccessFileList[filename]
-            if (randomAccessFile != null) { // Cache hit.
+            if (randomAccessFile != null) {
                 randomAccessFile.seek(0)
                 name = filename
-                RandomAccessFileInStream(randomAccessFile)
-            } else {
-                val file = File(filename)
-                if (file.exists()) {
-                    randomAccessFile = RandomAccessFile(filename, "r")
-                    openedRandomAccessFileList[filename] = randomAccessFile
-                    name = filename
-                    RandomAccessFileInStream(randomAccessFile)
-                } else {
-                    null
-                }
+                return RandomAccessFileInStream(randomAccessFile)
             }
-        } catch (e: FileNotFoundException) {
-            throw SevenZipException("Error opening file", e)
-        } catch (e: Exception) {
-            throw RuntimeException(e)
-        }
-    }
 
-    override fun cryptoGetTextPassword(): String {
-        return String(password ?: CharArray(0))
+            val file = File(parentDir, filename)
+            if (file.exists()) {
+                randomAccessFile = RandomAccessFile(file, "r")
+                openedRandomAccessFileList[filename] = randomAccessFile
+                name = filename
+                return RandomAccessFileInStream(randomAccessFile)
+            }
+            return null
+        } catch (e: FileNotFoundException) {
+            return null
+        } catch (e: Exception) {
+            throw SevenZipException("Error opening file", e)
+        }
     }
 
     @Throws(IOException::class)
@@ -77,9 +69,8 @@ class ArchiveOpenMultipartCallback : IArchiveOpenVolumeCallback, IArchiveOpenCal
     }
 
     @Throws(SevenZipException::class)
-    override fun setCompleted(files: Long?, bytes: Long?) { }
+    override fun setCompleted(files: Long?, bytes: Long?) {}
 
     @Throws(SevenZipException::class)
-    override fun setTotal(files: Long?, bytes: Long?) { }
+    override fun setTotal(files: Long?, bytes: Long?) {}
 }
-

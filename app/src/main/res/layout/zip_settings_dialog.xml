@@ -18,6 +18,8 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:fitsSystemWindows="true"
+    android:background="@color/md_theme_surface"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:padding="5dp">
 
@@ -223,6 +225,18 @@
                     android:layout_height="match_parent"
                     android:entries="@array/split_size_units" />
             </com.google.android.material.card.MaterialCardView>
+
         </LinearLayout>
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/okButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/ok" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/cancelButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/cancel" />
     </LinearLayout>
 </ScrollView>
