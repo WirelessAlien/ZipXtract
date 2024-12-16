@@ -24,28 +24,31 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
-import android.widget.CheckBox
-import android.widget.EditText
-import android.widget.Spinner
 import androidx.fragment.app.DialogFragment
-import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.activity.MainActivity
 import com.wirelessalien.zipxtract.adapter.FileAdapter
+import com.wirelessalien.zipxtract.databinding.SevenZOptionDialogBinding
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
 
 class SevenZOptionDialogFragment : DialogFragment() {
 
+    private lateinit var binding: SevenZOptionDialogBinding
     private lateinit var adapter: FileAdapter
+    private lateinit var selectedFilePaths: List<String>
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        // Inflate the layout to use as a dialog or embedded fragment.
-        return inflater.inflate(R.layout.seven_z_option_dialog, container, false)
+        binding = SevenZOptionDialogBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        // Remove the dialog title if not needed.
         val dialog = super.onCreateDialog(savedInstanceState)
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
         return dialog
@@ -54,22 +57,33 @@ class SevenZOptionDialogFragment : DialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val passwordEditText = view.findViewById<EditText>(R.id.passwordEditText)
-        val compressionSpinner = view.findViewById<Spinner>(R.id.compressionSpinner)
-        val solidCheckBox = view.findViewById<CheckBox>(R.id.solidCheckBox)
-        val threadCountEditText = view.findViewById<EditText>(R.id.threadCountEditText)
-        val archiveNameEditText = view.findViewById<EditText>(R.id.archiveNameEditText)
-        val filesToArchive = adapter.getSelectedFilesPaths()
+        // Show the progress bar
+        binding.progressIndicator.visibility = View.VISIBLE
 
-        view.findViewById<View>(R.id.okButton).setOnClickListener {
-            val defaultName = if (filesToArchive.isNotEmpty()) {
-                filesToArchive.first()
-            } else {
-                "archive"
+        // Launch a coroutine to fetch the selected file paths
+        CoroutineScope(Dispatchers.Main).launch {
+            selectedFilePaths = withContext(Dispatchers.IO) {
+                adapter.getSelectedFilesPaths()
             }
-            val archiveName = archiveNameEditText.text.toString().ifBlank { defaultName }
-            val password = passwordEditText.text.toString()
-            val compressionLevel = when (compressionSpinner.selectedItemPosition) {
+
+            // Hide the progress bar
+            binding.progressIndicator.visibility = View.GONE
+
+            // Initialize the rest of the UI with the fetched data
+            initializeUI()
+        }
+    }
+
+    private fun initializeUI() {
+        binding.okButton.setOnClickListener {
+            val defaultName = if (selectedFilePaths.isNotEmpty()) {
+                File(selectedFilePaths.first()).name
+            } else {
+                "outputSvnZ"
+            }
+            val archiveName = binding.archiveNameEditText.text.toString().ifBlank { defaultName }
+            val password = binding.passwordEditText.text.toString()
+            val compressionLevel = when (binding.compressionSpinner.selectedItemPosition) {
                 0 -> 0
                 1 -> 1
                 2 -> 3
@@ -78,21 +92,21 @@ class SevenZOptionDialogFragment : DialogFragment() {
                 5 -> 9
                 else -> -1
             }
-            val solid = solidCheckBox.isChecked
-            val threadCount = threadCountEditText.text.toString().toIntOrNull() ?: -1
+            val solid = binding.solidCheckBox.isChecked
+            val threadCount = binding.threadCountEditText.text.toString().toIntOrNull() ?: -1
 
-            (activity as MainActivity).startSevenZService(password.ifBlank { null }, archiveName, compressionLevel, solid, threadCount, filesToArchive)
+            (activity as MainActivity).startSevenZService(password.ifBlank { null }, archiveName, compressionLevel, solid, threadCount, selectedFilePaths)
             dismiss()
         }
 
-        view.findViewById<View>(R.id.noPasswordButton).setOnClickListener {
-            val defaultName = if (filesToArchive.isNotEmpty()) {
-                filesToArchive.first()
+        binding.noPasswordButton.setOnClickListener {
+            val defaultName = if (selectedFilePaths.isNotEmpty()) {
+                File(selectedFilePaths.first()).name
             } else {
-                "archive"
+                "outputSvnZ"
             }
-            val archiveName = archiveNameEditText.text.toString().ifBlank { defaultName }
-            val compressionLevel = when (compressionSpinner.selectedItemPosition) {
+            val archiveName = binding.archiveNameEditText.text.toString().ifBlank { defaultName }
+            val compressionLevel = when (binding.compressionSpinner.selectedItemPosition) {
                 0 -> 0
                 1 -> 1
                 2 -> 3
@@ -101,10 +115,10 @@ class SevenZOptionDialogFragment : DialogFragment() {
                 5 -> 9
                 else -> -1
             }
-            val solid = solidCheckBox.isChecked
-            val threadCount = threadCountEditText.text.toString().toIntOrNull() ?: -1
+            val solid = binding.solidCheckBox.isChecked
+            val threadCount = binding.threadCountEditText.text.toString().toIntOrNull() ?: -1
 
-            (activity as MainActivity).startSevenZService(null, archiveName, compressionLevel, solid, threadCount, filesToArchive)
+            (activity as MainActivity).startSevenZService(null, archiveName, compressionLevel, solid, threadCount, selectedFilePaths)
             dismiss()
         }
     }

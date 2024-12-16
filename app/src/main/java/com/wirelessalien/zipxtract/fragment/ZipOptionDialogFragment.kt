@@ -18,39 +18,41 @@
 
 package com.wirelessalien.zipxtract.fragment
 
+import android.R
 import android.app.Dialog
 import android.os.Bundle
-import android.text.InputType
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import android.widget.CheckBox
-import android.widget.EditText
-import android.widget.ImageButton
-import android.widget.Spinner
 import androidx.fragment.app.DialogFragment
-import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.activity.MainActivity
 import com.wirelessalien.zipxtract.adapter.FileAdapter
+import com.wirelessalien.zipxtract.databinding.ZipOptionDialogBinding
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import net.lingala.zip4j.model.enums.AesKeyStrength
 import net.lingala.zip4j.model.enums.CompressionLevel
 import net.lingala.zip4j.model.enums.CompressionMethod
 import net.lingala.zip4j.model.enums.EncryptionMethod
+import java.io.File
 
-class CompressionSettingsDialogFragment : DialogFragment() {
+class ZipOptionDialogFragment : DialogFragment() {
 
+    private lateinit var binding: ZipOptionDialogBinding
     private lateinit var adapter: FileAdapter
-    private lateinit var onCompressionSettingsEntered: (String, String?, CompressionMethod, CompressionLevel, Boolean, EncryptionMethod?, AesKeyStrength?, Long?) -> Unit
+    private lateinit var selectedFilePaths: List<String>
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.zip_settings_dialog, container, false)
+    ): View {
+        binding = ZipOptionDialogBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -62,58 +64,69 @@ class CompressionSettingsDialogFragment : DialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val compressionMethodSpinner = view.findViewById<Spinner>(R.id.compression_method_input)
-        val compressionLevelSpinner = view.findViewById<Spinner>(R.id.compression_level_input)
-        val encryptionMethodSpinner = view.findViewById<Spinner>(R.id.encryption_method_input)
-        val encryptionStrengthSpinner = view.findViewById<Spinner>(R.id.encryption_strength_input)
-        val passwordInput = view.findViewById<EditText>(R.id.passwordEditText)
-        val showPasswordButton = view.findViewById<ImageButton>(R.id.showPasswordButton)
-        val zipNameEditText = view.findViewById<EditText>(R.id.zipNameEditText)
+        binding.progressIndicator.visibility = View.VISIBLE
 
-        val splitZipCheckbox = view.findViewById<CheckBox>(R.id.splitZipCheckbox)
-        val splitSizeInput = view.findViewById<EditText>(R.id.splitSizeEditText)
+        CoroutineScope(Dispatchers.Main).launch {
+            selectedFilePaths = withContext(Dispatchers.IO) {
+                adapter.getSelectedFilesPaths()
+            }
 
-        val splitSizeUnitSpinner = view.findViewById<Spinner>(R.id.splitSizeUnitSpinner)
+            binding.progressIndicator.visibility = View.GONE
+
+            initializeUI()
+        }
+    }
+
+    private fun initializeUI() {
+
+        val compressionMethodSpinner = binding.compressionMethodInput
+        val compressionLevelSpinner = binding.compressionLevelInput
+        val encryptionMethodSpinner = binding.encryptionMethodInput
+        val encryptionStrengthSpinner = binding.encryptionStrengthInput
+        val passwordInput = binding.passwordEditText
+        val zipNameEditText = binding.zipNameEditText
+
+        val splitZipCheckbox = binding.splitZipCheckbox
+        val splitSizeInput = binding.splitSizeEditText
+
+        val splitSizeUnitSpinner = binding.splitSizeUnitSpinner
         val splitSizeUnits = arrayOf("KB", "MB", "GB")
-        val splitSizeUnitAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, splitSizeUnits)
-        splitSizeUnitAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        val splitSizeUnitAdapter = ArrayAdapter(requireContext(), R.layout.simple_spinner_item, splitSizeUnits)
+        splitSizeUnitAdapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item)
         splitSizeUnitSpinner.adapter = splitSizeUnitAdapter
 
         splitZipCheckbox.setOnCheckedChangeListener { _, isChecked ->
             splitSizeInput.isEnabled = isChecked
             if (!isChecked) {
-                splitSizeInput.text.clear()
+                splitSizeInput.text?.clear()
             }
         }
 
         val compressionMethods = CompressionMethod.entries.filter { it != CompressionMethod.AES_INTERNAL_ONLY }.map { it.name }.toTypedArray()
-        val compressionMethodAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, compressionMethods)
-        compressionMethodAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        val compressionMethodAdapter = ArrayAdapter(requireContext(), R.layout.simple_spinner_item, compressionMethods)
+        compressionMethodAdapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item)
         compressionMethodSpinner.adapter = compressionMethodAdapter
 
         val compressionLevels = CompressionLevel.entries.map { it.name }.toTypedArray()
-        val compressionLevelAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, compressionLevels)
-        compressionLevelAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        val compressionLevelAdapter = ArrayAdapter(requireContext(), R.layout.simple_spinner_item, compressionLevels)
+        compressionLevelAdapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item)
         compressionLevelSpinner.adapter = compressionLevelAdapter
 
         val encryptionMethods = EncryptionMethod.entries.map { it.name }.toTypedArray()
-        val encryptionMethodAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, encryptionMethods)
-        encryptionMethodAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        val encryptionMethodAdapter = ArrayAdapter(requireContext(), R.layout.simple_spinner_item, encryptionMethods)
+        encryptionMethodAdapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item)
         encryptionMethodSpinner.adapter = encryptionMethodAdapter
 
         val encryptionStrengths = AesKeyStrength.entries.filter { it != AesKeyStrength.KEY_STRENGTH_192 }.map { it.name }.toTypedArray()
-        val encryptionStrengthAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, encryptionStrengths)
-        encryptionStrengthAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        val encryptionStrengthAdapter = ArrayAdapter(requireContext(), R.layout.simple_spinner_item, encryptionStrengths)
+        encryptionStrengthAdapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item)
         encryptionStrengthSpinner.adapter = encryptionStrengthAdapter
 
-        val filesToArchive = adapter.getSelectedFilesPaths()
-        var isPasswordVisible = false
-
-        view.findViewById<View>(R.id.okButton).setOnClickListener {
-            val defaultName = if (filesToArchive.isNotEmpty()) {
-                filesToArchive.first()
+        binding.okButton.setOnClickListener {
+            val defaultName = if (selectedFilePaths.isNotEmpty()) {
+                File(selectedFilePaths.first()).name
             } else {
-                ""
+                "outputZp"
             }
             val archiveName = zipNameEditText.text.toString().ifBlank { defaultName }
             val password = passwordInput.text.toString()
@@ -134,33 +147,21 @@ class CompressionSettingsDialogFragment : DialogFragment() {
             val splitSizeText = splitSizeInput.text.toString()
             val splitSizeUnit = splitSizeUnits[splitSizeUnitSpinner.selectedItemPosition]
             val splitZipSize = if (splitZipCheckbox.isChecked) {
-                Log.d("SplitZipSize", "Split size: $splitSizeText $splitSizeUnit")
                 (activity as MainActivity).convertToBytes(splitSizeText.toLongOrNull() ?: 64, splitSizeUnit)
             } else {
                 null
             }
 
             if (splitZipCheckbox.isChecked) {
-                (activity as MainActivity).startSplitZipService(archiveName, password, selectedCompressionMethod, selectedCompressionLevel, isEncryptionEnabled, selectedEncryptionMethod, selectedEncryptionStrength, filesToArchive, splitZipSize)
+                (activity as MainActivity).startSplitZipService(archiveName, password, selectedCompressionMethod, selectedCompressionLevel, isEncryptionEnabled, selectedEncryptionMethod, selectedEncryptionStrength, selectedFilePaths, splitZipSize)
             } else {
-                (activity as MainActivity).startZipService(archiveName, password, selectedCompressionMethod, selectedCompressionLevel, isEncryptionEnabled, selectedEncryptionMethod, selectedEncryptionStrength, filesToArchive)
+                (activity as MainActivity).startZipService(archiveName, password, selectedCompressionMethod, selectedCompressionLevel, isEncryptionEnabled, selectedEncryptionMethod, selectedEncryptionStrength, selectedFilePaths)
             }
             dismiss()
         }
 
-        view.findViewById<View>(R.id.cancelButton).setOnClickListener {
+        binding.cancelButton.setOnClickListener {
             dismiss()
-        }
-
-        showPasswordButton.setOnClickListener {
-            isPasswordVisible = !isPasswordVisible
-            if (isPasswordVisible) {
-                passwordInput.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-                showPasswordButton.setImageResource(R.drawable.ic_visibility_on)
-            } else {
-                passwordInput.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
-                showPasswordButton.setImageResource(R.drawable.ic_visibility_off)
-            }
         }
 
         encryptionMethodSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
@@ -177,8 +178,8 @@ class CompressionSettingsDialogFragment : DialogFragment() {
     }
 
     companion object {
-        fun newInstance(adapter: FileAdapter): CompressionSettingsDialogFragment {
-            val fragment = CompressionSettingsDialogFragment()
+        fun newInstance(adapter: FileAdapter): ZipOptionDialogFragment {
+            val fragment = ZipOptionDialogFragment()
             fragment.adapter = adapter
             return fragment
         }

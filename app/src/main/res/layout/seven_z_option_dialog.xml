@@ -15,33 +15,50 @@
   ~     along with this program.  If not, see <https://www.gnu.org/licenses/>.
   -->
 
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
     android:background="@color/md_theme_surface"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:padding="5dp">
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="10dp">
+        android:layout_margin="11dp">
 
-        <com.google.android.material.card.MaterialCardView
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginTop="16dp"
+            android:layout_marginStart="5dp"
+            android:layout_marginBottom="5dp"
+            android:text="@string/compress_sevenz"/>
+
+        <com.google.android.material.progressindicator.LinearProgressIndicator
+            android:id="@+id/progressIndicator"
             android:layout_width="match_parent"
-            app:cardCornerRadius="10dp"
+            android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            style="@style/Widget.Material3.CardView.Outlined"
-            android:layout_height="wrap_content">
+            android:visibility="gone"
+            android:indeterminate="true"/>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp">
+
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/archiveNameEditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                style="@style/Widget.Material3.TextInputEditText.OutlinedBox"
+                style="@style/Widget.Material3.TextInputEditText.OutlinedBox.Dense"
                 android:hint="@string/enter_name_of_archive_optional"/>
-        </com.google.android.material.card.MaterialCardView>
+        </com.google.android.material.textfield.TextInputLayout>
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -50,34 +67,22 @@
             android:layout_marginTop="10dp"
             android:text="@string/enter_password"
             android:layout_margin="5dp"/>
-        <com.google.android.material.card.MaterialCardView
+
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
-            app:cardCornerRadius="10dp"
+            android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            style="@style/Widget.Material3.CardView.Outlined"
-            android:layout_height="wrap_content">
-            <LinearLayout
+            app:endIconMode="password_toggle">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/passwordEditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/passwordEditText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="textPassword"
-                    android:layout_weight="1"
-                    style="@style/Widget.Material3.TextInputEditText.OutlinedBox"
-                    android:hint="@string/enter_password"/>
-                <ImageButton
-                    android:id="@+id/showPasswordButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    style="@style/Widget.Material3.Button.IconButton"
-                    android:src="@drawable/ic_visibility_off"
-                    android:contentDescription="Show password" />
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
+                android:inputType="textPassword"
+                style="@style/Widget.Material3.TextInputEditText.OutlinedBox.Dense"
+                android:hint="@string/enter_password"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -85,12 +90,14 @@
             android:textStyle="bold"
             android:text="@string/compression_level"
             android:layout_margin="5dp"/>
+
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
-            app:cardCornerRadius="10dp"
+            app:cardCornerRadius="5dp"
             android:layout_margin="5dp"
             style="@style/Widget.Material3.CardView.Outlined"
             android:layout_height="wrap_content">
+
             <Spinner
                 android:id="@+id/compressionSpinner"
                 android:layout_width="match_parent"
@@ -98,21 +105,22 @@
                 android:padding="5dp"
                 android:entries="@array/compression_levels"
                 android:spinnerMode="dropdown"/>
-
         </com.google.android.material.card.MaterialCardView>
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
-            app:cardCornerRadius="10dp"
+            app:cardCornerRadius="5dp"
             android:layout_margin="5dp"
             style="@style/Widget.Material3.CardView.Outlined"
             android:layout_height="wrap_content">
-        <com.google.android.material.checkbox.MaterialCheckBox
-            android:id="@+id/solidCheckBox"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/solid_compression"/>
+
+            <com.google.android.material.checkbox.MaterialCheckBox
+                android:id="@+id/solidCheckBox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/solid_compression"/>
         </com.google.android.material.card.MaterialCardView>
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -120,34 +128,41 @@
             android:textStyle="bold"
             android:text="@string/thread_count"
             android:layout_margin="5dp"/>
-        <com.google.android.material.card.MaterialCardView
+
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
-            app:cardCornerRadius="10dp"
-            android:layout_margin="5dp"
-            style="@style/Widget.Material3.CardView.Outlined"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/threadCountEditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="5dp"
                 style="@style/Widget.Material3.TextInputEditText.OutlinedBox.Dense"
                 android:hint="@string/max_available_thread"
                 android:inputType="number"/>
-        </com.google.android.material.card.MaterialCardView>
-
+        </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/okButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            app:cornerRadius="5dp"
+            android:layout_marginStart="5dp"
+            android:layout_marginEnd="5dp"
+            android:layout_marginTop="16dp"
+            style="@style/Widget.Material3.Button.TonalButton"
             android:text="@string/ok" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/noPasswordButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            app:cornerRadius="5dp"
+            android:layout_marginStart="5dp"
+            android:layout_marginEnd="5dp"
+            android:layout_marginTop="10dp"
+            style="@style/Widget.Material3.Button.TonalButton"
             android:text="@string/no_password" />
     </LinearLayout>
-</ScrollView>
+</androidx.core.widget.NestedScrollView>

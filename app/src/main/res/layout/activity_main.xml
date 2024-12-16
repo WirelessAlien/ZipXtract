@@ -33,6 +33,40 @@
         android:layout_height="match_parent"
         app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"/>
 
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/mainFab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"
+        android:text="Compress"
+        app:layout_behavior="com.google.android.material.behavior.HideViewOnScrollBehavior"
+        android:src="@drawable/ic_create_z" />
+
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/createZipFab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginBottom="80dp"
+        android:layout_marginEnd="16dp"
+        android:visibility="gone"
+        android:text="Compress Zip"
+        app:layout_behavior="com.google.android.material.behavior.HideViewOnScrollBehavior"
+        android:icon="@drawable/ic_zip" />
+
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/create7zFab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginBottom="140dp"
+        android:layout_marginEnd="16dp"
+        android:visibility="gone"
+        android:text="Compress 7z"
+        app:layout_behavior="com.google.android.material.behavior.HideViewOnScrollBehavior"
+        android:icon="@drawable/ic_zip" />
+
     <com.google.android.material.progressindicator.LinearProgressIndicator
         android:id="@+id/progressBar"
         android:layout_width="match_parent"

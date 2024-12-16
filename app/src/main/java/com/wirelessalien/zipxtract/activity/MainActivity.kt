@@ -16,19 +16,11 @@ import android.os.FileObserver
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
-import android.text.InputType
-import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.webkit.MimeTypeMap
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
 import android.widget.Button
-import android.widget.CheckBox
-import android.widget.EditText
-import android.widget.ImageButton
-import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -64,8 +56,8 @@ import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_RAR_EXTRAC
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_ERROR_MESSAGE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_PROGRESS
 import com.wirelessalien.zipxtract.databinding.ActivityMainBinding
-import com.wirelessalien.zipxtract.fragment.CompressionSettingsDialogFragment
 import com.wirelessalien.zipxtract.fragment.SevenZOptionDialogFragment
+import com.wirelessalien.zipxtract.fragment.ZipOptionDialogFragment
 import com.wirelessalien.zipxtract.service.Archive7zService
 import com.wirelessalien.zipxtract.service.ArchiveSplitZipService
 import com.wirelessalien.zipxtract.service.ArchiveZipService
@@ -124,6 +116,7 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
     private var searchRunnable: Runnable? = null
     private lateinit var progressDialog: AlertDialog
     private lateinit var progressText: TextView
+    private var areFabsVisible: Boolean = false
 
     private lateinit var progressBarDialog: LinearProgressIndicator
     private var isLargeLayout: Boolean = false
@@ -207,6 +200,71 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
 
         extractProgressDialog()
         archiveProgressDialog()
+
+        binding.mainFab.setOnClickListener {
+            if (areFabsVisible) {
+                hideExtendedFabs()
+            } else {
+                showExtendedFabs()
+            }
+        }
+
+        // Set click listeners for extended FABs
+        binding.createZipFab.setOnClickListener {
+            showZipOptionsDialog()
+            hideExtendedFabs()
+        }
+
+        binding.create7zFab.setOnClickListener {
+            show7zOptionsDialog()
+            hideExtendedFabs()
+        }
+    }
+
+    private fun showExtendedFabs() {
+        binding.createZipFab.show()
+        binding.create7zFab.show()
+        areFabsVisible = true
+    }
+
+    private fun hideExtendedFabs() {
+        binding.createZipFab.hide()
+        binding.create7zFab.hide()
+        areFabsVisible = false
+    }
+
+    private fun show7zOptionsDialog() {
+        val fragmentManager = supportFragmentManager
+        val newFragment = SevenZOptionDialogFragment.newInstance(adapter)
+        if (isLargeLayout) {
+            // Show the fragment as a dialog.
+            newFragment.show(fragmentManager, "SevenZOptionDialogFragment")
+        } else {
+            // Show the fragment fullscreen.
+            val transaction = fragmentManager.beginTransaction()
+            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+            transaction.add(android.R.id.content, newFragment)
+                .addToBackStack(null)
+                .commit()
+        }
+        actionMode?.finish() // Destroy the action mode
+    }
+
+    private fun showZipOptionsDialog() {
+        val fragmentManager = supportFragmentManager
+        val newFragment = ZipOptionDialogFragment.newInstance(adapter)
+        if (isLargeLayout) {
+            // Show the fragment as a dialog.
+            newFragment.show(fragmentManager, "ZipOptionDialogFragment")
+        } else {
+            // Show the fragment fullscreen.
+            val transaction = fragmentManager.beginTransaction()
+            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+            transaction.add(android.R.id.content, newFragment)
+                .addToBackStack(null)
+                .commit()
+        }
+        actionMode?.finish()
     }
 
     private fun archiveProgressDialog() {
@@ -393,10 +451,10 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
 
                         R.id.m_archive_zip -> {
                             val fragmentManager = supportFragmentManager
-                            val newFragment = CompressionSettingsDialogFragment.newInstance(adapter)
+                            val newFragment = ZipOptionDialogFragment.newInstance(adapter)
                             if (isLargeLayout) {
                                 // Show the fragment as a dialog.
-                                newFragment.show(fragmentManager, "CompressionSettingsDialogFragment")
+                                newFragment.show(fragmentManager, "ZipOptionDialogFragment")
                             } else {
                                 // Show the fragment fullscreen.
                                 val transaction = fragmentManager.beginTransaction()
@@ -805,152 +863,6 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
         }
         updateActionModeTitle()
     }
-    fun showZipOptionsDialog() {
-
-        showCompressionSettingsDialog { _, _, _, _, _, _, _, _ ->
-        }
-    }
-
-
-
-
-    private fun showCompressionSettingsDialog(
-
-        onCompressionSettingsEntered: (String, String?, CompressionMethod, CompressionLevel, Boolean, EncryptionMethod?, AesKeyStrength?, Long?) -> Unit) {
-        val layoutInflater = LayoutInflater.from(this)
-        val customView = layoutInflater.inflate(R.layout.zip_settings_dialog, null)
-
-        val compressionMethodSpinner = customView.findViewById<Spinner>(R.id.compression_method_input)
-        val compressionLevelSpinner = customView.findViewById<Spinner>(R.id.compression_level_input)
-        val encryptionMethodSpinner = customView.findViewById<Spinner>(R.id.encryption_method_input)
-        val encryptionStrengthSpinner = customView.findViewById<Spinner>(R.id.encryption_strength_input)
-        val passwordInput = customView.findViewById<EditText>(R.id.passwordEditText)
-        val showPasswordButton = customView.findViewById<ImageButton>(R.id.showPasswordButton)
-        val zipNameEditText = customView.findViewById<EditText>(R.id.zipNameEditText)
-
-        val splitZipCheckbox = customView.findViewById<CheckBox>(R.id.splitZipCheckbox)
-        val splitSizeInput = customView.findViewById<EditText>(R.id.splitSizeEditText)
-
-        val splitSizeUnitSpinner = customView.findViewById<Spinner>(R.id.splitSizeUnitSpinner)
-        val splitSizeUnits = arrayOf("KB", "MB", "GB")
-        val splitSizeUnitAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, splitSizeUnits)
-        splitSizeUnitAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        splitSizeUnitSpinner.adapter = splitSizeUnitAdapter
-
-        splitZipCheckbox.setOnCheckedChangeListener { _, isChecked ->
-            splitSizeInput.isEnabled = isChecked
-            if (!isChecked) {
-                splitSizeInput.text.clear()
-            }
-        }
-
-        val compressionMethods = CompressionMethod.entries.filter { it != CompressionMethod.AES_INTERNAL_ONLY }.map { it.name }.toTypedArray()
-        val compressionMethodAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, compressionMethods)
-        compressionMethodAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        compressionMethodSpinner.adapter = compressionMethodAdapter
-
-        val compressionLevels = CompressionLevel.entries.map { it.name }.toTypedArray()
-        val compressionLevelAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, compressionLevels)
-        compressionLevelAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        compressionLevelSpinner.adapter = compressionLevelAdapter
-
-        val encryptionMethods = EncryptionMethod.entries.map { it.name }.toTypedArray()
-        val encryptionMethodAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, encryptionMethods)
-        encryptionMethodAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        encryptionMethodSpinner.adapter = encryptionMethodAdapter
-
-        val encryptionStrengths = AesKeyStrength.entries.filter { it != AesKeyStrength.KEY_STRENGTH_192 }.map { it.name }.toTypedArray()
-        val encryptionStrengthAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, encryptionStrengths)
-        encryptionStrengthAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        encryptionStrengthSpinner.adapter = encryptionStrengthAdapter
-
-        val filesToArchive = adapter.getSelectedFilesPaths()
-        var isPasswordVisible = false
-
-        val builder = MaterialAlertDialogBuilder(this, R.style.MaterialDialog)
-        builder.setView(customView)
-        builder.setPositiveButton(getString(R.string.ok)) { _, _ ->
-            val defaultName = if (filesToArchive.isNotEmpty()) {
-                filesToArchive.first()
-            } else {
-                ""
-            }
-            val archiveName = zipNameEditText.text.toString().ifBlank { defaultName }
-            val password = passwordInput.text.toString()
-            val isEncryptionEnabled = password.isNotEmpty()
-            val selectedCompressionMethod = CompressionMethod.valueOf(compressionMethods[compressionMethodSpinner.selectedItemPosition])
-            val selectedCompressionLevel = CompressionLevel.valueOf(compressionLevels[compressionLevelSpinner.selectedItemPosition])
-            val selectedEncryptionMethod = if (encryptionMethodSpinner.selectedItemPosition != 0) {
-                EncryptionMethod.valueOf(encryptionMethods[encryptionMethodSpinner.selectedItemPosition])
-            } else {
-                null
-            }
-            val selectedEncryptionStrength = if (selectedEncryptionMethod != null && selectedEncryptionMethod != EncryptionMethod.NONE) {
-                AesKeyStrength.valueOf(encryptionStrengths[encryptionStrengthSpinner.selectedItemPosition])
-            } else {
-                null
-            }
-
-            val splitSizeText = splitSizeInput.text.toString()
-            val splitSizeUnit = splitSizeUnits[splitSizeUnitSpinner.selectedItemPosition]
-            val splitZipSize = if (splitZipCheckbox.isChecked) {
-                convertToBytes(splitSizeText.toLongOrNull() ?: 64, splitSizeUnit)
-            } else {
-                null
-            }
-
-            onCompressionSettingsEntered.invoke(archiveName, password.takeIf { isEncryptionEnabled }, selectedCompressionMethod, selectedCompressionLevel, isEncryptionEnabled, selectedEncryptionMethod, selectedEncryptionStrength, splitZipSize)
-
-            // Call createSplitZipFile function only if splitZipCheckbox is checked
-            if (splitZipCheckbox.isChecked) {
-//                startSplitZipService(
-//                    archiveName,
-//                    password,
-//                    selectedCompressionMethod,
-//                    selectedCompressionLevel,
-//                    isEncryptionEnabled,
-//                    selectedEncryptionMethod,
-//                    selectedEncryptionStrength,
-//                    splitZipSize!!
-//                )
-            } else {
-//                startZipService(archiveName, password, selectedCompressionMethod, selectedCompressionLevel, isEncryptionEnabled, selectedEncryptionMethod, selectedEncryptionStrength, filesToArchive
-//                )
-            }
-        }
-
-        builder.setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
-            dialog.dismiss()
-        }
-
-        showPasswordButton.setOnClickListener {
-            isPasswordVisible = !isPasswordVisible
-            if (isPasswordVisible) {
-                // Show password
-                passwordInput.inputType =
-                    InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-                showPasswordButton.setImageResource(R.drawable.ic_visibility_on)
-            } else {
-                // Hide password
-                passwordInput.inputType =
-                    InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
-                showPasswordButton.setImageResource(R.drawable.ic_visibility_off)
-            }
-        }
-
-        encryptionMethodSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                val selectedEncryptionMethod = EncryptionMethod.valueOf(encryptionMethods[position])
-                passwordInput.isEnabled = selectedEncryptionMethod != EncryptionMethod.NONE
-                encryptionStrengthSpinner.isEnabled = selectedEncryptionMethod == EncryptionMethod.AES
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-                // Do nothing
-            }
-        }
-        builder.show()
-    }
 
     fun startZipService(archiveName: String, password: String?, compressionMethod: CompressionMethod, compressionLevel: CompressionLevel, isEncrypted: Boolean, encryptionMethod: EncryptionMethod?, aesStrength: AesKeyStrength?, filesToArchive: List<String> ) {
         progressDialog.show()
@@ -990,66 +902,6 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
             "GB" -> 1024L * 1024 * 1024
             else -> 1024L
         })
-    }
-
-    fun showPasswordInputDialog7z() {
-        val layoutInflater = LayoutInflater.from(this)
-        val customView = layoutInflater.inflate(R.layout.seven_z_option_dialog, null)
-
-        val passwordEditText = customView.findViewById<EditText>(R.id.passwordEditText)
-        val compressionSpinner = customView.findViewById<Spinner>(R.id.compressionSpinner)
-        val solidCheckBox = customView.findViewById<CheckBox>(R.id.solidCheckBox)
-        val threadCountEditText = customView.findViewById<EditText>(R.id.threadCountEditText)
-        val archiveNameEditText = customView.findViewById<EditText>(R.id.archiveNameEditText)
-        val filesToArchive = adapter.getSelectedFilesPaths()
-
-        MaterialAlertDialogBuilder(this)
-            .setView(customView)
-            .setPositiveButton(getString(R.string.ok)) { _, _ ->
-
-                val defaultName = if (filesToArchive.isNotEmpty()) {
-                    filesToArchive.first()
-                } else {
-                    "archive"
-                }
-                val archiveName = archiveNameEditText.text.toString().ifBlank { defaultName }
-                val password = passwordEditText.text.toString()
-                val compressionLevel = when (compressionSpinner.selectedItemPosition) {
-                    0 -> 0
-                    1 -> 1
-                    2 -> 3
-                    3 -> 5
-                    4 -> 7
-                    5 -> 9
-                    else -> -1
-                }
-                val solid = solidCheckBox.isChecked
-                val threadCount = threadCountEditText.text.toString().toIntOrNull() ?: -1
-
-                startSevenZService(password.ifBlank { null }, archiveName, compressionLevel, solid, threadCount, filesToArchive)
-            }
-            .setNegativeButton(getString(R.string.no_password)) { _, _ ->
-
-                val defaultName = if (filesToArchive.isNotEmpty()) {
-                    filesToArchive.first()
-                } else {
-                    "archive"
-                }
-                val archiveName = archiveNameEditText.text.toString().ifBlank { defaultName }
-                val compressionLevel = when (compressionSpinner.selectedItemPosition) {
-                    0 -> 0
-                    1 -> 1
-                    2 -> 3
-                    3 -> 5
-                    4 -> 7
-                    5 -> 9
-                    else -> -1
-                }
-                val solid = solidCheckBox.isChecked
-                val threadCount = threadCountEditText.text.toString().toIntOrNull() ?: -1
-
-                startSevenZService(null, archiveName, compressionLevel, solid, threadCount, filesToArchive)
-            }.show()
     }
 
     fun startSevenZService(password: String?, archiveName: String, compressionLevel: Int, solid: Boolean, threadCount: Int, filesToArchive: List<String>) {

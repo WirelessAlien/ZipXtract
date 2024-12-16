@@ -3,7 +3,6 @@ package com.wirelessalien.zipxtract.adapter
 import android.content.Context
 import android.graphics.Color
 import android.os.Build
-import android.util.Log
 import android.util.SparseBooleanArray
 import android.view.LayoutInflater
 import android.view.View
@@ -16,6 +15,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.activity.MainActivity
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.attribute.BasicFileAttributes
@@ -41,34 +42,26 @@ class FileAdapter(private val context: Context, private val mainActivity: MainAc
 
     fun toggleSelection(position: Int) {
         val file = filteredFiles[position]
-        Log.d("FileAdapter", "Toggling selection for: ${file.absolutePath}")
 
         if (file.isDirectory) {
             toggleDirectorySelection(position)
         } else {
             if (selectedItems.get(position, false)) {
                 selectedItems.delete(position)
-                Log.d("FileAdapter", "Deselected file: ${file.absolutePath}")
             } else {
                 selectedItems.put(position, true)
-                Log.d("FileAdapter", "Selected file: ${file.absolutePath}")
             }
         }
-
-        Log.d("FileAdapter", "Current selected items: ${selectedItems.size()}")
         notifyDataSetChanged()
     }
 
     private fun toggleDirectorySelection(position: Int) {
         val directory = filteredFiles[position]
-        Log.d("FileAdapter", "Toggling directory selection for: ${directory.absolutePath}")
 
         if (selectedItems.get(position, false)) {
             selectedItems.delete(position)
-            Log.d("FileAdapter", "Deselected directory: ${directory.absolutePath}")
         } else {
             selectedItems.put(position, true)
-            Log.d("FileAdapter", "Selected directory: ${directory.absolutePath}")
         }
 
         for (file in directory.listFiles() ?: emptyArray()) {
@@ -77,39 +70,33 @@ class FileAdapter(private val context: Context, private val mainActivity: MainAc
                 toggleSelection(index)
             }
         }
-
-        Log.d("FileAdapter", "Current selected items after directory toggle: ${selectedItems.size()}")
     }
 
-    fun getSelectedFilesPaths(): List<String> {
+    suspend fun getSelectedFilesPaths(): List<String> = withContext(Dispatchers.IO) {
         val selectedPaths = mutableListOf<String>()
-        Log.d("FileAdapter", "Number of selected items: ${selectedItems.size()}")
 
         for (i in 0 until selectedItems.size()) {
             val file = filteredFiles[selectedItems.keyAt(i)]
             selectedPaths.add(file.absolutePath)
-            Log.d("FileAdapter", "Selected file: ${file.absolutePath}")
 
             if (file.isDirectory) {
                 val directoryPaths = getFilesPathsInsideDirectory(file)
                 selectedPaths.addAll(directoryPaths)
-                Log.d("FileAdapter", "Files inside directory: $directoryPaths")
             }
         }
-        Log.d("FileAdapter", "Selected paths: $selectedPaths")
-        return selectedPaths
+        selectedPaths
     }
 
-    private fun getFilesPathsInsideDirectory(directory: File): List<String> {
+    private suspend fun getFilesPathsInsideDirectory(directory: File): List<String> = withContext(
+        Dispatchers.IO) {
         val innerPaths = mutableListOf<String>()
         for (file in directory.listFiles() ?: emptyArray()) {
             innerPaths.add(file.absolutePath)
-            Log.d("FileAdapter", "File inside directory: ${file.absolutePath}")
             if (file.isDirectory) {
                 innerPaths.addAll(getFilesPathsInsideDirectory(file))
             }
         }
-        return innerPaths
+        innerPaths
     }
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView), View.OnLongClickListener, View.OnClickListener {
