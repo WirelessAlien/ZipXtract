@@ -1,6 +1,7 @@
 package com.wirelessalien.zipxtract.activity
 
 import android.Manifest
+import android.app.Activity
 import android.app.ActivityManager
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -14,6 +15,7 @@ import android.os.Environment
 import android.os.FileObserver
 import android.os.Handler
 import android.os.Looper
+import android.provider.Settings
 import android.text.InputType
 import android.view.LayoutInflater
 import android.view.Menu
@@ -29,6 +31,7 @@ import android.widget.ImageButton
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
@@ -42,7 +45,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.google.android.material.textfield.TextInputEditText
 import com.wirelessalien.zipxtract.R
@@ -86,6 +88,7 @@ import java.nio.file.Files
 import java.nio.file.attribute.BasicFileAttributes
 import java.util.Date
 
+
 class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileAdapter.OnFileLongClickListener {
 
     enum class SortBy {
@@ -93,12 +96,8 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
     }
 
     companion object {
-        private const val REQUEST_CODE_PERMISSIONS = 123
+        private const val STORAGE_PERMISSION_CODE = 123
     }
-
-    private val requiredPermissions = arrayOf(
-        Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE
-    )
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: FileAdapter
@@ -126,9 +125,7 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
     private lateinit var progressDialog: AlertDialog
     private lateinit var progressText: TextView
 
-    private lateinit var progressBar: LinearProgressIndicator
     private lateinit var progressBarDialog: LinearProgressIndicator
-    private lateinit var circularProgressBar: CircularProgressIndicator
     private var isLargeLayout: Boolean = false
     private lateinit var binding: ActivityMainBinding
 
@@ -179,9 +176,8 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        progressBar = findViewById(R.id.progressBar)
-        circularProgressBar = findViewById(R.id.circularProgressBar)
         isLargeLayout = resources.getBoolean(R.bool.large_layout)
 
         toolbar = findViewById(R.id.toolbar)
@@ -191,8 +187,8 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
         searchHandler = Handler(Looper.getMainLooper())
 
         // Check for permissions
-        if (!allPermissionsGranted()) {
-            ActivityCompat.requestPermissions(this, requiredPermissions, REQUEST_CODE_PERMISSIONS)
+        if (!checkStoragePermissions()) {
+            requestForStoragePermissions()
         } else {
             initRecyclerView()
         }
@@ -460,29 +456,80 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
 
     private fun updateProgressBar(progress: Int) {
         // Update the progress bar
-        progressBar.progress = progress
+        binding.progressBar.progress = progress
         if (progress == 100) {
             // Hide the progress bar when progress is complete
-            progressBar.visibility = View.GONE
+            binding.progressBar.visibility = View.GONE
         } else {
             // Show the progress bar if not already visible
-            progressBar.visibility = View.VISIBLE
+            binding.progressBar.visibility = View.VISIBLE
         }
     }
 
 
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int, permissions: Array<out String>, grantResults: IntArray
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == REQUEST_CODE_PERMISSIONS) {
-            if (!allPermissionsGranted()) {
+        if (requestCode == STORAGE_PERMISSION_CODE) {
+            if (!checkStoragePermissions()) {
                 Toast.makeText(this, "Permission not granted", Toast.LENGTH_SHORT).show()
                 finish()
             } else {
                 initRecyclerView()
                 updateAdapterWithFullList()
+            }
+        }
+    }
+
+    private fun requestForStoragePermissions() {
+        //Android is 11 (R) or above
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            try {
+                val intent = Intent()
+                intent.setAction(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+                val uri = Uri.fromParts("package", this.packageName, null)
+                intent.setData(uri)
+                storageActivityResultLauncher.launch(intent)
+            } catch (e: Exception) {
+                val intent = Intent()
+                intent.setAction(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
+                storageActivityResultLauncher.launch(intent)
+            }
+        } else {
+            //Below android 11
+            ActivityCompat.requestPermissions(
+                this, arrayOf<String>(
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.READ_EXTERNAL_STORAGE
+                ),
+                STORAGE_PERMISSION_CODE
+            )
+        }
+    }
+
+    private val storageActivityResultLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if (Environment.isExternalStorageManager()) {
+                // Permission granted
+                initRecyclerView()
+                updateAdapterWithFullList()
+            } else {
+                // Permission denied
+                Toast.makeText(this, "Permission not granted", Toast.LENGTH_SHORT).show()
+                finish()
+            }
+        } else {
+            if (result.resultCode == Activity.RESULT_OK) {
+                // Permission granted
+                initRecyclerView()
+                updateAdapterWithFullList()
+            } else {
+                // Permission denied
+                Toast.makeText(this, "Permission not granted", Toast.LENGTH_SHORT).show()
+                finish()
             }
         }
     }
@@ -502,16 +549,18 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
 
 
     // Checks whether all necessary permissions are granted
-    private fun allPermissionsGranted(): Boolean {
-        for (permission in requiredPermissions) {
-            if (ContextCompat.checkSelfPermission(
-                    this, permission
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                return false
-            }
+    private fun checkStoragePermissions(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            //Android is 11 (R) or above
+            Environment.isExternalStorageManager()
+        } else {
+            //Below android 11
+            val write =
+                ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            val read =
+                ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+            read == PackageManager.PERMISSION_GRANTED && write == PackageManager.PERMISSION_GRANTED
         }
-        return true
     }
 
     @Suppress("DEPRECATION")
@@ -1095,14 +1144,14 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
 
     private fun searchFiles(query: String?) {
         isSearchActive = !query.isNullOrEmpty()
-        circularProgressBar.visibility = View.VISIBLE
+        binding.circularProgressBar.visibility = View.VISIBLE
 
         CoroutineScope(Dispatchers.IO).launch {
             val result = query?.let { searchAllFiles(File(Environment.getExternalStorageDirectory().absolutePath), it) } ?: emptyList()
 
             withContext(Dispatchers.Main) {
                 adapter.updateFilesAndFilter(ArrayList(result))
-                circularProgressBar.visibility = View.GONE
+                binding.circularProgressBar.visibility = View.GONE
             }
         }
     }
