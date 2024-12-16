@@ -25,8 +25,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import androidx.fragment.app.DialogFragment
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.wirelessalien.zipxtract.activity.MainActivity
 import com.wirelessalien.zipxtract.adapter.FileAdapter
+import com.wirelessalien.zipxtract.adapter.FilePathAdapter
 import com.wirelessalien.zipxtract.databinding.SevenZOptionDialogBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -38,7 +40,8 @@ class SevenZOptionDialogFragment : DialogFragment() {
 
     private lateinit var binding: SevenZOptionDialogBinding
     private lateinit var adapter: FileAdapter
-    private lateinit var selectedFilePaths: List<String>
+    private lateinit var selectedFilePaths: MutableList<String>
+    private lateinit var filePathAdapter: FilePathAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -57,24 +60,37 @@ class SevenZOptionDialogFragment : DialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Show the progress bar
         binding.progressIndicator.visibility = View.VISIBLE
 
-        // Launch a coroutine to fetch the selected file paths
         CoroutineScope(Dispatchers.Main).launch {
             selectedFilePaths = withContext(Dispatchers.IO) {
-                adapter.getSelectedFilesPaths()
+                adapter.getSelectedFilesPaths().toMutableList()
             }
 
-            // Hide the progress bar
             binding.progressIndicator.visibility = View.GONE
 
-            // Initialize the rest of the UI with the fetched data
             initializeUI()
         }
     }
 
     private fun initializeUI() {
+        filePathAdapter = FilePathAdapter(selectedFilePaths) { filePath ->
+            selectedFilePaths.remove(filePath)
+            filePathAdapter.removeFilePath(filePath)
+            filePathAdapter.notifyDataSetChanged()
+        }
+
+        binding.filePathsRv.layoutManager = LinearLayoutManager(context)
+        binding.filePathsRv.adapter = filePathAdapter
+
+        binding.toggleFileViewBtn.setOnClickListener {
+            if (binding.filePathsRv.visibility == View.GONE) {
+                binding.filePathsRv.visibility = View.VISIBLE
+            } else {
+                binding.filePathsRv.visibility = View.GONE
+            }
+        }
+
         binding.okButton.setOnClickListener {
             val defaultName = if (selectedFilePaths.isNotEmpty()) {
                 File(selectedFilePaths.first()).name

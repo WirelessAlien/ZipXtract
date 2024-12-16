@@ -15,7 +15,7 @@
   ~     along with this program.  If not, see <https://www.gnu.org/licenses/>.
   -->
 
-<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:fitsSystemWindows="true"
@@ -47,6 +47,22 @@
             android:layout_margin="5dp"
             android:visibility="gone"
             android:indeterminate="true"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/toggleFileViewBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            app:cornerRadius="5dp"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:text="Show/Hide File Paths" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/filePathsRv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:visibility="gone" />
 
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
@@ -267,4 +283,4 @@
             app:cornerRadius="5dp"
             android:text="@string/cancel" />
     </LinearLayout>
-</androidx.core.widget.NestedScrollView>
+</ScrollView>
