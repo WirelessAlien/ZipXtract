@@ -19,7 +19,7 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             debuggable = false
             applicationIdSuffix '.release'
@@ -74,8 +74,11 @@ dependencies {
     implementation 'androidx.navigation:navigation-ui-ktx:2.7.0'
 
     //apache commons compress
-    implementation 'org.apache.commons:commons-compress:1.24.0'
-    implementation 'org.tukaani:xz:1.9'
+    implementation 'org.apache.commons:commons-compress:1.27.1'
+    implementation 'org.tukaani:xz:1.10'
+
+    //zstd-jni
+    implementation "com.github.luben:zstd-jni:1.5.6-3"
 
     //zip4j
     implementation 'net.lingala.zip4j:zip4j:2.11.5'

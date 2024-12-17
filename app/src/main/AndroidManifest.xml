@@ -112,6 +112,11 @@
             android:foregroundServiceType="dataSync"
             android:exported="false" />
 
+        <service
+            android:name=".service.ExtractCsArchiveService"
+            android:foregroundServiceType="dataSync"
+            android:exported="false" />
+
 
 
     </application>

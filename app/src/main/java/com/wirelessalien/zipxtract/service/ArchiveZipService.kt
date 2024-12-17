@@ -227,7 +227,6 @@ class ArchiveZipService : Service() {
         }
     }
 
-
     private fun updateProgress(progress: Int) {
         val notification = createNotification(progress)
         val notificationManager = getSystemService(NotificationManager::class.java)
@@ -253,7 +252,7 @@ class ArchiveZipService : Service() {
     private fun showCompletionNotification(error: String) {
         stopForegroundService()
 
-        val notification = NotificationCompat.Builder(this, ExtractArchiveService.CHANNEL_ID)
+        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("Extraction Complete")
             .setContentText(error)
             .setSmallIcon(R.drawable.ic_notification_icon)
@@ -261,7 +260,7 @@ class ArchiveZipService : Service() {
             .build()
 
         val notificationManager = getSystemService(NotificationManager::class.java)
-        notificationManager.notify(ExtractArchiveService.NOTIFICATION_ID + 1, notification)
+        notificationManager.notify(NOTIFICATION_ID + 1, notification)
     }
 
     @Suppress("DEPRECATION")

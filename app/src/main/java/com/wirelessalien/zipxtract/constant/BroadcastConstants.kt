@@ -29,6 +29,8 @@ object BroadcastConstants {
     const val ACTION_ARCHIVE_ERROR = "ACTION_ARCHIVE_ERROR"
     const val ACTION_EXTRACTION_COMPLETE = "ACTION_EXTRACTION_COMPLETE"
     const val ACTION_EXTRACTION_ERROR = "ACTION_EXTRACTION_ERROR"
+    const val ARCHIVE_NOTIFICATION_CHANNEL_ID = "archive_notification_channel"
+    const val EXTRACTION_NOTIFICATION_CHANNEL_ID = "extraction_notification_channel"
     const val ACTION_EXTRACTION_PROGRESS = "ACTION_EXTRACTION_PROGRESS"
     const val ACTION_ARCHIVE_PROGRESS = "ACTION_ARCHIVE_PROGRESS"
     const val EXTRA_PROGRESS = "progress"

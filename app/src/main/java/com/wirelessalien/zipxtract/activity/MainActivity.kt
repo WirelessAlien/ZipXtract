@@ -16,6 +16,7 @@ import android.os.FileObserver
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -62,6 +63,7 @@ import com.wirelessalien.zipxtract.service.Archive7zService
 import com.wirelessalien.zipxtract.service.ArchiveSplitZipService
 import com.wirelessalien.zipxtract.service.ArchiveZipService
 import com.wirelessalien.zipxtract.service.ExtractArchiveService
+import com.wirelessalien.zipxtract.service.ExtractCsArchiveService
 import com.wirelessalien.zipxtract.service.ExtractMultipart7zService
 import com.wirelessalien.zipxtract.service.ExtractMultipartZipService
 import com.wirelessalien.zipxtract.service.ExtractRarService
@@ -686,12 +688,19 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
         val btnCompress7z = bottomSheetView.findViewById<Button>(R.id.btnCompress7z)
         val btnMultiZipExtract = bottomSheetView.findViewById<Button>(R.id.btnMultiZipExtract)
 
-        // Show extract option only for archive files
-        btnExtract.visibility = if (isArchiveFile(file)) View.VISIBLE else View.GONE
 
         val filePath = file.absolutePath
+
         btnExtract.setOnClickListener {
-            showPasswordInputDialog(filePaths)
+            val fileExtension = file.name.split('.').takeLast(2).joinToString(".").lowercase()
+            Log.d("FileExtension", fileExtension)
+            val supportedExtensions = listOf("tar.bz2", "tar.gz", "tar.lz4", "tar.lzma", "tar.sz", "tar.xz", "tar.z", "tar.zstd")
+
+            if (supportedExtensions.any { fileExtension.endsWith(it) }) {
+                startExtractionCsService(filePaths)
+            } else {
+                showPasswordInputDialog(filePaths)
+            }
             bottomSheetDialog.dismiss()
         }
 
@@ -723,10 +732,6 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
         bottomSheetDialog.show()
     }
 
-    private fun isArchiveFile(file: File): Boolean {
-        val archiveExtensions = listOf("zip", "7z", "rar")
-        return archiveExtensions.contains(file.extension.lowercase())
-    }
 
     private fun showPasswordInputDialog(file: String) {
         val dialogView = layoutInflater.inflate(R.layout.password_input_dialog, null)
@@ -801,6 +806,15 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
         val intent = Intent(this, ExtractArchiveService::class.java).apply {
             putExtra(ExtractArchiveService.EXTRA_FILE_PATH, file)
             putExtra(ExtractArchiveService.EXTRA_PASSWORD, password)
+
+        }
+        ContextCompat.startForegroundService(this, intent)
+    }
+
+    private fun startExtractionCsService(file: String) {
+        progressDialog.show()
+        val intent = Intent(this, ExtractCsArchiveService::class.java).apply {
+            putExtra(ExtractArchiveService.EXTRA_FILE_PATH, file)
 
         }
         ContextCompat.startForegroundService(this, intent)
