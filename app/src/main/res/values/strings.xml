@@ -103,4 +103,9 @@
     <string name="extension">Extension</string>
     <string name="unsupported_compression_format">Unsupported compression format</string>
     <string name="extraction_ongoing">Extracting file</string>
+    <string name="archive_ongoing">Archiving file</string>
+    <string name="operation_cancelled">Operation cancelled</string>
+    <string name="compress_archive_notification_name">Compress Archive</string>
+    <string name="extract_archive_notification_name">Extract Archive</string>
+    <string name="tar_creation_failed">Tar creation failed</string>
 </resources>

@@ -31,6 +31,7 @@ import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.constant.BroadcastConstants
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_COMPLETE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_ERROR
+import com.wirelessalien.zipxtract.constant.BroadcastConstants.ARCHIVE_NOTIFICATION_CHANNEL_ID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -51,7 +52,6 @@ class ArchiveSplitZipService : Service() {
 
     companion object {
         const val NOTIFICATION_ID = 754
-        const val CHANNEL_ID = "split_zip_service_channel"
         const val EXTRA_ARCHIVE_NAME = "archiveName"
         const val EXTRA_PASSWORD = "password"
         const val EXTRA_COMPRESSION_METHOD = "compressionMethod"
@@ -113,8 +113,8 @@ class ArchiveSplitZipService : Service() {
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
-                CHANNEL_ID,
-                "Split Zip Service",
+                ARCHIVE_NOTIFICATION_CHANNEL_ID,
+                getString(R.string.compress_archive_notification_name),
                 NotificationManager.IMPORTANCE_LOW
             )
             val notificationManager = getSystemService(NotificationManager::class.java)
@@ -123,11 +123,11 @@ class ArchiveSplitZipService : Service() {
     }
 
     private fun createNotification(progress: Int): Notification {
-        val builder = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Creating Split Zip Archive")
+        val builder = NotificationCompat.Builder(this, ARCHIVE_NOTIFICATION_CHANNEL_ID)
+            .setContentTitle(getString(R.string.archive_ongoing))
             .setSmallIcon(R.drawable.ic_notification_icon)
             .setProgress(100, progress, progress == 0)
-            .addAction(R.drawable.ic_round_cancel, "Cancel", createCancelIntent())
+            .addAction(R.drawable.ic_round_cancel, getString(R.string.cancel), createCancelIntent())
             .setOngoing(true)
 
         return builder.build()
@@ -209,7 +209,7 @@ class ArchiveSplitZipService : Service() {
                     showCompletionNotification("$archiveName.zip created successfully")
                     sendLocalBroadcast(Intent(ACTION_ARCHIVE_COMPLETE))
                 } else {
-                    showErrorNotification("Archive creation failed")
+                    showErrorNotification(getString(R.string.zip_creation_failed))
                     sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra("error_message", "Archive creation failed: ${progressMonitor.result}"))
                 }
 
@@ -241,7 +241,7 @@ class ArchiveSplitZipService : Service() {
 
     private fun showErrorNotification(error: String) {
         stopForegroundService()
-        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
+        val notification = NotificationCompat.Builder(this, ARCHIVE_NOTIFICATION_CHANNEL_ID)
             .setContentTitle("Archive Creation Failed")
             .setContentText(error)
             .setSmallIcon(R.drawable.ic_folder_zip)
@@ -255,7 +255,7 @@ class ArchiveSplitZipService : Service() {
     private fun showCompletionNotification(message: String) {
         stopForegroundService()
 
-        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
+        val notification = NotificationCompat.Builder(this, ARCHIVE_NOTIFICATION_CHANNEL_ID)
             .setContentTitle("Archive Creation Complete")
             .setContentText(message)
             .setSmallIcon(R.drawable.ic_notification_icon)

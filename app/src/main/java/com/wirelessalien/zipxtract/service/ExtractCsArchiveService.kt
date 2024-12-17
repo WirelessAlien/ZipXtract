@@ -28,12 +28,13 @@ import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.wirelessalien.zipxtract.R
-import com.wirelessalien.zipxtract.constant.BroadcastConstants
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_COMPLETE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_ERROR
+import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_PROGRESS
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACT_CANCEL
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRACTION_NOTIFICATION_CHANNEL_ID
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_ERROR_MESSAGE
+import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_PROGRESS
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -106,7 +107,7 @@ class ExtractCsArchiveService : Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 EXTRACTION_NOTIFICATION_CHANNEL_ID,
-                "Extraction Service",
+                getString(R.string.extract_archive_notification_name),
                 NotificationManager.IMPORTANCE_LOW
             )
             val notificationManager = getSystemService(NotificationManager::class.java)
@@ -189,16 +190,17 @@ class ExtractCsArchiveService : Service() {
             e.printStackTrace()
             showErrorNotification(e.message ?: getString(R.string.extraction_failed))
             sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message ?: getString(R.string.extraction_failed)))
+        } finally {
+            stopForegroundService()
         }
     }
 
     private fun updateProgress(progress: Int) {
         val notification = createNotification(progress)
         val notificationManager = getSystemService(NotificationManager::class.java)
-        notificationManager.notify(ExtractArchiveService.NOTIFICATION_ID, notification)
+        notificationManager.notify(NOTIFICATION_ID, notification)
 
-        sendLocalBroadcast(Intent(BroadcastConstants.ACTION_EXTRACTION_PROGRESS).putExtra(
-            BroadcastConstants.EXTRA_PROGRESS, progress))
+        sendLocalBroadcast(Intent(ACTION_EXTRACTION_PROGRESS).putExtra(EXTRA_PROGRESS, progress))
     }
 
     private fun showCompletionNotification() {

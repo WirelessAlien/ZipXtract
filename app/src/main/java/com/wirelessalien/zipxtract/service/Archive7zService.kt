@@ -31,6 +31,8 @@ import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.constant.BroadcastConstants
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_COMPLETE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_ERROR
+import com.wirelessalien.zipxtract.constant.BroadcastConstants.ARCHIVE_NOTIFICATION_CHANNEL_ID
+import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_PROGRESS
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -53,7 +55,6 @@ class Archive7zService : Service() {
 
     companion object {
         const val NOTIFICATION_ID = 808
-        const val CHANNEL_ID = "archive_service_channel"
         const val EXTRA_ARCHIVE_NAME = "archiveName"
         const val EXTRA_PASSWORD = "password"
         const val EXTRA_COMPRESSION_LEVEL = "compressionLevel"
@@ -109,8 +110,8 @@ class Archive7zService : Service() {
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
-                CHANNEL_ID,
-                "Archive Service",
+                ARCHIVE_NOTIFICATION_CHANNEL_ID,
+                getString(R.string.compress_archive_notification_name),
                 NotificationManager.IMPORTANCE_LOW
             )
             val notificationManager = getSystemService(NotificationManager::class.java)
@@ -119,11 +120,11 @@ class Archive7zService : Service() {
     }
 
     private fun createNotification(progress: Int): Notification {
-        val builder = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Creating Archive")
+        val builder = NotificationCompat.Builder(this, ARCHIVE_NOTIFICATION_CHANNEL_ID)
+            .setContentTitle(getString(R.string.archive_ongoing))
             .setSmallIcon(R.drawable.ic_notification_icon)
             .setProgress(100, progress, progress == 0)
-            .addAction(R.drawable.ic_round_cancel, "Cancel", createCancelIntent())
+            .addAction(R.drawable.ic_round_cancel, getString(R.string.cancel), createCancelIntent())
             .setOngoing(true)
 
         return builder.build()
@@ -180,7 +181,7 @@ class Archive7zService : Service() {
                         }
 
                         override fun getStream(i: Int): ISequentialInStream {
-                            if (archiveJob?.isCancelled == true) throw SevenZipException("Extraction cancelled")
+                            if (archiveJob?.isCancelled == true) throw SevenZipException(getString(R.string.operation_cancelled))
 
                             return RandomAccessFileInStream(RandomAccessFile(filesToArchive[i], "r"))
                         }
@@ -196,16 +197,16 @@ class Archive7zService : Service() {
             }
         } catch (e: SevenZipException) {
             e.printStackTrace()
-            showErrorNotification("Archive creation failed: ${e.message}")
-            sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra("error_message", "Archive creation failed: ${e.message}"))
+            showErrorNotification(": ${e.message}")
+            sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_PROGRESS, ": ${e.message}"))
         } catch (e: IOException) {
             e.printStackTrace()
-            showErrorNotification("Archive creation failed: ${e.message}")
-            sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra("error_message", "Archive creation failed: ${e.message}"))
+            showErrorNotification(": ${e.message}")
+            sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_PROGRESS, ": ${e.message}"))
         } catch (e: OutOfMemoryError) {
             e.printStackTrace()
-            showErrorNotification("Archive creation failed: ${e.message}")
-            sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra("error_message", "Archive creation failed: ${e.message}"))
+            showErrorNotification(": ${e.message}")
+            sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_PROGRESS, ": ${e.message}"))
         }
     }
 
@@ -215,13 +216,13 @@ class Archive7zService : Service() {
         notificationManager.notify(NOTIFICATION_ID, notification)
 
         sendLocalBroadcast(Intent(BroadcastConstants.ACTION_ARCHIVE_PROGRESS).putExtra(
-            BroadcastConstants.EXTRA_PROGRESS, progress))
+            EXTRA_PROGRESS, progress))
     }
 
     private fun showErrorNotification(error: String) {
         stopForegroundService()
-        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Archive Creation Failed")
+        val notification = NotificationCompat.Builder(this, ARCHIVE_NOTIFICATION_CHANNEL_ID)
+            .setContentTitle(getString(R.string.sevenz_creation_failed))
             .setContentText(error)
             .setSmallIcon(R.drawable.ic_notification_icon)
             .setAutoCancel(true)

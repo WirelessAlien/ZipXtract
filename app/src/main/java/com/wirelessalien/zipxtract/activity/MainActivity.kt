@@ -597,12 +597,12 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
 
     private fun initRecyclerView() {
         // Initialize RecyclerView and adapter as before
-        recyclerView = findViewById(R.id.recyclerView)
-        recyclerView.layoutManager = LinearLayoutManager(this)
+        binding.recyclerView.layoutManager = LinearLayoutManager(this)
+        binding.recyclerView.isNestedScrollingEnabled = false
         adapter = FileAdapter(this, this, ArrayList())
         adapter.setOnItemClickListener(this)
         adapter.setOnFileLongClickListener(this)
-        recyclerView.adapter = adapter
+        binding.recyclerView.adapter = adapter
         // Update the adapter with the initial file list
         updateAdapterWithFullList()
     }
