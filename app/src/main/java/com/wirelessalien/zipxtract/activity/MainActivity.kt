@@ -20,7 +20,6 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.webkit.MimeTypeMap
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
@@ -34,9 +33,8 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentTransaction
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.chip.Chip
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.google.android.material.textfield.TextInputEditText
@@ -86,25 +84,20 @@ import java.util.Date
 class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileAdapter.OnFileLongClickListener {
 
     enum class SortBy {
-           SORT_BY_NAME, SORT_BY_SIZE, SORT_BY_TIME_OF_CREATION, SORT_BY_EXTENSION
+           SORT_BY_NAME, SORT_BY_SIZE, SORT_BY_MODIFIED, SORT_BY_EXTENSION
     }
 
     companion object {
         private const val STORAGE_PERMISSION_CODE = 123
     }
 
-    private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: FileAdapter
     private var isSearchActive: Boolean = false
-
 
     private var sortBy: SortBy = SortBy.SORT_BY_NAME
     private var sortAscending: Boolean = true
 
     private var currentPath: String? = null
-
-    private lateinit var toolbar: MaterialToolbar
-
 
     var actionMode: ActionMode? = null
     private val selectedFiles = mutableListOf<File>()
@@ -129,12 +122,12 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
         override fun onReceive(context: Context?, intent: Intent?) {
             when (intent?.action) {
                 ACTION_EXTRACTION_COMPLETE -> {
-                    // Handle extraction complete
+                    unselectAllFiles()
                     progressDialog.dismiss()
                     Toast.makeText(this@MainActivity, "Extraction Complete", Toast.LENGTH_SHORT).show()
                 }
                 ACTION_EXTRACTION_ERROR -> {
-                    // Handle extraction error
+                    unselectAllFiles()
                     progressDialog.dismiss()
                     val errorMessage = intent.getStringExtra(EXTRA_ERROR_MESSAGE)
                     Toast.makeText(this@MainActivity, "Extraction Error: $errorMessage", Toast.LENGTH_SHORT).show()
@@ -147,12 +140,12 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
                     progressText.text = "Extracting... $progress%"
                 }
                 ACTION_ARCHIVE_COMPLETE -> {
-                    // Handle archive complete
+                    unselectAllFiles()
                     progressDialog.dismiss()
                     Toast.makeText(this@MainActivity, "Archive Complete", Toast.LENGTH_SHORT).show()
                 }
                 ACTION_ARCHIVE_ERROR -> {
-                    // Handle archive error
+                    unselectAllFiles()
                     progressDialog.dismiss()
                     val errorMessage = intent.getStringExtra(EXTRA_ERROR_MESSAGE)
                     Toast.makeText(this@MainActivity, "Archive Error: $errorMessage", Toast.LENGTH_SHORT).show()
@@ -162,10 +155,20 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
                     val progress = intent.getIntExtra(EXTRA_PROGRESS, 0)
                     updateProgressBar(progress)
                     progressBarDialog.progress = progress
-                    progressText.text = "Extracting... $progress%"
+                    progressText.text = "Archiving... $progress%"
                 }
             }
         }
+    }
+
+    private fun unselectAllFiles() {
+        for (i in 0 until adapter.itemCount) {
+            if (selectedFiles.contains(adapter.files[i])) {
+                adapter.toggleSelection(i)
+            }
+        }
+        selectedFiles.clear()
+        updateActionModeTitle()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -175,13 +178,11 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
 
         isLargeLayout = resources.getBoolean(R.bool.large_layout)
 
-        toolbar = findViewById(R.id.toolbar)
-        setSupportActionBar(toolbar)
-        // Get current path
+        setSupportActionBar(binding.toolbar)
+
         currentPath = intent.getStringExtra("path")
         searchHandler = Handler(Looper.getMainLooper())
 
-        // Check for permissions
         if (!checkStoragePermissions()) {
             requestForStoragePermissions()
         } else {
@@ -221,7 +222,47 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
             show7zOptionsDialog()
             hideExtendedFabs()
         }
+
+        updateCurrentPathTextView()
     }
+
+    private fun updateCurrentPathTextView() {
+        val internalStorage = "Internal Storage"
+        val basePath = Environment.getExternalStorageDirectory().absolutePath
+        val currentPath = currentPath ?: basePath
+        val displayPath = currentPath.replace(basePath, internalStorage).split("/")
+
+        binding.chipGroupPath.removeAllViews()
+
+        var cumulativePath = basePath
+        for (part in displayPath) {
+            val chip = Chip(this).apply {
+                text = part
+                isClickable = true
+                isCheckable = false
+                val shapeAppearanceModel = shapeAppearanceModel.toBuilder()
+                    .setAllCornerSizes(5f * resources.displayMetrics.density)
+                    .build()
+                setShapeAppearanceModel(shapeAppearanceModel)
+                setOnClickListener {
+                    cumulativePath = if (part == internalStorage) {
+                        basePath
+                    } else {
+                        "$cumulativePath/$part"
+                    }
+                    navigateToPath(cumulativePath)
+                }
+            }
+            binding.chipGroupPath.addView(chip)
+        }
+    }
+
+    private fun navigateToPath(path: String) {
+        val intent = Intent(this, MainActivity::class.java)
+        intent.putExtra("path", path)
+        startActivity(intent)
+    }
+
 
     private fun showExtendedFabs() {
         binding.createZipFab.show()
@@ -407,6 +448,7 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
                 val intent = Intent(this, MainActivity::class.java)
                 intent.putExtra("path", file.absolutePath)
                 startActivity(intent)
+                updateCurrentPathTextView()
             } else {
                 // If user clicked on a file, show bottom sheet options
                 showBottomSheetOptions(filePath, file)
@@ -509,24 +551,14 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
         actionMode?.title = "$selectedItemCount selected"
     }
 
-    private fun clearSelection() {
-        selectedFiles.clear()
-//        adapter.clearSelection()
-    }
-
     private fun updateProgressBar(progress: Int) {
-        // Update the progress bar
         binding.progressBar.progress = progress
         if (progress == 100) {
-            // Hide the progress bar when progress is complete
             binding.progressBar.visibility = View.GONE
         } else {
-            // Show the progress bar if not already visible
             binding.progressBar.visibility = View.VISIBLE
         }
     }
-
-
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray
     ) {
@@ -559,7 +591,7 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
         } else {
             //Below android 11
             ActivityCompat.requestPermissions(
-                this, arrayOf<String>(
+                this, arrayOf(
                     Manifest.permission.WRITE_EXTERNAL_STORAGE,
                     Manifest.permission.READ_EXTERNAL_STORAGE
                 ),
@@ -594,7 +626,6 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
         }
     }
 
-
     private fun initRecyclerView() {
         // Initialize RecyclerView and adapter as before
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
@@ -607,8 +638,6 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
         updateAdapterWithFullList()
     }
 
-
-    // Checks whether all necessary permissions are granted
     private fun checkStoragePermissions(): Boolean {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             //Android is 11 (R) or above
@@ -628,17 +657,35 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
         if (!isObserving) {
             val directoryToObserve = File(currentPath ?: Environment.getExternalStorageDirectory().absolutePath)
 
-            fileObserver = object : FileObserver(directoryToObserve.path, CREATE or DELETE or MOVE_SELF) {
-                override fun onEvent(event: Int, path: String?) {
-                    // Handle file change event
-                    if (event and (CREATE or DELETE) != 0 && path != null) {
-                        val fullPath = "$directoryToObserve/$path"
-                        val file = File(fullPath)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                fileObserver = object : FileObserver(directoryToObserve, CREATE or DELETE or MOVE_SELF) {
+                    override fun onEvent(event: Int, path: String?) {
+                        // Handle file change event
+                        if (event and (CREATE or DELETE) != 0 && path != null) {
+                            val fullPath = "$directoryToObserve/$path"
+                            val file = File(fullPath)
 
-                        // Check if the path corresponds to a directory
-                        if (file.isDirectory || event and CREATE != 0) {
-                            // Update the adapter with the updated file list
-                            updateAdapterWithFullList()
+                            // Check if the path corresponds to a directory
+                            if (file.isDirectory || event and CREATE != 0) {
+                                // Update the adapter with the updated file list
+                                updateAdapterWithFullList()
+                            }
+                        }
+                    }
+                }
+            } else {
+                fileObserver = object : FileObserver(directoryToObserve.absolutePath, CREATE or DELETE or MOVED_TO) {
+                    override fun onEvent(event: Int, path: String?) {
+                        // Handle file change event
+                        if (event and (CREATE or DELETE) != 0 && path != null) {
+                            val fullPath = "$directoryToObserve/$path"
+                            val file = File(fullPath)
+
+                            // Check if the path corresponds to a directory
+                            if (file.isDirectory || event and CREATE != 0) {
+                                // Update the adapter with the updated file list
+                                updateAdapterWithFullList()
+                            }
                         }
                     }
                 }
@@ -871,9 +918,11 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
     }
 
     private fun selectAllFiles() {
-        val adapter = recyclerView.adapter as FileAdapter
         for (i in 0 until adapter.itemCount) {
-            adapter.toggleSelection(i)
+            if (!selectedFiles.contains(adapter.files[i])) {
+                selectedFiles.add(adapter.files[i])
+                adapter.toggleSelection(i)
+            }
         }
         updateActionModeTitle()
     }
@@ -894,6 +943,7 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
     }
 
     fun startSplitZipService(archiveName: String, password: String?, compressionMethod: CompressionMethod, compressionLevel: CompressionLevel, isEncrypted: Boolean, encryptionMethod: EncryptionMethod?, aesStrength: AesKeyStrength?, filesToArchive: List<String>, splitSize: Long?) {
+        progressDialog.show()
         val intent = Intent(this, ArchiveSplitZipService::class.java).apply {
             putExtra(ArchiveSplitZipService.EXTRA_ARCHIVE_NAME, archiveName)
             putExtra(ArchiveSplitZipService.EXTRA_PASSWORD, password)
@@ -931,35 +981,43 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
         ContextCompat.startForegroundService(this, intent)
     }
 
-
-    private fun getMimeType(uri: Uri): String? {
-        val extension = MimeTypeMap.getFileExtensionFromUrl(uri.toString())
-        return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
-    }
-
-    private fun getFiles(): ArrayList<File> {
+    private suspend fun getFiles(): ArrayList<File> = withContext(Dispatchers.IO) {
         val files = ArrayList<File>()
+        val directories = ArrayList<File>()
         val directory = File(currentPath ?: Environment.getExternalStorageDirectory().absolutePath)
 
         val fileList = directory.listFiles()
 
         if (fileList != null) {
             for (file in fileList) {
-                files.add(file)
+                if (file.isDirectory) {
+                    directories.add(file)
+                } else {
+                    files.add(file)
+                }
             }
         }
 
         when (sortBy) {
-            SortBy.SORT_BY_NAME -> files.sortBy { it.name }
-            SortBy.SORT_BY_SIZE -> files.sortBy { if (it.isFile) it.length() else 0 }
-            SortBy.SORT_BY_TIME_OF_CREATION -> files.sortBy { getFileTimeOfCreation(it) }
-            SortBy.SORT_BY_EXTENSION -> files.sortBy { if (it.isFile) it.extension else "" }
+            SortBy.SORT_BY_NAME -> {
+                directories.sortBy { it.name }
+                files.sortBy { it.name }
+            }
+            SortBy.SORT_BY_SIZE -> files.sortBy { it.length() }
+            SortBy.SORT_BY_MODIFIED -> files.sortBy { getFileTimeOfCreation(it) }
+            SortBy.SORT_BY_EXTENSION -> files.sortBy { it.extension }
         }
+
         if (!sortAscending) {
+            directories.reverse()
             files.reverse()
         }
 
-        return files
+        val combinedList = ArrayList<File>()
+        combinedList.addAll(directories)
+        combinedList.addAll(files)
+
+        combinedList
     }
 
     private fun getFileTimeOfCreation(file: File): Long {
@@ -1050,7 +1108,7 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
             }
 
             R.id.menu_sort_by_time_of_creation -> {
-                sortBy = SortBy.SORT_BY_TIME_OF_CREATION
+                sortBy = SortBy.SORT_BY_MODIFIED
                 initRecyclerView()
             }
 

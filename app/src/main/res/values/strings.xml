@@ -99,7 +99,7 @@
     <string name="sort_by">Sort by</string>
     <string name="name">Name</string>
     <string name="size">Size</string>
-    <string name="time_of_creation">Time of creation</string>
+    <string name="time_of_creation">Modified</string>
     <string name="extension">Extension</string>
     <string name="unsupported_compression_format">Unsupported compression format</string>
     <string name="extraction_ongoing">Extracting file</string>

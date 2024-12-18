@@ -2,6 +2,7 @@ package com.wirelessalien.zipxtract.adapter
 
 import android.content.Context
 import android.graphics.Color
+import android.icu.text.DateFormat
 import android.os.Build
 import android.util.SparseBooleanArray
 import android.view.LayoutInflater
@@ -9,7 +10,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -106,6 +106,8 @@ class FileAdapter(private val context: Context, private val mainActivity: MainAc
         val fileDate: TextView = itemView.findViewById(R.id.file_date)
 
         init {
+            itemView.isClickable = true
+            itemView.isFocusable = true
             itemView.setOnClickListener(this)
             itemView.setOnLongClickListener(this)
         }
@@ -137,14 +139,17 @@ class FileAdapter(private val context: Context, private val mainActivity: MainAc
 
         holder.fileName.text = truncateFileName(file.name, 35)
 
-        val simpleDateFormat = SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.US)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            holder.fileDate.text = simpleDateFormat.format(Date(getFileTimeOfCreation(file)))
+        val dateFormat = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT, Locale.getDefault())
+        } else {
+            SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
         }
+        holder.fileDate.text = dateFormat.format(Date(getFileTimeOfCreation(file)))
+
 
         if (file.isDirectory) {
             holder.fileIcon.setImageResource(R.drawable.ic_folder)
-            holder.fileSize.text = "Folder"
+            holder.fileSize.text = context.getString(R.string.folder)
         } else {
             holder.fileSize.text = bytesToString(file.length())
 
@@ -199,21 +204,22 @@ class FileAdapter(private val context: Context, private val mainActivity: MainAc
         files.clear()
         files.addAll(newFiles)
 
-        if (!query.isNullOrBlank()) {
-            filteredFiles = files.filter { it.name.contains(query, true) || it.isDirectory }
+        filteredFiles = if (!query.isNullOrBlank()) {
+            files.filter { it.name.contains(query, true) || it.isDirectory }
         } else {
-            filteredFiles = files
+            files
         }
 
         notifyDataSetChanged()
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     private fun getFileTimeOfCreation(file: File): Long {
-        val attr = Files.readAttributes(
-            file.toPath(), BasicFileAttributes::class.java
-        )
-        return attr.creationTime().toMillis()
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val attr = Files.readAttributes(file.toPath(), BasicFileAttributes::class.java)
+            attr.lastModifiedTime().toMillis()
+        } else {
+            file.lastModified()
+        }
     }
 
     private fun bytesToString(bytes: Long): String {
