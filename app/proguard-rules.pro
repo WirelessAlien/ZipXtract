@@ -21,3 +21,4 @@
 #-renamesourcefileattribute SourceFile
 
 -dontwarn org.brotli.dec.BrotliInputStream
+-dontwarn com.github.luben.zstd.ZstdOutputStream
