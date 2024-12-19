@@ -108,4 +108,8 @@
     <string name="compress_archive_notification_name">Compress Archive</string>
     <string name="extract_archive_notification_name">Extract Archive</string>
     <string name="tar_creation_failed">Tar creation failed</string>
+    <string name="compression_ongoing">Compressing file</string>
+    <string name="compression_failed">Compression failed</string>
+    <string name="compression_success">Compression succesful</string>
+    <string name="enter_archive_name">Enter archive name</string>
 </resources>

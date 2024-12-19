@@ -99,4 +99,16 @@
         app:layout_behavior="com.google.android.material.behavior.HideViewOnScrollBehavior"
         android:icon="@drawable/ic_zip" />
 
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/createTarFab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginBottom="200dp"
+        android:layout_marginEnd="16dp"
+        android:visibility="gone"
+        android:text="Compress Tar"
+        app:layout_behavior="com.google.android.material.behavior.HideViewOnScrollBehavior"
+        android:icon="@drawable/ic_zip" />
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

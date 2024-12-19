@@ -75,7 +75,7 @@ class Archive7zService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val archiveName = intent?.getStringExtra(EXTRA_ARCHIVE_NAME) ?: return START_NOT_STICKY
         val password = intent.getStringExtra(EXTRA_PASSWORD)
-        val compressionLevel = intent.getIntExtra(EXTRA_COMPRESSION_LEVEL, 5)
+        val compressionLevel = intent.getIntExtra(EXTRA_COMPRESSION_LEVEL, 1)
         val solid = intent.getBooleanExtra(EXTRA_SOLID, false)
         val threadCount = intent.getIntExtra(EXTRA_THREAD_COUNT, 1)
         val filesToArchive = intent.getSerializableExtra(EXTRA_FILES_TO_ARCHIVE) as List<String>
@@ -146,6 +146,7 @@ class Archive7zService : Service() {
                 outArchive.setSolid(solid)
                 outArchive.setThreadCount(threadCount)
                 outArchive.setHeaderEncryption(true)
+                outArchive.isTrace = true
 
                 outArchive.createArchive(
                     RandomAccessFileOutStream(raf), filesToArchive.size,

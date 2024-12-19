@@ -77,6 +77,16 @@
                 android:value="" />
         </activity>
 
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
         <service
             android:name=".service.ExtractArchiveService"
             android:foregroundServiceType="dataSync"
@@ -114,6 +124,16 @@
 
         <service
             android:name=".service.ExtractCsArchiveService"
+            android:foregroundServiceType="dataSync"
+            android:exported="false" />
+
+        <service
+            android:name=".service.CompressCsArchiveService"
+            android:foregroundServiceType="dataSync"
+            android:exported="false" />
+
+        <service
+            android:name=".service.ArchiveTarService"
             android:foregroundServiceType="dataSync"
             android:exported="false" />
 

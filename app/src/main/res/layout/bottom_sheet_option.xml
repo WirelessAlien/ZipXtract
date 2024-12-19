@@ -7,6 +7,19 @@
     android:padding="10dp"
     android:orientation="vertical">
 
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnOpenWith"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Open With"
+        android:padding="5dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="20dp"
+        app:cornerRadius="5dp"
+        android:textSize="18sp"/>
+
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnExtract"
         android:layout_width="match_parent"

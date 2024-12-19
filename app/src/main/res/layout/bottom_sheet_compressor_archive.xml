@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~  Copyright (C) 2023  WirelessAlien <https://github.com/WirelessAlien>
+  ~
+  ~     This program is free software: you can redistribute it and/or modify
+  ~     it under the terms of the GNU General Public License as published by
+  ~     the Free Software Foundation, either version 3 of the License, or
+  ~     any later version.
+  ~
+  ~     This program is distributed in the hope that it will be useful,
+  ~     but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~     GNU General Public License for more details.
+  ~
+  ~     You should have received a copy of the GNU General Public License
+  ~     along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical">
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnOpenWith"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Open With"
+        android:layout_margin="8dp"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnExtract"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Extract"
+        android:layout_margin="8dp"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnLzma"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="LZMA"
+        android:layout_margin="8dp"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnBzip2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="BZIP2"
+        android:layout_margin="8dp"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnXz"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="XZ"
+        android:layout_margin="8dp"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnGzip"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="GZIP"
+        android:layout_margin="8dp"/>
+</LinearLayout>
