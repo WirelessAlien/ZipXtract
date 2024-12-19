@@ -77,9 +77,6 @@ dependencies {
     implementation 'org.apache.commons:commons-compress:1.27.1'
     implementation 'org.tukaani:xz:1.10'
 
-    //zstd-jni
-    implementation "com.github.luben:zstd-jni:1.5.6-3"
-
     //zip4j
     implementation 'net.lingala.zip4j:zip4j:2.11.5'
 
