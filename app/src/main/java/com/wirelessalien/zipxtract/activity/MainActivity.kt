@@ -20,6 +20,7 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.webkit.MimeTypeMap
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
@@ -30,14 +31,17 @@ import androidx.appcompat.view.ActionMode
 import androidx.appcompat.widget.SearchView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.fragment.app.FragmentTransaction
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.chip.Chip
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.google.android.material.textfield.TextInputEditText
+import com.wirelessalien.zipxtract.BuildConfig
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.adapter.FileAdapter
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_7Z_CANCEL
@@ -45,6 +49,7 @@ import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_CO
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_ERROR
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_PROGRESS
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_SPLIT_ZIP_CANCEL
+import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_COMPRESS_CANCEL
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_COMPLETE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_ERROR
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_PROGRESS
@@ -56,10 +61,13 @@ import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_ERROR_MESSA
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_PROGRESS
 import com.wirelessalien.zipxtract.databinding.ActivityMainBinding
 import com.wirelessalien.zipxtract.fragment.SevenZOptionDialogFragment
+import com.wirelessalien.zipxtract.fragment.TarOptionsDialogFragment
 import com.wirelessalien.zipxtract.fragment.ZipOptionDialogFragment
 import com.wirelessalien.zipxtract.service.Archive7zService
 import com.wirelessalien.zipxtract.service.ArchiveSplitZipService
+import com.wirelessalien.zipxtract.service.ArchiveTarService
 import com.wirelessalien.zipxtract.service.ArchiveZipService
+import com.wirelessalien.zipxtract.service.CompressCsArchiveService
 import com.wirelessalien.zipxtract.service.ExtractArchiveService
 import com.wirelessalien.zipxtract.service.ExtractCsArchiveService
 import com.wirelessalien.zipxtract.service.ExtractMultipart7zService
@@ -75,6 +83,7 @@ import net.lingala.zip4j.model.enums.AesKeyStrength
 import net.lingala.zip4j.model.enums.CompressionLevel
 import net.lingala.zip4j.model.enums.CompressionMethod
 import net.lingala.zip4j.model.enums.EncryptionMethod
+import org.apache.commons.compress.compressors.CompressorStreamFactory
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.attribute.BasicFileAttributes
@@ -223,6 +232,11 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
             hideExtendedFabs()
         }
 
+        binding.createTarFab.setOnClickListener {
+            showTarOptionsDialog()
+            hideExtendedFabs()
+        }
+
         updateCurrentPathTextView()
     }
 
@@ -267,12 +281,14 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
     private fun showExtendedFabs() {
         binding.createZipFab.show()
         binding.create7zFab.show()
+        binding.createTarFab.show()
         areFabsVisible = true
     }
 
     private fun hideExtendedFabs() {
         binding.createZipFab.hide()
         binding.create7zFab.hide()
+        binding.createTarFab.hide()
         areFabsVisible = false
     }
 
@@ -282,6 +298,22 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
         if (isLargeLayout) {
             // Show the fragment as a dialog.
             newFragment.show(fragmentManager, "SevenZOptionDialogFragment")
+        } else {
+            // Show the fragment fullscreen.
+            val transaction = fragmentManager.beginTransaction()
+            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+            transaction.add(android.R.id.content, newFragment)
+                .addToBackStack(null)
+                .commit()
+        }
+        actionMode?.finish() // Destroy the action mode
+    }
+    private fun showTarOptionsDialog() {
+        val fragmentManager = supportFragmentManager
+        val newFragment = TarOptionsDialogFragment.newInstance(adapter)
+        if (isLargeLayout) {
+            // Show the fragment as a dialog.
+            newFragment.show(fragmentManager, "TarOptionDialogFragment")
         } else {
             // Show the fragment fullscreen.
             val transaction = fragmentManager.beginTransaction()
@@ -346,6 +378,16 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
             if (isArchiveSplitZipServiceRunning) {
                 val cancelZipIntent = Intent(this, ArchiveSplitZipService::class.java).apply {
                     action = ACTION_ARCHIVE_SPLIT_ZIP_CANCEL
+                }
+                startService(cancelZipIntent)
+            }
+
+            val isArchiveCompressServiceRunning = activityManager.getRunningServices(Integer.MAX_VALUE)
+                .any { it.service.className == CompressCsArchiveService::class.java.name }
+
+            if (isArchiveCompressServiceRunning) {
+                val cancelZipIntent = Intent(this, CompressCsArchiveService::class.java).apply {
+                    action = ACTION_COMPRESS_CANCEL
                 }
                 startService(cancelZipIntent)
             }
@@ -450,8 +492,11 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
                 startActivity(intent)
                 updateCurrentPathTextView()
             } else {
-                // If user clicked on a file, show bottom sheet options
-                showBottomSheetOptions(filePath, file)
+                if (file.extension.equals("tar", ignoreCase = true)) {
+                    showCompressorArchiveDialog(filePath)
+                } else {
+                    showBottomSheetOptions(filePath, file)
+                }
             }
         }
     }
@@ -723,6 +768,74 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
     }
 
 
+    private fun showCompressorArchiveDialog(file: String) {
+        val view = layoutInflater.inflate(R.layout.bottom_sheet_compressor_archive, null)
+        val bottomSheetDialog = BottomSheetDialog(this)
+        bottomSheetDialog.setContentView(view)
+
+        val btnLzma = view.findViewById<MaterialButton>(R.id.btnLzma)
+        val btnBzip2 = view.findViewById<MaterialButton>(R.id.btnBzip2)
+        val btnXz = view.findViewById<MaterialButton>(R.id.btnXz)
+        val btnGzip = view.findViewById<MaterialButton>(R.id.btnGzip)
+        val extractBtn = view.findViewById<MaterialButton>(R.id.btnExtract)
+        val btnOpenWith = view.findViewById<MaterialButton>(R.id.btnOpenWith)
+
+        btnLzma.setOnClickListener {
+            startCompressService(file, CompressorStreamFactory.LZMA)
+            bottomSheetDialog.dismiss()
+        }
+
+        btnBzip2.setOnClickListener {
+            startCompressService(file, CompressorStreamFactory.BZIP2)
+            bottomSheetDialog.dismiss()
+        }
+
+        btnXz.setOnClickListener {
+            startCompressService(file, CompressorStreamFactory.XZ)
+            bottomSheetDialog.dismiss()
+        }
+
+        btnGzip.setOnClickListener {
+            startCompressService(file, CompressorStreamFactory.GZIP)
+            bottomSheetDialog.dismiss()
+        }
+
+        extractBtn.setOnClickListener {
+            startExtractionService(file, null)
+            bottomSheetDialog.dismiss()
+        }
+
+        btnOpenWith.setOnClickListener {
+            val uri = FileProvider.getUriForFile(this, "${BuildConfig.APPLICATION_ID}.fileprovider", File(file))
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(uri, getMimeType(File(file)))
+                flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+            }
+            startActivity(Intent.createChooser(intent, "Open with"))
+            bottomSheetDialog.dismiss()
+        }
+
+        bottomSheetDialog.show()
+    }
+
+    private fun startCompressService(file: String, compressionFormat: String) {
+        progressDialog.show()
+        val intent = Intent(this, CompressCsArchiveService::class.java).apply {
+            putExtra(CompressCsArchiveService.EXTRA_FILE_PATH, file)
+            putExtra(CompressCsArchiveService.EXTRA_COMPRESSION_FORMAT, compressionFormat)
+        }
+        ContextCompat.startForegroundService(this, intent)
+    }
+
+    fun startArchiveTarService(file: List<String>, archiveName: String) {
+        progressDialog.show()
+        val intent = Intent(this, ArchiveTarService::class.java).apply {
+            putExtra(ArchiveTarService.EXTRA_FILES_TO_ARCHIVE, ArrayList(file))
+            putExtra(ArchiveTarService.EXTRA_ARCHIVE_NAME, archiveName)
+        }
+        ContextCompat.startForegroundService(this, intent)
+    }
+
     private fun showBottomSheetOptions(filePaths: String, file: File ) {
         val bottomSheetView = layoutInflater.inflate(R.layout.bottom_sheet_option, null)
         val bottomSheetDialog = BottomSheetDialog(this)
@@ -734,6 +847,7 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
         val btnFileInfo = bottomSheetView.findViewById<Button>(R.id.btnFileInfo)
         val btnCompress7z = bottomSheetView.findViewById<Button>(R.id.btnCompress7z)
         val btnMultiZipExtract = bottomSheetView.findViewById<Button>(R.id.btnMultiZipExtract)
+        val btnOpenWith = bottomSheetView.findViewById<Button>(R.id.btnOpenWith)
 
 
         val filePath = file.absolutePath
@@ -776,9 +890,24 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
             bottomSheetDialog.dismiss()
         }
 
+        btnOpenWith.setOnClickListener {
+            val uri = FileProvider.getUriForFile(this, "${BuildConfig.APPLICATION_ID}.fileprovider", file)
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(uri, getMimeType(file))
+                flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+            }
+            startActivity(Intent.createChooser(intent, "Open with"))
+            bottomSheetDialog.dismiss()
+        }
+
+
         bottomSheetDialog.show()
     }
 
+    private fun getMimeType(file: File): String {
+        val extension = MimeTypeMap.getFileExtensionFromUrl(file.absolutePath)
+        return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "*/*"
+    }
 
     private fun showPasswordInputDialog(file: String) {
         val dialogView = layoutInflater.inflate(R.layout.password_input_dialog, null)
