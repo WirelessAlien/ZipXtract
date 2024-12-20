@@ -40,12 +40,13 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
+
     <ImageView
         android:id="@+id/file_icon"
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:padding="10dp"
-        android:src="@drawable/blank"
+        android:src="@drawable/ic_unknown"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />

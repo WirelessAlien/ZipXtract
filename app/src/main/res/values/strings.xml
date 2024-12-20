@@ -112,4 +112,16 @@
     <string name="compression_failed">Compression failed</string>
     <string name="compression_success">Compression succesful</string>
     <string name="enter_archive_name">Enter archive name</string>
+    <string name="compress_tar">Compress TAR</string>
+    <string name="show_hide_selected_files">Show/Hide Selected Files</string>
+    <string name="background">Background</string>
+    <string name="extracting">Extracting…</string>
+    <string name="archiving">Archiving…</string>
+    <string name="open_with">Open with</string>
+    <string name="compress_with">Compress with:</string>
+    <string name="lzma" translatable="false">LZMA</string>
+    <string name="bzip2" translatable="false">BZIP2</string>
+    <string name="xz" translatable="false">XZ</string>
+    <string name="gzip" translatable="false">GZIP</string>
+    <string name="archive">Archive</string>
 </resources>

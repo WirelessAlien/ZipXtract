@@ -25,41 +25,68 @@
         android:id="@+id/btnOpenWith"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Open With"
-        android:layout_margin="8dp"/>
+        android:layout_marginTop="60dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:text="@string/open_with"
+        app:cornerRadius="5dp"/>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnExtract"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Extract"
-        android:layout_margin="8dp"/>
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:text="@string/extract"
+        app:cornerRadius="5dp"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/compress_with"
+        android:textStyle="bold"
+        android:textSize="18sp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="20dp"/>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnLzma"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="LZMA"
-        android:layout_margin="8dp"/>
+        android:text="@string/lzma"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="12dp"
+        app:cornerRadius="5dp"/>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnBzip2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="BZIP2"
-        android:layout_margin="8dp"/>
+        android:text="@string/bzip2"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="16dp"
+        app:cornerRadius="5dp"/>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnXz"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="XZ"
-        android:layout_margin="8dp"/>
+        android:text="@string/xz"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="16dp"
+        app:cornerRadius="5dp"/>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnGzip"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="GZIP"
-        android:layout_margin="8dp"/>
+        android:text="@string/gzip"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="16dp"
+        app:cornerRadius="5dp"/>
 </LinearLayout>

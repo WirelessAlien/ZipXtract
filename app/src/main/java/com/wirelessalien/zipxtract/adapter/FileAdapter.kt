@@ -155,10 +155,8 @@ class FileAdapter(private val context: Context, private val mainActivity: MainAc
 
             when (file.extension) {
                 "avi" -> holder.fileIcon.setImageResource(R.drawable.ic_avi)
-                "bin" -> holder.fileIcon.setImageResource(R.drawable.ic_bin)
-                "doc" -> holder.fileIcon.setImageResource(R.drawable.ic_doc)
-                "docx" -> holder.fileIcon.setImageResource(R.drawable.ic_docx)
-                "exe" -> holder.fileIcon.setImageResource(R.drawable.ic_unknown)
+                "doc", "docx" -> holder.fileIcon.setImageResource(R.drawable.ic_doc)
+                "exe" -> holder.fileIcon.setImageResource(R.drawable.ic_exe)
                 "mkv" -> holder.fileIcon.setImageResource(R.drawable.ic_mkv)
                 "mov" -> holder.fileIcon.setImageResource(R.drawable.ic_mov)
                 "mp3" -> holder.fileIcon.setImageResource(R.drawable.ic_mp3)
@@ -166,12 +164,22 @@ class FileAdapter(private val context: Context, private val mainActivity: MainAc
                 "pdf" -> holder.fileIcon.setImageResource(R.drawable.ic_pdf)
                 "ppt" -> holder.fileIcon.setImageResource(R.drawable.ic_ppt)
                 "txt" -> holder.fileIcon.setImageResource(R.drawable.ic_txt)
-                "xls" -> holder.fileIcon.setImageResource(R.drawable.ic_xls)
-                "xlsx" -> holder.fileIcon.setImageResource(R.drawable.ic_xlsx)
+                "xls", "xlsx" -> holder.fileIcon.setImageResource(R.drawable.ic_xls)
                 "rar" -> holder.fileIcon.setImageResource(R.drawable.ic_rar)
                 "zip" -> holder.fileIcon.setImageResource(R.drawable.ic_zip)
                 "apk" -> holder.fileIcon.setImageResource(R.drawable.ic_apk)
-                "png", "jpg", "bmp", "jpeg" -> {
+                "jar" -> holder.fileIcon.setImageResource(R.drawable.ic_jar)
+                "java" -> holder.fileIcon.setImageResource(R.drawable.ic_java)
+                "m4a" -> holder.fileIcon.setImageResource(R.drawable.ic_m4a)
+                "mpeg", "mpg" -> holder.fileIcon.setImageResource(R.drawable.ic_mpeg)
+                "svg" -> holder.fileIcon.setImageResource(R.drawable.ic_svg)
+                "wav" -> holder.fileIcon.setImageResource(R.drawable.ic_wav)
+                "webm" -> holder.fileIcon.setImageResource(R.drawable.ic_webm)
+                "xml" -> holder.fileIcon.setImageResource(R.drawable.ic_xml)
+                "tar" -> holder.fileIcon.setImageResource(R.drawable.ic_tar)
+                "db" -> holder.fileIcon.setImageResource(R.drawable.ic_db)
+                "7z" -> holder.fileIcon.setImageResource(R.drawable.ic_7z)
+                "png", "jpg", "bmp", "jpeg", "gif"-> {
                     val requestBuilder = Glide.with(context)
                         .asDrawable()
                         .sizeMultiplier(0.25f)
@@ -193,11 +201,13 @@ class FileAdapter(private val context: Context, private val mainActivity: MainAc
     }
 
     private fun truncateFileName(fileName: String, maxLength: Int): String {
-        return if (fileName.length <= maxLength) {
-            fileName
-        } else {
-            fileName.substring(0, maxLength - 3) + "..."
+        if (fileName.length <= maxLength) {
+            return fileName
         }
+        val keepLength = (maxLength - 3) / 2
+        val start = fileName.substring(0, keepLength)
+        val end = fileName.substring(fileName.length - keepLength)
+        return "$start...$end"
     }
 
     fun updateFilesAndFilter(newFiles: ArrayList<File>, query: String? = null) {

@@ -71,7 +71,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
-        android:text="Compress"
+        android:text="@string/archive"
         app:layout_behavior="com.google.android.material.behavior.HideViewOnScrollBehavior"
         android:src="@drawable/ic_create_z" />
 
@@ -83,7 +83,7 @@
         android:layout_marginBottom="80dp"
         android:layout_marginEnd="16dp"
         android:visibility="gone"
-        android:text="Compress Zip"
+        android:text="@string/create_zip"
         app:layout_behavior="com.google.android.material.behavior.HideViewOnScrollBehavior"
         android:icon="@drawable/ic_zip" />
 
@@ -95,7 +95,7 @@
         android:layout_marginBottom="140dp"
         android:layout_marginEnd="16dp"
         android:visibility="gone"
-        android:text="Compress 7z"
+        android:text="@string/compress_sevenz"
         app:layout_behavior="com.google.android.material.behavior.HideViewOnScrollBehavior"
         android:icon="@drawable/ic_zip" />
 
@@ -107,7 +107,7 @@
         android:layout_marginBottom="200dp"
         android:layout_marginEnd="16dp"
         android:visibility="gone"
-        android:text="Compress Tar"
+        android:text="@string/compress_tar"
         app:layout_behavior="com.google.android.material.behavior.HideViewOnScrollBehavior"
         android:icon="@drawable/ic_zip" />
 

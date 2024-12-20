@@ -36,7 +36,7 @@
             android:layout_marginTop="16dp"
             android:layout_marginStart="5dp"
             android:layout_marginBottom="5dp"
-            android:text="@string/compress_sevenz"/>
+            android:text="@string/compress_tar"/>
 
         <com.google.android.material.progressindicator.LinearProgressIndicator
             android:id="@+id/progressIndicator"
@@ -53,7 +53,7 @@
             android:layout_margin="5dp"
             app:cornerRadius="5dp"
             style="@style/Widget.Material3.Button.TonalButton"
-            android:text="Show/Hide File Paths" />
+            android:text="@string/show_hide_selected_files" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/filePathsRv"

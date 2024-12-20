@@ -17,7 +17,7 @@
 
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     android:fitsSystemWindows="true"
     android:background="@color/md_theme_surface"
     xmlns:app="http://schemas.android.com/apk/res-auto">
@@ -28,7 +28,6 @@
         android:orientation="vertical"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"
         android:layout_marginTop="10dp">
 
         <TextView
@@ -55,7 +54,7 @@
             android:layout_margin="5dp"
             app:cornerRadius="5dp"
             style="@style/Widget.Material3.Button.TonalButton"
-            android:text="Show/Hide File Paths" />
+            android:text="@string/show_hide_selected_files" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/filePathsRv"
@@ -279,6 +278,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
+            android:layout_marginBottom="30dp"
             style="@style/Widget.Material3.Button.TonalButton"
             app:cornerRadius="5dp"
             android:text="@string/cancel" />

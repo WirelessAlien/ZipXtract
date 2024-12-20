@@ -930,7 +930,7 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
         val dialogView = layoutInflater.inflate(R.layout.password_input_dialog, null)
         val passwordEditText = dialogView.findViewById<TextInputEditText>(R.id.passwordInput)
 
-        MaterialAlertDialogBuilder(this)
+        MaterialAlertDialogBuilder(this, R.style.MaterialDialog)
             .setTitle(getString(R.string.enter_password))
             .setView(dialogView)
             .setPositiveButton(getString(R.string.ok)) { _, _ ->
@@ -947,7 +947,7 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
         val dialogView = layoutInflater.inflate(R.layout.password_input_dialog, null)
         val passwordEditText = dialogView.findViewById<TextInputEditText>(R.id.passwordInput)
 
-        MaterialAlertDialogBuilder(this)
+        MaterialAlertDialogBuilder(this, R.style.MaterialDialog)
             .setTitle(getString(R.string.enter_password))
             .setView(dialogView)
             .setPositiveButton(getString(R.string.ok)) { _, _ ->
@@ -964,7 +964,7 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
         val dialogView = layoutInflater.inflate(R.layout.password_input_dialog, null)
         val passwordEditText = dialogView.findViewById<TextInputEditText>(R.id.passwordInput)
 
-        MaterialAlertDialogBuilder(this)
+        MaterialAlertDialogBuilder(this, R.style.MaterialDialog)
             .setTitle(getString(R.string.enter_password))
             .setView(dialogView)
             .setPositiveButton(getString(R.string.ok)) { _, _ ->
