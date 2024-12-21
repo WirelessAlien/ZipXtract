@@ -5,8 +5,8 @@
 
     <item
         android:id="@+id/menu_search"
-        android:icon="@drawable/ic_round_select_all"
-        android:title="Search"
+        android:icon="@drawable/ic_search"
+        android:title="@string/search"
         app:actionViewClass="androidx.appcompat.widget.SearchView"
         app:showAsAction="always" />
     <item
@@ -30,14 +30,14 @@
 
     <item
         android:id="@+id/menu_order"
-        android:title="Order">
+        android:title="@string/order">
         <menu>
             <item
                 android:id="@+id/menu_sort_ascending"
-                android:title="Ascending" />
+                android:title="@string/ascending" />
             <item
                 android:id="@+id/menu_sort_descending"
-                android:title="Descending" />
+                android:title="@string/descending" />
         </menu>
     </item>
 </menu>

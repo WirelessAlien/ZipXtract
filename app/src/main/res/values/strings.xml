@@ -110,7 +110,7 @@
     <string name="tar_creation_failed">Tar creation failed</string>
     <string name="compression_ongoing">Compressing file</string>
     <string name="compression_failed">Compression failed</string>
-    <string name="compression_success">Compression succesful</string>
+    <string name="compression_success">Compression successful</string>
     <string name="enter_archive_name">Enter archive name</string>
     <string name="compress_tar">Compress TAR</string>
     <string name="show_hide_selected_files">Show/Hide Selected Files</string>
@@ -124,4 +124,14 @@
     <string name="xz" translatable="false">XZ</string>
     <string name="gzip" translatable="false">GZIP</string>
     <string name="archive">Archive</string>
+    <string name="file_info">File info</string>
+    <string name="zip" translatable="false">ZIP</string>
+    <string name="_7z" translatable="false">7z</string>
+    <string name="rar" translatable="false">RAR</string>
+    <string name="multi_part_extract">Multi Part Extract:</string>
+    <string name="select_all">Select all</string>
+    <string name="search">Search</string>
+    <string name="order">Order</string>
+    <string name="ascending">Ascending</string>
+    <string name="descending">Descending</string>
 </resources>

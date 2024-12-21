@@ -104,6 +104,7 @@ class FileAdapter(private val context: Context, private val mainActivity: MainAc
         val fileName: TextView = itemView.findViewById(R.id.file_name)
         val fileSize: TextView = itemView.findViewById(R.id.file_size)
         val fileDate: TextView = itemView.findViewById(R.id.file_date)
+        val fileExtension: TextView = itemView.findViewById(R.id.file_extension)
 
         init {
             itemView.isClickable = true
@@ -146,40 +147,16 @@ class FileAdapter(private val context: Context, private val mainActivity: MainAc
         }
         holder.fileDate.text = dateFormat.format(Date(getFileTimeOfCreation(file)))
 
-
         if (file.isDirectory) {
             holder.fileIcon.setImageResource(R.drawable.ic_folder)
             holder.fileSize.text = context.getString(R.string.folder)
+            holder.fileIcon.visibility = View.VISIBLE
+            holder.fileExtension.visibility = View.GONE
         } else {
             holder.fileSize.text = bytesToString(file.length())
 
-            when (file.extension) {
-                "avi" -> holder.fileIcon.setImageResource(R.drawable.ic_avi)
-                "doc", "docx" -> holder.fileIcon.setImageResource(R.drawable.ic_doc)
-                "exe" -> holder.fileIcon.setImageResource(R.drawable.ic_exe)
-                "mkv" -> holder.fileIcon.setImageResource(R.drawable.ic_mkv)
-                "mov" -> holder.fileIcon.setImageResource(R.drawable.ic_mov)
-                "mp3" -> holder.fileIcon.setImageResource(R.drawable.ic_mp3)
-                "mp4" -> holder.fileIcon.setImageResource(R.drawable.ic_mp4)
-                "pdf" -> holder.fileIcon.setImageResource(R.drawable.ic_pdf)
-                "ppt" -> holder.fileIcon.setImageResource(R.drawable.ic_ppt)
-                "txt" -> holder.fileIcon.setImageResource(R.drawable.ic_txt)
-                "xls", "xlsx" -> holder.fileIcon.setImageResource(R.drawable.ic_xls)
-                "rar" -> holder.fileIcon.setImageResource(R.drawable.ic_rar)
-                "zip" -> holder.fileIcon.setImageResource(R.drawable.ic_zip)
-                "apk" -> holder.fileIcon.setImageResource(R.drawable.ic_apk)
-                "jar" -> holder.fileIcon.setImageResource(R.drawable.ic_jar)
-                "java" -> holder.fileIcon.setImageResource(R.drawable.ic_java)
-                "m4a" -> holder.fileIcon.setImageResource(R.drawable.ic_m4a)
-                "mpeg", "mpg" -> holder.fileIcon.setImageResource(R.drawable.ic_mpeg)
-                "svg" -> holder.fileIcon.setImageResource(R.drawable.ic_svg)
-                "wav" -> holder.fileIcon.setImageResource(R.drawable.ic_wav)
-                "webm" -> holder.fileIcon.setImageResource(R.drawable.ic_webm)
-                "xml" -> holder.fileIcon.setImageResource(R.drawable.ic_xml)
-                "tar" -> holder.fileIcon.setImageResource(R.drawable.ic_tar)
-                "db" -> holder.fileIcon.setImageResource(R.drawable.ic_db)
-                "7z" -> holder.fileIcon.setImageResource(R.drawable.ic_7z)
-                "png", "jpg", "bmp", "jpeg", "gif"-> {
+            when (file.extension.lowercase(Locale.getDefault())) {
+                "png", "jpg", "bmp", "jpeg", "gif" -> {
                     val requestBuilder = Glide.with(context)
                         .asDrawable()
                         .sizeMultiplier(0.25f)
@@ -188,16 +165,35 @@ class FileAdapter(private val context: Context, private val mainActivity: MainAc
                         .load(file)
                         .thumbnail(requestBuilder)
                         .into(holder.fileIcon)
+                    holder.fileIcon.visibility = View.VISIBLE
+                    holder.fileExtension.visibility = View.GONE
                 }
-                else -> holder.fileIcon.setImageResource(R.drawable.ic_unknown)
+                else -> {
+                    holder.fileIcon.visibility = View.GONE
+                    holder.fileExtension.visibility = View.VISIBLE
+                    holder.fileExtension.text = if (file.extension.isNotEmpty()) {
+                        if (file.extension.length > 4) {
+                            "FILE"
+                        } else {
+                            if (file.extension.length == 4) {
+                                holder.fileExtension.textSize = 12f
+                            } else {
+                                holder.fileExtension.textSize = 14f
+                            }
+                            file.extension.uppercase(Locale.getDefault())
+                        }
+                    } else {
+                        "..."
+                    }
+                }
             }
         }
+
         if (selectedItems.get(position, false)) {
             holder.itemView.setBackgroundColor(ContextCompat.getColor(context, R.color.md_theme_outline))
         } else {
             holder.itemView.setBackgroundColor(Color.TRANSPARENT)
         }
-
     }
 
     private fun truncateFileName(fileName: String, maxLength: Int): String {

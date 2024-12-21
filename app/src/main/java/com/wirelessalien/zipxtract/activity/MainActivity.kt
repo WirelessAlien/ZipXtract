@@ -555,12 +555,6 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
                             actionMode?.finish() // Destroy the action mode
                             true
                         }
-
-                        R.id.m_extract_multipart -> {
-                            actionMode?.finish()
-                            true
-                        }
-
                         else -> false
                     }
                 }
@@ -779,6 +773,9 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
         val btnGzip = view.findViewById<MaterialButton>(R.id.btnGzip)
         val extractBtn = view.findViewById<MaterialButton>(R.id.btnExtract)
         val btnOpenWith = view.findViewById<MaterialButton>(R.id.btnOpenWith)
+        val fileNameTv = view.findViewById<TextView>(R.id.fileName)
+
+        fileNameTv.text = File(file).name
 
         btnLzma.setOnClickListener {
             startCompressService(file, CompressorStreamFactory.LZMA)
@@ -811,7 +808,7 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
                 setDataAndType(uri, getMimeType(File(file)))
                 flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
             }
-            startActivity(Intent.createChooser(intent, "Open with"))
+            startActivity(Intent.createChooser(intent, getString(R.string.open_with)))
             bottomSheetDialog.dismiss()
         }
 
@@ -845,12 +842,14 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
         val btnMultiExtract = bottomSheetView.findViewById<Button>(R.id.btnMultiExtract)
         val btnMulti7zExtract = bottomSheetView.findViewById<Button>(R.id.btnMulti7zExtract)
         val btnFileInfo = bottomSheetView.findViewById<Button>(R.id.btnFileInfo)
-        val btnCompress7z = bottomSheetView.findViewById<Button>(R.id.btnCompress7z)
         val btnMultiZipExtract = bottomSheetView.findViewById<Button>(R.id.btnMultiZipExtract)
         val btnOpenWith = bottomSheetView.findViewById<Button>(R.id.btnOpenWith)
+        val fileNameTv = bottomSheetView.findViewById<TextView>(R.id.fileName)
 
 
         val filePath = file.absolutePath
+
+        fileNameTv.text = file.name
 
         btnExtract.setOnClickListener {
             val fileExtension = file.name.split('.').takeLast(2).joinToString(".").lowercase()
@@ -885,21 +884,15 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
             bottomSheetDialog.dismiss()
         }
 
-        btnCompress7z.setOnClickListener {
-            // Compression logic here
-            bottomSheetDialog.dismiss()
-        }
-
         btnOpenWith.setOnClickListener {
             val uri = FileProvider.getUriForFile(this, "${BuildConfig.APPLICATION_ID}.fileprovider", file)
             val intent = Intent(Intent.ACTION_VIEW).apply {
                 setDataAndType(uri, getMimeType(file))
                 flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
             }
-            startActivity(Intent.createChooser(intent, "Open with"))
+            startActivity(Intent.createChooser(intent, getString(R.string.open_with)))
             bottomSheetDialog.dismiss()
         }
-
 
         bottomSheetDialog.show()
     }
