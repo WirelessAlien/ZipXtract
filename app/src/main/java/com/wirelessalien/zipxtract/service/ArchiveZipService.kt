@@ -31,6 +31,7 @@ import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.constant.BroadcastConstants
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_COMPLETE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_ERROR
+import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_ERROR_MESSAGE
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -51,7 +52,6 @@ class ArchiveZipService : Service() {
 
     companion object {
         const val NOTIFICATION_ID = 871
-        const val CHANNEL_ID = "zip_service_channel"
         const val EXTRA_ARCHIVE_NAME = "archiveName"
         const val EXTRA_PASSWORD = "password"
         const val EXTRA_COMPRESSION_METHOD = "compressionMethod"
@@ -81,12 +81,37 @@ class ArchiveZipService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val archiveName = intent?.getStringExtra(EXTRA_ARCHIVE_NAME) ?: return START_NOT_STICKY
         val password = intent.getStringExtra(EXTRA_PASSWORD)
-        val compressionMethod = intent.getSerializableExtra(EXTRA_COMPRESSION_METHOD) as CompressionMethod
-        val compressionLevel = intent.getSerializableExtra(EXTRA_COMPRESSION_LEVEL) as CompressionLevel
-        val isEncrypted = intent.getBooleanExtra(EXTRA_IS_ENCRYPTED, false)
-        val encryptionMethod = intent.getSerializableExtra(EXTRA_ENCRYPTION_METHOD) as EncryptionMethod?
-        val aesStrength = intent.getSerializableExtra(EXTRA_AES_STRENGTH) as AesKeyStrength?
-        val filesToArchive = intent.getSerializableExtra(EXTRA_FILES_TO_ARCHIVE) as List<String>
+        val compressionMethod = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent.getSerializableExtra(ArchiveSplitZipService.EXTRA_COMPRESSION_METHOD, CompressionMethod::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            intent.getSerializableExtra(ArchiveSplitZipService.EXTRA_COMPRESSION_METHOD) as? CompressionMethod
+        } ?: CompressionMethod.STORE
+
+        val compressionLevel = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent.getSerializableExtra(ArchiveSplitZipService.EXTRA_COMPRESSION_LEVEL, CompressionLevel::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            intent.getSerializableExtra(ArchiveSplitZipService.EXTRA_COMPRESSION_LEVEL) as? CompressionLevel
+        } ?: CompressionLevel.NO_COMPRESSION
+
+        val isEncrypted = intent.getBooleanExtra(ArchiveSplitZipService.EXTRA_IS_ENCRYPTED, false)
+
+        val encryptionMethod = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent.getSerializableExtra(ArchiveSplitZipService.EXTRA_ENCRYPTION_METHOD, EncryptionMethod::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            intent.getSerializableExtra(ArchiveSplitZipService.EXTRA_ENCRYPTION_METHOD) as? EncryptionMethod
+        }
+
+        val aesStrength = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent.getSerializableExtra(ArchiveSplitZipService.EXTRA_AES_STRENGTH, AesKeyStrength::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            intent.getSerializableExtra(ArchiveSplitZipService.EXTRA_AES_STRENGTH) as? AesKeyStrength
+        }
+
+        val filesToArchive = intent.getStringArrayListExtra(ArchiveSplitZipService.EXTRA_FILES_TO_ARCHIVE) ?: return START_NOT_STICKY
 
         if (intent.action == BroadcastConstants.ACTION_ARCHIVE_ZIP_CANCEL) {
             archiveJob?.cancel()
@@ -111,8 +136,8 @@ class ArchiveZipService : Service() {
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
-                CHANNEL_ID,
-                "Zip Service",
+                BroadcastConstants.ARCHIVE_NOTIFICATION_CHANNEL_ID,
+                getString(R.string.compress_archive_notification_name),
                 NotificationManager.IMPORTANCE_LOW
             )
             val notificationManager = getSystemService(NotificationManager::class.java)
@@ -121,11 +146,13 @@ class ArchiveZipService : Service() {
     }
 
     private fun createNotification(progress: Int): Notification {
-        val builder = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Creating Zip Archive")
+        val builder = NotificationCompat.Builder(this,
+            BroadcastConstants.ARCHIVE_NOTIFICATION_CHANNEL_ID
+        )
+            .setContentTitle(getString(R.string.archive_ongoing))
             .setSmallIcon(R.drawable.ic_notification_icon)
             .setProgress(100, progress, progress == 0)
-            .addAction(R.drawable.ic_round_cancel, "Cancel", createCancelIntent())
+            .addAction(R.drawable.ic_round_cancel, getString(R.string.cancel), createCancelIntent())
             .setOngoing(true)
 
         return builder.build()
@@ -145,6 +172,15 @@ class ArchiveZipService : Service() {
         aesStrength: AesKeyStrength?,
         selectedFiles: List<String>
     ) {
+
+        if (selectedFiles.isEmpty()) {
+            val errorMessage = getString(R.string.no_files_to_archive)
+            showErrorNotification(errorMessage)
+            sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, errorMessage))
+            stopForegroundService()
+            return
+        }
+
         try {
             val zipParameters = ZipParameters().apply {
                 this.compressionMethod = compressionMethod
@@ -155,7 +191,14 @@ class ArchiveZipService : Service() {
             }
 
             val baseDirectory = File(selectedFiles.first()).parentFile
-            val outputFile = File(baseDirectory, "$archiveName.zip")
+            var outputFile = File(baseDirectory, "$archiveName.zip")
+            var counter = 1
+
+            while (outputFile.exists()) {
+                outputFile = File(baseDirectory, "$archiveName ($counter).zip")
+                counter++
+            }
+
             val zipFile = ZipFile(outputFile)
             if (isEncrypted) {
                 zipFile.setPassword(password?.toCharArray())
@@ -177,7 +220,7 @@ class ArchiveZipService : Service() {
 
                 selectedFiles.forEach { filePath ->
                     val file = File(filePath)
-                    val destFile = File(renamedTempDir, file.relativeTo(baseDirectory).path)
+                    val destFile = File(renamedTempDir, file.relativeTo(baseDirectory!!).path)
                     if (file.isDirectory) {
                         destFile.mkdirs()
                         file.copyRecursively(destFile, overwrite = true)
@@ -203,27 +246,27 @@ class ArchiveZipService : Service() {
                 }
 
                 if (progressMonitor.result == ProgressMonitor.Result.SUCCESS) {
-                    showCompletionNotification("$archiveName.zip created successfully")
+                    showCompletionNotification()
                     sendLocalBroadcast(Intent(ACTION_ARCHIVE_COMPLETE))
                 } else {
-                    showErrorNotification("Archive creation failed")
-                    sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra("error_message", "Archive creation failed: ${progressMonitor.result}"))
+                    showErrorNotification(progressMonitor.result.toString())
+                    sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, progressMonitor.result.toString()))
                 }
 
-                if (archiveJob?.isCancelled == true) throw ZipException("Extraction cancelled")
+                if (archiveJob?.isCancelled == true) throw ZipException(getString(R.string.operation_cancelled))
 
                 renamedTempDir.deleteRecursively()
 
             } catch (e: ZipException) {
                 e.printStackTrace()
-                showErrorNotification("Archive creation failed: ${e.message}")
-                sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra("error_message", "Archive creation failed: ${e.message}"))
+                showErrorNotification(e.message ?: getString(R.string.general_error_msg))
+                sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message))
                 return
             }
         } catch (e: ZipException) {
             e.printStackTrace()
-            showErrorNotification("Archive creation failed: ${e.message}")
-            sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra("error_message", "Archive creation failed: ${e.message}"))
+            showErrorNotification(e.message ?: getString(R.string.general_error_msg))
+            sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message))
         }
     }
 
@@ -238,8 +281,8 @@ class ArchiveZipService : Service() {
 
     private fun showErrorNotification(error: String) {
         stopForegroundService()
-        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Archive Creation Failed")
+        val notification = NotificationCompat.Builder(this, BroadcastConstants.ARCHIVE_NOTIFICATION_CHANNEL_ID)
+            .setContentTitle(getString(R.string.zip_creation_failed))
             .setContentText(error)
             .setSmallIcon(R.drawable.ic_notification_icon)
             .setAutoCancel(true)
@@ -249,12 +292,11 @@ class ArchiveZipService : Service() {
         notificationManager.notify(NOTIFICATION_ID + 1, notification)
     }
 
-    private fun showCompletionNotification(error: String) {
+    private fun showCompletionNotification() {
         stopForegroundService()
 
-        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Extraction Complete")
-            .setContentText(error)
+        val notification = NotificationCompat.Builder(this, BroadcastConstants.ARCHIVE_NOTIFICATION_CHANNEL_ID)
+            .setContentTitle(getString(R.string.zip_creation_success))
             .setSmallIcon(R.drawable.ic_notification_icon)
             .setAutoCancel(true)
             .build()

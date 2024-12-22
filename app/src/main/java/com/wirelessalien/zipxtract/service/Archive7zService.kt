@@ -32,6 +32,7 @@ import com.wirelessalien.zipxtract.constant.BroadcastConstants
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_COMPLETE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_ERROR
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ARCHIVE_NOTIFICATION_CHANNEL_ID
+import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_ERROR_MESSAGE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_PROGRESS
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -78,7 +79,7 @@ class Archive7zService : Service() {
         val compressionLevel = intent.getIntExtra(EXTRA_COMPRESSION_LEVEL, 1)
         val solid = intent.getBooleanExtra(EXTRA_SOLID, false)
         val threadCount = intent.getIntExtra(EXTRA_THREAD_COUNT, 1)
-        val filesToArchive = intent.getSerializableExtra(EXTRA_FILES_TO_ARCHIVE) as List<String>
+        val filesToArchive = intent.getStringArrayListExtra(EXTRA_FILES_TO_ARCHIVE) ?: return START_NOT_STICKY
 
         if (intent.action == BroadcastConstants.ACTION_ARCHIVE_7Z_CANCEL) {
             archiveJob?.cancel()
@@ -135,9 +136,23 @@ class Archive7zService : Service() {
     }
 
     private fun create7zFile(archiveName: String, password: String?, compressionLevel: Int, solid: Boolean, threadCount: Int, filesToArchive: List<String>) {
+        if (filesToArchive.isEmpty()) {
+            val errorMessage = getString(R.string.no_files_to_archive)
+            showErrorNotification(errorMessage)
+            sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, errorMessage))
+            stopForegroundService()
+            return
+        }
+
         try {
             val baseDirectory = File(filesToArchive.first()).parentFile?.absolutePath ?: ""
-            val sevenZFile = File(baseDirectory, "$archiveName.7z")
+            var sevenZFile = File(baseDirectory, "$archiveName.7z")
+            var counter = 1
+
+            while (sevenZFile.exists()) {
+                sevenZFile = File(baseDirectory, "$archiveName ($counter).7z")
+                counter++
+            }
 
             RandomAccessFile(sevenZFile, "rw").use { raf ->
                 val outArchive = SevenZip.openOutArchive7z()
@@ -146,7 +161,6 @@ class Archive7zService : Service() {
                 outArchive.setSolid(solid)
                 outArchive.setThreadCount(threadCount)
                 outArchive.setHeaderEncryption(true)
-                outArchive.isTrace = true
 
                 outArchive.createArchive(
                     RandomAccessFileOutStream(raf), filesToArchive.size,
@@ -164,7 +178,8 @@ class Archive7zService : Service() {
                         }
 
                         override fun setCompleted(complete: Long) {
-                            val progress = ((complete.toDouble() / filesToArchive.size) * 100).toInt()
+                            val totalSize = filesToArchive.sumOf { File(it).length() }
+                            val progress = ((complete.toDouble() / totalSize) * 100).toInt()
                             startForeground(NOTIFICATION_ID, createNotification(progress))
                             updateProgress(progress)
                         }
@@ -198,16 +213,16 @@ class Archive7zService : Service() {
             }
         } catch (e: SevenZipException) {
             e.printStackTrace()
-            showErrorNotification(": ${e.message}")
-            sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_PROGRESS, ": ${e.message}"))
+            showErrorNotification(e.message ?: getString(R.string.general_error_msg))
+            sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message))
         } catch (e: IOException) {
             e.printStackTrace()
-            showErrorNotification(": ${e.message}")
-            sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_PROGRESS, ": ${e.message}"))
+            showErrorNotification(e.message ?: getString(R.string.general_error_msg))
+            sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message))
         } catch (e: OutOfMemoryError) {
             e.printStackTrace()
-            showErrorNotification(": ${e.message}")
-            sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_PROGRESS, ": ${e.message}"))
+            showErrorNotification(e.message ?: getString(R.string.general_error_msg))
+            sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message))
         }
     }
 

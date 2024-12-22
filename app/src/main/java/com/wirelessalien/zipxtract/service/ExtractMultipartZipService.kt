@@ -25,7 +25,6 @@ import android.app.Service
 import android.content.Intent
 import android.os.Build
 import android.os.IBinder
-import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.wirelessalien.zipxtract.R
@@ -33,6 +32,7 @@ import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_ERROR
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_PROGRESS
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_MULTI_ZIP_EXTRACTION_CANCEL
+import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRACTION_NOTIFICATION_CHANNEL_ID
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_ERROR_MESSAGE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_PROGRESS
 import kotlinx.coroutines.CoroutineScope
@@ -51,8 +51,8 @@ class ExtractMultipartZipService : Service() {
         const val NOTIFICATION_ID = 869
         const val EXTRA_FILE_PATH = "file_path"
         const val EXTRA_PASSWORD = "password"
-        const val CHANNEL_ID = "extraction_service_channel"
     }
+
     private var extractionJob: Job? = null
 
     override fun onBind(intent: Intent): IBinder? = null
@@ -101,8 +101,8 @@ class ExtractMultipartZipService : Service() {
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
-                CHANNEL_ID,
-                "Extraction Service",
+                EXTRACTION_NOTIFICATION_CHANNEL_ID,
+                getString(R.string.extract_archive_notification_name),
                 NotificationManager.IMPORTANCE_LOW
             )
             val notificationManager = getSystemService(NotificationManager::class.java)
@@ -111,12 +111,12 @@ class ExtractMultipartZipService : Service() {
     }
 
     private fun createNotification(progress: Int): Notification {
-        val builder = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Extracting Archive")
+        val builder = NotificationCompat.Builder(this, EXTRACTION_NOTIFICATION_CHANNEL_ID)
+            .setContentTitle(getString(R.string.extraction_ongoing))
             .setSmallIcon(R.drawable.ic_notification_icon)
             .setProgress(100, progress, progress == 0)
             .setOngoing(true)
-            .addAction(R.drawable.ic_round_cancel, "Cancel", createCancelIntent())
+            .addAction(R.drawable.ic_round_cancel, getString(R.string.cancel), createCancelIntent())
 
         return builder.build()
     }
@@ -153,7 +153,7 @@ class ExtractMultipartZipService : Service() {
             var counter = 1
 
             while (extractDir.exists()) {
-                directoryName = "${file.nameWithoutExtension}_$counter"
+                directoryName = "${file.nameWithoutExtension} ($counter)"
                 extractDir = File(parentDir, directoryName)
                 counter++
             }
@@ -171,10 +171,9 @@ class ExtractMultipartZipService : Service() {
                 }
 
                 if (extractionJob?.isCancelled == true) {
-                    throw ZipException("Extraction cancelled")
+                    throw ZipException(getString(R.string.operation_cancelled))
                 }
 
-                Log.d("ZipExtract", "Extracting: ${header.fileName}")
                 zipFile.extractFile(header, extractDir.absolutePath)
 
                 extractedEntries++
@@ -186,8 +185,8 @@ class ExtractMultipartZipService : Service() {
 
         } catch (e: ZipException) {
             e.printStackTrace()
-            showErrorNotification("Extraction failed: ${e.message}")
-            sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(EXTRA_ERROR_MESSAGE, "Extraction failed: ${e.message}"))
+            showErrorNotification(e.message ?: getString(R.string.general_error_msg))
+            sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message))
         }
     }
 
@@ -201,8 +200,8 @@ class ExtractMultipartZipService : Service() {
 
     private fun showCompletionNotification() {
         stopForegroundService()
-        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Extraction Complete")
+        val notification = NotificationCompat.Builder(this, EXTRACTION_NOTIFICATION_CHANNEL_ID)
+            .setContentTitle(getString(R.string.extraction_success))
             .setSmallIcon(R.drawable.ic_notification_icon)
             .setAutoCancel(true)
             .build()
@@ -213,8 +212,8 @@ class ExtractMultipartZipService : Service() {
 
     private fun showErrorNotification(error: String) {
         stopForegroundService()
-        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Extraction Failed")
+        val notification = NotificationCompat.Builder(this, EXTRACTION_NOTIFICATION_CHANNEL_ID)
+            .setContentTitle(getString(R.string.extraction_failed))
             .setContentText(error)
             .setSmallIcon(R.drawable.ic_notification_icon)
             .setAutoCancel(true)

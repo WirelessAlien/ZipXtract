@@ -32,6 +32,7 @@ import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_ERROR
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_PROGRESS
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACT_CANCEL
+import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRACTION_NOTIFICATION_CHANNEL_ID
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_ERROR_MESSAGE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_PROGRESS
 import kotlinx.coroutines.CoroutineScope
@@ -64,7 +65,6 @@ class ExtractArchiveService : Service() {
 
     companion object {
         const val NOTIFICATION_ID = 543
-        const val CHANNEL_ID = "ExtractArchiveService"
         const val EXTRA_FILE_PATH = "file_path"
         const val EXTRA_PASSWORD = "password"
     }
@@ -119,8 +119,8 @@ class ExtractArchiveService : Service() {
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
-                CHANNEL_ID,
-                "Extraction Service",
+                EXTRACTION_NOTIFICATION_CHANNEL_ID,
+                getString(R.string.extract_archive_notification_name),
                 NotificationManager.IMPORTANCE_LOW
             )
             val notificationManager = getSystemService(NotificationManager::class.java)
@@ -129,12 +129,12 @@ class ExtractArchiveService : Service() {
     }
 
     private fun createNotification(progress: Int): Notification {
-        val builder = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Extracting Archive")
+        val builder = NotificationCompat.Builder(this, EXTRACTION_NOTIFICATION_CHANNEL_ID)
+            .setContentTitle(getString(R.string.extraction_ongoing))
             .setSmallIcon(R.drawable.ic_notification_icon)
             .setProgress(100, progress, progress == 0)
             .setOngoing(true)
-            .addAction(R.drawable.ic_round_cancel, "Cancel", createCancelIntent()) // Add cancel button
+            .addAction(R.drawable.ic_round_cancel, getString(R.string.cancel), createCancelIntent())
 
         return builder.build()
     }
@@ -174,20 +174,21 @@ class ExtractArchiveService : Service() {
                     sendLocalBroadcast(Intent(ACTION_EXTRACTION_COMPLETE))
                 } catch (e: SevenZipException) {
                     e.printStackTrace()
-                    showErrorNotification(e.message ?: "Extraction failed")
-                    sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message ?: "Extraction failed"))
+                    showErrorNotification(e.message ?: getString(R.string.general_error_msg))
+                    sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message ?: getString(R.string.general_error_msg))
+                    )
                 }
             } catch (e: SevenZipException) {
                 e.printStackTrace()
-                showErrorNotification(e.message ?: "Extraction failed")
-                sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message ?: "Extraction failed"))
+                showErrorNotification(e.message ?: getString(R.string.general_error_msg))
+                sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message ?: getString(R.string.general_error_msg)))
             } finally {
                 inStream.close()
             }
         } catch (e: Exception) {
             e.printStackTrace()
-            showErrorNotification(e.message ?: "Extraction failed")
-            sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message ?: "Extraction failed"))
+            showErrorNotification(e.message ?: getString(R.string.general_error_msg))
+            sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message ?: getString(R.string.general_error_msg)))
         }
     }
 
@@ -206,7 +207,7 @@ class ExtractArchiveService : Service() {
             var counter = 1
 
             while (destinationDir.exists()) {
-                newFileName = "${baseFileName}_$counter"
+                newFileName = "$baseFileName ($counter)"
                 destinationDir = File(parentDir, newFileName)
                 counter++
             }
@@ -226,14 +227,16 @@ class ExtractArchiveService : Service() {
                 Thread.sleep(100)
             }
 
+            if (extractionJob?.isCancelled == true) throw ZipException(getString(R.string.operation_cancelled))
+
             showCompletionNotification()
             sendLocalBroadcast(Intent(ACTION_EXTRACTION_COMPLETE))
 
         } catch (e: ZipException) {
             e.printStackTrace()
-            showErrorNotification(e.message ?: "ZIP extraction failed")
+            showErrorNotification(e.message ?: getString(R.string.general_error_msg))
             sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR)
-                .putExtra(EXTRA_ERROR_MESSAGE, e.message ?: "ZIP extraction failed"))
+                .putExtra(EXTRA_ERROR_MESSAGE, e.message ?: getString(R.string.general_error_msg)))
         }
     }
 
@@ -271,7 +274,7 @@ class ExtractArchiveService : Service() {
         }
 
         override fun getStream(p0: Int, p1: ExtractAskMode?): ISequentialOutStream {
-            if (extractionJob?.isCancelled == true) throw SevenZipException("Extraction cancelled")
+            if (extractionJob?.isCancelled == true) throw SevenZipException(getString(R.string.operation_cancelled))
 
             val path: String = inArchive.getStringProperty(p0, PropID.PATH)
             val isDir: Boolean = inArchive.getProperty(p0, PropID.IS_FOLDER) as Boolean
@@ -324,8 +327,8 @@ class ExtractArchiveService : Service() {
     private fun showCompletionNotification() {
         stopForegroundService()
 
-        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Extraction Complete")
+        val notification = NotificationCompat.Builder(this, EXTRACTION_NOTIFICATION_CHANNEL_ID)
+            .setContentTitle(getString(R.string.extraction_success))
             .setSmallIcon(R.drawable.ic_notification_icon)
             .setAutoCancel(true)
             .build()
@@ -336,8 +339,8 @@ class ExtractArchiveService : Service() {
 
     private fun showErrorNotification(error: String) {
         stopForegroundService()
-        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Extraction Failed")
+        val notification = NotificationCompat.Builder(this, EXTRACTION_NOTIFICATION_CHANNEL_ID)
+            .setContentTitle(getString(R.string.extraction_failed))
             .setContentText(error)
             .setSmallIcon(R.drawable.ic_notification_icon)
             .setAutoCancel(true)

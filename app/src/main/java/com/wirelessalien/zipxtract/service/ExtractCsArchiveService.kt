@@ -165,7 +165,7 @@ class ExtractCsArchiveService : Service() {
 
             var n: Int
             while (compressorInputStream.read(buffer).also { n = it } != -1) {
-                if (extractionJob?.isCancelled == true) throw Exception("Extraction cancelled")
+                if (extractionJob?.isCancelled == true) throw Exception(getString(R.string.operation_cancelled))
                 outStream.write(buffer, 0, n)
                 bytesRead += n
                 val progress = (bytesRead * 100 / totalBytes).toInt()
@@ -180,16 +180,16 @@ class ExtractCsArchiveService : Service() {
 
         } catch (e: CompressorException) {
             e.printStackTrace()
-            showErrorNotification(e.message ?: getString(R.string.extraction_failed))
-            sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message ?: getString(R.string.extraction_failed)))
+            showErrorNotification(e.message ?: getString(R.string.general_error_msg))
+            sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message ?: getString(R.string.general_error_msg)))
         } catch (e: Exception) {
             e.printStackTrace()
-            showErrorNotification(e.message ?: getString(R.string.extraction_failed))
-            sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message ?: getString(R.string.extraction_failed)))
+            showErrorNotification(e.message ?: getString(R.string.general_error_msg))
+            sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message ?: getString(R.string.general_error_msg)))
         } catch (e: IOException) {
             e.printStackTrace()
-            showErrorNotification(e.message ?: getString(R.string.extraction_failed))
-            sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message ?: getString(R.string.extraction_failed)))
+            showErrorNotification(e.message ?: getString(R.string.general_error_msg))
+            sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message ?: getString(R.string.general_error_msg)))
         } finally {
             stopForegroundService()
         }

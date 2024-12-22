@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="no_directory_selected">Не вибрано каталог</string>
+    <string name="percent">%</string>
+    <string name="save_zip_to">Зберегти zip до</string>
+    <string name="compression_level">Рівень стиснення</string>
+    <string name="selected_file_cleared">Вибраний файл очищено</string>
+    <string name="enter_password">Введіть пароль</string>
+    <string name="zip_without_zip">Назва zip-файлу (без .zip)</string>
+    <string name="output_file_name">outputZip.zip</string>
+    <string name="not_encrypted">Не зашифровано</string>
+    <string name="please_select_files">Виберіть файли</string>
+    <string name="zip_creation_failed">Помилка створення zip-файлу</string>
+    <string name="files_select_request">Виберіть файли</string>
+    <string name="pick_file_extract">Виберіть файл для розпакування</string>
+    <string name="permission_denied">У дозволі відмовлено</string>
+    <string name="cancel">Скасувати</string>
+    <string name="invalid_uri">Неправильний URI файлу архіва</string>
+    <string name="extraction_failed">Не вдалося видобути:</string>
+    <string name="sevenz_creation_success">Файл 7z успішно створено</string>
+    <string name="max_available_thread">0 для максимальної кількості доступних потоків</string>
+    <string name="solid_compression">Цілісне стиснення</string>
+    <string name="encryption_strength">Надійність шифрування</string>
+    <string name="_ten">Типово – 64kb</string>
+    <string name="pick_file">Виберіть файл</string>
+    <string name="extract">Розпакувати</string>
+    <string name="extract_to">Розпакувати до</string>
+    <string name="not_selected">Не вибрано</string>
+    <string name="directory_path">Вибрана тека: %1$s</string>
+    <string name="no_file_selected">Немає вибраного файлу</string>
+    <string name="selected_file_text">Вибраний файл: %1$s</string>
+    <string name="select">Вибрати</string>
+    <string name="selected_files_text">Вибрані файли: %1$d</string>
+    <string name="create_zip">Стиснути zip</string>
+    <string name="file">Файл</string>
+    <string name="version">Версія:</string>
+    <string name="compression_method">Метод стиснення</string>
+    <string name="files">Файли</string>
+    <string name="folder">Тека</string>
+    <string name="donate">Пожертвувати</string>
+    <string name="liberapay">Liberapay</string>
+    <string name="create">Створити</string>
+    <string name="compression_settings">Налаштування стиснення</string>
+    <string name="output_directory_cleared">Вихідний каталог очищено</string>
+    <string name="encryption_method">Метод шифрування</string>
+    <string name="file_picked_success">Файл успішно вибрано</string>
+    <string name="file_picked_fail">Немає вибраного файлу</string>
+    <string name="settings_info_text">Типовий методом шифрування файлів – AES, який забезпечує високий рівень безпеки. Однак, майте на увазі, що шифрування AES може зайняти багато часу, особливо на пристроях нижчого класу.
+\n
+\nДля користувачів з менш потужними пристроями можна використовувати альтернативу, наприклад, ZIP_STANDARD. Однак зауважте, що цей метод не забезпечує такий самий рівень безпеки, як AES.
+\n
+\nЯкщо безпека є для вас першочерговим завданням, ми наполегливо рекомендуємо використовувати AES, попри його довший час обробки.</string>
+    <string name="ok">Гаразд</string>
+    <string name="password">пароль</string>
+    <string name="zip_creation_success">Zip-файл успішно створено</string>
+    <string name="encrypt">Зашифрувати</string>
+    <string name="open_folder">Відкрити теку</string>
+    <string name="save">Зберегти</string>
+    <string name="extraction_success">Файл успішно розпаковано</string>
+    <string name="select_output_directory">Виберіть вихідний каталог</string>
+    <string name="copied_to_clipboard">Скопійовано в буфер обміну</string>
+    <string name="permission_required">Для розпакування файлів потрібен дозвіл на зберігання</string>
+    <string name="open_settings">Відкрити налаштування</string>
+    <string name="select_output_directory_extract">Виберіть, куди розпакувати файли</string>
+    <string name="archive_file_name_failed">Не вдалося отримати назву файлу архіва</string>
+    <string name="no_password">Немає пароля</string>
+    <string name="share">Поділитися посиланням на застосунок</string>
+    <string name="sevenz_creation_failed">Помилка при створенні 7z-файлу</string>
+    <string name="compress_sevenz">Стиснути в 7z</string>
+    <string name="thread_count">Кількість потоків</string>
+    <string name="split_size_mb">Розмір розділу</string>
+    <string name="split_zip">Розділити zip</string>
+    <string name="enter_name_of_archive_optional">Введіть назву архіва (необов\'язково)</string>
+    <string name="please_wait_end_of_job">Будь ласка, зачекайте... Якщо ви вибрали великі файли, це може зайняти кілька хвилин</string>
+</resources>

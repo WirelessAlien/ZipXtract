@@ -55,7 +55,11 @@
     <string name="folder">資料夾</string>
     <string name="liberapay">Liberapay</string>
     <string name="file_picked_success">檔案挑選成功</string>
-    <string name="settings_info_text">檔案的預設加密方法是 AES，它提供了高水準的安全性。 但是，請注意，AES 加密可能非常耗時，尤其是在低端設備上。\n\n對於設備功能較弱的用戶，可以使用 ZIP_STANDARD 等替代方案。 但是，請注意，此方法無法提供與 AES 相同等級的安全性。\n\n如果安全性是您最關心的問題，我們強烈建議使用 AES，儘管其處理時間較長。</string>
+    <string name="settings_info_text">檔案的加密方法預設為 AES，提供高層級安全性。惟 AES 加密或相當耗時，尤其是較低階的裝置。
+\n
+\n裝置較遜色的使用者，可改用替代方法如 ZIP_STANDARD。惟請注意，此方法並不提供與 AES 同等的安全性。
+\n
+\n若您的首要考慮是安全性，強烈建議使用 AES，雖則處理時間或會較長。</string>
     <string name="zip_creation_failed">建立 zip 檔案時發生錯誤</string>
     <string name="files_select_request">請選取檔案</string>
     <string name="pick_file_extract">請挑選要解壓縮的檔案</string>
@@ -63,4 +67,9 @@
     <string name="cancel">取消</string>
     <string name="sevenz_creation_success">7z 檔案建立成功</string>
     <string name="enter_name_of_archive_optional">輸入封存名稱 (選用)</string>
+    <string name="split_size_mb">分割大小</string>
+    <string name="split_zip">分割 Zip</string>
+    <string name="encryption_strength">加密強度</string>
+    <string name="_ten">預設為 64kb</string>
+    <string name="please_wait_end_of_job">請稍候… 若您選取了大型檔案，可能需時較久</string>
 </resources>

@@ -32,6 +32,7 @@ import com.wirelessalien.zipxtract.constant.BroadcastConstants
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_COMPLETE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_ERROR
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ARCHIVE_NOTIFICATION_CHANNEL_ID
+import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_ERROR_MESSAGE
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -75,12 +76,37 @@ class ArchiveSplitZipService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val archiveName = intent?.getStringExtra(EXTRA_ARCHIVE_NAME) ?: return START_NOT_STICKY
         val password = intent.getStringExtra(EXTRA_PASSWORD)
-        val compressionMethod = intent.getSerializableExtra(EXTRA_COMPRESSION_METHOD) as CompressionMethod
-        val compressionLevel = intent.getSerializableExtra(EXTRA_COMPRESSION_LEVEL) as CompressionLevel
+        val compressionMethod = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent.getSerializableExtra(EXTRA_COMPRESSION_METHOD, CompressionMethod::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            intent.getSerializableExtra(EXTRA_COMPRESSION_METHOD) as? CompressionMethod
+        } ?: CompressionMethod.STORE
+
+        val compressionLevel = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent.getSerializableExtra(EXTRA_COMPRESSION_LEVEL, CompressionLevel::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            intent.getSerializableExtra(EXTRA_COMPRESSION_LEVEL) as? CompressionLevel
+        } ?: CompressionLevel.NO_COMPRESSION
+
         val isEncrypted = intent.getBooleanExtra(EXTRA_IS_ENCRYPTED, false)
-        val encryptionMethod = intent.getSerializableExtra(EXTRA_ENCRYPTION_METHOD) as EncryptionMethod?
-        val aesStrength = intent.getSerializableExtra(EXTRA_AES_STRENGTH) as AesKeyStrength?
-        val filesToArchive = intent.getSerializableExtra(EXTRA_FILES_TO_ARCHIVE) as List<String>
+
+        val encryptionMethod = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent.getSerializableExtra(EXTRA_ENCRYPTION_METHOD, EncryptionMethod::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            intent.getSerializableExtra(EXTRA_ENCRYPTION_METHOD) as? EncryptionMethod
+        }
+
+        val aesStrength = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent.getSerializableExtra(EXTRA_AES_STRENGTH, AesKeyStrength::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            intent.getSerializableExtra(EXTRA_AES_STRENGTH) as? AesKeyStrength
+        }
+        val filesToArchive = intent.getStringArrayListExtra(EXTRA_FILES_TO_ARCHIVE) ?: return START_NOT_STICKY
+
         val splitSize = intent.getLongExtra(EXTRA_SPLIT_SIZE, 64)
 
         if (intent.action == BroadcastConstants.ACTION_ARCHIVE_SPLIT_ZIP_CANCEL) {
@@ -148,6 +174,15 @@ class ArchiveSplitZipService : Service() {
         selectedFiles: List<String>,
         splitSize: Long
     ) {
+
+        if (selectedFiles.isEmpty()) {
+            val errorMessage = getString(R.string.no_files_to_archive)
+            showErrorNotification(errorMessage)
+            sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, errorMessage))
+            stopForegroundService()
+            return
+        }
+
         try {
             val zipParameters = ZipParameters().apply {
                 this.compressionMethod = compressionMethod
@@ -180,7 +215,7 @@ class ArchiveSplitZipService : Service() {
 
                 selectedFiles.forEach { filePath ->
                     val file = File(filePath)
-                    val destFile = File(renamedTempDir, file.relativeTo(baseDirectory).path)
+                    val destFile = File(renamedTempDir, file.relativeTo(baseDirectory!!).path)
                     if (file.isDirectory) {
                         destFile.mkdirs()
                         file.copyRecursively(destFile, overwrite = true)
@@ -206,27 +241,27 @@ class ArchiveSplitZipService : Service() {
                 }
 
                 if (progressMonitor.result == ProgressMonitor.Result.SUCCESS) {
-                    showCompletionNotification("$archiveName.zip created successfully")
+                    showCompletionNotification(getString(R.string.zip_creation_success))
                     sendLocalBroadcast(Intent(ACTION_ARCHIVE_COMPLETE))
                 } else {
                     showErrorNotification(getString(R.string.zip_creation_failed))
-                    sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra("error_message", "Archive creation failed: ${progressMonitor.result}"))
+                    sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, progressMonitor.result))
                 }
 
-                if (archiveJob?.isCancelled == true) throw ZipException("Extraction cancelled")
+                if (archiveJob?.isCancelled == true) throw ZipException(getString(R.string.operation_cancelled))
 
                 renamedTempDir.deleteRecursively()
 
             } catch (e: ZipException) {
                 e.printStackTrace()
-                showErrorNotification("Archive creation failed: ${e.message}")
-                sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra("error_message", "Archive creation failed: ${e.message}"))
+                showErrorNotification(e.message ?: getString(R.string.general_error_msg))
+                sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message))
                 return
             }
         } catch (e: Exception) {
             e.printStackTrace()
-            showErrorNotification("Archive creation failed: ${e.message}")
-            sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra("error_message", "Archive creation failed: ${e.message}"))
+            showErrorNotification(e.message ?: getString(R.string.general_error_msg))
+            sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message))
         }
     }
 
@@ -242,9 +277,9 @@ class ArchiveSplitZipService : Service() {
     private fun showErrorNotification(error: String) {
         stopForegroundService()
         val notification = NotificationCompat.Builder(this, ARCHIVE_NOTIFICATION_CHANNEL_ID)
-            .setContentTitle("Archive Creation Failed")
+            .setContentTitle(getString(R.string.zip_creation_failed))
             .setContentText(error)
-            .setSmallIcon(R.drawable.ic_folder_zip)
+            .setSmallIcon(R.drawable.ic_notification_icon)
             .setAutoCancel(true)
             .build()
 
@@ -256,7 +291,7 @@ class ArchiveSplitZipService : Service() {
         stopForegroundService()
 
         val notification = NotificationCompat.Builder(this, ARCHIVE_NOTIFICATION_CHANNEL_ID)
-            .setContentTitle("Archive Creation Complete")
+            .setContentTitle(getString(R.string.zip_creation_success))
             .setContentText(message)
             .setSmallIcon(R.drawable.ic_notification_icon)
             .setAutoCancel(true)

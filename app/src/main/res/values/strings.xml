@@ -15,7 +15,7 @@
   ~     You should have received a copy of the GNU General Public License
   ~     along with this program.  If not, see <https://www.gnu.org/licenses/>.
   --><resources>
-    <string name="app_name">ZipXtract</string>
+    <string name="app_name" translatable="false">ZipXtract</string>
     <string name="pick_file">Pick File</string>
     <string name="extract">Extract</string>
     <string name="extract_to">Extract To</string>
@@ -27,8 +27,8 @@
     <string name="no_directory_selected">No Directory Selected</string>
     <string name="percent">%</string>
     <string name="version">Version:</string>
-    <string name="github_icon">Github Icon</string>
-    <string name="share_icon">Share Icon</string>
+    <string name="github_icon" translatable="false">Github Icon</string>
+    <string name="share_icon" translatable="false">Share Icon</string>
     <string name="save_zip_to">Save Zip To</string>
     <string name="create_zip">Compress ZIP</string>
     <string name="select">Select</string>
@@ -36,16 +36,8 @@
     <string name="files">Files</string>
     <string name="folder">Folder</string>
     <string name="donate">Donate</string>
-    <string name="liberapay">Liberapay</string>
-    <string name="bitcoin">Bitcoin</string>
-    <string name="ethereum">Ethereum</string>
-    <string name="bnb_smart_chain">BNB Smart Chain</string>
-    <string name="polygon">Polygon</string>
-    <string name="solana">Solana</string>
-    <string name="monero">Monero</string>
-    <string name="tron">Tron</string>
-    <string name="doge_coin">Doge Coin</string>
-    <string name="bitcoin_cash">Bitcoin Cash</string>
+    <string name="liberapay" translatable="false">Liberapay</string>
+    <string name="bitcoin" translatable="false">Bitcoin</string>
     <string name="create">Create</string>
     <string name="encryption_method">Encryption Method</string>
     <string name="compression_level">Compression Level</string>
@@ -94,7 +86,7 @@
     <string name="split_zip">Split Zip</string>
     <string name="encryption_strength">Encryption Strength</string>
     <string name="_ten">Default is 64kb</string>
-    <string name="percent_complete">%d %%</string>
+    <string name="percent_complete" translatable="false">%d %%</string>
     <string name="please_wait_end_of_job">Please Wait…If you have selected large files, it may take a few moments</string>
     <string name="sort_by">Sort by</string>
     <string name="name">Name</string>
@@ -134,4 +126,6 @@
     <string name="order">Order</string>
     <string name="ascending">Ascending</string>
     <string name="descending">Descending</string>
+    <string name="general_error_msg">Something went wrong</string>
+    <string name="no_files_to_archive">No files were provided</string>
 </resources>

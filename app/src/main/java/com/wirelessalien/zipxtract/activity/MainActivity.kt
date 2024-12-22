@@ -827,7 +827,7 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
     fun startArchiveTarService(file: List<String>, archiveName: String) {
         progressDialog.show()
         val intent = Intent(this, ArchiveTarService::class.java).apply {
-            putExtra(ArchiveTarService.EXTRA_FILES_TO_ARCHIVE, ArrayList(file))
+            putStringArrayListExtra(ArchiveTarService.EXTRA_FILES_TO_ARCHIVE, ArrayList(file))
             putExtra(ArchiveTarService.EXTRA_ARCHIVE_NAME, archiveName)
         }
         ContextCompat.startForegroundService(this, intent)
@@ -1059,7 +1059,7 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
             putExtra(ArchiveZipService.EXTRA_IS_ENCRYPTED, isEncrypted)
             putExtra(ArchiveZipService.EXTRA_ENCRYPTION_METHOD, encryptionMethod)
             putExtra(ArchiveZipService.EXTRA_AES_STRENGTH, aesStrength)
-            putExtra(ArchiveZipService.EXTRA_FILES_TO_ARCHIVE, ArrayList(filesToArchive))
+            putStringArrayListExtra(ArchiveZipService.EXTRA_FILES_TO_ARCHIVE, ArrayList(filesToArchive))
         }
         ContextCompat.startForegroundService(this, intent)
     }
@@ -1074,7 +1074,7 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
             putExtra(ArchiveSplitZipService.EXTRA_IS_ENCRYPTED, isEncrypted)
             putExtra(ArchiveSplitZipService.EXTRA_ENCRYPTION_METHOD, encryptionMethod)
             putExtra(ArchiveSplitZipService.EXTRA_AES_STRENGTH, aesStrength)
-            putExtra(ArchiveSplitZipService.EXTRA_FILES_TO_ARCHIVE, ArrayList(filesToArchive))
+            putStringArrayListExtra(ArchiveSplitZipService.EXTRA_FILES_TO_ARCHIVE, ArrayList(filesToArchive))
             putExtra(ArchiveSplitZipService.EXTRA_SPLIT_SIZE, splitSize)
 
         }
@@ -1098,7 +1098,7 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
             putExtra(Archive7zService.EXTRA_COMPRESSION_LEVEL, compressionLevel)
             putExtra(Archive7zService.EXTRA_SOLID, solid)
             putExtra(Archive7zService.EXTRA_THREAD_COUNT, threadCount)
-            putExtra(Archive7zService.EXTRA_FILES_TO_ARCHIVE, ArrayList(filesToArchive))
+            putStringArrayListExtra(Archive7zService.EXTRA_FILES_TO_ARCHIVE, ArrayList(filesToArchive))
         }
         ContextCompat.startForegroundService(this, intent)
     }

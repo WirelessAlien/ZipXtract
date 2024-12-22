@@ -12,7 +12,11 @@
     <string name="directory_path">Ausgewählter Ordner: %1$s</string>
     <string name="selected_file_cleared">Ausgewählte Datei geleert</string>
     <string name="pick_file_extract">Bitte Datei zum Extrahieren auswählen</string>
-    <string name="settings_info_text">Die Standardverschlüsselungsmethode für Dateien ist AES, die ein hohes Maß an Sicherheit bietet. Bitte beachten Sie jedoch, dass die AES-Verschlüsselung insbesondere auf Geräten der unteren Preisklasse zeitaufwändig sein kann.\n\nFür Benutzer mit weniger leistungsstarken Geräten kann eine Alternative wie ZIP_STANDARD verwendet werden. Bitte beachten Sie jedoch, dass diese Methode nicht das gleiche Sicherheitsniveau wie AES bietet.\n\nWenn Sicherheit Ihr Hauptanliegen ist, empfehlen wir trotz der längeren Verarbeitungszeit dringend die Verwendung von AES.</string>
+    <string name="settings_info_text">Die Standardverschlüsselungsmethode ist AES, welche ein hohes Maß an Sicherheit bietet. Bitte beachten Sie, dass die AES-Verschlüsselung zeitaufwändig sein kann, insbesondere auf Geräten mit geringerer Leistung.
+\n
+\nFür Benutzer mit leistungsschwachen Geräten kann ZIP_STANDARD als Alternative verwendet werden. Bitte beachten Sie, dass AES ein höheres Maß an Sicherheit liefert.
+\n
+\nWenn Sicherheit Ihr Hauptanliegen ist, empfehlen wir trotz der längeren Verarbeitungszeit eindringlich die Verwendung von AES.</string>
     <string name="file_picked_success">Datei erfolgreich ausgewählt</string>
     <string name="selected_files_text">Ausgewählte Dateien: %1$d</string>
     <string name="folder">Verzeichnis</string>
@@ -54,9 +58,18 @@
     <string name="file">Datei</string>
     <string name="share">App-Link teilen</string>
     <string name="enter_password">Password eingeben</string>
-    <string name="extraction_failed">Extraktion fehlgeschlagen:</string>
+    <string name="extraction_failed">Entpacken fehlgeschlagen:</string>
     <string name="zip_creation_success">Zip-Datei erfolgreich erstellt</string>
     <string name="sevenz_creation_success">7z-Datei erfolgreich erstellt</string>
-    <string name="sevenz_creation_failed">Fehler beim Erstellen der 7z-Datei</string>
-    <string name="compress_sevenz">7z komprimieren</string>
+    <string name="sevenz_creation_failed">Erstellen der 7z-Datei fehlgeschlagen</string>
+    <string name="compress_sevenz">Komprimiere 7z</string>
+    <string name="thread_count">Anzahl Threads</string>
+    <string name="max_available_thread">0 für maximal verfügbare Threads</string>
+    <string name="enter_name_of_archive_optional">Archivnamen eingeben (optional)</string>
+    <string name="solid_compression">Solide Kompression (tar)</string>
+    <string name="_ten">64kb (Standard)</string>
+    <string name="please_wait_end_of_job">Bitte warten... Die Verarbeitung großer Dateien kann etwas länger dauern</string>
+    <string name="split_size_mb">Größe Teilarchiv</string>
+    <string name="split_zip">Zip aufteilen</string>
+    <string name="encryption_strength">Verschlüsselungsstärke</string>
 </resources>

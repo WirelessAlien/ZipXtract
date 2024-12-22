@@ -33,6 +33,7 @@ import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_CO
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_ERROR
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_TAR_CANCEL
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ARCHIVE_NOTIFICATION_CHANNEL_ID
+import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_ERROR_MESSAGE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_PROGRESS
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -69,7 +70,7 @@ class ArchiveTarService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val archiveName = intent?.getStringExtra(EXTRA_ARCHIVE_NAME) ?: return START_NOT_STICKY
-        val filesToArchive = intent.getSerializableExtra(EXTRA_FILES_TO_ARCHIVE) as List<String>
+        val filesToArchive = intent.getStringArrayListExtra(EXTRA_FILES_TO_ARCHIVE) ?: return START_NOT_STICKY
 
         if (intent.action == ACTION_ARCHIVE_TAR_CANCEL) {
             archiveJob?.cancel()
@@ -126,9 +127,23 @@ class ArchiveTarService : Service() {
     }
 
     private fun createTarFile(archiveName: String, filesToArchive: List<String>) {
+
+        if (filesToArchive.isEmpty()) {
+            val errorMessage = getString(R.string.no_files_to_archive)
+            showErrorNotification(errorMessage)
+            sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, errorMessage))
+            stopForegroundService()
+            return
+        }
         try {
             val baseDirectory = File(filesToArchive.first()).parentFile?.absolutePath ?: ""
             val tarFile = File(baseDirectory, "$archiveName.tar")
+            var counter = 1
+
+            while (tarFile.exists()) {
+                tarFile.renameTo(File(baseDirectory, "$archiveName ($counter).tar"))
+                counter++
+            }
 
             RandomAccessFile(tarFile, "rw").use { raf ->
                 val outArchive = SevenZip.openOutArchiveTar()
@@ -171,16 +186,16 @@ class ArchiveTarService : Service() {
             }
         } catch (e: SevenZipException) {
             e.printStackTrace()
-            showErrorNotification(": ${e.message}")
-            sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_PROGRESS, ": ${e.message}"))
+            showErrorNotification(e.message ?: getString(R.string.general_error_msg))
+            sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message))
         } catch (e: IOException) {
             e.printStackTrace()
-            showErrorNotification(": ${e.message}")
-            sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_PROGRESS, ": ${e.message}"))
+            showErrorNotification(e.message ?: getString(R.string.general_error_msg))
+            sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message))
         } catch (e: OutOfMemoryError) {
             e.printStackTrace()
-            showErrorNotification(": ${e.message}")
-            sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_PROGRESS, ": ${e.message}"))
+            showErrorNotification(e.message ?: getString(R.string.general_error_msg))
+            sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message))
         }
     }
 
