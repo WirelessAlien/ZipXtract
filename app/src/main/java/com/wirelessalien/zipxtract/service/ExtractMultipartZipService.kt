@@ -126,6 +126,15 @@ class ExtractMultipartZipService : Service() {
     }
 
     private suspend fun extractArchive(filePath: String, password: String?) {
+
+        if (filePath.isEmpty()) {
+            val errorMessage = getString(R.string.no_files_to_archive)
+            showErrorNotification(errorMessage)
+            sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(EXTRA_ERROR_MESSAGE, errorMessage))
+            stopForegroundService()
+            return
+        }
+
         val file = File(filePath)
         val parentDir = file.parentFile ?: return
 

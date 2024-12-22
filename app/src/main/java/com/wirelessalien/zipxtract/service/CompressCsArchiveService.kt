@@ -86,7 +86,7 @@ class CompressCsArchiveService : Service() {
         startForeground(NOTIFICATION_ID, createNotification(0))
 
         compressionJob = CoroutineScope(Dispatchers.IO).launch {
-            compressArchive(File(filePath), compressionFormat)
+            compressArchive(filePath, compressionFormat)
         }
 
         return START_NOT_STICKY
@@ -131,7 +131,17 @@ class CompressCsArchiveService : Service() {
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
     }
 
-    private fun compressArchive(file: File, format: String) {
+    private fun compressArchive(filePath: String, format: String) {
+
+        if (filePath.isEmpty()) {
+            val errorMessage = getString(R.string.no_files_to_archive)
+            showErrorNotification(errorMessage)
+            sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, errorMessage))
+            stopForegroundService()
+            return
+        }
+
+        val file = File(filePath)
         val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
         var outputFile = if (format == CompressorStreamFactory.BZIP2) {
             File(file.parent, "${file.name}.bz2")

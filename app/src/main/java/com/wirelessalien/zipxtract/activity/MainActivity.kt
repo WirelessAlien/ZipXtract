@@ -7,6 +7,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
@@ -49,11 +50,14 @@ import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_CO
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_ERROR
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_PROGRESS
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_SPLIT_ZIP_CANCEL
+import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_TAR_CANCEL
+import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_ZIP_CANCEL
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_COMPRESS_CANCEL
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_COMPLETE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_ERROR
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_PROGRESS
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACT_CANCEL
+import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACT_CS_CANCEL
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_MULTI_7Z_EXTRACTION_CANCEL
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_MULTI_ZIP_EXTRACTION_CANCEL
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_RAR_EXTRACTION_CANCEL
@@ -100,6 +104,8 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
         private const val STORAGE_PERMISSION_CODE = 123
     }
 
+    private lateinit var sharedPreferences: SharedPreferences
+
     private lateinit var adapter: FileAdapter
     private var isSearchActive: Boolean = false
 
@@ -118,11 +124,13 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
     private var fileUpdateJob: Job? = null
     private var searchHandler: Handler? = null
     private var searchRunnable: Runnable? = null
-    private lateinit var progressDialog: AlertDialog
+    private lateinit var eProgressDialog: AlertDialog
+    private lateinit var aProgressDialog: AlertDialog
     private lateinit var progressText: TextView
     private var areFabsVisible: Boolean = false
 
-    private lateinit var progressBarDialog: LinearProgressIndicator
+    private lateinit var eProgressBar: LinearProgressIndicator
+    private lateinit var aProgressBar: LinearProgressIndicator
     private var isLargeLayout: Boolean = false
     private lateinit var binding: ActivityMainBinding
 
@@ -132,39 +140,38 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
             when (intent?.action) {
                 ACTION_EXTRACTION_COMPLETE -> {
                     unselectAllFiles()
-                    progressDialog.dismiss()
-                    Toast.makeText(this@MainActivity, "Extraction Complete", Toast.LENGTH_SHORT).show()
+                    eProgressDialog.dismiss()
+                    Toast.makeText(this@MainActivity, getString(R.string.extraction_success), Toast.LENGTH_SHORT).show()
                 }
                 ACTION_EXTRACTION_ERROR -> {
                     unselectAllFiles()
-                    progressDialog.dismiss()
+                    eProgressDialog.dismiss()
                     val errorMessage = intent.getStringExtra(EXTRA_ERROR_MESSAGE)
-                    Toast.makeText(this@MainActivity, "Extraction Error: $errorMessage", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@MainActivity, errorMessage, Toast.LENGTH_SHORT).show()
                 }
                 ACTION_EXTRACTION_PROGRESS -> {
-                    // Handle extraction progress
                     val progress = intent.getIntExtra(EXTRA_PROGRESS, 0)
                     updateProgressBar(progress)
-                    progressBarDialog.progress = progress
-                    progressText.text = "Extracting... $progress%"
+                    eProgressBar.progress = progress
+                    progressText.text = getString(R.string.extracting_progress, progress)
                 }
+
                 ACTION_ARCHIVE_COMPLETE -> {
                     unselectAllFiles()
-                    progressDialog.dismiss()
-                    Toast.makeText(this@MainActivity, "Archive Complete", Toast.LENGTH_SHORT).show()
+                    aProgressDialog.dismiss()
+                    Toast.makeText(this@MainActivity, getString(R.string.compression_success), Toast.LENGTH_SHORT).show()
                 }
                 ACTION_ARCHIVE_ERROR -> {
                     unselectAllFiles()
-                    progressDialog.dismiss()
+                    aProgressDialog.dismiss()
                     val errorMessage = intent.getStringExtra(EXTRA_ERROR_MESSAGE)
-                    Toast.makeText(this@MainActivity, "Archive Error: $errorMessage", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@MainActivity, errorMessage, Toast.LENGTH_SHORT).show()
                 }
                 ACTION_ARCHIVE_PROGRESS -> {
-                    // Handle extraction progress
                     val progress = intent.getIntExtra(EXTRA_PROGRESS, 0)
                     updateProgressBar(progress)
-                    progressBarDialog.progress = progress
-                    progressText.text = "Archiving... $progress%"
+                    aProgressBar.progress = progress
+                    progressText.text = getString(R.string.compressing_progress, progress)
                 }
             }
         }
@@ -184,6 +191,10 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        sharedPreferences = getPreferences(Context.MODE_PRIVATE)
+        sortBy = SortBy.valueOf(sharedPreferences.getString("sortBy", SortBy.SORT_BY_NAME.name) ?: SortBy.SORT_BY_NAME.name)
+        sortAscending = sharedPreferences.getBoolean("sortAscending", true)
 
         isLargeLayout = resources.getBoolean(R.bool.large_layout)
 
@@ -237,10 +248,10 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
             hideExtendedFabs()
         }
 
-        updateCurrentPathTextView()
+        updateCurrentPathChip()
     }
 
-    private fun updateCurrentPathTextView() {
+    private fun updateCurrentPathChip() {
         val internalStorage = "Internal Storage"
         val basePath = Environment.getExternalStorageDirectory().absolutePath
         val currentPath = currentPath ?: basePath
@@ -342,9 +353,10 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
         actionMode?.finish()
     }
 
+    @Suppress("DEPRECATION")
     private fun archiveProgressDialog() {
         val aDialogView = layoutInflater.inflate(R.layout.progress_dialog_archive, null)
-        progressBarDialog = aDialogView.findViewById(R.id.progressBar)
+        aProgressBar = aDialogView.findViewById(R.id.progressBar)
         progressText = aDialogView.findViewById(R.id.progressText)
         val cancelButton = aDialogView.findViewById<Button>(R.id.cancelButton)
         val backgroundButton = aDialogView.findViewById<Button>(R.id.backgroundButton)
@@ -367,7 +379,7 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
 
             if (isArchiveZipServiceRunning) {
                 val cancelZipIntent = Intent(this, ArchiveZipService::class.java).apply {
-                    action = ACTION_ARCHIVE_7Z_CANCEL
+                    action = ACTION_ARCHIVE_ZIP_CANCEL
                 }
                 startService(cancelZipIntent)
             }
@@ -392,22 +404,33 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
                 startService(cancelZipIntent)
             }
 
-            progressDialog.dismiss()
+            val isArchiveTarServiceRunning = activityManager.getRunningServices(Integer.MAX_VALUE)
+                .any { it.service.className == ArchiveTarService::class.java.name }
+
+            if (isArchiveTarServiceRunning) {
+                val cancelZipIntent = Intent(this, ArchiveTarService::class.java).apply {
+                    action = ACTION_ARCHIVE_TAR_CANCEL
+                }
+                startService(cancelZipIntent)
+            }
+
+            aProgressDialog.dismiss()
         }
 
         backgroundButton.setOnClickListener {
-            progressDialog.dismiss()
+            aProgressDialog.dismiss()
         }
 
-        progressDialog = MaterialAlertDialogBuilder(this, R.style.MaterialDialog)
+        aProgressDialog = MaterialAlertDialogBuilder(this, R.style.MaterialDialog)
             .setView(aDialogView)
             .setCancelable(false)
             .create()
     }
 
+    @Suppress("DEPRECATION")
     private fun extractProgressDialog() {
         val ePDialogView = layoutInflater.inflate(R.layout.progress_dialog_extract, null)
-        progressBarDialog = ePDialogView.findViewById(R.id.progressBar)
+        eProgressBar = ePDialogView.findViewById(R.id.progressBar)
         progressText = ePDialogView.findViewById(R.id.progressText)
         val cancelButton = ePDialogView.findViewById<Button>(R.id.cancelButton)
         val backgroundButton = ePDialogView.findViewById<Button>(R.id.backgroundButton)
@@ -446,7 +469,7 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
             }
 
             val isExtractMultipartZipServiceRunning = activityManager.getRunningServices(Integer.MAX_VALUE)
-                .any { it.service.className == ExtractMultipart7zService::class.java.name }
+                .any { it.service.className == ExtractMultipartZipService::class.java.name }
 
             if (isExtractMultipartZipServiceRunning) {
                 val cancelRarIntent = Intent(this, ExtractMultipartZipService::class.java).apply {
@@ -455,14 +478,24 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
                 startService(cancelRarIntent)
             }
 
-            progressDialog.dismiss()
+            val isExtractCsArchiveServiceRunning = activityManager.getRunningServices(Integer.MAX_VALUE)
+                .any { it.service.className == ExtractCsArchiveService::class.java.name }
+
+            if (isExtractCsArchiveServiceRunning) {
+                val cancelRarIntent = Intent(this, ExtractCsArchiveService::class.java).apply {
+                    action = ACTION_EXTRACT_CS_CANCEL
+                }
+                startService(cancelRarIntent)
+            }
+
+            eProgressDialog.dismiss()
         }
 
         backgroundButton.setOnClickListener {
-            progressDialog.dismiss()
+            eProgressDialog.dismiss()
         }
 
-        progressDialog = MaterialAlertDialogBuilder(this, R.style.MaterialDialog)
+        eProgressDialog = MaterialAlertDialogBuilder(this, R.style.MaterialDialog)
             .setView(ePDialogView)
             .setCancelable(false)
             .create()
@@ -490,7 +523,7 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
                 val intent = Intent(this, MainActivity::class.java)
                 intent.putExtra("path", file.absolutePath)
                 startActivity(intent)
-                updateCurrentPathTextView()
+                updateCurrentPathChip()
             } else {
                 if (file.extension.equals("tar", ignoreCase = true)) {
                     showCompressorArchiveDialog(filePath)
@@ -816,7 +849,7 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
     }
 
     private fun startCompressService(file: String, compressionFormat: String) {
-        progressDialog.show()
+        aProgressDialog.show()
         val intent = Intent(this, CompressCsArchiveService::class.java).apply {
             putExtra(CompressCsArchiveService.EXTRA_FILE_PATH, file)
             putExtra(CompressCsArchiveService.EXTRA_COMPRESSION_FORMAT, compressionFormat)
@@ -825,7 +858,7 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
     }
 
     fun startArchiveTarService(file: List<String>, archiveName: String) {
-        progressDialog.show()
+        aProgressDialog.show()
         val intent = Intent(this, ArchiveTarService::class.java).apply {
             putStringArrayListExtra(ArchiveTarService.EXTRA_FILES_TO_ARCHIVE, ArrayList(file))
             putExtra(ArchiveTarService.EXTRA_ARCHIVE_NAME, archiveName)
@@ -971,7 +1004,7 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
     }
 
     private fun startExtractionService(file: String, password: String?) {
-        progressDialog.show()
+        eProgressDialog.show()
         val intent = Intent(this, ExtractArchiveService::class.java).apply {
             putExtra(ExtractArchiveService.EXTRA_FILE_PATH, file)
             putExtra(ExtractArchiveService.EXTRA_PASSWORD, password)
@@ -981,7 +1014,7 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
     }
 
     private fun startExtractionCsService(file: String) {
-        progressDialog.show()
+        eProgressDialog.show()
         val intent = Intent(this, ExtractCsArchiveService::class.java).apply {
             putExtra(ExtractCsArchiveService.EXTRA_FILE_PATH, file)
 
@@ -990,7 +1023,7 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
     }
 
     private fun startRarExtractionService(file: String, password: String?) {
-        progressDialog.show()
+        eProgressDialog.show()
         val intent = Intent(this, ExtractRarService::class.java).apply {
             putExtra(ExtractRarService.EXTRA_FILE_PATH, file)
             putExtra(ExtractRarService.EXTRA_PASSWORD, password)
@@ -999,7 +1032,7 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
     }
 
     private fun startMulti7zExtractionService(file: String, password: String?) {
-        progressDialog.show()
+        eProgressDialog.show()
         val intent = Intent(this, ExtractMultipart7zService::class.java).apply {
             putExtra(ExtractMultipart7zService.EXTRA_FILE_PATH, file)
             putExtra(ExtractMultipart7zService.EXTRA_PASSWORD, password)
@@ -1008,7 +1041,7 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
     }
 
     private fun startMultiZipExtractionService(file: String, password: String?) {
-        progressDialog.show()
+        eProgressDialog.show()
         val intent = Intent(this, ExtractMultipartZipService::class.java).apply {
             putExtra(ExtractMultipartZipService.EXTRA_FILE_PATH, file)
             putExtra(ExtractMultipartZipService.EXTRA_PASSWORD, password)
@@ -1050,7 +1083,7 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
     }
 
     fun startZipService(archiveName: String, password: String?, compressionMethod: CompressionMethod, compressionLevel: CompressionLevel, isEncrypted: Boolean, encryptionMethod: EncryptionMethod?, aesStrength: AesKeyStrength?, filesToArchive: List<String> ) {
-        progressDialog.show()
+        aProgressDialog.show()
         val intent = Intent(this, ArchiveZipService::class.java).apply {
             putExtra(ArchiveZipService.EXTRA_ARCHIVE_NAME, archiveName)
             putExtra(ArchiveZipService.EXTRA_PASSWORD, password)
@@ -1065,7 +1098,7 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
     }
 
     fun startSplitZipService(archiveName: String, password: String?, compressionMethod: CompressionMethod, compressionLevel: CompressionLevel, isEncrypted: Boolean, encryptionMethod: EncryptionMethod?, aesStrength: AesKeyStrength?, filesToArchive: List<String>, splitSize: Long?) {
-        progressDialog.show()
+        aProgressDialog.show()
         val intent = Intent(this, ArchiveSplitZipService::class.java).apply {
             putExtra(ArchiveSplitZipService.EXTRA_ARCHIVE_NAME, archiveName)
             putExtra(ArchiveSplitZipService.EXTRA_PASSWORD, password)
@@ -1091,7 +1124,7 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
     }
 
     fun startSevenZService(password: String?, archiveName: String, compressionLevel: Int, solid: Boolean, threadCount: Int, filesToArchive: List<String>) {
-        progressDialog.show()
+        aProgressDialog.show()
         val intent = Intent(this, Archive7zService::class.java).apply {
             putExtra(Archive7zService.EXTRA_ARCHIVE_NAME, archiveName)
             putExtra(Archive7zService.EXTRA_PASSWORD, password)
@@ -1218,38 +1251,35 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
 
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        val editor = sharedPreferences.edit()
         when (item.itemId) {
             R.id.menu_sort_by_name -> {
                 sortBy = SortBy.SORT_BY_NAME
-                initRecyclerView()
+                editor.putString("sortBy", sortBy.name)
             }
-
             R.id.menu_sort_by_size -> {
                 sortBy = SortBy.SORT_BY_SIZE
-                initRecyclerView()
+                editor.putString("sortBy", sortBy.name)
             }
-
             R.id.menu_sort_by_time_of_creation -> {
                 sortBy = SortBy.SORT_BY_MODIFIED
-                initRecyclerView()
+                editor.putString("sortBy", sortBy.name)
             }
-
             R.id.menu_sort_by_extension -> {
                 sortBy = SortBy.SORT_BY_EXTENSION
-                initRecyclerView()
+                editor.putString("sortBy", sortBy.name)
             }
-
             R.id.menu_sort_ascending -> {
                 sortAscending = true
-                initRecyclerView()
+                editor.putBoolean("sortAscending", sortAscending)
             }
-
             R.id.menu_sort_descending -> {
                 sortAscending = false
-                initRecyclerView()
+                editor.putBoolean("sortAscending", sortAscending)
             }
         }
-
+        editor.apply()
+        initRecyclerView()
         return true
     }
 }

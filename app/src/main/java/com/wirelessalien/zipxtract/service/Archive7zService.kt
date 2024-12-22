@@ -29,6 +29,7 @@ import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.constant.BroadcastConstants
+import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_7Z_CANCEL
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_COMPLETE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_ERROR
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ARCHIVE_NOTIFICATION_CHANNEL_ID
@@ -81,7 +82,7 @@ class Archive7zService : Service() {
         val threadCount = intent.getIntExtra(EXTRA_THREAD_COUNT, 1)
         val filesToArchive = intent.getStringArrayListExtra(EXTRA_FILES_TO_ARCHIVE) ?: return START_NOT_STICKY
 
-        if (intent.action == BroadcastConstants.ACTION_ARCHIVE_7Z_CANCEL) {
+        if (intent.action == ACTION_ARCHIVE_7Z_CANCEL) {
             archiveJob?.cancel()
             stopForegroundService()
             stopSelf()
@@ -103,7 +104,7 @@ class Archive7zService : Service() {
 
     private fun createCancelIntent(): PendingIntent {
         val cancelIntent = Intent(this, Archive7zService::class.java).apply {
-            action = BroadcastConstants.ACTION_ARCHIVE_7Z_CANCEL
+            action = ACTION_ARCHIVE_7Z_CANCEL
         }
         return PendingIntent.getService(this, 0, cancelIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
     }
@@ -136,6 +137,7 @@ class Archive7zService : Service() {
     }
 
     private fun create7zFile(archiveName: String, password: String?, compressionLevel: Int, solid: Boolean, threadCount: Int, filesToArchive: List<String>) {
+
         if (filesToArchive.isEmpty()) {
             val errorMessage = getString(R.string.no_files_to_archive)
             showErrorNotification(errorMessage)

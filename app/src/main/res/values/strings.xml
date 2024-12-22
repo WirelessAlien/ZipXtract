@@ -128,4 +128,7 @@
     <string name="descending">Descending</string>
     <string name="general_error_msg">Something went wrong</string>
     <string name="no_files_to_archive">No files were provided</string>
+    <string name="tar_creation_success">Tar file created successfully</string>
+    <string name="extracting_progress">Extracting… %1$d %%</string>
+    <string name="compressing_progress">Compressing… %1$d %%</string>
 </resources>

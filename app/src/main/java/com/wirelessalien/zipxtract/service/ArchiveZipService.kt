@@ -31,6 +31,7 @@ import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.constant.BroadcastConstants
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_COMPLETE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_ERROR
+import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_ZIP_CANCEL
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_ERROR_MESSAGE
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -73,7 +74,7 @@ class ArchiveZipService : Service() {
 
     private fun createCancelIntent(): PendingIntent {
         val cancelIntent = Intent(this, ArchiveZipService::class.java).apply {
-            action = BroadcastConstants.ACTION_ARCHIVE_ZIP_CANCEL
+            action = ACTION_ARCHIVE_ZIP_CANCEL
         }
         return PendingIntent.getService(this, 0, cancelIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
     }
@@ -113,7 +114,7 @@ class ArchiveZipService : Service() {
 
         val filesToArchive = intent.getStringArrayListExtra(ArchiveSplitZipService.EXTRA_FILES_TO_ARCHIVE) ?: return START_NOT_STICKY
 
-        if (intent.action == BroadcastConstants.ACTION_ARCHIVE_ZIP_CANCEL) {
+        if (intent.action == ACTION_ARCHIVE_ZIP_CANCEL) {
             archiveJob?.cancel()
             stopForegroundService()
             stopSelf()

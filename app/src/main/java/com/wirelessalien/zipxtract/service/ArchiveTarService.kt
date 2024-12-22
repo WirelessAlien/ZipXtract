@@ -182,6 +182,7 @@ class ArchiveTarService : Service() {
 
                 outArchive.close()
                 stopForegroundService()
+                showCompletionNotification()
                 sendLocalBroadcast(Intent(ACTION_ARCHIVE_COMPLETE))
             }
         } catch (e: SevenZipException) {
@@ -206,6 +207,19 @@ class ArchiveTarService : Service() {
 
         sendLocalBroadcast(Intent(BroadcastConstants.ACTION_ARCHIVE_PROGRESS).putExtra(
             EXTRA_PROGRESS, progress))
+    }
+
+    private fun showCompletionNotification() {
+        stopForegroundService()
+
+        val notification = NotificationCompat.Builder(this, ARCHIVE_NOTIFICATION_CHANNEL_ID)
+            .setContentTitle(getString(R.string.tar_creation_success))
+            .setSmallIcon(R.drawable.ic_notification_icon)
+            .setAutoCancel(true)
+            .build()
+
+        val notificationManager = getSystemService(NotificationManager::class.java)
+        notificationManager.notify(ArchiveSplitZipService.NOTIFICATION_ID + 1, notification)
     }
 
     private fun showErrorNotification(error: String) {

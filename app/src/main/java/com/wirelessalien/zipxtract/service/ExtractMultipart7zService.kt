@@ -155,6 +155,15 @@ class ExtractMultipart7zService : Service() {
     }
 
     private fun extractArchive(filePath: String) {
+
+        if (filePath.isEmpty()) {
+            val errorMessage = getString(R.string.no_files_to_archive)
+            showErrorNotification(errorMessage)
+            sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(EXTRA_ERROR_MESSAGE, errorMessage))
+            stopForegroundService()
+            return
+        }
+
         val file = File(filePath)
         val parentDir = file.parentFile ?: return
         val baseFileName = file.nameWithoutExtension
@@ -226,7 +235,9 @@ class ExtractMultipart7zService : Service() {
                 try {
                     uos?.close()
                     extractedSize++
-                    updateProgress((extractedSize * 100 / totalSize).toInt())
+                    val progress = ((extractedSize.toDouble() / totalSize) * 100).toInt()
+                    startForeground(NOTIFICATION_ID, createNotification(progress))
+                    updateProgress(progress)
                 } catch (e: IOException) {
                     e.printStackTrace()
                 }

@@ -98,7 +98,7 @@ class ExtractArchiveService : Service() {
         startForeground(NOTIFICATION_ID, createNotification(0))
 
         extractionJob = CoroutineScope(Dispatchers.IO).launch {
-            extractArchive(File(filePath), password)
+            extractArchive(filePath, password)
         }
 
         return START_NOT_STICKY
@@ -143,8 +143,17 @@ class ExtractArchiveService : Service() {
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
     }
 
-    private fun extractArchive(file: File, password: String?) {
+    private fun extractArchive(filePath: String, password: String?) {
 
+        if (filePath.isEmpty()) {
+            val errorMessage = getString(R.string.no_files_to_archive)
+            showErrorNotification(errorMessage)
+            sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(EXTRA_ERROR_MESSAGE, errorMessage))
+            stopForegroundService()
+            return
+        }
+
+        val file = File(filePath)
         if (file.extension.equals("zip", ignoreCase = true)) {
             extractZipArchive(file, password)
             return
@@ -266,7 +275,9 @@ class ExtractArchiveService : Service() {
                 try {
                     uos?.close()
                     extractedSize++
-                    updateProgress((extractedSize * 100 / totalSize).toInt())
+                    val progress = ((extractedSize.toDouble() / totalSize) * 100).toInt()
+                    startForeground(NOTIFICATION_ID, createNotification(progress))
+                    updateProgress(progress)
                 } catch (e: SevenZipException) {
                     e.printStackTrace()
                 }

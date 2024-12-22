@@ -31,6 +31,7 @@ import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.constant.BroadcastConstants
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_COMPLETE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_ERROR
+import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_SPLIT_ZIP_CANCEL
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ARCHIVE_NOTIFICATION_CHANNEL_ID
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_ERROR_MESSAGE
 import kotlinx.coroutines.CoroutineScope
@@ -109,7 +110,7 @@ class ArchiveSplitZipService : Service() {
 
         val splitSize = intent.getLongExtra(EXTRA_SPLIT_SIZE, 64)
 
-        if (intent.action == BroadcastConstants.ACTION_ARCHIVE_SPLIT_ZIP_CANCEL) {
+        if (intent.action == ACTION_ARCHIVE_SPLIT_ZIP_CANCEL) {
             archiveJob?.cancel()
             stopForegroundService()
             stopSelf()
@@ -131,7 +132,7 @@ class ArchiveSplitZipService : Service() {
 
     private fun createCancelIntent(): PendingIntent {
         val cancelIntent = Intent(this, ArchiveSplitZipService::class.java).apply {
-            action = BroadcastConstants.ACTION_ARCHIVE_SPLIT_ZIP_CANCEL
+            action = ACTION_ARCHIVE_SPLIT_ZIP_CANCEL
         }
         return PendingIntent.getService(this, 0, cancelIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
     }
@@ -241,7 +242,7 @@ class ArchiveSplitZipService : Service() {
                 }
 
                 if (progressMonitor.result == ProgressMonitor.Result.SUCCESS) {
-                    showCompletionNotification(getString(R.string.zip_creation_success))
+                    showCompletionNotification()
                     sendLocalBroadcast(Intent(ACTION_ARCHIVE_COMPLETE))
                 } else {
                     showErrorNotification(getString(R.string.zip_creation_failed))
@@ -287,12 +288,11 @@ class ArchiveSplitZipService : Service() {
         notificationManager.notify(NOTIFICATION_ID + 1, notification)
     }
 
-    private fun showCompletionNotification(message: String) {
+    private fun showCompletionNotification() {
         stopForegroundService()
 
         val notification = NotificationCompat.Builder(this, ARCHIVE_NOTIFICATION_CHANNEL_ID)
             .setContentTitle(getString(R.string.zip_creation_success))
-            .setContentText(message)
             .setSmallIcon(R.drawable.ic_notification_icon)
             .setAutoCancel(true)
             .build()

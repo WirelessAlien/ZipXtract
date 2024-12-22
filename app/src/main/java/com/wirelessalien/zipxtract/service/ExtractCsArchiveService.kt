@@ -31,7 +31,7 @@ import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_COMPLETE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_ERROR
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_PROGRESS
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACT_CANCEL
+import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACT_CS_CANCEL
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRACTION_NOTIFICATION_CHANNEL_ID
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_ERROR_MESSAGE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_PROGRESS
@@ -75,7 +75,7 @@ class ExtractCsArchiveService : Service() {
             return START_NOT_STICKY
         }
 
-        if (intent.action == ACTION_EXTRACT_CANCEL) {
+        if (intent.action == ACTION_EXTRACT_CS_CANCEL) {
             extractionJob?.cancel()
             stopForegroundService()
             stopSelf()
@@ -85,7 +85,7 @@ class ExtractCsArchiveService : Service() {
         startForeground(NOTIFICATION_ID, createNotification(0))
 
         extractionJob = CoroutineScope(Dispatchers.IO).launch {
-            extractArchive(File(filePath))
+            extractArchive(filePath)
         }
 
         return START_NOT_STICKY
@@ -98,7 +98,7 @@ class ExtractCsArchiveService : Service() {
 
     private fun createCancelIntent(): PendingIntent {
         val cancelIntent = Intent(this, ExtractCsArchiveService::class.java).apply {
-            action = ACTION_EXTRACT_CANCEL
+            action = ACTION_EXTRACT_CS_CANCEL
         }
         return PendingIntent.getService(this, 0, cancelIntent, PendingIntent.FLAG_UPDATE_CURRENT)
     }
@@ -130,7 +130,16 @@ class ExtractCsArchiveService : Service() {
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
     }
 
-    private fun extractArchive(file: File) {
+    private fun extractArchive(filePath: String) {
+
+        if (filePath.isEmpty()) {
+            val errorMessage = getString(R.string.no_files_to_archive)
+            showErrorNotification(errorMessage)
+            sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(EXTRA_ERROR_MESSAGE, errorMessage))
+            stopForegroundService()
+            return
+        }
+        val file = File(filePath)
         val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
         val outputFile = File(file.parent, file.nameWithoutExtension)
         val fin: InputStream
