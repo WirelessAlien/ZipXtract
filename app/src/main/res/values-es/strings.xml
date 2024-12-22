@@ -1,16 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="solana">Solana</string>
     <string name="compression_method">Método de compresión</string>
-    <string name="doge_coin">Dogecoin</string>
     <string name="extract_to">Extraer a</string>
     <string name="create">Crear</string>
     <string name="save_zip_to">Guardar zip en</string>
     <string name="directory_path">Carpeta seleccionada: %1$s</string>
     <string name="bitcoin">Bitcoin</string>
-    <string name="polygon">Polygon</string>
     <string name="selected_files_text">Archivos seleccionados: %1$d</string>
-    <string name="ethereum">Ethereum</string>
     <string name="folder">Carpeta</string>
     <string name="no_file_selected">Ningún archivo seleccionado</string>
     <string name="compression_level">Nivel de compresión</string>
@@ -24,15 +20,12 @@
     <string name="select">Seleccionar</string>
     <string name="encryption_method">Método de cifrado</string>
     <string name="percent">%</string>
-    <string name="tron">Tron</string>
     <string name="extract">Extraer</string>
     <string name="donate">Donar</string>
     <string name="no_directory_selected">Ningún directorio seleccionado</string>
     <string name="compression_settings">Ajustes de la compresión</string>
     <string name="share_icon">Icono compartir</string>
     <string name="file">Archivo</string>
-    <string name="bitcoin_cash">Bitcoin en efectivo</string>
-    <string name="bnb_smart_chain">BNB Smart Chain</string>
     <string name="file_picked_fail">Ningún archivo seleccionado</string>
     <string name="select_output_directory_extract">Por favor, seleccione dónde extraer los archivos</string>
     <string name="save">Guardar</string>
