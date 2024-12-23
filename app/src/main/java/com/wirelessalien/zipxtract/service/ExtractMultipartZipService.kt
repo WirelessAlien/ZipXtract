@@ -20,7 +20,6 @@ package com.wirelessalien.zipxtract.service
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
 import android.os.Build
@@ -31,7 +30,6 @@ import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_COMPLETE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_ERROR
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_PROGRESS
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_MULTI_ZIP_EXTRACTION_CANCEL
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRACTION_NOTIFICATION_CHANNEL_ID
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_DIR_PATH
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_ERROR_MESSAGE
@@ -49,7 +47,7 @@ import java.io.File
 class ExtractMultipartZipService : Service() {
 
     companion object {
-        const val NOTIFICATION_ID = 869
+        const val NOTIFICATION_ID = 21
         const val EXTRA_FILE_PATH = "file_path"
         const val EXTRA_PASSWORD = "password"
     }
@@ -72,13 +70,6 @@ class ExtractMultipartZipService : Service() {
             return START_NOT_STICKY
         }
 
-        if (intent.action == ACTION_MULTI_ZIP_EXTRACTION_CANCEL) {
-            extractionJob?.cancel()
-            stopForegroundService()
-            stopSelf()
-            return START_NOT_STICKY
-        }
-
         startForeground(NOTIFICATION_ID, createNotification(0))
 
         extractionJob = CoroutineScope(Dispatchers.IO).launch {
@@ -90,13 +81,6 @@ class ExtractMultipartZipService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         extractionJob?.cancel()
-    }
-
-    private fun createCancelIntent(): PendingIntent {
-        val cancelIntent = Intent(this, ExtractMultipartZipService::class.java).apply {
-            action = ACTION_MULTI_ZIP_EXTRACTION_CANCEL
-        }
-        return PendingIntent.getService(this, 0, cancelIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
     }
 
     private fun createNotificationChannel() {
@@ -117,7 +101,6 @@ class ExtractMultipartZipService : Service() {
             .setSmallIcon(R.drawable.ic_notification_icon)
             .setProgress(100, progress, progress == 0)
             .setOngoing(true)
-            .addAction(R.drawable.ic_round_cancel, getString(R.string.cancel), createCancelIntent())
 
         return builder.build()
     }
@@ -178,10 +161,6 @@ class ExtractMultipartZipService : Service() {
             fileHeaders.forEach { header ->
                 while (progressMonitor.state != ProgressMonitor.State.READY) {
                     delay(100)
-                }
-
-                if (extractionJob?.isCancelled == true) {
-                    throw ZipException(getString(R.string.operation_cancelled))
                 }
 
                 zipFile.extractFile(header, extractDir.absolutePath)

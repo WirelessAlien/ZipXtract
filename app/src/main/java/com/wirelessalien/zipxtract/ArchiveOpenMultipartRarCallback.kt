@@ -18,7 +18,6 @@
 package com.wirelessalien.zipxtract
 
 
-import kotlinx.coroutines.Job
 import net.sf.sevenzipjbinding.*
 import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream
 import java.io.File
@@ -26,7 +25,7 @@ import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.RandomAccessFile
 
-class ArchiveOpenMultipartRarCallback(private val parentDir: File, private val extractionJob: Job?) : IArchiveOpenVolumeCallback, IArchiveOpenCallback {
+class ArchiveOpenMultipartRarCallback(private val parentDir: File) : IArchiveOpenVolumeCallback, IArchiveOpenCallback {
     private val openedRandomAccessFileList = HashMap<String, RandomAccessFile>()
     private var name: String? = null
 
@@ -37,7 +36,6 @@ class ArchiveOpenMultipartRarCallback(private val parentDir: File, private val e
 
     @Throws(SevenZipException::class)
     override fun getStream(filename: String): IInStream? {
-        if (extractionJob?.isCancelled == true) throw SevenZipException("Extraction cancelled")
         try {
             var randomAccessFile = openedRandomAccessFileList[filename]
             if (randomAccessFile != null) {

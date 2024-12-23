@@ -20,7 +20,6 @@ package com.wirelessalien.zipxtract.service
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
 import android.os.Build
@@ -28,12 +27,13 @@ import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.wirelessalien.zipxtract.R
-import com.wirelessalien.zipxtract.constant.BroadcastConstants
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_COMPLETE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_ERROR
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_SPLIT_ZIP_CANCEL
+import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_PROGRESS
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ARCHIVE_NOTIFICATION_CHANNEL_ID
+import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_DIR_PATH
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_ERROR_MESSAGE
+import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_PROGRESS
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -53,7 +53,7 @@ import java.nio.file.StandardCopyOption
 class ArchiveSplitZipService : Service() {
 
     companion object {
-        const val NOTIFICATION_ID = 754
+        const val NOTIFICATION_ID = 14
         const val EXTRA_ARCHIVE_NAME = "archiveName"
         const val EXTRA_PASSWORD = "password"
         const val EXTRA_COMPRESSION_METHOD = "compressionMethod"
@@ -110,13 +110,6 @@ class ArchiveSplitZipService : Service() {
 
         val splitSize = intent.getLongExtra(EXTRA_SPLIT_SIZE, 64)
 
-        if (intent.action == ACTION_ARCHIVE_SPLIT_ZIP_CANCEL) {
-            archiveJob?.cancel()
-            stopForegroundService()
-            stopSelf()
-            return START_NOT_STICKY
-        }
-
         startForeground(NOTIFICATION_ID, createNotification(0))
 
         archiveJob = CoroutineScope(Dispatchers.IO).launch {
@@ -128,13 +121,6 @@ class ArchiveSplitZipService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         archiveJob?.cancel()
-    }
-
-    private fun createCancelIntent(): PendingIntent {
-        val cancelIntent = Intent(this, ArchiveSplitZipService::class.java).apply {
-            action = ACTION_ARCHIVE_SPLIT_ZIP_CANCEL
-        }
-        return PendingIntent.getService(this, 0, cancelIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
     }
 
     private fun createNotificationChannel() {
@@ -154,7 +140,6 @@ class ArchiveSplitZipService : Service() {
             .setContentTitle(getString(R.string.archive_ongoing))
             .setSmallIcon(R.drawable.ic_notification_icon)
             .setProgress(100, progress, progress == 0)
-            .addAction(R.drawable.ic_round_cancel, getString(R.string.cancel), createCancelIntent())
             .setOngoing(true)
 
         return builder.build()
@@ -243,13 +228,11 @@ class ArchiveSplitZipService : Service() {
 
                 if (progressMonitor.result == ProgressMonitor.Result.SUCCESS) {
                     showCompletionNotification()
-                    sendLocalBroadcast(Intent(ACTION_ARCHIVE_COMPLETE).putExtra(BroadcastConstants.EXTRA_DIR_PATH, outputFile.absolutePath))
+                    sendLocalBroadcast(Intent(ACTION_ARCHIVE_COMPLETE).putExtra(EXTRA_DIR_PATH, outputFile.absolutePath))
                 } else {
                     showErrorNotification(getString(R.string.zip_creation_failed))
                     sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, progressMonitor.result))
                 }
-
-                if (archiveJob?.isCancelled == true) throw ZipException(getString(R.string.operation_cancelled))
 
                 renamedTempDir.deleteRecursively()
 
@@ -271,8 +254,8 @@ class ArchiveSplitZipService : Service() {
         val notificationManager = getSystemService(NotificationManager::class.java)
         notificationManager.notify(NOTIFICATION_ID, notification)
 
-        sendLocalBroadcast(Intent(BroadcastConstants.ACTION_ARCHIVE_PROGRESS).putExtra(
-            BroadcastConstants.EXTRA_PROGRESS, progress))
+        sendLocalBroadcast(Intent(ACTION_ARCHIVE_PROGRESS).putExtra(
+            EXTRA_PROGRESS, progress))
     }
 
     private fun showErrorNotification(error: String) {

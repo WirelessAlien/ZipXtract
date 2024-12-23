@@ -20,7 +20,6 @@ package com.wirelessalien.zipxtract.service
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
 import android.os.Build
@@ -31,7 +30,8 @@ import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.constant.BroadcastConstants
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_COMPLETE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_ERROR
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_ZIP_CANCEL
+import com.wirelessalien.zipxtract.constant.BroadcastConstants.ARCHIVE_NOTIFICATION_CHANNEL_ID
+import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_DIR_PATH
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_ERROR_MESSAGE
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -52,7 +52,7 @@ import java.nio.file.StandardCopyOption
 class ArchiveZipService : Service() {
 
     companion object {
-        const val NOTIFICATION_ID = 871
+        const val NOTIFICATION_ID = 16
         const val EXTRA_ARCHIVE_NAME = "archiveName"
         const val EXTRA_PASSWORD = "password"
         const val EXTRA_COMPRESSION_METHOD = "compressionMethod"
@@ -70,13 +70,6 @@ class ArchiveZipService : Service() {
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
-    }
-
-    private fun createCancelIntent(): PendingIntent {
-        val cancelIntent = Intent(this, ArchiveZipService::class.java).apply {
-            action = ACTION_ARCHIVE_ZIP_CANCEL
-        }
-        return PendingIntent.getService(this, 0, cancelIntent, PendingIntent.FLAG_UPDATE_CURRENT)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -114,13 +107,6 @@ class ArchiveZipService : Service() {
 
         val filesToArchive = intent.getStringArrayListExtra(ArchiveSplitZipService.EXTRA_FILES_TO_ARCHIVE) ?: return START_NOT_STICKY
 
-        if (intent.action == ACTION_ARCHIVE_ZIP_CANCEL) {
-            archiveJob?.cancel()
-            stopForegroundService()
-            stopSelf()
-            return START_NOT_STICKY
-        }
-
         startForeground(NOTIFICATION_ID, createNotification(0))
 
         archiveJob = CoroutineScope(Dispatchers.IO).launch {
@@ -137,7 +123,7 @@ class ArchiveZipService : Service() {
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
-                BroadcastConstants.ARCHIVE_NOTIFICATION_CHANNEL_ID,
+                ARCHIVE_NOTIFICATION_CHANNEL_ID,
                 getString(R.string.compress_archive_notification_name),
                 NotificationManager.IMPORTANCE_LOW
             )
@@ -147,13 +133,10 @@ class ArchiveZipService : Service() {
     }
 
     private fun createNotification(progress: Int): Notification {
-        val builder = NotificationCompat.Builder(this,
-            BroadcastConstants.ARCHIVE_NOTIFICATION_CHANNEL_ID
-        )
+        val builder = NotificationCompat.Builder(this, ARCHIVE_NOTIFICATION_CHANNEL_ID)
             .setContentTitle(getString(R.string.archive_ongoing))
             .setSmallIcon(R.drawable.ic_notification_icon)
             .setProgress(100, progress, progress == 0)
-            .addAction(R.drawable.ic_round_cancel, getString(R.string.cancel), createCancelIntent())
             .setOngoing(true)
 
         return builder.build()
@@ -248,13 +231,11 @@ class ArchiveZipService : Service() {
 
                 if (progressMonitor.result == ProgressMonitor.Result.SUCCESS) {
                     showCompletionNotification()
-                    sendLocalBroadcast(Intent(ACTION_ARCHIVE_COMPLETE).putExtra(BroadcastConstants.EXTRA_DIR_PATH, outputFile.absolutePath))
+                    sendLocalBroadcast(Intent(ACTION_ARCHIVE_COMPLETE).putExtra(EXTRA_DIR_PATH, outputFile.absolutePath))
                 } else {
                     showErrorNotification(progressMonitor.result.toString())
                     sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, progressMonitor.result.toString()))
                 }
-
-                if (archiveJob?.isCancelled == true) throw ZipException(getString(R.string.operation_cancelled))
 
                 renamedTempDir.deleteRecursively()
 
@@ -282,7 +263,7 @@ class ArchiveZipService : Service() {
 
     private fun showErrorNotification(error: String) {
         stopForegroundService()
-        val notification = NotificationCompat.Builder(this, BroadcastConstants.ARCHIVE_NOTIFICATION_CHANNEL_ID)
+        val notification = NotificationCompat.Builder(this, ARCHIVE_NOTIFICATION_CHANNEL_ID)
             .setContentTitle(getString(R.string.zip_creation_failed))
             .setContentText(error)
             .setSmallIcon(R.drawable.ic_notification_icon)
@@ -296,7 +277,7 @@ class ArchiveZipService : Service() {
     private fun showCompletionNotification() {
         stopForegroundService()
 
-        val notification = NotificationCompat.Builder(this, BroadcastConstants.ARCHIVE_NOTIFICATION_CHANNEL_ID)
+        val notification = NotificationCompat.Builder(this, ARCHIVE_NOTIFICATION_CHANNEL_ID)
             .setContentTitle(getString(R.string.zip_creation_success))
             .setSmallIcon(R.drawable.ic_notification_icon)
             .setAutoCancel(true)

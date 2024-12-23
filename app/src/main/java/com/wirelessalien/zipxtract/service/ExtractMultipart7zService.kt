@@ -20,7 +20,6 @@ package com.wirelessalien.zipxtract.service
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
 import android.os.Build
@@ -32,7 +31,6 @@ import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_COMPLETE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_ERROR
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_PROGRESS
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_MULTI_7Z_EXTRACTION_CANCEL
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRACTION_NOTIFICATION_CHANNEL_ID
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_DIR_PATH
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_ERROR_MESSAGE
@@ -61,7 +59,7 @@ import java.io.OutputStream
 class ExtractMultipart7zService : Service() {
 
     companion object {
-        const val NOTIFICATION_ID = 642
+        const val NOTIFICATION_ID = 20
         const val EXTRA_FILE_PATH = "file_path"
         const val EXTRA_PASSWORD = "password"
     }
@@ -83,13 +81,6 @@ class ExtractMultipart7zService : Service() {
         this.password = password?.toCharArray()
 
         if (filePath.isNullOrEmpty()) {
-            stopSelf()
-            return START_NOT_STICKY
-        }
-
-        if (intent.action == ACTION_MULTI_7Z_EXTRACTION_CANCEL) {
-            extractionJob?.cancel()
-            stopForegroundService()
             stopSelf()
             return START_NOT_STICKY
         }
@@ -121,13 +112,6 @@ class ExtractMultipart7zService : Service() {
         extractionJob?.cancel()
     }
 
-    private fun createCancelIntent(): PendingIntent {
-        val cancelIntent = Intent(this, ExtractMultipart7zService::class.java).apply {
-            action = ACTION_MULTI_7Z_EXTRACTION_CANCEL
-        }
-        return PendingIntent.getService(this, 0, cancelIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-    }
-
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
@@ -146,7 +130,6 @@ class ExtractMultipart7zService : Service() {
             .setSmallIcon(R.drawable.ic_notification_icon)
             .setProgress(100, progress, progress == 0)
             .setOngoing(true)
-            .addAction(R.drawable.ic_round_cancel, getString(R.string.cancel), createCancelIntent())
 
         return builder.build()
     }
@@ -179,14 +162,13 @@ class ExtractMultipart7zService : Service() {
         }
 
         try {
-            val archiveOpenVolumeCallback = ArchiveOpenMultipart7zCallback(parentDir, extractionJob)
+            val archiveOpenVolumeCallback = ArchiveOpenMultipart7zCallback(parentDir)
             val inStream: IInStream = VolumedArchiveInStream(file.name, archiveOpenVolumeCallback)
             val inArchive: IInArchive = SevenZip.openInArchive(archiveFormat, inStream)
 
             try {
                 val itemCount = inArchive.numberOfItems
                 for (i in 0 until itemCount) {
-                    if (extractionJob?.isCancelled == true) throw SevenZipException(getString(R.string.operation_cancelled))
                     inArchive.getProperty(i, PropID.PATH) as String
                     destinationDir.mkdir()
 
@@ -244,8 +226,6 @@ class ExtractMultipart7zService : Service() {
 
         override fun getStream(p0: Int, p1: ExtractAskMode?): ISequentialOutStream {
 
-            if (extractionJob?.isCancelled == true) throw SevenZipException(getString(R.string.operation_cancelled))
-
             val path: String = inArchive.getStringProperty(p0, PropID.PATH)
             val isDir: Boolean = inArchive.getProperty(p0, PropID.IS_FOLDER) as Boolean
             val unpackedFile = File(dstDir, path)
@@ -280,7 +260,7 @@ class ExtractMultipart7zService : Service() {
         override fun prepareOperation(p0: ExtractAskMode?) {}
         override fun setCompleted(complete: Long) {
             val progress = ((complete.toDouble() / totalSize) * 100).toInt()
-            startForeground(ExtractArchiveService.NOTIFICATION_ID, createNotification(progress))
+            startForeground(NOTIFICATION_ID, createNotification(progress))
             updateProgress(progress)
         }
 

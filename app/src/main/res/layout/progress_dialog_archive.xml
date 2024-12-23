@@ -19,14 +19,17 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:orientation="vertical">
 
     <TextView
         android:id="@+id/progressText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/archiving"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
         android:textSize="18sp" />
 
     <com.google.android.material.progressindicator.LinearProgressIndicator
@@ -36,32 +39,19 @@
         android:indeterminate="false"
         android:max="100"
         android:progress="0"
-        android:layout_marginTop="16dp" />
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"/>
 
-    <RelativeLayout
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/backgroundButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginTop="16dp">
+        style="@style/Widget.Material3.Button.TonalButton"
+        app:cornerRadius="5dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
+        android:text="@string/background" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/cancelButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:cornerRadius="5dp"
-            style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
-            android:layout_marginEnd="10dp"
-            app:icon="@drawable/ic_round_cancel"/>
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/backgroundButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_toEndOf="@id/cancelButton"
-            style="@style/Widget.Material3.Button.TonalButton"
-            app:cornerRadius="5dp"
-            android:layout_marginStart="10dp"
-            android:text="@string/background" />
-    </RelativeLayout>
 </LinearLayout>

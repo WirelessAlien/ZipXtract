@@ -20,7 +20,6 @@ package com.wirelessalien.zipxtract.service
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
 import android.os.Build
@@ -28,12 +27,11 @@ import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.wirelessalien.zipxtract.R
-import com.wirelessalien.zipxtract.constant.BroadcastConstants
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_COMPLETE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_ERROR
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_PROGRESS
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_COMPRESS_CANCEL
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ARCHIVE_NOTIFICATION_CHANNEL_ID
+import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_DIR_PATH
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_ERROR_MESSAGE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_PROGRESS
 import kotlinx.coroutines.CoroutineScope
@@ -54,7 +52,7 @@ import java.nio.file.Files
 class CompressCsArchiveService : Service() {
 
     companion object {
-        const val NOTIFICATION_ID = 597
+        const val NOTIFICATION_ID = 17
         const val EXTRA_FILE_PATH = "file_path"
         const val EXTRA_COMPRESSION_FORMAT = "compression_format"
     }
@@ -77,13 +75,6 @@ class CompressCsArchiveService : Service() {
             return START_NOT_STICKY
         }
 
-        if (intent.action == ACTION_COMPRESS_CANCEL) {
-            compressionJob?.cancel()
-            stopForegroundService()
-            stopSelf()
-            return START_NOT_STICKY
-        }
-
         startForeground(NOTIFICATION_ID, createNotification(0))
 
         compressionJob = CoroutineScope(Dispatchers.IO).launch {
@@ -96,13 +87,6 @@ class CompressCsArchiveService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         compressionJob?.cancel()
-    }
-
-    private fun createCancelIntent(): PendingIntent {
-        val cancelIntent = Intent(this, CompressCsArchiveService::class.java).apply {
-            action = ACTION_COMPRESS_CANCEL
-        }
-        return PendingIntent.getService(this, 0, cancelIntent, PendingIntent.FLAG_UPDATE_CURRENT)
     }
 
     private fun createNotificationChannel() {
@@ -123,7 +107,6 @@ class CompressCsArchiveService : Service() {
             .setSmallIcon(R.drawable.ic_notification_icon)
             .setProgress(100, progress, progress == 0)
             .setOngoing(true)
-            .addAction(R.drawable.ic_round_cancel, getString(R.string.cancel), createCancelIntent())
 
         return builder.build()
     }
@@ -180,7 +163,6 @@ class CompressCsArchiveService : Service() {
 
             var n: Int
             while (inStream.read(buffer).also { n = it } != -1) {
-                if (compressionJob?.isCancelled == true) throw Exception("Compression cancelled")
                 compressorOutputStream.write(buffer, 0, n)
                 bytesRead += n
                 val progress = (bytesRead * 100 / totalBytes).toInt()
@@ -191,7 +173,7 @@ class CompressCsArchiveService : Service() {
             inStream.close()
 
             showCompletionNotification()
-            sendLocalBroadcast(Intent(ACTION_ARCHIVE_COMPLETE).putExtra(BroadcastConstants.EXTRA_DIR_PATH, outputFile.parent))
+            sendLocalBroadcast(Intent(ACTION_ARCHIVE_COMPLETE).putExtra(EXTRA_DIR_PATH, outputFile.parent))
 
         } catch (e: CompressorException) {
             e.printStackTrace()

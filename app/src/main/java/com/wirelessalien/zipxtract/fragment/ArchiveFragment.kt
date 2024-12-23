@@ -19,7 +19,6 @@ package com.wirelessalien.zipxtract.fragment
 
 
 import android.annotation.SuppressLint
-import android.app.ActivityManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -317,69 +316,11 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
         }
     }
 
-    @Suppress("DEPRECATION")
     private fun extractProgressDialog() {
         val ePDialogView = layoutInflater.inflate(R.layout.progress_dialog_extract, null)
         eProgressBar = ePDialogView.findViewById(R.id.progressBar)
         progressText = ePDialogView.findViewById(R.id.progressText)
-        val cancelButton = ePDialogView.findViewById<Button>(R.id.cancelButton)
         val backgroundButton = ePDialogView.findViewById<Button>(R.id.backgroundButton)
-
-        cancelButton.setOnClickListener {
-            val activityManager = requireContext().getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-
-            val isExtractArchiveServiceRunning = activityManager.getRunningServices(Integer.MAX_VALUE)
-                .any { it.service.className == ExtractArchiveService::class.java.name }
-
-            if (isExtractArchiveServiceRunning) {
-                val cancelExtractIntent = Intent(requireContext(), ExtractArchiveService::class.java).apply {
-                    action = BroadcastConstants.ACTION_EXTRACT_CANCEL
-                }
-                requireContext().startService(cancelExtractIntent)
-            }
-
-            val isExtractRarServiceRunning = activityManager.getRunningServices(Integer.MAX_VALUE)
-                .any { it.service.className == ExtractRarService::class.java.name }
-
-            if (isExtractRarServiceRunning) {
-                val cancelRarIntent = Intent(requireContext(), ExtractRarService::class.java).apply {
-                    action = BroadcastConstants.ACTION_RAR_EXTRACTION_CANCEL
-                }
-                requireContext().startService(cancelRarIntent)
-            }
-
-            val isExtractMultipart7zServiceRunning = activityManager.getRunningServices(Integer.MAX_VALUE)
-                .any { it.service.className == ExtractMultipart7zService::class.java.name }
-
-            if (isExtractMultipart7zServiceRunning) {
-                val cancelRarIntent = Intent(requireContext(), ExtractMultipart7zService::class.java).apply {
-                    action = BroadcastConstants.ACTION_MULTI_7Z_EXTRACTION_CANCEL
-                }
-                requireContext().startService(cancelRarIntent)
-            }
-
-            val isExtractMultipartZipServiceRunning = activityManager.getRunningServices(Integer.MAX_VALUE)
-                .any { it.service.className == ExtractMultipartZipService::class.java.name }
-
-            if (isExtractMultipartZipServiceRunning) {
-                val cancelRarIntent = Intent(requireContext(), ExtractMultipartZipService::class.java).apply {
-                    action = BroadcastConstants.ACTION_MULTI_ZIP_EXTRACTION_CANCEL
-                }
-                requireContext().startService(cancelRarIntent)
-            }
-
-            val isExtractCsArchiveServiceRunning = activityManager.getRunningServices(Integer.MAX_VALUE)
-                .any { it.service.className == ExtractCsArchiveService::class.java.name }
-
-            if (isExtractCsArchiveServiceRunning) {
-                val cancelRarIntent = Intent(requireContext(), ExtractCsArchiveService::class.java).apply {
-                    action = BroadcastConstants.ACTION_EXTRACT_CS_CANCEL
-                }
-                requireContext().startService(cancelRarIntent)
-            }
-
-            eProgressDialog.dismiss()
-        }
 
         backgroundButton.setOnClickListener {
             eProgressDialog.dismiss()

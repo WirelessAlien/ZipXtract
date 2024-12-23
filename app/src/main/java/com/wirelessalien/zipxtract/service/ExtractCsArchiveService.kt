@@ -20,7 +20,6 @@ package com.wirelessalien.zipxtract.service
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
 import android.os.Build
@@ -31,7 +30,6 @@ import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_COMPLETE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_ERROR
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_PROGRESS
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACT_CS_CANCEL
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRACTION_NOTIFICATION_CHANNEL_ID
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_DIR_PATH
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_ERROR_MESSAGE
@@ -55,7 +53,7 @@ import java.nio.file.Files
 class ExtractCsArchiveService : Service() {
 
     companion object {
-        const val NOTIFICATION_ID = 596
+        const val NOTIFICATION_ID = 19
         const val EXTRA_FILE_PATH = "file_path"
     }
 
@@ -76,13 +74,6 @@ class ExtractCsArchiveService : Service() {
             return START_NOT_STICKY
         }
 
-        if (intent.action == ACTION_EXTRACT_CS_CANCEL) {
-            extractionJob?.cancel()
-            stopForegroundService()
-            stopSelf()
-            return START_NOT_STICKY
-        }
-
         startForeground(NOTIFICATION_ID, createNotification(0))
 
         extractionJob = CoroutineScope(Dispatchers.IO).launch {
@@ -95,13 +86,6 @@ class ExtractCsArchiveService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         extractionJob?.cancel()
-    }
-
-    private fun createCancelIntent(): PendingIntent {
-        val cancelIntent = Intent(this, ExtractCsArchiveService::class.java).apply {
-            action = ACTION_EXTRACT_CS_CANCEL
-        }
-        return PendingIntent.getService(this, 0, cancelIntent, PendingIntent.FLAG_UPDATE_CURRENT)
     }
 
     private fun createNotificationChannel() {
@@ -122,7 +106,6 @@ class ExtractCsArchiveService : Service() {
             .setSmallIcon(R.drawable.ic_notification_icon)
             .setProgress(100, progress, progress == 0)
             .setOngoing(true)
-            .addAction(R.drawable.ic_round_cancel, getString(R.string.cancel), createCancelIntent())
 
         return builder.build()
     }
@@ -175,7 +158,6 @@ class ExtractCsArchiveService : Service() {
 
             var n: Int
             while (compressorInputStream.read(buffer).also { n = it } != -1) {
-                if (extractionJob?.isCancelled == true) throw Exception(getString(R.string.operation_cancelled))
                 outStream.write(buffer, 0, n)
                 bytesRead += n
                 val progress = (bytesRead * 100 / totalBytes).toInt()

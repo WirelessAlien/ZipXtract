@@ -18,18 +18,16 @@
 package com.wirelessalien.zipxtract
 
 import android.util.Log
-import kotlinx.coroutines.Job
 import net.sf.sevenzipjbinding.IArchiveOpenVolumeCallback
 import net.sf.sevenzipjbinding.IInStream
 import net.sf.sevenzipjbinding.PropID
-import net.sf.sevenzipjbinding.SevenZipException
 import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.RandomAccessFile
 
-class ArchiveOpenMultipart7zCallback(private val parentDir: File, private val extractionJob: Job?) : IArchiveOpenVolumeCallback {
+class ArchiveOpenMultipart7zCallback(private val parentDir: File) : IArchiveOpenVolumeCallback {
     private val openedRandomAccessFileList = mutableMapOf<String, RandomAccessFile>()
 
     override fun getProperty(propID: PropID?): Any? {
@@ -38,7 +36,6 @@ class ArchiveOpenMultipart7zCallback(private val parentDir: File, private val ex
 
     override fun getStream(filename: String?): IInStream? {
         if (filename == null) return null
-        if (extractionJob?.isCancelled == true) throw SevenZipException("Extraction cancelled")
         return try {
             // First check if we already have this file open
             var randomAccessFile = openedRandomAccessFileList[filename]
@@ -50,7 +47,6 @@ class ArchiveOpenMultipart7zCallback(private val parentDir: File, private val ex
             val volumeFile = File(parentDir, File(filename).name)
 
             if (!volumeFile.exists()) {
-                Log.e("7zExtract", "Volume file does not exist: ${volumeFile.absolutePath}")
                 return null
             }
 

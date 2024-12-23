@@ -20,7 +20,6 @@ package com.wirelessalien.zipxtract.service
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
 import android.os.Build
@@ -31,7 +30,6 @@ import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_COMPLETE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_ERROR
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_PROGRESS
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACT_CANCEL
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRACTION_NOTIFICATION_CHANNEL_ID
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_DIR_PATH
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_ERROR_MESSAGE
@@ -65,7 +63,7 @@ import java.io.RandomAccessFile
 class ExtractArchiveService : Service() {
 
     companion object {
-        const val NOTIFICATION_ID = 543
+        const val NOTIFICATION_ID = 18
         const val EXTRA_FILE_PATH = "file_path"
         const val EXTRA_PASSWORD = "password"
     }
@@ -89,13 +87,6 @@ class ExtractArchiveService : Service() {
             return START_NOT_STICKY
         }
 
-        if (intent.action == ACTION_EXTRACT_CANCEL) {
-            extractionJob?.cancel()
-            stopForegroundService()
-            stopSelf()
-            return START_NOT_STICKY
-        }
-
         startForeground(NOTIFICATION_ID, createNotification(0))
 
         extractionJob = CoroutineScope(Dispatchers.IO).launch {
@@ -108,13 +99,6 @@ class ExtractArchiveService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         extractionJob?.cancel()
-    }
-
-    private fun createCancelIntent(): PendingIntent {
-        val cancelIntent = Intent(this, ExtractArchiveService::class.java).apply {
-            action = ACTION_EXTRACT_CANCEL
-        }
-        return PendingIntent.getService(this, 0, cancelIntent, PendingIntent.FLAG_UPDATE_CURRENT)
     }
 
     private fun createNotificationChannel() {
@@ -135,7 +119,6 @@ class ExtractArchiveService : Service() {
             .setSmallIcon(R.drawable.ic_notification_icon)
             .setProgress(100, progress, progress == 0)
             .setOngoing(true)
-            .addAction(R.drawable.ic_round_cancel, getString(R.string.cancel), createCancelIntent())
 
         return builder.build()
     }
@@ -188,7 +171,6 @@ class ExtractArchiveService : Service() {
                     sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message ?: getString(R.string.general_error_msg))
                     )
                 }
-                if (extractionJob?.isCancelled == true) throw SevenZipException(getString(R.string.operation_cancelled))
             } catch (e: SevenZipException) {
                 e.printStackTrace()
                 showErrorNotification(e.message ?: getString(R.string.general_error_msg))
@@ -230,10 +212,6 @@ class ExtractArchiveService : Service() {
 
             val progressMonitor = zipFile.progressMonitor
             while (!progressMonitor.state.equals(ProgressMonitor.State.READY)) {
-                if (extractionJob?.isCancelled == true) {
-                    zipFile.close()
-                    throw ZipException(getString(R.string.operation_cancelled))
-                }
                 if (progressMonitor.state.equals(ProgressMonitor.State.BUSY)) {
                     val percentDone = (progressMonitor.percentDone)
                     startForeground(NOTIFICATION_ID, createNotification(percentDone))
@@ -288,7 +266,6 @@ class ExtractArchiveService : Service() {
         }
 
         override fun getStream(p0: Int, p1: ExtractAskMode?): ISequentialOutStream {
-            if (extractionJob?.isCancelled == true) throw SevenZipException(getString(R.string.operation_cancelled))
 
             val path: String = inArchive.getStringProperty(p0, PropID.PATH)
             val isDir: Boolean = inArchive.getProperty(p0, PropID.IS_FOLDER) as Boolean
