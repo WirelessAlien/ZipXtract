@@ -25,7 +25,7 @@ import android.view.ViewGroup
 import android.view.Window
 import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.wirelessalien.zipxtract.activity.MainActivity
+import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.adapter.FileAdapter
 import com.wirelessalien.zipxtract.adapter.FilePathAdapter
 import com.wirelessalien.zipxtract.databinding.TarOptionDialogBinding
@@ -98,7 +98,8 @@ class TarOptionsDialogFragment : DialogFragment() {
             }
             val archiveName = binding.archiveNameEditText.text.toString().ifBlank { defaultName }
 
-            (activity as MainActivity).startArchiveTarService(selectedFilePaths, archiveName)
+            val mainFragment = parentFragmentManager.findFragmentById(R.id.container) as? MainFragment
+            mainFragment?.startArchiveTarService(selectedFilePaths, archiveName)
             dismiss()
         }
     }

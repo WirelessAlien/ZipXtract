@@ -33,6 +33,7 @@ import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_PROGRESS
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACT_CANCEL
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRACTION_NOTIFICATION_CHANNEL_ID
+import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_DIR_PATH
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_ERROR_MESSAGE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_PROGRESS
 import kotlinx.coroutines.CoroutineScope
@@ -168,7 +169,7 @@ class ExtractArchiveService : Service() {
             var counter = 1
 
             while (destinationDir.exists()) {
-                newFileName = "${baseFileName}_$counter"
+                newFileName = "$baseFileName ($counter)"
                 destinationDir = File(parentDir, newFileName)
                 counter++
             }
@@ -180,7 +181,7 @@ class ExtractArchiveService : Service() {
                 try {
                     inArchive.extract(null, false, ExtractCallback(inArchive, destinationDir, password))
                     showCompletionNotification()
-                    sendLocalBroadcast(Intent(ACTION_EXTRACTION_COMPLETE))
+                    sendLocalBroadcast(Intent(ACTION_EXTRACTION_COMPLETE).putExtra(EXTRA_DIR_PATH, destinationDir.absolutePath))
                 } catch (e: SevenZipException) {
                     e.printStackTrace()
                     showErrorNotification(e.message ?: getString(R.string.general_error_msg))
@@ -239,7 +240,7 @@ class ExtractArchiveService : Service() {
             if (extractionJob?.isCancelled == true) throw ZipException(getString(R.string.operation_cancelled))
 
             showCompletionNotification()
-            sendLocalBroadcast(Intent(ACTION_EXTRACTION_COMPLETE))
+            sendLocalBroadcast(Intent(ACTION_EXTRACTION_COMPLETE).putExtra(EXTRA_DIR_PATH, destinationDir.absolutePath))
 
         } catch (e: ZipException) {
             e.printStackTrace()
@@ -276,7 +277,7 @@ class ExtractArchiveService : Service() {
                     uos?.close()
                     extractedSize++
                     val progress = ((extractedSize.toDouble() / totalSize) * 100).toInt()
-                    startForeground(NOTIFICATION_ID, createNotification(progress))
+                    startForeground(ExtractMultipart7zService.NOTIFICATION_ID, createNotification(progress))
                     updateProgress(progress)
                 } catch (e: SevenZipException) {
                     e.printStackTrace()

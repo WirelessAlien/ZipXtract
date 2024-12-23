@@ -131,4 +131,5 @@
     <string name="tar_creation_success">Tar file created successfully</string>
     <string name="extracting_progress">Extracting… %1$d %%</string>
     <string name="compressing_progress">Compressing… %1$d %%</string>
+    <string name="home">Home</string>
 </resources>

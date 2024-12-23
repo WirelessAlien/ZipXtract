@@ -30,7 +30,6 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.wirelessalien.zipxtract.activity.MainActivity
 import com.wirelessalien.zipxtract.adapter.FileAdapter
 import com.wirelessalien.zipxtract.adapter.FilePathAdapter
 import com.wirelessalien.zipxtract.databinding.ZipOptionDialogBinding
@@ -144,6 +143,8 @@ class ZipOptionDialogFragment : DialogFragment() {
         encryptionStrengthAdapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item)
         encryptionStrengthSpinner.adapter = encryptionStrengthAdapter
 
+        val mainFragment = parentFragmentManager.findFragmentById(com.wirelessalien.zipxtract.R.id.container) as? MainFragment
+
         binding.okButton.setOnClickListener {
             val defaultName = if (selectedFilePaths.isNotEmpty()) {
                 File(selectedFilePaths.first()).name
@@ -169,15 +170,15 @@ class ZipOptionDialogFragment : DialogFragment() {
             val splitSizeText = splitSizeInput.text.toString()
             val splitSizeUnit = splitSizeUnits[splitSizeUnitSpinner.selectedItemPosition]
             val splitZipSize = if (splitZipCheckbox.isChecked) {
-                (activity as MainActivity).convertToBytes(splitSizeText.toLongOrNull() ?: 64, splitSizeUnit)
+                mainFragment?.convertToBytes(splitSizeText.toLongOrNull() ?: 64, splitSizeUnit)
             } else {
                 null
             }
 
             if (splitZipCheckbox.isChecked) {
-                (activity as MainActivity).startSplitZipService(archiveName, password, selectedCompressionMethod, selectedCompressionLevel, isEncryptionEnabled, selectedEncryptionMethod, selectedEncryptionStrength, selectedFilePaths, splitZipSize)
+                mainFragment?.startSplitZipService(archiveName, password, selectedCompressionMethod, selectedCompressionLevel, isEncryptionEnabled, selectedEncryptionMethod, selectedEncryptionStrength, selectedFilePaths, splitZipSize)
             } else {
-                (activity as MainActivity).startZipService(archiveName, password, selectedCompressionMethod, selectedCompressionLevel, isEncryptionEnabled, selectedEncryptionMethod, selectedEncryptionStrength, selectedFilePaths)
+                mainFragment?.startZipService(archiveName, password, selectedCompressionMethod, selectedCompressionLevel, isEncryptionEnabled, selectedEncryptionMethod, selectedEncryptionStrength, selectedFilePaths)
             }
             dismiss()
         }

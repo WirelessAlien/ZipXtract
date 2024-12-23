@@ -14,7 +14,7 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.wirelessalien.zipxtract.R
-import com.wirelessalien.zipxtract.activity.MainActivity
+import com.wirelessalien.zipxtract.fragment.MainFragment
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -24,7 +24,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class FileAdapter(private val context: Context, private val mainActivity: MainActivity, val files: ArrayList<File>, private var filteredFiles: List<File> = emptyList()) :
+class FileAdapter(private val context: Context, private val mainFragment: MainFragment?, val files: ArrayList<File>, private var filteredFiles: List<File> = emptyList()) :
     RecyclerView.Adapter<FileAdapter.ViewHolder>() {
 
     interface OnItemClickListener {
@@ -114,10 +114,10 @@ class FileAdapter(private val context: Context, private val mainActivity: MainAc
         }
 
         override fun onClick(v: View?) {
-            if (mainActivity.actionMode != null) {
-                mainActivity.toggleSelection(adapterPosition)
-                if (mainActivity.getSelectedItemCount() == 0) {
-                    mainActivity.actionMode?.finish()
+            if (mainFragment?.actionMode != null) {
+                mainFragment.toggleSelection(adapterPosition)
+                if (mainFragment.getSelectedItemCount() == 0) {
+                    mainFragment.actionMode?.finish()
                 }
             } else {
                 onItemClickListener?.onItemClick(filteredFiles[adapterPosition])
@@ -125,7 +125,7 @@ class FileAdapter(private val context: Context, private val mainActivity: MainAc
         }
 
         override fun onLongClick(v: View?): Boolean {
-            mainActivity.startActionMode(adapterPosition)
+            mainFragment?.startActionMode(adapterPosition)
             return true
         }
     }

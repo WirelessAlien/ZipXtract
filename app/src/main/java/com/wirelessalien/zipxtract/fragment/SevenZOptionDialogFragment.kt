@@ -26,7 +26,7 @@ import android.view.ViewGroup
 import android.view.Window
 import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.wirelessalien.zipxtract.activity.MainActivity
+import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.adapter.FileAdapter
 import com.wirelessalien.zipxtract.adapter.FilePathAdapter
 import com.wirelessalien.zipxtract.databinding.SevenZOptionDialogBinding
@@ -91,6 +91,8 @@ class SevenZOptionDialogFragment : DialogFragment() {
             }
         }
 
+        val mainFragment = parentFragmentManager.findFragmentById(R.id.container) as? MainFragment
+
         binding.okButton.setOnClickListener {
             val defaultName = if (selectedFilePaths.isNotEmpty()) {
                 File(selectedFilePaths.first()).name
@@ -111,7 +113,7 @@ class SevenZOptionDialogFragment : DialogFragment() {
             val solid = binding.solidCheckBox.isChecked
             val threadCount = binding.threadCountEditText.text.toString().toIntOrNull() ?: -1
 
-            (activity as MainActivity).startSevenZService(password.ifBlank { null }, archiveName, compressionLevel, solid, threadCount, selectedFilePaths)
+            mainFragment?.startSevenZService(password.ifBlank { null }, archiveName, compressionLevel, solid, threadCount, selectedFilePaths)
             dismiss()
         }
 
@@ -134,7 +136,7 @@ class SevenZOptionDialogFragment : DialogFragment() {
             val solid = binding.solidCheckBox.isChecked
             val threadCount = binding.threadCountEditText.text.toString().toIntOrNull() ?: -1
 
-            (activity as MainActivity).startSevenZService(null, archiveName, compressionLevel, solid, threadCount, selectedFilePaths)
+            mainFragment?.startSevenZService(null, archiveName, compressionLevel, solid, threadCount, selectedFilePaths)
             dismiss()
         }
     }
