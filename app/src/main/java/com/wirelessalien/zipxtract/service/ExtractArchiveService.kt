@@ -188,6 +188,7 @@ class ExtractArchiveService : Service() {
                     sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message ?: getString(R.string.general_error_msg))
                     )
                 }
+                if (extractionJob?.isCancelled == true) throw SevenZipException(getString(R.string.operation_cancelled))
             } catch (e: SevenZipException) {
                 e.printStackTrace()
                 showErrorNotification(e.message ?: getString(R.string.general_error_msg))
@@ -229,6 +230,10 @@ class ExtractArchiveService : Service() {
 
             val progressMonitor = zipFile.progressMonitor
             while (!progressMonitor.state.equals(ProgressMonitor.State.READY)) {
+                if (extractionJob?.isCancelled == true) {
+                    zipFile.close()
+                    throw ZipException(getString(R.string.operation_cancelled))
+                }
                 if (progressMonitor.state.equals(ProgressMonitor.State.BUSY)) {
                     val percentDone = (progressMonitor.percentDone)
                     startForeground(NOTIFICATION_ID, createNotification(percentDone))
@@ -276,9 +281,6 @@ class ExtractArchiveService : Service() {
                 try {
                     uos?.close()
                     extractedSize++
-                    val progress = ((extractedSize.toDouble() / totalSize) * 100).toInt()
-                    startForeground(ExtractMultipart7zService.NOTIFICATION_ID, createNotification(progress))
-                    updateProgress(progress)
                 } catch (e: SevenZipException) {
                     e.printStackTrace()
                 }
@@ -320,8 +322,17 @@ class ExtractArchiveService : Service() {
         }
 
         override fun prepareOperation(p0: ExtractAskMode?) {}
-        override fun setCompleted(p0: Long) {}
-        override fun setTotal(p0: Long) {}
+
+        override fun setCompleted(complete: Long) {
+            val progress = ((complete.toDouble() / totalSize) * 100).toInt()
+            startForeground(NOTIFICATION_ID, createNotification(progress))
+            updateProgress(progress)
+        }
+
+        override fun setTotal(p0: Long) {
+            totalSize = p0
+        }
+
         override fun cryptoGetTextPassword(): String {
             return password ?: ""
         }

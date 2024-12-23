@@ -28,6 +28,7 @@ import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.wirelessalien.zipxtract.R
+import com.wirelessalien.zipxtract.constant.BroadcastConstants
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_COMPLETE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_ERROR
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_PROGRESS
@@ -190,7 +191,7 @@ class CompressCsArchiveService : Service() {
             inStream.close()
 
             showCompletionNotification()
-            sendLocalBroadcast(Intent(ACTION_ARCHIVE_COMPLETE))
+            sendLocalBroadcast(Intent(ACTION_ARCHIVE_COMPLETE).putExtra(BroadcastConstants.EXTRA_DIR_PATH, outputFile.parent))
 
         } catch (e: CompressorException) {
             e.printStackTrace()

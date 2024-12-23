@@ -236,9 +236,6 @@ class ExtractMultipart7zService : Service() {
                 try {
                     uos?.close()
                     extractedSize++
-                    val progress = ((extractedSize.toDouble() / totalSize) * 100).toInt()
-                    startForeground(NOTIFICATION_ID, createNotification(progress))
-                    updateProgress(progress)
                 } catch (e: IOException) {
                     e.printStackTrace()
                 }
@@ -281,8 +278,15 @@ class ExtractMultipart7zService : Service() {
         }
 
         override fun prepareOperation(p0: ExtractAskMode?) {}
-        override fun setCompleted(p0: Long) {}
-        override fun setTotal(p0: Long) {}
+        override fun setCompleted(complete: Long) {
+            val progress = ((complete.toDouble() / totalSize) * 100).toInt()
+            startForeground(ExtractArchiveService.NOTIFICATION_ID, createNotification(progress))
+            updateProgress(progress)
+        }
+
+        override fun setTotal(p0: Long) {
+            totalSize = p0
+        }
 
         override fun cryptoGetTextPassword(): String {
             return String(password ?: CharArray(0))

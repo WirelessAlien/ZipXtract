@@ -428,7 +428,11 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
             if (supportedExtensions.any { fileExtension.endsWith(it) }) {
                 startExtractionCsService(filePaths)
             } else {
-                showPasswordInputDialog(filePaths)
+                if (file.extension.lowercase() == "tar") {
+                    startExtractionService(filePaths, null)
+                } else {
+                    showPasswordInputDialog(filePaths)
+                }
             }
             bottomSheetDialog.dismiss()
         }
@@ -475,7 +479,7 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
         val dialogView = layoutInflater.inflate(R.layout.password_input_dialog, null)
         val passwordEditText = dialogView.findViewById<TextInputEditText>(R.id.passwordInput)
 
-        MaterialAlertDialogBuilder(requireContext())
+        MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
             .setTitle(getString(R.string.enter_password))
             .setView(dialogView)
             .setPositiveButton(getString(R.string.ok)) { _, _ ->

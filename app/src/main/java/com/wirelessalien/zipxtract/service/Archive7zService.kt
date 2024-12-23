@@ -25,6 +25,7 @@ import android.app.Service
 import android.content.Intent
 import android.os.Build
 import android.os.IBinder
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.wirelessalien.zipxtract.R
@@ -84,6 +85,7 @@ class Archive7zService : Service() {
 
         if (intent.action == ACTION_ARCHIVE_7Z_CANCEL) {
             archiveJob?.cancel()
+            Log.d("dfffffffffff", "ffffffff")
             stopForegroundService()
             stopSelf()
             return START_NOT_STICKY
@@ -106,7 +108,7 @@ class Archive7zService : Service() {
         val cancelIntent = Intent(this, Archive7zService::class.java).apply {
             action = ACTION_ARCHIVE_7Z_CANCEL
         }
-        return PendingIntent.getService(this, 0, cancelIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+        return PendingIntent.getService(this, 0, cancelIntent, PendingIntent.FLAG_UPDATE_CURRENT)
     }
 
     private fun createNotificationChannel() {
@@ -211,7 +213,7 @@ class Archive7zService : Service() {
 
                 outArchive.close()
                 stopForegroundService()
-                sendLocalBroadcast(Intent(ACTION_ARCHIVE_COMPLETE))
+                sendLocalBroadcast(Intent(ACTION_ARCHIVE_COMPLETE).putExtra(BroadcastConstants.EXTRA_DIR_PATH, sevenZFile.parent))
             }
         } catch (e: SevenZipException) {
             e.printStackTrace()

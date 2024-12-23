@@ -96,7 +96,7 @@ class ArchiveTarService : Service() {
         val cancelIntent = Intent(this, ArchiveTarService::class.java).apply {
             action = ACTION_ARCHIVE_TAR_CANCEL
         }
-        return PendingIntent.getService(this, 0, cancelIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+        return PendingIntent.getService(this, 0, cancelIntent, PendingIntent.FLAG_UPDATE_CURRENT)
     }
 
     private fun createNotificationChannel() {
@@ -156,8 +156,9 @@ class ArchiveTarService : Service() {
                         override fun setTotal(total: Long) {}
 
                         override fun setCompleted(complete: Long) {
-                            val progress = ((complete.toDouble() / filesToArchive.size) * 100).toInt()
-                            startForeground(NOTIFICATION_ID, createNotification(progress))
+                            val totalSize = filesToArchive.sumOf { File(it).length() }
+                            val progress = ((complete.toDouble() / totalSize) * 100).toInt()
+                            startForeground(Archive7zService.NOTIFICATION_ID, createNotification(progress))
                             updateProgress(progress)
                         }
 
@@ -183,7 +184,7 @@ class ArchiveTarService : Service() {
                 outArchive.close()
                 stopForegroundService()
                 showCompletionNotification()
-                sendLocalBroadcast(Intent(ACTION_ARCHIVE_COMPLETE))
+                sendLocalBroadcast(Intent(ACTION_ARCHIVE_COMPLETE).putExtra(BroadcastConstants.EXTRA_DIR_PATH, tarFile.parent))
             }
         } catch (e: SevenZipException) {
             e.printStackTrace()

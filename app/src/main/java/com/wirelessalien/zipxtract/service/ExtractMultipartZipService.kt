@@ -171,8 +171,8 @@ class ExtractMultipartZipService : Service() {
             extractDir.mkdirs()
 
             val fileHeaders = zipFile.fileHeaders
-            val totalEntries = fileHeaders.size
-            var extractedEntries = 0
+            val totalSize = fileHeaders.sumOf { it.uncompressedSize }
+            var extractedSize = 0L
             val progressMonitor = zipFile.progressMonitor
 
             fileHeaders.forEach { header ->
@@ -186,8 +186,9 @@ class ExtractMultipartZipService : Service() {
 
                 zipFile.extractFile(header, extractDir.absolutePath)
 
-                extractedEntries++
-                updateProgress((extractedEntries * 100 / totalEntries))
+                extractedSize += header.uncompressedSize
+                val progress = ((extractedSize.toDouble() / totalSize) * 100).toInt()
+                updateProgress(progress)
             }
 
             showCompletionNotification()
