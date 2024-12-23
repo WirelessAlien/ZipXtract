@@ -21,29 +21,45 @@ import android.app.Dialog
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.view.Window
 import androidx.fragment.app.DialogFragment
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.wirelessalien.zipxtract.databinding.FragmentAboutBinding
 
 
 class AboutFragment : DialogFragment() {
+    private lateinit var binding: FragmentAboutBinding
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        binding = FragmentAboutBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val binding = FragmentAboutBinding.inflate(layoutInflater)
-        val dialogView = binding.root
+        val dialog = super.onCreateDialog(savedInstanceState)
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+        return dialog
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         binding.versionNumberText.text = BuildConfig.VERSION_NAME
 
-        binding.githubIcon.setOnClickListener {
+        binding.sourceCode.setOnClickListener {
             openUrl("https://github.com/WirelessAlien/ZipXtract")
         }
 
-        binding.githubIssueButton.setOnClickListener {
+        binding.reportIssue.setOnClickListener {
             openUrl("https://github.com/WirelessAlien/ZipXtract/issues")
         }
 
         binding.licenseText.setOnClickListener {
-            openUrl("https://www.apache.org/licenses/LICENSE-2.0.txt")
+            openUrl("https://www.gnu.org/licenses/gpl-3.0.txt")
         }
 
         binding.donate.setOnClickListener {
@@ -61,9 +77,9 @@ class AboutFragment : DialogFragment() {
             startActivity(Intent.createChooser(shareIntent, getString(R.string.share)))
         }
 
-        return MaterialAlertDialogBuilder(requireContext())
-            .setView(dialogView)
-            .create()
+        binding.privacyPolicyLink.setOnClickListener {
+            openUrl("https://sites.google.com/view/privacy-policy-zipxtract/home")
+        }
     }
 
     private fun openUrl(url: String) {

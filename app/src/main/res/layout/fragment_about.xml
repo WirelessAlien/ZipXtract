@@ -20,84 +20,91 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="15dp"
+    android:background="@color/md_theme_surface"
+    android:padding="16dp"
     android:gravity="center">
 
     <ImageView
         android:id="@+id/appIcon"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:contentDescription="@string/app_name"
-        android:src="@mipmap/ic_launcher_foreground" />
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_gravity="center"
+        android:src="@drawable/app_icon_m" />
 
-    <RelativeLayout
+    <TextView
+        android:id="@+id/app_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="@string/app_name"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:paddingTop="8dp" />
+
+    <TextView
+        android:id="@+id/versionNumberText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="Version 1.0"
+        android:paddingTop="4dp" />
+
+    <TextView
+        android:id="@+id/source_code"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/source_code"
+        android:textColor="?attr/colorPrimary"
+        android:paddingTop="16dp" />
+
+    <TextView
+        android:id="@+id/licenseText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/license"
+        android:textColor="?attr/colorPrimary"
+        android:paddingTop="8dp" />
+
+    <TextView
+        android:id="@+id/app_author"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/author_wirelessalien"
+        android:paddingTop="8dp" />
+
+    <TextView
+        android:id="@+id/report_issue"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/report_an_issue"
+        android:textColor="?attr/colorPrimary"
+        android:paddingTop="8dp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/donate"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_horizontal">
+        android:text="@string/donate"
+        app:cornerRadius="5dp"
+        style="@style/Widget.Material3.Button.TonalButton"
+        android:layout_marginTop="20dp" />
 
-        <TextView
-            android:id="@+id/version"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/version"
-            android:textSize="18sp"
-            android:gravity="center"/>
-        <TextView
-            android:id="@+id/versionNumberText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_toEndOf="@id/version"
-            android:layout_marginStart="2dp"
-            android:text="Version 3.0"
-            android:textSize="18sp"
-            android:gravity="center"/>
-    </RelativeLayout>
-    <RelativeLayout
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/shareIcon"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_horizontal">
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/githubIcon"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            style="?attr/materialIconButtonStyle"
-            app:icon="@drawable/ic_github"
-            android:layout_alignParentStart="true"
-            android:contentDescription="@string/github_icon" />
+        android:text="@string/share"
+        app:cornerRadius="5dp"
+        style="@style/Widget.Material3.Button.TonalButton"
+        android:layout_marginTop="20dp" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/githubIssueButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:icon="@drawable/ic_bug_report"
-            android:layout_toEndOf="@id/githubIcon"
-            style="?attr/materialIconButtonStyle" />
+    <TextView
+        android:id="@+id/privacyPolicyLink"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/privacy_policy"
+        android:textColor="?attr/colorPrimary"
+        android:paddingTop="16dp" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/licenseText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            style="?attr/materialIconButtonStyle"
-            android:layout_toEndOf="@id/githubIssueButton"
-            app:icon="@drawable/ic_copyright"
-            android:textSize="16sp" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/donate"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            style="?attr/materialIconButtonStyle"
-            android:layout_toEndOf="@id/licenseText"
-            app:icon="@drawable/ic_currency"
-            android:textSize="16sp" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/shareIcon"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            style="?attr/materialIconButtonStyle"
-            app:icon="@drawable/ic_share"
-            android:layout_toEndOf="@id/donate"
-            android:contentDescription="@string/share_icon" />
-    </RelativeLayout>
 </LinearLayout>

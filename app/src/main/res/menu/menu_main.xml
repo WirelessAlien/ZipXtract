@@ -40,5 +40,11 @@
                 android:title="@string/descending" />
         </menu>
     </item>
+
+    <item
+        android:id="@+id/menu_about"
+        android:icon="@drawable/ic_info"
+        android:title="@string/about"
+        app:showAsAction="ifRoom" />
 </menu>
 

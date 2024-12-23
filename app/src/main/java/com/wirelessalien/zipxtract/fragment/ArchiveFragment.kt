@@ -45,6 +45,7 @@ import androidx.core.content.FileProvider
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.Lifecycle
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -53,6 +54,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
+import com.wirelessalien.zipxtract.AboutFragment
 import com.wirelessalien.zipxtract.BuildConfig
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.adapter.FileAdapter
@@ -82,6 +84,7 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
         SORT_BY_NAME, SORT_BY_SIZE, SORT_BY_MODIFIED, SORT_BY_EXTENSION
     }
     private var isSearchActive: Boolean = false
+    private var isLargeLayout: Boolean = false
 
     private var sortBy: SortBy = SortBy.SORT_BY_NAME
     private var sortAscending: Boolean = true
@@ -146,6 +149,7 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
         sharedPreferences = requireActivity().getPreferences(Context.MODE_PRIVATE)
         sortBy = SortBy.valueOf(sharedPreferences.getString("sortBy", SortBy.SORT_BY_NAME.name) ?: SortBy.SORT_BY_NAME.name)
         sortAscending = sharedPreferences.getBoolean("sortAscending", true)
+        isLargeLayout = resources.getBoolean(R.bool.large_layout)
 
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
         adapter = FileAdapter(requireContext(), null, ArrayList())
@@ -206,6 +210,21 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
                     R.id.menu_sort_descending -> {
                         sortAscending = false
                         editor.putBoolean("sortAscending", sortAscending)
+                    }
+                    R.id.menu_about -> {
+                        val fragmentManager = parentFragmentManager
+                        val newFragment = AboutFragment()
+                        if (isLargeLayout) {
+                            // Show the fragment as a dialog.
+                            newFragment.show(fragmentManager, "AboutFragment")
+                        } else {
+                            // Show the fragment fullscreen.
+                            val transaction = fragmentManager.beginTransaction()
+                            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+                            transaction.add(android.R.id.content, newFragment)
+                                .addToBackStack(null)
+                                .commit()
+                        }
                     }
                 }
                 editor.apply()

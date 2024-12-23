@@ -65,6 +65,7 @@ import com.google.android.material.chip.Chip
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.google.android.material.textfield.TextInputEditText
+import com.wirelessalien.zipxtract.AboutFragment
 import com.wirelessalien.zipxtract.BuildConfig
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.adapter.FileAdapter
@@ -267,6 +268,21 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                     R.id.menu_sort_descending -> {
                         sortAscending = false
                         editor.putBoolean("sortAscending", sortAscending)
+                    }
+                    R.id.menu_about -> {
+                        val fragmentManager = parentFragmentManager
+                        val newFragment = AboutFragment()
+                        if (isLargeLayout) {
+                            // Show the fragment as a dialog.
+                            newFragment.show(fragmentManager, "AboutFragment")
+                        } else {
+                            // Show the fragment fullscreen.
+                            val transaction = fragmentManager.beginTransaction()
+                            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+                            transaction.add(android.R.id.content, newFragment)
+                                .addToBackStack(null)
+                                .commit()
+                        }
                     }
                 }
                 editor.apply()

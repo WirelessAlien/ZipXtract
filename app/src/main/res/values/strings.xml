@@ -132,4 +132,10 @@
     <string name="extracting_progress">Extracting… %1$d %%</string>
     <string name="compressing_progress">Compressing… %1$d %%</string>
     <string name="home">Home</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="source_code">Source Code</string>
+    <string name="license">License</string>
+    <string name="author_wirelessalien">Author: WirelessAlien</string>
+    <string name="report_an_issue">Report an Issue</string>
+    <string name="about">About</string>
 </resources>

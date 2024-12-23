@@ -18,15 +18,10 @@
 package com.wirelessalien.zipxtract
 
 import android.app.Dialog
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.widget.Toast
 import androidx.fragment.app.DialogFragment
-import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.wirelessalien.zipxtract.databinding.FragmentDonationBinding
 
@@ -48,7 +43,7 @@ class DonationFragment : DialogFragment() {
             startActivity(intent)
         }
 
-        return MaterialAlertDialogBuilder(requireContext())
+        return MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
             .setView(dView)
             .create()
     }

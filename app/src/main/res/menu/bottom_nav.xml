@@ -20,11 +20,11 @@
 
     <item
         android:id="@+id/home"
-        android:icon="@drawable/ic_extract_z"
+        android:icon="@drawable/ic_home"
         android:title="@string/home" />
 
     <item
         android:id="@+id/archive"
-        android:icon="@drawable/ic_create_z"
+        android:icon="@drawable/ic_archive"
         android:title="@string/archive" />
 </menu>

@@ -17,39 +17,37 @@
   ~     along with this program.  If not, see <https://www.gnu.org/licenses/>.
   -->
 
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/parentLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="10dp">
-    <LinearLayout
+    android:padding="16dp">
+
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="5dp">
+        android:textSize="18sp"
+        android:text="@string/donate"/>
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textSize="25sp"
-            android:text="@string/donate"/>
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/libPayBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:icon="@drawable/ic_liberapay"
+        android:layout_marginTop="10dp"
+        style="@style/Widget.Material3.Button.TonalButton"
+        app:cornerRadius="5dp"
+        android:text="@string/liberapay" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/libPayBtn"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:icon="@drawable/ic_liberapay"
-            app:cornerRadius="10dp"
-            android:text="@string/liberapay" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/githubSBtn"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:icon="@drawable/ic_github"
-            app:cornerRadius="10dp"
-            android:text="Github Sponsor" />
-    </LinearLayout>
-</RelativeLayout>
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/githubSBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:icon="@drawable/ic_github"
+        android:layout_marginTop="10dp"
+        style="@style/Widget.Material3.Button.TonalButton"
+        app:cornerRadius="5dp"
+        android:text="Github Sponsor" />
+</LinearLayout>
