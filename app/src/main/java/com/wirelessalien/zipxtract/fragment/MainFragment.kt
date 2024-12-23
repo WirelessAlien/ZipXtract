@@ -20,7 +20,6 @@ package com.wirelessalien.zipxtract.fragment
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.app.ActivityManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -59,6 +58,7 @@ import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.Lifecycle
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.transition.TransitionInflater
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.chip.Chip
@@ -68,22 +68,13 @@ import com.google.android.material.textfield.TextInputEditText
 import com.wirelessalien.zipxtract.BuildConfig
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.adapter.FileAdapter
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_7Z_CANCEL
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_COMPLETE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_ERROR
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_PROGRESS
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_SPLIT_ZIP_CANCEL
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_TAR_CANCEL
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_ZIP_CANCEL
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_COMPRESS_CANCEL
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_COMPLETE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_ERROR
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_PROGRESS
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACT_CANCEL
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACT_CS_CANCEL
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_MULTI_7Z_EXTRACTION_CANCEL
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_MULTI_ZIP_EXTRACTION_CANCEL
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_RAR_EXTRACTION_CANCEL
+import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_DIR_PATH
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_ERROR_MESSAGE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_PROGRESS
 import com.wirelessalien.zipxtract.databinding.FragmentMainBinding
@@ -136,7 +127,8 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     private var searchRunnable: Runnable? = null
     private lateinit var eProgressDialog: AlertDialog
     private lateinit var aProgressDialog: AlertDialog
-    private lateinit var progressText: TextView
+    private lateinit var aProgressText: TextView
+    private lateinit var eProgressText: TextView
     private var areFabsVisible: Boolean = false
     private lateinit var eProgressBar: LinearProgressIndicator
     private lateinit var aProgressBar: LinearProgressIndicator
@@ -147,6 +139,8 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         override fun onReceive(context: Context?, intent: Intent?) {
             when (intent?.action) {
                 ACTION_EXTRACTION_COMPLETE -> {
+                    val dirPath = intent.getStringExtra(EXTRA_DIR_PATH)
+
                     unselectAllFiles()
                     eProgressDialog.dismiss()
                     Toast.makeText(requireContext(), getString(R.string.extraction_success), Toast.LENGTH_SHORT).show()
@@ -161,9 +155,11 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                     val progress = intent.getIntExtra(EXTRA_PROGRESS, 0)
                     updateProgressBar(progress)
                     eProgressBar.progress = progress
-                    progressText.text = getString(R.string.extracting_progress, progress)
+                    eProgressText.text = getString(R.string.extracting_progress, progress)
                 }
                 ACTION_ARCHIVE_COMPLETE -> {
+                    val dirPath = intent.getStringExtra(EXTRA_DIR_PATH)
+
                     unselectAllFiles()
                     aProgressDialog.dismiss()
                     Toast.makeText(requireContext(), getString(R.string.compression_success), Toast.LENGTH_SHORT).show()
@@ -178,7 +174,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                     val progress = intent.getIntExtra(EXTRA_PROGRESS, 0)
                     updateProgressBar(progress)
                     aProgressBar.progress = progress
-                    progressText.text = getString(R.string.compressing_progress, progress)
+                    aProgressText.text = getString(R.string.compressing_progress, progress)
                 }
             }
         }
@@ -192,6 +188,13 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         }
         selectedFiles.clear()
         updateActionModeTitle()
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val inflater = TransitionInflater.from(requireContext())
+        enterTransition = inflater.inflateTransition(R.transition.fade_through)
+        exitTransition = inflater.inflateTransition(R.transition.fade_through)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -432,69 +435,11 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         actionMode?.finish()
     }
 
-    @Suppress("DEPRECATION")
     private fun archiveProgressDialog() {
         val aDialogView = layoutInflater.inflate(R.layout.progress_dialog_archive, null)
         aProgressBar = aDialogView.findViewById(R.id.progressBar)
-        progressText = aDialogView.findViewById(R.id.progressText)
-        val cancelButton = aDialogView.findViewById<Button>(R.id.cancelButton)
+        aProgressText = aDialogView.findViewById(R.id.progressText)
         val backgroundButton = aDialogView.findViewById<Button>(R.id.backgroundButton)
-
-        cancelButton.setOnClickListener {
-            val activityManager = requireContext().getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-
-            val isArchive7zServiceRunning = activityManager.getRunningServices(Integer.MAX_VALUE)
-                .any { it.service.className == Archive7zService::class.java.name }
-
-            if (isArchive7zServiceRunning) {
-                val cancelExtractIntent = Intent(requireContext(), Archive7zService::class.java).apply {
-                    action = ACTION_ARCHIVE_7Z_CANCEL
-                }
-                requireContext().startService(cancelExtractIntent)
-            }
-
-            val isArchiveZipServiceRunning = activityManager.getRunningServices(Integer.MAX_VALUE)
-                .any { it.service.className == ArchiveZipService::class.java.name }
-
-            if (isArchiveZipServiceRunning) {
-                val cancelZipIntent = Intent(requireContext(), ArchiveZipService::class.java).apply {
-                    action = ACTION_ARCHIVE_ZIP_CANCEL
-                }
-                requireContext().startService(cancelZipIntent)
-            }
-
-            val isArchiveSplitZipServiceRunning = activityManager.getRunningServices(Integer.MAX_VALUE)
-                .any { it.service.className == ArchiveSplitZipService::class.java.name }
-
-            if (isArchiveSplitZipServiceRunning) {
-                val cancelZipIntent = Intent(requireContext(), ArchiveSplitZipService::class.java).apply {
-                    action = ACTION_ARCHIVE_SPLIT_ZIP_CANCEL
-                }
-                requireContext().startService(cancelZipIntent)
-            }
-
-            val isArchiveCompressServiceRunning = activityManager.getRunningServices(Integer.MAX_VALUE)
-                .any { it.service.className == CompressCsArchiveService::class.java.name }
-
-            if (isArchiveCompressServiceRunning) {
-                val cancelZipIntent = Intent(requireContext(), CompressCsArchiveService::class.java).apply {
-                    action = ACTION_COMPRESS_CANCEL
-                }
-                requireContext().startService(cancelZipIntent)
-            }
-
-            val isArchiveTarServiceRunning = activityManager.getRunningServices(Integer.MAX_VALUE)
-                .any { it.service.className == ArchiveTarService::class.java.name }
-
-            if (isArchiveTarServiceRunning) {
-                val cancelZipIntent = Intent(requireContext(), ArchiveTarService::class.java).apply {
-                    action = ACTION_ARCHIVE_TAR_CANCEL
-                }
-                requireContext().startService(cancelZipIntent)
-            }
-
-            aProgressDialog.dismiss()
-        }
 
         backgroundButton.setOnClickListener {
             aProgressDialog.dismiss()
@@ -510,65 +455,8 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     private fun extractProgressDialog() {
         val ePDialogView = layoutInflater.inflate(R.layout.progress_dialog_extract, null)
         eProgressBar = ePDialogView.findViewById(R.id.progressBar)
-        progressText = ePDialogView.findViewById(R.id.progressText)
-        val cancelButton = ePDialogView.findViewById<Button>(R.id.cancelButton)
+        eProgressText = ePDialogView.findViewById(R.id.progressText)
         val backgroundButton = ePDialogView.findViewById<Button>(R.id.backgroundButton)
-
-        cancelButton.setOnClickListener {
-            val activityManager = requireContext().getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-
-            val isExtractArchiveServiceRunning = activityManager.getRunningServices(Integer.MAX_VALUE)
-                .any { it.service.className == ExtractArchiveService::class.java.name }
-
-            if (isExtractArchiveServiceRunning) {
-                val cancelExtractIntent = Intent(requireContext(), ExtractArchiveService::class.java).apply {
-                    action = ACTION_EXTRACT_CANCEL
-                }
-                requireContext().startService(cancelExtractIntent)
-            }
-
-            val isExtractRarServiceRunning = activityManager.getRunningServices(Integer.MAX_VALUE)
-                .any { it.service.className == ExtractRarService::class.java.name }
-
-            if (isExtractRarServiceRunning) {
-                val cancelRarIntent = Intent(requireContext(), ExtractRarService::class.java).apply {
-                    action = ACTION_RAR_EXTRACTION_CANCEL
-                }
-                requireContext().startService(cancelRarIntent)
-            }
-
-            val isExtractMultipart7zServiceRunning = activityManager.getRunningServices(Integer.MAX_VALUE)
-                .any { it.service.className == ExtractMultipart7zService::class.java.name }
-
-            if (isExtractMultipart7zServiceRunning) {
-                val cancelRarIntent = Intent(requireContext(), ExtractMultipart7zService::class.java).apply {
-                    action = ACTION_MULTI_7Z_EXTRACTION_CANCEL
-                }
-                requireContext().startService(cancelRarIntent)
-            }
-
-            val isExtractMultipartZipServiceRunning = activityManager.getRunningServices(Integer.MAX_VALUE)
-                .any { it.service.className == ExtractMultipartZipService::class.java.name }
-
-            if (isExtractMultipartZipServiceRunning) {
-                val cancelRarIntent = Intent(requireContext(), ExtractMultipartZipService::class.java).apply {
-                    action = ACTION_MULTI_ZIP_EXTRACTION_CANCEL
-                }
-                requireContext().startService(cancelRarIntent)
-            }
-
-            val isExtractCsArchiveServiceRunning = activityManager.getRunningServices(Integer.MAX_VALUE)
-                .any { it.service.className == ExtractCsArchiveService::class.java.name }
-
-            if (isExtractCsArchiveServiceRunning) {
-                val cancelRarIntent = Intent(requireContext(), ExtractCsArchiveService::class.java).apply {
-                    action = ACTION_EXTRACT_CS_CANCEL
-                }
-                requireContext().startService(cancelRarIntent)
-            }
-
-            eProgressDialog.dismiss()
-        }
 
         backgroundButton.setOnClickListener {
             eProgressDialog.dismiss()
@@ -1013,7 +901,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         val dialogView = layoutInflater.inflate(R.layout.password_input_dialog, null)
         val passwordEditText = dialogView.findViewById<TextInputEditText>(R.id.passwordInput)
 
-        MaterialAlertDialogBuilder(requireContext())
+        MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
             .setTitle(getString(R.string.enter_password))
             .setView(dialogView)
             .setPositiveButton(getString(R.string.ok)) { _, _ ->

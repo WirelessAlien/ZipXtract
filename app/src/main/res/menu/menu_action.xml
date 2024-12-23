@@ -4,17 +4,17 @@
     <item
         android:id="@+id/m_archive_zip"
         android:title="@string/create_zip"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="never" />
 
     <item
         android:id="@+id/m_archive_7z"
         android:title="@string/compress_sevenz"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="never" />
 
     <item
         android:id="@+id/m_archive_tar"
         android:title="@string/compress_tar"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="never" />
 
     <item
         android:id="@+id/menu_action_select_all"

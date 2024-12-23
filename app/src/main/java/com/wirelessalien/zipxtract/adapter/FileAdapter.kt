@@ -220,11 +220,19 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
     }
 
     private fun getFileTimeOfCreation(file: File): Long {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val attr = Files.readAttributes(file.toPath(), BasicFileAttributes::class.java)
-            attr.lastModifiedTime().toMillis()
-        } else {
-            file.lastModified()
+        return try {
+            if (file.exists()) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    val attr = Files.readAttributes(file.toPath(), BasicFileAttributes::class.java)
+                    attr.lastModifiedTime().toMillis()
+                } else {
+                    file.lastModified()
+                }
+            } else {
+                System.currentTimeMillis()
+            }
+        } catch (e: NoSuchFileException) {
+            System.currentTimeMillis()
         }
     }
 
