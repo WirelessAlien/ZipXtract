@@ -24,6 +24,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.SharedPreferences
+import android.icu.text.DateFormat
+import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.os.Handler
@@ -50,6 +52,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.google.android.material.snackbar.Snackbar
@@ -70,7 +73,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Locale
 
 class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
 
@@ -370,13 +375,15 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
         val bottomSheetDialog = BottomSheetDialog(requireContext())
         bottomSheetDialog.setContentView(bottomSheetView)
 
-        val btnExtract = bottomSheetView.findViewById<Button>(R.id.btnExtract)
-        val btnMultiExtract = bottomSheetView.findViewById<Button>(R.id.btnMultiExtract)
-        val btnMulti7zExtract = bottomSheetView.findViewById<Button>(R.id.btnMulti7zExtract)
-        val btnFileInfo = bottomSheetView.findViewById<Button>(R.id.btnFileInfo)
-        val btnMultiZipExtract = bottomSheetView.findViewById<Button>(R.id.btnMultiZipExtract)
-        val btnOpenWith = bottomSheetView.findViewById<Button>(R.id.btnOpenWith)
+        val btnExtract = bottomSheetView.findViewById<MaterialButton>(R.id.btnExtract)
+        val btnMultiExtract = bottomSheetView.findViewById<MaterialButton>(R.id.btnMultiExtract)
+        val btnMulti7zExtract = bottomSheetView.findViewById<MaterialButton>(R.id.btnMulti7zExtract)
+        val btnFileInfo = bottomSheetView.findViewById<MaterialButton>(R.id.btnFileInfo)
+        val btnMultiZipExtract = bottomSheetView.findViewById<MaterialButton>(R.id.btnMultiZipExtract)
+        val btnOpenWith = bottomSheetView.findViewById<MaterialButton>(R.id.btnOpenWith)
         val fileNameTv = bottomSheetView.findViewById<TextView>(R.id.fileName)
+        val btnDelete = bottomSheetView.findViewById<MaterialButton>(R.id.btnDelete)
+
 
         val filePath = file.absolutePath
         fileNameTv.text = file.name
@@ -425,6 +432,25 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
             }
             startActivity(Intent.createChooser(intent, getString(R.string.open_with)))
             bottomSheetDialog.dismiss()
+        }
+
+        btnDelete.setOnClickListener {
+            MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
+                .setTitle(getString(R.string.confirm_delete))
+                .setMessage(getString(R.string.confirm_delete_message))
+                .setPositiveButton(getString(R.string.delete)) { _, _ ->
+                    if (file.delete()) {
+                        Toast.makeText(requireContext(), getString(R.string.file_deleted), Toast.LENGTH_SHORT).show()
+                        updateAdapterWithFullList()
+                    } else {
+                        Toast.makeText(requireContext(), getString(R.string.general_error_msg), Toast.LENGTH_SHORT).show()
+                    }
+                    bottomSheetDialog.dismiss()
+                }
+                .setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
+                    dialog.dismiss()
+                }
+                .show()
         }
 
         bottomSheetDialog.show()
@@ -548,24 +574,45 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
     }
 
     private fun showFileInfo(file: File) {
-        val fileName = file.name
-        val filePath = file.absolutePath
-        val fileSize = file.length()
-        val lastModified = Date(file.lastModified())
+        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_file_info, null)
 
-        val fileInfo = """
-            Name: $fileName
-            Path: $filePath
-            Size: ${fileSize / 1024} KB
-            Last Modified: $lastModified
-        """.trimIndent()
+        val fileNameTextView = dialogView.findViewById<TextView>(R.id.file_name)
+        val filePathTextView = dialogView.findViewById<TextView>(R.id.file_path)
+        val fileSizeTextView = dialogView.findViewById<TextView>(R.id.file_size)
+        val lastModifiedTextView = dialogView.findViewById<TextView>(R.id.last_modified)
+        val okButton = dialogView.findViewById<Button>(R.id.ok_button)
 
-        MaterialAlertDialogBuilder(requireContext())
-            .setTitle("File Information")
-            .setMessage(fileInfo)
-            .setPositiveButton("OK") { dialog, _ ->
-                dialog.dismiss()
-            }
-            .show()
+        fileNameTextView.text = getString(R.string.file_name, file.name)
+        filePathTextView.text = getString(R.string.file_path, file.absolutePath)
+        val fileSizeText = bytesToString(file.length())
+        fileSizeTextView.text = getString(R.string.file_size, fileSizeText)
+        val dateFormat = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT, Locale.getDefault())
+        } else {
+            SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
+        }
+        lastModifiedTextView.text = getString(R.string.last_modified, dateFormat.format(Date(file.lastModified())))
+        val dialog = MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
+            .setView(dialogView)
+            .create()
+
+        okButton.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
+
+    private fun bytesToString(bytes: Long): String {
+        val kilobyte = 1024
+        val megabyte = kilobyte * 1024
+        val gigabyte = megabyte * 1024
+
+        return when {
+            bytes < kilobyte -> "$bytes B"
+            bytes < megabyte -> String.format("%.2f KB", bytes.toFloat() / kilobyte)
+            bytes < gigabyte -> String.format("%.2f MB", bytes.toFloat() / megabyte)
+            else -> String.format("%.2f GB", bytes.toFloat() / gigabyte)
+        }
     }
 }

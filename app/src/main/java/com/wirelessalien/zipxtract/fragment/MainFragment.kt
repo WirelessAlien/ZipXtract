@@ -26,6 +26,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.icu.text.DateFormat
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -64,6 +65,7 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.chip.Chip
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.progressindicator.LinearProgressIndicator
+import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
 import com.wirelessalien.zipxtract.AboutFragment
 import com.wirelessalien.zipxtract.BuildConfig
@@ -104,7 +106,9 @@ import org.apache.commons.compress.compressors.CompressorStreamFactory
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.attribute.BasicFileAttributes
+import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Locale
 
 class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.OnFileLongClickListener {
 
@@ -141,10 +145,17 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             when (intent?.action) {
                 ACTION_EXTRACTION_COMPLETE -> {
                     val dirPath = intent.getStringExtra(EXTRA_DIR_PATH)
-
+                    if (dirPath != null) {
+                        Snackbar.make(binding.root, getString(R.string.extraction_success), Snackbar.LENGTH_LONG)
+                            .setAction(getString(R.string.open_folder)) {
+                                navigateToParentDir(File(dirPath))
+                            }
+                            .show()
+                    } else {
+                        Toast.makeText(requireContext(), getString(R.string.extraction_success), Toast.LENGTH_SHORT).show()
+                    }
                     unselectAllFiles()
                     eProgressDialog.dismiss()
-                    Toast.makeText(requireContext(), getString(R.string.extraction_success), Toast.LENGTH_SHORT).show()
                 }
                 ACTION_EXTRACTION_ERROR -> {
                     unselectAllFiles()
@@ -160,10 +171,17 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 }
                 ACTION_ARCHIVE_COMPLETE -> {
                     val dirPath = intent.getStringExtra(EXTRA_DIR_PATH)
-
+                    if (dirPath != null) {
+                        Snackbar.make(binding.root, getString(R.string.extraction_success), Snackbar.LENGTH_LONG)
+                            .setAction(getString(R.string.open_folder)) {
+                                navigateToParentDir(File(dirPath))
+                            }
+                            .show()
+                    } else {
+                        Toast.makeText(requireContext(), getString(R.string.extraction_success), Toast.LENGTH_SHORT).show()
+                    }
                     unselectAllFiles()
                     aProgressDialog.dismiss()
-                    Toast.makeText(requireContext(), getString(R.string.compression_success), Toast.LENGTH_SHORT).show()
                 }
                 ACTION_ARCHIVE_ERROR -> {
                     unselectAllFiles()
@@ -179,6 +197,18 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 }
             }
         }
+    }
+
+    private fun navigateToParentDir(parentDir: File) {
+        val fragment = MainFragment().apply {
+            arguments = Bundle().apply {
+                putString("path", parentDir.absolutePath)
+            }
+        }
+        parentFragmentManager.beginTransaction()
+            .replace(R.id.container, fragment)
+            .addToBackStack(null)
+            .commit()
     }
 
     private fun unselectAllFiles() {
@@ -213,6 +243,11 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         isLargeLayout = resources.getBoolean(R.bool.large_layout)
 
         (activity as AppCompatActivity).setSupportActionBar(binding.toolbar)
+
+        adapter = FileAdapter(requireContext(), this, ArrayList())
+        adapter.setOnItemClickListener(this)
+        adapter.setOnFileLongClickListener(this)
+        binding.recyclerView.adapter = adapter
 
         val menuHost: MenuHost = requireActivity()
         menuHost.addMenuProvider(object : MenuProvider {
@@ -295,7 +330,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         searchHandler = Handler(Looper.getMainLooper())
 
         if (!checkStoragePermissions()) {
-            requestForStoragePermissions()
+            showPermissionRequestLayout()
         } else {
             initRecyclerView()
         }
@@ -323,7 +358,6 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             }
         }
 
-        // Set click listeners for extended FABs
         binding.createZipFab.setOnClickListener {
             showZipOptionsDialog()
             hideExtendedFabs()
@@ -341,6 +375,25 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
         updateCurrentPathChip()
 
+    }
+
+    @SuppressLint("InflateParams")
+    private fun showPermissionRequestLayout() {
+        val permissionView = layoutInflater.inflate(R.layout.layout_permission_request, null)
+        binding.root.removeAllViews()
+        binding.root.addView(permissionView)
+
+        val btnGrantAccess = permissionView.findViewById<Button>(R.id.btn_grant_access)
+        val tvPrivacyPolicy = permissionView.findViewById<TextView>(R.id.tv_privacy_policy)
+
+        btnGrantAccess.setOnClickListener {
+            requestForStoragePermissions()
+        }
+
+        tvPrivacyPolicy.setOnClickListener {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://sites.google.com/view/privacy-policy-zipxtract/home"))
+            startActivity(intent)
+        }
     }
 
     private fun updateCurrentPathChip() {
@@ -467,7 +520,6 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             .create()
     }
 
-    @Suppress("DEPRECATION")
     private fun extractProgressDialog() {
         val ePDialogView = layoutInflater.inflate(R.layout.progress_dialog_extract, null)
         eProgressBar = ePDialogView.findViewById(R.id.progressBar)
@@ -514,7 +566,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
             } else {
                 if (file.extension.equals("tar", ignoreCase = true)) {
-                    showCompressorArchiveDialog(filePath)
+                    showCompressorArchiveDialog(filePath, file)
                 } else {
                     showBottomSheetOptions(filePath, file)
                 }
@@ -711,32 +763,26 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             val directoryToObserve = File(currentPath ?: Environment.getExternalStorageDirectory().absolutePath)
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                fileObserver = object : FileObserver(directoryToObserve, CREATE or DELETE or MOVE_SELF) {
+                fileObserver = object : FileObserver(directoryToObserve, CREATE or DELETE or MOVE_SELF or MODIFY) {
                     override fun onEvent(event: Int, path: String?) {
-                        // Handle file change event
                         if (event and (CREATE or DELETE) != 0 && path != null) {
                             val fullPath = "$directoryToObserve/$path"
                             val file = File(fullPath)
 
-                            // Check if the path corresponds to a directory
                             if (file.isDirectory || event and CREATE != 0) {
-                                // Update the adapter with the updated file list
                                 updateAdapterWithFullList()
                             }
                         }
                     }
                 }
             } else {
-                fileObserver = object : FileObserver(directoryToObserve.absolutePath, CREATE or DELETE or MOVED_TO) {
+                fileObserver = object : FileObserver(directoryToObserve.absolutePath, CREATE or DELETE or MOVED_TO or MODIFY) {
                     override fun onEvent(event: Int, path: String?) {
-                        // Handle file change event
                         if (event and (CREATE or DELETE) != 0 && path != null) {
                             val fullPath = "$directoryToObserve/$path"
                             val file = File(fullPath)
 
-                            // Check if the path corresponds to a directory
                             if (file.isDirectory || event and CREATE != 0) {
-                                // Update the adapter with the updated file list
                                 updateAdapterWithFullList()
                             }
                         }
@@ -744,15 +790,13 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 }
             }
 
-            // Start the file observer
             fileObserver?.startWatching()
             isObserving = true
 
-            // Start continuous update job
             fileUpdateJob = CoroutineScope(Dispatchers.Main).launch {
                 while (isObserving) {
                     updateAdapterWithFullList()
-                    delay(1000) // Update every second
+                    delay(2000)
                 }
             }
         }
@@ -775,7 +819,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     }
 
     @SuppressLint("InflateParams")
-    private fun showCompressorArchiveDialog(file: String) {
+    private fun showCompressorArchiveDialog(filePath: String, file: File) {
         val view = layoutInflater.inflate(R.layout.bottom_sheet_compressor_archive, null)
         val bottomSheetDialog = BottomSheetDialog(requireContext())
         bottomSheetDialog.setContentView(view)
@@ -787,42 +831,63 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         val extractBtn = view.findViewById<MaterialButton>(R.id.btnExtract)
         val btnOpenWith = view.findViewById<MaterialButton>(R.id.btnOpenWith)
         val fileNameTv = view.findViewById<TextView>(R.id.fileName)
+        val btnDelete = view.findViewById<MaterialButton>(R.id.btnDelete)
 
-        fileNameTv.text = File(file).name
+
+        fileNameTv.text = file.name
 
         btnLzma.setOnClickListener {
-            startCompressService(file, CompressorStreamFactory.LZMA)
+            startCompressService(filePath, CompressorStreamFactory.LZMA)
             bottomSheetDialog.dismiss()
         }
 
         btnBzip2.setOnClickListener {
-            startCompressService(file, CompressorStreamFactory.BZIP2)
+            startCompressService(filePath, CompressorStreamFactory.BZIP2)
             bottomSheetDialog.dismiss()
         }
 
         btnXz.setOnClickListener {
-            startCompressService(file, CompressorStreamFactory.XZ)
+            startCompressService(filePath, CompressorStreamFactory.XZ)
             bottomSheetDialog.dismiss()
         }
 
         btnGzip.setOnClickListener {
-            startCompressService(file, CompressorStreamFactory.GZIP)
+            startCompressService(filePath, CompressorStreamFactory.GZIP)
             bottomSheetDialog.dismiss()
         }
 
         extractBtn.setOnClickListener {
-            startExtractionService(file, null)
+            startExtractionService(filePath, null)
             bottomSheetDialog.dismiss()
         }
 
         btnOpenWith.setOnClickListener {
-            val uri = FileProvider.getUriForFile(requireContext(), "${BuildConfig.APPLICATION_ID}.fileprovider", File(file))
+            val uri = FileProvider.getUriForFile(requireContext(), "${BuildConfig.APPLICATION_ID}.fileprovider", file)
             val intent = Intent(Intent.ACTION_VIEW).apply {
-                setDataAndType(uri, getMimeType(File(file)))
+                setDataAndType(uri, getMimeType(file))
                 flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
             }
             startActivity(Intent.createChooser(intent, getString(R.string.open_with)))
             bottomSheetDialog.dismiss()
+        }
+
+        btnDelete.setOnClickListener {
+            MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
+                .setTitle(getString(R.string.confirm_delete))
+                .setMessage(getString(R.string.confirm_delete_message))
+                .setPositiveButton(getString(R.string.delete)) { _, _ ->
+                    if (file.delete()) {
+                        Toast.makeText(requireContext(), getString(R.string.file_deleted), Toast.LENGTH_SHORT).show()
+                        updateAdapterWithFullList()
+                    } else {
+                        Toast.makeText(requireContext(), getString(R.string.general_error_msg), Toast.LENGTH_SHORT).show()
+                    }
+                    bottomSheetDialog.dismiss()
+                }
+                .setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
+                    dialog.dismiss()
+                }
+                .show()
         }
 
         bottomSheetDialog.show()
@@ -852,13 +917,14 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         val bottomSheetDialog = BottomSheetDialog(requireContext())
         bottomSheetDialog.setContentView(bottomSheetView)
 
-        val btnExtract = bottomSheetView.findViewById<Button>(R.id.btnExtract)
-        val btnMultiExtract = bottomSheetView.findViewById<Button>(R.id.btnMultiExtract)
-        val btnMulti7zExtract = bottomSheetView.findViewById<Button>(R.id.btnMulti7zExtract)
-        val btnFileInfo = bottomSheetView.findViewById<Button>(R.id.btnFileInfo)
-        val btnMultiZipExtract = bottomSheetView.findViewById<Button>(R.id.btnMultiZipExtract)
-        val btnOpenWith = bottomSheetView.findViewById<Button>(R.id.btnOpenWith)
+        val btnExtract = bottomSheetView.findViewById<MaterialButton>(R.id.btnExtract)
+        val btnMultiExtract = bottomSheetView.findViewById<MaterialButton>(R.id.btnMultiExtract)
+        val btnMulti7zExtract = bottomSheetView.findViewById<MaterialButton>(R.id.btnMulti7zExtract)
+        val btnFileInfo = bottomSheetView.findViewById<MaterialButton>(R.id.btnFileInfo)
+        val btnMultiZipExtract = bottomSheetView.findViewById<MaterialButton>(R.id.btnMultiZipExtract)
+        val btnOpenWith = bottomSheetView.findViewById<MaterialButton>(R.id.btnOpenWith)
         val fileNameTv = bottomSheetView.findViewById<TextView>(R.id.fileName)
+        val btnDelete = bottomSheetView.findViewById<MaterialButton>(R.id.btnDelete)
 
         val filePath = file.absolutePath
         fileNameTv.text = file.name
@@ -903,6 +969,25 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             }
             startActivity(Intent.createChooser(intent, getString(R.string.open_with)))
             bottomSheetDialog.dismiss()
+        }
+
+        btnDelete.setOnClickListener {
+            MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
+                .setTitle(getString(R.string.confirm_delete))
+                .setMessage(getString(R.string.confirm_delete_message))
+                .setPositiveButton(getString(R.string.delete)) { _, _ ->
+                    if (file.delete()) {
+                        Toast.makeText(requireContext(), getString(R.string.file_deleted), Toast.LENGTH_SHORT).show()
+                        updateAdapterWithFullList()
+                    } else {
+                        Toast.makeText(requireContext(), getString(R.string.general_error_msg), Toast.LENGTH_SHORT).show()
+                    }
+                    bottomSheetDialog.dismiss()
+                }
+                .setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
+                    dialog.dismiss()
+                }
+                .show()
         }
 
         bottomSheetDialog.show()
@@ -1026,25 +1111,46 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     }
 
     private fun showFileInfo(file: File) {
-        val fileName = file.name
-        val filePath = file.absolutePath
-        val fileSize = file.length()
-        val lastModified = Date(file.lastModified())
+        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_file_info, null)
 
-        val fileInfo = """
-            Name: $fileName
-            Path: $filePath
-            Size: ${fileSize / 1024} KB
-            Last Modified: $lastModified
-        """.trimIndent()
+        val fileNameTextView = dialogView.findViewById<TextView>(R.id.file_name)
+        val filePathTextView = dialogView.findViewById<TextView>(R.id.file_path)
+        val fileSizeTextView = dialogView.findViewById<TextView>(R.id.file_size)
+        val lastModifiedTextView = dialogView.findViewById<TextView>(R.id.last_modified)
+        val okButton = dialogView.findViewById<Button>(R.id.ok_button)
 
-        MaterialAlertDialogBuilder(requireContext())
-            .setTitle("File Information")
-            .setMessage(fileInfo)
-            .setPositiveButton("OK") { dialog, _ ->
-                dialog.dismiss()
-            }
-            .show()
+        fileNameTextView.text = getString(R.string.file_name, file.name)
+        filePathTextView.text = getString(R.string.file_path, file.absolutePath)
+        val fileSizeText = bytesToString(file.length())
+        fileSizeTextView.text = getString(R.string.file_size, fileSizeText)
+        val dateFormat = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT, Locale.getDefault())
+        } else {
+            SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
+        }
+        lastModifiedTextView.text = getString(R.string.last_modified, dateFormat.format(Date(file.lastModified())))
+        val dialog = MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
+            .setView(dialogView)
+            .create()
+
+        okButton.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
+
+    private fun bytesToString(bytes: Long): String {
+        val kilobyte = 1024
+        val megabyte = kilobyte * 1024
+        val gigabyte = megabyte * 1024
+
+        return when {
+            bytes < kilobyte -> "$bytes B"
+            bytes < megabyte -> String.format("%.2f KB", bytes.toFloat() / kilobyte)
+            bytes < gigabyte -> String.format("%.2f MB", bytes.toFloat() / megabyte)
+            else -> String.format("%.2f GB", bytes.toFloat() / gigabyte)
+        }
     }
 
     private fun selectAllFiles() {

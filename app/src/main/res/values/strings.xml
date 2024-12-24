@@ -138,4 +138,15 @@
     <string name="author_wirelessalien">Author: WirelessAlien</string>
     <string name="report_an_issue">Report an Issue</string>
     <string name="about">About</string>
+    <string name="delete">Delete</string>
+    <string name="confirm_delete">Comfirm Delete</string>
+    <string name="confirm_delete_message">Do you really want to delete the file?</string>
+    <string name="file_deleted">File Deleted</string>
+    <string name="file_name">Name: %1$s</string>
+    <string name="file_path">Path: %1$s</string>
+    <string name="file_size">Size: %1$s</string>
+    <string name="last_modified">Last Modified: %1$s</string>
+    <string name="grant_access">Grant Access</string>
+    <string name="storage_access_permission_text">We need access to your storage to proceed. Please grant the necessary permissions.</string>
+
 </resources>

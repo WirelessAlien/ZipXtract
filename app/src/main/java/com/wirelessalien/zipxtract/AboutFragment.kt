@@ -48,7 +48,7 @@ class AboutFragment : DialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.versionNumberText.text = BuildConfig.VERSION_NAME
+        binding.versionNumberText.text = "Version: " + BuildConfig.VERSION_NAME
 
         binding.sourceCode.setOnClickListener {
             openUrl("https://github.com/WirelessAlien/ZipXtract")

@@ -231,7 +231,7 @@ class ArchiveZipService : Service() {
 
                 if (progressMonitor.result == ProgressMonitor.Result.SUCCESS) {
                     showCompletionNotification()
-                    sendLocalBroadcast(Intent(ACTION_ARCHIVE_COMPLETE).putExtra(EXTRA_DIR_PATH, outputFile.absolutePath))
+                    sendLocalBroadcast(Intent(ACTION_ARCHIVE_COMPLETE).putExtra(EXTRA_DIR_PATH, baseDirectory?.path))
                 } else {
                     showErrorNotification(progressMonitor.result.toString())
                     sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, progressMonitor.result.toString()))

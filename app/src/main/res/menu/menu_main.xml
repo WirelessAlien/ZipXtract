@@ -9,6 +9,7 @@
         android:title="@string/search"
         app:actionViewClass="androidx.appcompat.widget.SearchView"
         app:showAsAction="always" />
+
     <item
         android:id="@+id/menu_sort"
         android:title="@string/sort_by">
@@ -45,6 +46,6 @@
         android:id="@+id/menu_about"
         android:icon="@drawable/ic_info"
         android:title="@string/about"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="never" />
 </menu>
 

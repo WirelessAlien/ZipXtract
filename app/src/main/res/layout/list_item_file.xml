@@ -49,8 +49,7 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:layout_toEndOf="@id/fileIcon"
-                android:layout_toStartOf="@id/deleteBtn"
-                android:background="?android:attr/selectableItemBackground"/>
+                android:layout_toStartOf="@id/deleteBtn"/>
 
             <com.google.android.material.button.MaterialButton
                 android:layout_width="wrap_content"

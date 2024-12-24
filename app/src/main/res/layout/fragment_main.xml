@@ -73,6 +73,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
+        app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Medium"
         android:text="@string/archive"
         app:layout_behavior="com.google.android.material.behavior.HideViewOnScrollBehavior"
         android:src="@drawable/ic_create_z" />
@@ -84,10 +85,11 @@
         android:layout_gravity="bottom|end"
         android:layout_marginBottom="80dp"
         android:layout_marginEnd="16dp"
+        app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Medium"
         android:visibility="gone"
         android:text="@string/create_zip"
         app:layout_behavior="com.google.android.material.behavior.HideViewOnScrollBehavior"
-        android:icon="@drawable/ic_zip" />
+        android:icon="@drawable/ic_archive" />
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/create7zFab"
@@ -95,11 +97,12 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_marginBottom="140dp"
+        app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Medium"
         android:layout_marginEnd="16dp"
         android:visibility="gone"
         android:text="@string/compress_sevenz"
         app:layout_behavior="com.google.android.material.behavior.HideViewOnScrollBehavior"
-        android:icon="@drawable/ic_zip" />
+        android:icon="@drawable/ic_archive" />
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/createTarFab"
@@ -108,9 +111,10 @@
         android:layout_gravity="bottom|end"
         android:layout_marginBottom="200dp"
         android:layout_marginEnd="16dp"
+        app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Medium"
         android:visibility="gone"
         android:text="@string/compress_tar"
         app:layout_behavior="com.google.android.material.behavior.HideViewOnScrollBehavior"
-        android:icon="@drawable/ic_zip" />
+        android:icon="@drawable/ic_archive" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

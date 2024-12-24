@@ -159,7 +159,6 @@ class ArchiveTarService : Service() {
                         }
 
                         override fun getStream(i: Int): ISequentialInStream? {
-                            if (archiveJob?.isCancelled == true) throw SevenZipException(getString(R.string.operation_cancelled))
 
                             return if (File(filesToArchive[i]).isDirectory) null else RandomAccessFileInStream(RandomAccessFile(filesToArchive[i], "r"))
                         }
