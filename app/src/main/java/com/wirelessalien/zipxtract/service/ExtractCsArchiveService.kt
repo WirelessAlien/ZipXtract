@@ -23,6 +23,7 @@ import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
 import android.os.Build
+import android.os.Environment
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
@@ -55,6 +56,7 @@ class ExtractCsArchiveService : Service() {
     companion object {
         const val NOTIFICATION_ID = 19
         const val EXTRA_FILE_PATH = "file_path"
+        const val EXTRA_USE_APP_NAME_DIR = "use_app_name_dir"
     }
 
     private var extractionJob: Job? = null
@@ -68,6 +70,7 @@ class ExtractCsArchiveService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val filePath = intent?.getStringExtra(EXTRA_FILE_PATH)
+        val useAppNameDir = intent?.getBooleanExtra(EXTRA_USE_APP_NAME_DIR, false) ?: false
 
         if (filePath == null) {
             stopSelf()
@@ -77,7 +80,7 @@ class ExtractCsArchiveService : Service() {
         startForeground(NOTIFICATION_ID, createNotification(0))
 
         extractionJob = CoroutineScope(Dispatchers.IO).launch {
-            extractArchive(filePath)
+            extractArchive(filePath, useAppNameDir)
         }
 
         return START_NOT_STICKY
@@ -114,7 +117,7 @@ class ExtractCsArchiveService : Service() {
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
     }
 
-    private fun extractArchive(filePath: String) {
+    private fun extractArchive(filePath: String, useAppNameDir: Boolean) {
 
         if (filePath.isEmpty()) {
             val errorMessage = getString(R.string.no_files_to_archive)
@@ -125,7 +128,18 @@ class ExtractCsArchiveService : Service() {
         }
         val file = File(filePath)
         val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
-        val outputFile = File(file.parent, file.nameWithoutExtension)
+        val parentDir: File
+        if (useAppNameDir) {
+            val rootDir = File(Environment.getExternalStorageDirectory().absolutePath)
+            parentDir = File(rootDir, getString(R.string.app_name))
+            if (!parentDir.exists()) {
+                parentDir.mkdirs()
+            }
+        } else {
+            parentDir = file.parentFile ?: cacheDir
+        }
+
+        val outputFile = File(parentDir, file.nameWithoutExtension)
         val fin: InputStream
         val outStream: OutputStream
 
@@ -164,8 +178,8 @@ class ExtractCsArchiveService : Service() {
                 updateProgress(progress)
             }
 
-            outStream.close()
             compressorInputStream.close()
+            outStream.close()
 
             showCompletionNotification()
             sendLocalBroadcast(Intent(ACTION_EXTRACTION_COMPLETE).putExtra(EXTRA_DIR_PATH, outputFile.absolutePath))
@@ -184,6 +198,9 @@ class ExtractCsArchiveService : Service() {
             sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message ?: getString(R.string.general_error_msg)))
         } finally {
             stopForegroundService()
+            if (useAppNameDir) {
+                filesDir.deleteRecursively()
+            }
         }
     }
 

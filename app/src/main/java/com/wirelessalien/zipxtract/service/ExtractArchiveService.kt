@@ -23,6 +23,7 @@ import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
 import android.os.Build
+import android.os.Environment
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
@@ -66,6 +67,7 @@ class ExtractArchiveService : Service() {
         const val NOTIFICATION_ID = 18
         const val EXTRA_FILE_PATH = "file_path"
         const val EXTRA_PASSWORD = "password"
+        const val EXTRA_USE_APP_NAME_DIR = "useAppNameDir"
     }
 
     private var archiveFormat: ArchiveFormat? = null
@@ -81,6 +83,7 @@ class ExtractArchiveService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val filePath = intent?.getStringExtra(EXTRA_FILE_PATH)
         val password = intent?.getStringExtra(EXTRA_PASSWORD)
+        val useAppNameDir = intent?.getBooleanExtra(EXTRA_USE_APP_NAME_DIR, false) ?: false
 
         if (filePath == null) {
             stopSelf()
@@ -90,7 +93,7 @@ class ExtractArchiveService : Service() {
         startForeground(NOTIFICATION_ID, createNotification(0))
 
         extractionJob = CoroutineScope(Dispatchers.IO).launch {
-            extractArchive(filePath, password)
+            extractArchive(filePath, password, useAppNameDir)
         }
 
         return START_NOT_STICKY
@@ -127,7 +130,7 @@ class ExtractArchiveService : Service() {
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
     }
 
-    private fun extractArchive(filePath: String, password: String?) {
+    private fun extractArchive(filePath: String, password: String?, useAppNameDir: Boolean) {
 
         if (filePath.isEmpty()) {
             val errorMessage = getString(R.string.no_files_to_archive)
@@ -139,13 +142,23 @@ class ExtractArchiveService : Service() {
 
         val file = File(filePath)
         if (file.extension.equals("zip", ignoreCase = true)) {
-            extractZipArchive(file, password)
+            extractZipArchive(file, password, useAppNameDir)
             return
         }
 
         try {
             val inStream = RandomAccessFileInStream(RandomAccessFile(file, "r"))
-            val parentDir = file.parentFile ?: cacheDir
+            val parentDir: File
+            if (useAppNameDir) {
+                val rootDir = File(Environment.getExternalStorageDirectory().absolutePath)
+                parentDir = File(rootDir, getString(R.string.app_name))
+                if (!parentDir.exists()) {
+                    parentDir.mkdirs()
+                }
+            } else {
+                parentDir = file.parentFile ?: cacheDir
+            }
+
             val baseFileName = file.name.substring(0, file.name.lastIndexOf('.'))
             var newFileName = baseFileName
             var destinationDir = File(parentDir, newFileName)
@@ -177,6 +190,9 @@ class ExtractArchiveService : Service() {
                 sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message ?: getString(R.string.general_error_msg)))
             } finally {
                 inStream.close()
+                if (useAppNameDir) {
+                    filesDir.deleteRecursively()
+                }
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -185,7 +201,7 @@ class ExtractArchiveService : Service() {
         }
     }
 
-    private fun extractZipArchive(file: File, password: String?) {
+    private fun extractZipArchive(file: File, password: String?, useAppNameDir: Boolean) {
         try {
             val zipFile = ZipFile(file)
 
@@ -193,7 +209,17 @@ class ExtractArchiveService : Service() {
                 zipFile.setPassword(password.toCharArray())
             }
 
-            val parentDir = file.parentFile ?: cacheDir
+            val parentDir: File
+            if (useAppNameDir) {
+                val rootDir = File(Environment.getExternalStorageDirectory().absolutePath)
+                parentDir = File(rootDir, getString(R.string.app_name))
+                if (!parentDir.exists()) {
+                    parentDir.mkdirs()
+                }
+            } else {
+                parentDir = file.parentFile ?: cacheDir
+            }
+
             val baseFileName = file.name.substring(0, file.name.lastIndexOf('.'))
             var newFileName = baseFileName
             var destinationDir = File(parentDir, newFileName)

@@ -23,6 +23,7 @@ import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
 import android.os.Build
+import android.os.Environment
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
@@ -61,6 +62,7 @@ class ExtractRarService : Service() {
         const val NOTIFICATION_ID = 22
         const val EXTRA_FILE_PATH = "file_path"
         const val EXTRA_PASSWORD = "password"
+        const val EXTRA_USE_APP_NAME_DIR = "use_app_name_dir"
 
     }
 
@@ -77,6 +79,7 @@ class ExtractRarService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val filePath = intent?.getStringExtra(EXTRA_FILE_PATH)
+        val useAppNameDir = intent?.getBooleanExtra(EXTRA_USE_APP_NAME_DIR, false) ?: false
         val password = intent?.getStringExtra(EXTRA_PASSWORD)
         this.password = password?.toCharArray()
 
@@ -90,7 +93,7 @@ class ExtractRarService : Service() {
         startForeground(NOTIFICATION_ID, createNotification(0))
 
         extractionJob = CoroutineScope(Dispatchers.IO).launch {
-            extractArchive(modifiedFilePath)
+            extractArchive(modifiedFilePath, useAppNameDir)
         }
 
         return START_NOT_STICKY
@@ -139,7 +142,7 @@ class ExtractRarService : Service() {
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
     }
 
-    private fun extractArchive(filePath: String) {
+    private fun extractArchive(filePath: String, useAppNameDir: Boolean) {
 
         if (filePath.isEmpty()) {
             val errorMessage = getString(R.string.no_files_to_archive)
@@ -150,7 +153,17 @@ class ExtractRarService : Service() {
         }
 
         val file = File(filePath)
-        val parentDir = file.parentFile ?: return
+        val parentDir: File
+        if (useAppNameDir) {
+            val rootDir = File(Environment.getExternalStorageDirectory().absolutePath)
+            parentDir = File(rootDir, getString(R.string.app_name))
+            if (!parentDir.exists()) {
+                parentDir.mkdirs()
+            }
+        } else {
+            parentDir = file.parentFile ?: return
+        }
+
         val baseFileName = file.nameWithoutExtension
         var newFileName = baseFileName
         var destinationDir = File(parentDir, newFileName)
@@ -194,6 +207,9 @@ class ExtractRarService : Service() {
                 } finally {
                     inArchive.close()
                     archiveOpenVolumeCallback.close()
+                    if (useAppNameDir) {
+                        filesDir.deleteRecursively()
+                    }
                 }
             }
         } catch (e: IOException) {

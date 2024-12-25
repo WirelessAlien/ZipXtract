@@ -148,5 +148,6 @@
     <string name="last_modified">Last Modified: %1$s</string>
     <string name="grant_access">Grant Access</string>
     <string name="storage_access_permission_text">We need access to your storage to proceed. Please grant the necessary permissions.</string>
+    <string name="archive_success">File archived successfully</string>
 
 </resources>

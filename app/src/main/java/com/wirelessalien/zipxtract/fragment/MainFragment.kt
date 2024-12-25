@@ -172,13 +172,13 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 ACTION_ARCHIVE_COMPLETE -> {
                     val dirPath = intent.getStringExtra(EXTRA_DIR_PATH)
                     if (dirPath != null) {
-                        Snackbar.make(binding.root, getString(R.string.extraction_success), Snackbar.LENGTH_LONG)
+                        Snackbar.make(binding.root, getString(R.string.archive_success), Snackbar.LENGTH_LONG)
                             .setAction(getString(R.string.open_folder)) {
                                 navigateToParentDir(File(dirPath))
                             }
                             .show()
                     } else {
-                        Toast.makeText(requireContext(), getString(R.string.extraction_success), Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), getString(R.string.archive_success), Toast.LENGTH_SHORT).show()
                     }
                     unselectAllFiles()
                     aProgressDialog.dismiss()
