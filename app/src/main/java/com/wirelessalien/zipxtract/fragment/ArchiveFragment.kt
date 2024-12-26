@@ -74,7 +74,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
@@ -610,11 +609,8 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
         filePathTextView.text = getString(R.string.file_path, file.absolutePath)
         val fileSizeText = bytesToString(file.length())
         fileSizeTextView.text = getString(R.string.file_size, fileSizeText)
-        val dateFormat = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        val dateFormat =
             DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT, Locale.getDefault())
-        } else {
-            SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
-        }
         lastModifiedTextView.text = getString(R.string.last_modified, dateFormat.format(Date(file.lastModified())))
         val dialog = MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
             .setView(dialogView)

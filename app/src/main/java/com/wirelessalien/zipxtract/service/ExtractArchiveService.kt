@@ -246,10 +246,12 @@ class ExtractArchiveService : Service() {
                 Thread.sleep(100)
             }
 
-            if (extractionJob?.isCancelled == true) throw ZipException(getString(R.string.operation_cancelled))
-
             showCompletionNotification()
             sendLocalBroadcast(Intent(ACTION_EXTRACTION_COMPLETE).putExtra(EXTRA_DIR_PATH, destinationDir.absolutePath))
+
+            if (useAppNameDir) {
+                filesDir.deleteRecursively()
+            }
 
         } catch (e: ZipException) {
             e.printStackTrace()
@@ -376,13 +378,8 @@ class ExtractArchiveService : Service() {
         notificationManager.notify(NOTIFICATION_ID + 2, notification)
     }
 
-    @Suppress("DEPRECATION")
     private fun stopForegroundService() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            stopForeground(STOP_FOREGROUND_REMOVE)
-        } else {
-            stopForeground(true)
-        }
+        stopForeground(STOP_FOREGROUND_REMOVE)
         val notificationManager = getSystemService(NotificationManager::class.java)
         notificationManager.cancel(NOTIFICATION_ID)
     }

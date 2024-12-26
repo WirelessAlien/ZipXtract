@@ -19,7 +19,6 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.attribute.BasicFileAttributes
-import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
@@ -146,11 +145,8 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
 
         holder.fileName.text = truncateFileName(file.name, 35)
 
-        val dateFormat = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        val dateFormat =
             DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT, Locale.getDefault())
-        } else {
-            SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
-        }
         holder.fileDate.text = dateFormat.format(Date(getFileTimeOfCreation(file)))
 
         if (file.isDirectory) {
