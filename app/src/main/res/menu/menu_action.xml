@@ -17,8 +17,15 @@
         app:showAsAction="never" />
 
     <item
+        android:id="@+id/menu_action_unselect_all"
+        android:icon="@drawable/ic_close"
+        app:showAsAction="always"
+        android:title="@string/close" />
+
+    <item
         android:id="@+id/menu_action_select_all"
         android:title="@string/select_all"
+        android:icon="@drawable/ic_select_all"
         app:showAsAction="ifRoom" />
 
 </menu>

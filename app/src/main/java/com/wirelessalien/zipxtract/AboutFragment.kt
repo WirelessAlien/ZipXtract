@@ -67,8 +67,6 @@ class AboutFragment : DialogFragment() {
             donateFragment.show(requireActivity().supportFragmentManager, "donationFragment")
         }
 
-
-
         binding.shareIcon.setOnClickListener {
             val githubUrl = "https://github.com/WirelessAlien/ZipXtract"
             val shareIntent = Intent(Intent.ACTION_SEND)

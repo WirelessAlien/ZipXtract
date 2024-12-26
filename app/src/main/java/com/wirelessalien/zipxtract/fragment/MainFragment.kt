@@ -668,6 +668,12 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                             actionMode?.finish() // Destroy the action mode
                             true
                         }
+
+                        R.id.menu_action_unselect_all -> {
+                            unselectAllFiles()
+                            actionMode?.finish() // Destroy the action mode
+                            true
+                        }
                         else -> false
                     }
                 }

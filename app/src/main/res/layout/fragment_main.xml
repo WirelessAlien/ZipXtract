@@ -96,7 +96,7 @@
         app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Medium"
         android:text="@string/archive"
         app:layout_behavior="com.google.android.material.behavior.HideViewOnScrollBehavior"
-        android:src="@drawable/ic_create_z" />
+        android:src="@drawable/ic_compress" />
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/createZipFab"

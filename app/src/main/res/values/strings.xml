@@ -151,5 +151,6 @@
     <string name="archive_success">File archived successfully</string>
     <string name="sd_card">SD Card</string>
     <string name="permission_not_granted">Permission not granted</string>
+    <string name="close">Close</string>
 
 </resources>
