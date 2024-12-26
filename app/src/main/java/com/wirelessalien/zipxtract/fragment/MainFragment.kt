@@ -34,6 +34,7 @@ import android.os.Environment
 import android.os.FileObserver
 import android.os.Handler
 import android.os.Looper
+import android.os.storage.StorageManager
 import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.Menu
@@ -106,7 +107,6 @@ import org.apache.commons.compress.compressors.CompressorStreamFactory
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.attribute.BasicFileAttributes
-import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
@@ -335,6 +335,20 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             initRecyclerView()
         }
 
+        val sdCardPath = getSdCardPath()
+        if (sdCardPath != null) {
+            binding.externalStorageChip.visibility = View.VISIBLE
+            binding.externalStorageChip.setOnClickListener {
+                val currentPath = currentPath ?: Environment.getExternalStorageDirectory().absolutePath
+                val basePath = Environment.getExternalStorageDirectory().absolutePath
+                if (currentPath.startsWith(basePath)) {
+                    navigateToPath(sdCardPath)
+                } else {
+                    navigateToPath(basePath)
+                }
+            }
+        }
+
         startFileObserver()
 
         val filter = IntentFilter().apply {
@@ -377,6 +391,24 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
     }
 
+    private fun getSdCardPath(): String? {
+        val storageManager = requireContext().getSystemService(Context.STORAGE_SERVICE) as StorageManager
+        val storageVolumes = storageManager.storageVolumes
+        for (storageVolume in storageVolumes) {
+            if (storageVolume.isRemovable) {
+                val storageVolumePath = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    storageVolume.directory?.absolutePath
+                } else {
+                    Environment.getExternalStorageDirectory().absolutePath
+                }
+                if (storageVolumePath != null && storageVolumePath != Environment.getExternalStorageDirectory().absolutePath) {
+                    return storageVolumePath
+                }
+            }
+        }
+        return null
+    }
+
     @SuppressLint("InflateParams")
     private fun showPermissionRequestLayout() {
         val permissionView = layoutInflater.inflate(R.layout.layout_permission_request, null)
@@ -398,30 +430,39 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
     private fun updateCurrentPathChip() {
         val internalStorage = "Internal Storage"
+        val sdCardPath = getSdCardPath()
         val basePath = Environment.getExternalStorageDirectory().absolutePath
         val currentPath = currentPath ?: basePath
-        val displayPath = currentPath.replace(basePath, internalStorage).split("/")
+        val displayPath = when {
+            currentPath.startsWith(basePath) -> currentPath.replace(basePath, internalStorage)
+            sdCardPath != null && currentPath.startsWith(sdCardPath) -> currentPath.replace(sdCardPath, "SD Card")
+            else -> currentPath
+        }.split("/")
 
         binding.chipGroupPath.removeAllViews()
 
-        var cumulativePath = basePath
+        var cumulativePath = when {
+            currentPath.startsWith(basePath) -> basePath
+            sdCardPath != null && currentPath.startsWith(sdCardPath) -> sdCardPath
+            else -> ""
+        }
+
         for (part in displayPath) {
-            val chip = Chip(requireContext()).apply {
-                text = part
-                isClickable = true
-                isCheckable = false
-                val shapeAppearanceModel = shapeAppearanceModel.toBuilder()
-                    .setAllCornerSizes(5f * resources.displayMetrics.density)
-                    .build()
-                setShapeAppearanceModel(shapeAppearanceModel)
-                setOnClickListener {
-                    cumulativePath = if (part == internalStorage) {
+            val chip = LayoutInflater.from(requireContext()).inflate(R.layout.custom_chip, binding.chipGroupPath, false) as Chip
+            chip.text = part
+            chip.setOnClickListener {
+                cumulativePath = when (part) {
+                    internalStorage -> {
                         basePath
-                    } else {
+                    }
+                    getString(R.string.sd_card) -> {
+                        sdCardPath ?: ""
+                    }
+                    else -> {
                         "$cumulativePath/$part"
                     }
-                    navigateToPath(cumulativePath)
                 }
+                navigateToPath(cumulativePath)
             }
             binding.chipGroupPath.addView(chip)
         }
@@ -679,7 +720,8 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             initRecyclerView()
             updateAdapterWithFullList()
         } else {
-            Toast.makeText(requireContext(), "Permission not granted", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(),
+                getString(R.string.permission_not_granted), Toast.LENGTH_SHORT).show()
             requireActivity().finish()
         }
     }
@@ -715,7 +757,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 updateAdapterWithFullList()
             } else {
                 // Permission denied
-                Toast.makeText(requireContext(), "Permission not granted", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), getString(R.string.permission_not_granted), Toast.LENGTH_SHORT).show()
                 requireActivity().finish()
             }
         } else {
@@ -725,7 +767,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 updateAdapterWithFullList()
             } else {
                 // Permission denied
-                Toast.makeText(requireContext(), "Permission not granted", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), getString(R.string.permission_not_granted), Toast.LENGTH_SHORT).show()
                 requireActivity().finish()
             }
         }
@@ -1123,11 +1165,8 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         filePathTextView.text = getString(R.string.file_path, file.absolutePath)
         val fileSizeText = bytesToString(file.length())
         fileSizeTextView.text = getString(R.string.file_size, fileSizeText)
-        val dateFormat = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        val dateFormat =
             DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT, Locale.getDefault())
-        } else {
-            SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
-        }
         lastModifiedTextView.text = getString(R.string.last_modified, dateFormat.format(Date(file.lastModified())))
         val dialog = MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
             .setView(dialogView)
@@ -1266,9 +1305,11 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
     private fun updateAdapterWithFullList() {
         if (!isSearchActive) {
-            CoroutineScope(Dispatchers.Main).launch {
+            CoroutineScope(Dispatchers.IO).launch {
                 val fullFileList = getFiles()
-                adapter.updateFilesAndFilter(fullFileList)
+                withContext(Dispatchers.Main) {
+                    adapter.updateFilesAndFilter(fullFileList)
+                }
             }
         }
     }
@@ -1277,8 +1318,16 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         isSearchActive = !query.isNullOrEmpty()
         binding.circularProgressBar.visibility = View.VISIBLE
 
+        val basePath = Environment.getExternalStorageDirectory().absolutePath
+        val sdCardPath = getSdCardPath()
+        val searchPath = if (currentPath?.startsWith(sdCardPath ?: "") == true) {
+            sdCardPath ?: basePath
+        } else {
+            basePath
+        }
+
         CoroutineScope(Dispatchers.IO).launch {
-            val result = query?.let { searchAllFiles(File(Environment.getExternalStorageDirectory().absolutePath), it) } ?: emptyList()
+            val result = query?.let { searchAllFiles(File(searchPath), it) } ?: emptyList()
 
             withContext(Dispatchers.Main) {
                 adapter.updateFilesAndFilter(ArrayList(result))

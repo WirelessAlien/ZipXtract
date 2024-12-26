@@ -29,6 +29,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.os.Handler
+import android.os.storage.StorageManager
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -288,14 +289,19 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
 
     private fun getArchiveFiles(): ArrayList<File> {
         val archiveFiles = ArrayList<File>()
-        val directory = File(Environment.getExternalStorageDirectory().absolutePath)
-        val files = directory.listFiles() ?: return archiveFiles
+        val internalStorageDirectory = File(Environment.getExternalStorageDirectory().absolutePath)
+        val sdCardPath = getSdCardPath()
+        val directories = listOfNotNull(internalStorageDirectory, sdCardPath?.let { File(it) })
 
-        for (file in files) {
-            if (file.isDirectory) {
-                archiveFiles.addAll(getArchiveFilesFromDirectory(file))
-            } else if (archiveExtensions.contains(file.extension.lowercase())) {
-                archiveFiles.add(file)
+        for (directory in directories) {
+            val files = directory.listFiles() ?: continue
+
+            for (file in files) {
+                if (file.isDirectory) {
+                    archiveFiles.addAll(getArchiveFilesFromDirectory(file))
+                } else if (archiveExtensions.contains(file.extension.lowercase())) {
+                    archiveFiles.add(file)
+                }
             }
         }
 
@@ -325,6 +331,24 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
             }
         }
         return archiveFiles
+    }
+
+    private fun getSdCardPath(): String? {
+        val storageManager = requireContext().getSystemService(Context.STORAGE_SERVICE) as StorageManager
+        val storageVolumes = storageManager.storageVolumes
+        for (storageVolume in storageVolumes) {
+            if (storageVolume.isRemovable) {
+                val storageVolumePath = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    storageVolume.directory?.absolutePath
+                } else {
+                    Environment.getExternalStorageDirectory().absolutePath
+                }
+                if (storageVolumePath != null && storageVolumePath != Environment.getExternalStorageDirectory().absolutePath) {
+                    return storageVolumePath
+                }
+            }
+        }
+        return null
     }
 
     private fun updateAdapterWithFullList() {
