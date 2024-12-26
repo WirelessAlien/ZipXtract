@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId "com.wirelessalien.zipxtract"
-        minSdk 23
+        minSdk 24
         targetSdk 34
         versionCode 15
         versionName "5.0-beta"
