@@ -1,7 +1,6 @@
 package com.wirelessalien.zipxtract.adapter
 
 import android.content.Context
-import android.graphics.Color
 import android.icu.text.DateFormat
 import android.os.Build
 import android.util.SparseBooleanArray
@@ -10,9 +9,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.google.android.material.card.MaterialCardView
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.fragment.MainFragment
 import kotlinx.coroutines.Dispatchers
@@ -105,22 +104,29 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
         val fileSize: TextView = itemView.findViewById(R.id.file_size)
         val fileDate: TextView = itemView.findViewById(R.id.file_date)
         val fileExtension: TextView = itemView.findViewById(R.id.file_extension)
+        val fileCheckIcon: ImageView = itemView.findViewById(R.id.check_icon)
+        private val fileIconCv: MaterialCardView = itemView.findViewById(R.id.card_view)
 
         init {
             itemView.isClickable = true
             itemView.isFocusable = true
             itemView.setOnClickListener(this)
             itemView.setOnLongClickListener(this)
+            fileIconCv.setOnClickListener(this)
         }
 
         override fun onClick(v: View?) {
-            if (mainFragment?.actionMode != null) {
-                mainFragment.toggleSelection(adapterPosition)
-                if (mainFragment.getSelectedItemCount() == 0) {
-                    mainFragment.actionMode?.finish()
-                }
+            if (v?.id == R.id.card_view) {
+                onLongClick(v)
             } else {
-                onItemClickListener?.onItemClick(filteredFiles[adapterPosition])
+                if (mainFragment?.actionMode != null) {
+                    mainFragment.toggleSelection(adapterPosition)
+                    if (mainFragment.getSelectedItemCount() == 0) {
+                        mainFragment.actionMode?.finish()
+                    }
+                } else {
+                    onItemClickListener?.onItemClick(filteredFiles[adapterPosition])
+                }
             }
         }
 
@@ -156,7 +162,7 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
             holder.fileSize.text = bytesToString(file.length())
 
             when (file.extension.lowercase(Locale.getDefault())) {
-                "png", "jpg", "bmp", "jpeg", "gif" -> {
+                "png", "jpg", "bmp", "jpeg", "gif", "webp" -> {
                     val requestBuilder = Glide.with(context)
                         .asDrawable()
                         .sizeMultiplier(0.25f)
@@ -190,9 +196,10 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
         }
 
         if (selectedItems.get(position, false)) {
-            holder.itemView.setBackgroundColor(ContextCompat.getColor(context, R.color.md_theme_outline))
+            holder.fileCheckIcon.visibility = View.VISIBLE
         } else {
-            holder.itemView.setBackgroundColor(Color.TRANSPARENT)
+            holder.fileCheckIcon.visibility = View.GONE
+
         }
     }
 
