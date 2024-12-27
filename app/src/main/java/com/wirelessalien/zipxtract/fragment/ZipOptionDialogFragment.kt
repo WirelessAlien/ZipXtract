@@ -21,7 +21,6 @@ package com.wirelessalien.zipxtract.fragment
 import android.R
 import android.app.Dialog
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -30,6 +29,7 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.wirelessalien.zipxtract.adapter.FileAdapter
 import com.wirelessalien.zipxtract.adapter.FilePathAdapter
 import com.wirelessalien.zipxtract.databinding.ZipOptionDialogBinding
@@ -75,7 +75,6 @@ class ZipOptionDialogFragment : DialogFragment() {
                 adapter.getSelectedFilesPaths().toMutableList()
             }
 
-            Log.d("ZipOptionDialogFragment", "Selected file paths: $selectedFilePaths")
             binding.progressIndicator.visibility = View.GONE
 
             initializeUI()
@@ -98,6 +97,15 @@ class ZipOptionDialogFragment : DialogFragment() {
             } else {
                 binding.filePathsRv.visibility = View.GONE
             }
+        }
+
+        binding.encInfo.setOnClickListener {
+            MaterialAlertDialogBuilder(requireContext(), com.wirelessalien.zipxtract.R.style.MaterialDialog)
+                .setMessage(getString(com.wirelessalien.zipxtract.R.string.settings_info_text))
+                .setPositiveButton(getString(com.wirelessalien.zipxtract.R.string.ok)) { _, _ ->
+                    dismiss()
+                }
+                .show()
         }
 
         val compressionMethodSpinner = binding.compressionMethodInput

@@ -15,6 +15,16 @@
   ~     along with this program.  If not, see <https://www.gnu.org/licenses/>.
   -->
 
-<slide xmlns:android="http://schemas.android.com/apk/res/android"
-    android:duration="@android:integer/config_mediumAnimTime"
-    android:slideEdge="right" />
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="200dp"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/crash_log_text"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:ellipsize="end"
+        android:padding="16dp"
+        android:textSize="14sp" />
+</LinearLayout>

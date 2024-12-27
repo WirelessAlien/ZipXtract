@@ -139,8 +139,8 @@
     <string name="report_an_issue">Report an Issue</string>
     <string name="about">About</string>
     <string name="delete">Delete</string>
-    <string name="confirm_delete">Comfirm Delete</string>
-    <string name="confirm_delete_message">Do you really want to delete the file?</string>
+    <string name="confirm_delete">Confirm Delete</string>
+    <string name="confirm_delete_message">Do you really want to delete this file?</string>
     <string name="file_deleted">File Deleted</string>
     <string name="file_name">Name: %1$s</string>
     <string name="file_path">Path: %1$s</string>
@@ -150,7 +150,8 @@
     <string name="storage_access_permission_text">We need access to your storage to proceed. Please grant the necessary permissions.</string>
     <string name="archive_success">File archived successfully</string>
     <string name="sd_card">SD Card</string>
-    <string name="permission_not_granted">Permission not granted</string>
     <string name="close">Close</string>
+    <string name="crash_log">Crash Log</string>
+    <string name="copy_text">Copy</string>
 
 </resources>

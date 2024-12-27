@@ -17,10 +17,6 @@
   -->
 
 <resources>
-
-    <style name="MaterialButtonStyle" parent="Widget.Material3.Button.IconButton">
-    </style>
-
     <!-- dialog style -->
     <style name="MaterialDialog" parent="@style/ThemeOverlay.Material3.MaterialAlertDialog">
         <item name="shapeAppearanceOverlay">@style/ShapeAppearanceOverlay.ZipXtract.Dialog.Rounded</item>

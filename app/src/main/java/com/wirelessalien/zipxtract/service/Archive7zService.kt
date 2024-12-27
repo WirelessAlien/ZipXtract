@@ -194,6 +194,7 @@ class Archive7zService : Service() {
 
                 outArchive.close()
                 stopForegroundService()
+                showCompletionNotification()
                 sendLocalBroadcast(Intent(ACTION_ARCHIVE_COMPLETE).putExtra(EXTRA_DIR_PATH, sevenZFile.parent))
             }
         } catch (e: SevenZipException) {
@@ -218,6 +219,19 @@ class Archive7zService : Service() {
 
         sendLocalBroadcast(Intent(ACTION_ARCHIVE_PROGRESS).putExtra(
             EXTRA_PROGRESS, progress))
+    }
+
+    private fun showCompletionNotification() {
+        stopForegroundService()
+
+        val notification = NotificationCompat.Builder(this, ARCHIVE_NOTIFICATION_CHANNEL_ID)
+            .setContentTitle(getString(R.string.sevenz_creation_success))
+            .setSmallIcon(R.drawable.ic_notification_icon)
+            .setAutoCancel(true)
+            .build()
+
+        val notificationManager = getSystemService(NotificationManager::class.java)
+        notificationManager.notify(NOTIFICATION_ID + 1, notification)
     }
 
     private fun showErrorNotification(error: String) {

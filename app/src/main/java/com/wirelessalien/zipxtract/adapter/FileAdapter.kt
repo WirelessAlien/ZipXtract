@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.google.android.material.card.MaterialCardView
@@ -105,6 +106,7 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
         val fileExtension: TextView = itemView.findViewById(R.id.file_extension)
         val fileCheckIcon: ImageView = itemView.findViewById(R.id.check_icon)
         private val fileIconCv: MaterialCardView = itemView.findViewById(R.id.card_view)
+        val constLayout: ConstraintLayout = itemView.findViewById(R.id.constraint_layout)
 
         init {
             itemView.isClickable = true
@@ -193,8 +195,10 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
 
         if (selectedItems.get(position, false)) {
             holder.fileCheckIcon.visibility = View.VISIBLE
+            holder.constLayout.setBackgroundColor(context.getColor(R.color.md_theme_outline))
         } else {
             holder.fileCheckIcon.visibility = View.GONE
+            holder.constLayout.setBackgroundColor(context.getColor(R.color.md_theme_surface))
 
         }
     }

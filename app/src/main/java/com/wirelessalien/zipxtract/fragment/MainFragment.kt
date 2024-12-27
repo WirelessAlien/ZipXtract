@@ -60,7 +60,6 @@ import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.Lifecycle
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.transition.TransitionInflater
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.chip.Chip
@@ -68,6 +67,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.transition.MaterialSharedAxis
 import com.wirelessalien.zipxtract.AboutFragment
 import com.wirelessalien.zipxtract.BuildConfig
 import com.wirelessalien.zipxtract.R
@@ -223,9 +223,8 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val inflater = TransitionInflater.from(requireContext())
-        enterTransition = inflater.inflateTransition(R.transition.fade_through)
-        exitTransition = inflater.inflateTransition(R.transition.fade_through)
+        enterTransition = MaterialSharedAxis(MaterialSharedAxis.Z, true)
+        exitTransition = MaterialSharedAxis(MaterialSharedAxis.Z, false)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -727,7 +726,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             updateAdapterWithFullList()
         } else {
             Toast.makeText(requireContext(),
-                getString(R.string.permission_not_granted), Toast.LENGTH_SHORT).show()
+                getString(R.string.permission_denied), Toast.LENGTH_SHORT).show()
             requireActivity().finish()
         }
     }
@@ -763,7 +762,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 updateAdapterWithFullList()
             } else {
                 // Permission denied
-                Toast.makeText(requireContext(), getString(R.string.permission_not_granted), Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), getString(R.string.permission_denied), Toast.LENGTH_SHORT).show()
                 requireActivity().finish()
             }
         } else {
@@ -773,7 +772,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 updateAdapterWithFullList()
             } else {
                 // Permission denied
-                Toast.makeText(requireContext(), getString(R.string.permission_not_granted), Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), getString(R.string.permission_denied), Toast.LENGTH_SHORT).show()
                 requireActivity().finish()
             }
         }

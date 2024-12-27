@@ -129,18 +129,37 @@
             android:layout_marginBottom="5dp"
             android:text="@string/encryption_method"/>
 
-        <com.google.android.material.card.MaterialCardView
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardCornerRadius="5dp"
-            android:layout_margin="5dp">
+            android:orientation="horizontal">
 
-            <Spinner
-                android:id="@+id/encryption_method_input"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:padding="5dp"/>
-        </com.google.android.material.card.MaterialCardView>
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/encCv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_toStartOf="@+id/encInfo"
+                app:cardCornerRadius="5dp"
+                android:layout_margin="5dp">
+
+                <Spinner
+                    android:id="@+id/encryption_method_input"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:padding="5dp"/>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/encInfo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
+                app:icon="@drawable/ic_info"
+                app:cornerRadius="5dp"/>
+        </RelativeLayout>
 
         <TextView
             android:layout_width="wrap_content"
