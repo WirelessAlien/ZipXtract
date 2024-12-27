@@ -17,7 +17,10 @@
 
 package com.wirelessalien.zipxtract.activity
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -25,6 +28,7 @@ import android.provider.OpenableColumns
 import android.util.Log
 import android.view.View
 import android.widget.ProgressBar
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -38,14 +42,50 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.BufferedReader
 import java.io.File
 import java.io.FileOutputStream
+import java.io.FileReader
+import java.io.IOException
 import java.io.InputStream
 
 class OpenWithActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val fileName = "Crash_Log.txt"
+        val crashLogFile = File(cacheDir, fileName)
+        if (crashLogFile.exists()) {
+            val crashLog = StringBuilder()
+            try {
+                val reader = BufferedReader(FileReader(crashLogFile))
+                var line: String?
+                while (reader.readLine().also { line = it } != null) {
+                    crashLog.append(line)
+                    crashLog.append('\n')
+                }
+                reader.close()
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
+
+            val dialogView = layoutInflater.inflate(R.layout.dialog_crash_log, null)
+            val textView = dialogView.findViewById<TextView>(R.id.crash_log_text)
+            textView.text = crashLog.toString()
+
+            MaterialAlertDialogBuilder(this)
+                .setTitle(getString(R.string.crash_log))
+                .setView(dialogView)
+                .setPositiveButton(getString(R.string.copy_text)) { _: DialogInterface?, _: Int ->
+                    val clipboard = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+                    val clip = ClipData.newPlainText("ShowCase Crash Log", crashLog.toString())
+                    clipboard.setPrimaryClip(clip)
+                    Toast.makeText(this@OpenWithActivity, R.string.copied_to_clipboard, Toast.LENGTH_SHORT).show()
+                }
+                .setNegativeButton(getString(R.string.close), null)
+                .show()
+            crashLogFile.delete()
+        }
 
         val uri = intent?.data
         if (uri != null) {
