@@ -20,6 +20,7 @@
 
 <resources>
 
+    <color name="md_theme_primary_90">#1A37618E</color>
     <color name="colorRed">#FF0000</color>
     <color name="colorBackground">#234766</color>
     <color name="md_theme_primary">#37618E</color>

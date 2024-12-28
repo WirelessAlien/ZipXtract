@@ -89,6 +89,8 @@ class OpenWithActivity : AppCompatActivity() {
 
         val uri = intent?.data
         if (uri != null) {
+            Log.i("OpenWithActivity", "Received URI: $uri")
+            Log.i("OpenWithActivity", "Received URI path: ${uri.path}")
             showPasswordInputDialog(uri)
         } else {
             Toast.makeText(this, getString(R.string.no_file_selected), Toast.LENGTH_SHORT).show()

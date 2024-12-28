@@ -103,7 +103,6 @@ class ZipOptionDialogFragment : DialogFragment() {
             MaterialAlertDialogBuilder(requireContext(), com.wirelessalien.zipxtract.R.style.MaterialDialog)
                 .setMessage(getString(com.wirelessalien.zipxtract.R.string.settings_info_text))
                 .setPositiveButton(getString(com.wirelessalien.zipxtract.R.string.ok)) { _, _ ->
-                    dismiss()
                 }
                 .show()
         }

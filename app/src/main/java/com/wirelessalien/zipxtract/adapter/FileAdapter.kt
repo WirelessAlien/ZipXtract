@@ -195,7 +195,7 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
 
         if (selectedItems.get(position, false)) {
             holder.fileCheckIcon.visibility = View.VISIBLE
-            holder.constLayout.setBackgroundColor(context.getColor(R.color.md_theme_outline))
+            holder.constLayout.setBackgroundColor(context.getColor(R.color.md_theme_primary_90))
         } else {
             holder.fileCheckIcon.visibility = View.GONE
             holder.constLayout.setBackgroundColor(context.getColor(R.color.md_theme_surface))
