@@ -27,6 +27,7 @@ import android.os.Environment
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import androidx.preference.PreferenceManager
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_COMPLETE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_ERROR
@@ -35,6 +36,7 @@ import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRACTION_NOTIFI
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_DIR_PATH
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_ERROR_MESSAGE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_PROGRESS
+import com.wirelessalien.zipxtract.constant.BroadcastConstants.PREFERENCE_EXTRACT_DIR_PATH
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -148,8 +150,16 @@ class ExtractArchiveService : Service() {
 
         try {
             val inStream = RandomAccessFileInStream(RandomAccessFile(file, "r"))
+            val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
+            val extractPath = sharedPreferences.getString(PREFERENCE_EXTRACT_DIR_PATH, null)
+
             val parentDir: File
-            if (useAppNameDir) {
+            if (!extractPath.isNullOrEmpty()) {
+                parentDir = File(extractPath)
+                if (!parentDir.exists()) {
+                    parentDir.mkdirs()
+                }
+            } else if (useAppNameDir) {
                 val rootDir = File(Environment.getExternalStorageDirectory().absolutePath)
                 parentDir = File(rootDir, getString(R.string.app_name))
                 if (!parentDir.exists()) {
@@ -209,8 +219,16 @@ class ExtractArchiveService : Service() {
                 zipFile.setPassword(password.toCharArray())
             }
 
+            val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
+            val extractPath = sharedPreferences.getString(PREFERENCE_EXTRACT_DIR_PATH, null)
+
             val parentDir: File
-            if (useAppNameDir) {
+            if (!extractPath.isNullOrEmpty()) {
+                parentDir = File(extractPath)
+                if (!parentDir.exists()) {
+                    parentDir.mkdirs()
+                }
+            } else if (useAppNameDir) {
                 val rootDir = File(Environment.getExternalStorageDirectory().absolutePath)
                 parentDir = File(rootDir, getString(R.string.app_name))
                 if (!parentDir.exists()) {

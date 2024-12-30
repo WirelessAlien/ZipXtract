@@ -26,6 +26,7 @@ import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import androidx.preference.PreferenceManager
 import com.wirelessalien.zipxtract.ArchiveOpenMultipart7zCallback
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_COMPLETE
@@ -35,6 +36,7 @@ import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRACTION_NOTIFI
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_DIR_PATH
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_ERROR_MESSAGE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_PROGRESS
+import com.wirelessalien.zipxtract.constant.BroadcastConstants.PREFERENCE_EXTRACT_DIR_PATH
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -149,8 +151,21 @@ class ExtractMultipart7zService : Service() {
         }
 
         val file = File(filePath)
-        val parentDir = file.parentFile ?: return
-        val baseFileName = file.nameWithoutExtension
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
+        val extractPath = sharedPreferences.getString(PREFERENCE_EXTRACT_DIR_PATH, null)
+
+        val baseDirectory = File(filePath).parentFile?.absolutePath ?: ""
+        val parentDir: File
+        if (!extractPath.isNullOrEmpty()) {
+            parentDir = File(extractPath)
+            if (!parentDir.exists()) {
+                parentDir.mkdirs()
+            }
+        } else {
+            parentDir = File(baseDirectory)
+        }
+
+        val baseFileName = File(filePath).nameWithoutExtension
         var newFileName = baseFileName
         var destinationDir = File(parentDir, newFileName)
         var counter = 1

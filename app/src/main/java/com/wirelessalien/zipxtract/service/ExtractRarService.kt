@@ -27,8 +27,10 @@ import android.os.Environment
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import androidx.preference.PreferenceManager
 import com.wirelessalien.zipxtract.ArchiveOpenMultipartRarCallback
 import com.wirelessalien.zipxtract.R
+import com.wirelessalien.zipxtract.constant.BroadcastConstants
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_COMPLETE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_ERROR
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_PROGRESS
@@ -153,15 +155,23 @@ class ExtractRarService : Service() {
         }
 
         val file = File(filePath)
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
+        val extractPath = sharedPreferences.getString(BroadcastConstants.PREFERENCE_EXTRACT_DIR_PATH, null)
+
         val parentDir: File
-        if (useAppNameDir) {
+        if (!extractPath.isNullOrEmpty()) {
+            parentDir = File(extractPath)
+            if (!parentDir.exists()) {
+                parentDir.mkdirs()
+            }
+        } else if (useAppNameDir) {
             val rootDir = File(Environment.getExternalStorageDirectory().absolutePath)
             parentDir = File(rootDir, getString(R.string.app_name))
             if (!parentDir.exists()) {
                 parentDir.mkdirs()
             }
         } else {
-            parentDir = file.parentFile ?: return
+            parentDir = file.parentFile ?: cacheDir
         }
 
         val baseFileName = file.nameWithoutExtension

@@ -153,5 +153,16 @@
     <string name="close">Close</string>
     <string name="crash_log">Crash Log</string>
     <string name="copy_text">Copy</string>
-
+    <string name="root_access">Root access</string>
+    <string name="root_access_summary">Enable root directory access</string>
+    <string name="action_settings">Settings</string>
+    <string name="internal_storage">Internal Storage</string>
+    <string name="root">Root</string>
+    <string name="sd_card_not_available">SD Card not available</string>
+    <string name="access_denied">Access denied</string>
+    <string name="directory_empty">Folder is empty</string>
+    <string name="extract_path">Extract folder</string>
+    <string name="archive_path">Archive folder</string>
+    <string name="archive_path_summary">Modify the default extract folder. \nDefault is \"parent folder\"</string>
+    <string name="extract_path_summary">Modify the default extract folder. \nDefault is \"parent folder\" or /storage/emulated/0/ZipXtract (for \"Open With\" menu extracted archive)\n</string>
 </resources>

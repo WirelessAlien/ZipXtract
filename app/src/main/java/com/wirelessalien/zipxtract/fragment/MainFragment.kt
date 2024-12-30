@@ -68,9 +68,9 @@ import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.transition.MaterialSharedAxis
-import com.wirelessalien.zipxtract.AboutFragment
 import com.wirelessalien.zipxtract.BuildConfig
 import com.wirelessalien.zipxtract.R
+import com.wirelessalien.zipxtract.activity.SettingsActivity
 import com.wirelessalien.zipxtract.adapter.FileAdapter
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_COMPLETE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_ERROR
@@ -142,6 +142,8 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
     private val extractionReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
+            if (!isAdded) return
+
             when (intent?.action) {
                 ACTION_EXTRACTION_COMPLETE -> {
                     val dirPath = intent.getStringExtra(EXTRA_DIR_PATH)
@@ -303,20 +305,9 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                         sortAscending = false
                         editor.putBoolean("sortAscending", sortAscending)
                     }
-                    R.id.menu_about -> {
-                        val fragmentManager = parentFragmentManager
-                        val newFragment = AboutFragment()
-                        if (isLargeLayout) {
-                            // Show the fragment as a dialog.
-                            newFragment.show(fragmentManager, "AboutFragment")
-                        } else {
-                            // Show the fragment fullscreen.
-                            val transaction = fragmentManager.beginTransaction()
-                            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-                            transaction.add(android.R.id.content, newFragment)
-                                .addToBackStack(null)
-                                .commit()
-                        }
+                    R.id.menu_settings -> {
+                        val intent = Intent(requireContext(), SettingsActivity::class.java)
+                        startActivity(intent)
                     }
                 }
                 editor.apply()
@@ -428,13 +419,13 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     }
 
     private fun updateCurrentPathChip() {
-        val internalStorage = "Internal Storage"
+        val internalStorage = getString(R.string.internal_storage)
         val sdCardPath = getSdCardPath()
         val basePath = Environment.getExternalStorageDirectory().absolutePath
         val currentPath = currentPath ?: basePath
         val displayPath = when {
             currentPath.startsWith(basePath) -> currentPath.replace(basePath, internalStorage)
-            sdCardPath != null && currentPath.startsWith(sdCardPath) -> currentPath.replace(sdCardPath, "SD Card")
+            sdCardPath != null && currentPath.startsWith(sdCardPath) -> currentPath.replace(sdCardPath, getString(R.string.sd_card))
             else -> currentPath
         }.split("/")
 
@@ -1263,17 +1254,32 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     private suspend fun getFiles(): ArrayList<File> = withContext(Dispatchers.IO) {
         val files = ArrayList<File>()
         val directories = ArrayList<File>()
+
         val directory = File(currentPath ?: Environment.getExternalStorageDirectory().absolutePath)
+
+        if (!directory.canRead()) {
+            withContext(Dispatchers.Main) {
+                binding.statusTextView.text = getString(R.string.access_denied)
+                binding.statusTextView.visibility = View.VISIBLE
+            }
+            return@withContext files
+        }
 
         val fileList = directory.listFiles()
 
-        if (fileList != null) {
-            for (file in fileList) {
-                if (file.isDirectory) {
-                    directories.add(file)
-                } else {
-                    files.add(file)
-                }
+        if (fileList == null || fileList.isEmpty()) {
+            withContext(Dispatchers.Main) {
+                binding.statusTextView.text = getString(R.string.directory_empty)
+                binding.statusTextView.visibility = View.VISIBLE
+            }
+            return@withContext files
+        }
+
+        for (file in fileList) {
+            if (file.isDirectory) {
+                directories.add(file)
+            } else {
+                files.add(file)
             }
         }
 
@@ -1282,9 +1288,18 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 directories.sortBy { it.name }
                 files.sortBy { it.name }
             }
-            SortBy.SORT_BY_SIZE -> files.sortBy { it.length() }
-            SortBy.SORT_BY_MODIFIED -> files.sortBy { getFileTimeOfCreation(it) }
-            SortBy.SORT_BY_EXTENSION -> files.sortBy { it.extension }
+            SortBy.SORT_BY_SIZE -> {
+                directories.sortBy { it.length() }
+                files.sortBy { it.length() }
+            }
+            SortBy.SORT_BY_MODIFIED -> {
+                directories.sortBy { getFileTimeOfCreation(it) }
+                files.sortBy { getFileTimeOfCreation(it) }
+            }
+            SortBy.SORT_BY_EXTENSION -> {
+                directories.sortBy { it.extension }
+                files.sortBy { it.extension }
+            }
         }
 
         if (!sortAscending) {
@@ -1295,6 +1310,10 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         val combinedList = ArrayList<File>()
         combinedList.addAll(directories)
         combinedList.addAll(files)
+
+        withContext(Dispatchers.Main) {
+            binding.statusTextView.visibility = View.GONE
+        }
 
         combinedList
     }
@@ -1313,6 +1332,11 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             CoroutineScope(Dispatchers.IO).launch {
                 val fullFileList = getFiles()
                 withContext(Dispatchers.Main) {
+                    if (fullFileList.isEmpty()) {
+                        binding.statusTextView.visibility = View.VISIBLE
+                    } else {
+                        binding.statusTextView.visibility = View.GONE
+                    }
                     adapter.updateFilesAndFilter(fullFileList)
                 }
             }

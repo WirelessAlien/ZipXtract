@@ -27,6 +27,14 @@
         android:indeterminateBehavior="repeat"
         android:layout_gravity="center"/>
 
+    <TextView
+        android:id="@+id/statusTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        android:textSize="16sp"/>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -65,6 +73,36 @@
                     app:chipIcon="@drawable/ic_change"
                     app:chipCornerRadius="4dp"
                     android:text="Storage"/>
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/internalStorageChip"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/internal_storage"
+                    android:layout_marginStart="5dp"
+                    app:chipCornerRadius="4dp"
+                    android:visibility="gone" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/sdCardChip"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/sd_card"
+                    android:layout_marginStart="3dp"
+                    app:chipCornerRadius="4dp"
+                    android:visibility="gone" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/rootChip"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/root"
+                    app:chipCornerRadius="4dp"
+                    android:layout_marginStart="3dp"
+                    android:visibility="gone" />
 
                 <com.google.android.material.chip.ChipGroup
                     android:id="@+id/chipGroupPath"

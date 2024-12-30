@@ -48,7 +48,6 @@ import androidx.core.content.FileProvider
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.Lifecycle
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -58,9 +57,9 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
-import com.wirelessalien.zipxtract.AboutFragment
 import com.wirelessalien.zipxtract.BuildConfig
 import com.wirelessalien.zipxtract.R
+import com.wirelessalien.zipxtract.activity.SettingsActivity
 import com.wirelessalien.zipxtract.adapter.FileAdapter
 import com.wirelessalien.zipxtract.constant.BroadcastConstants
 import com.wirelessalien.zipxtract.databinding.FragmentArchiveBinding
@@ -81,7 +80,7 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
 
     private lateinit var binding: FragmentArchiveBinding
     private lateinit var adapter: FileAdapter
-    private val archiveExtensions = listOf("rar", "zip", "7z", "tar", "gz", "bz2", "xz", "lz4", "lzma", "sz")
+    private val archiveExtensions = listOf("rar", "r00", "001", "7z", "7z.001", "zip", "tar", "gz", "bz2", "xz", "lz4", "lzma", "sz")
     private lateinit var eProgressDialog: AlertDialog
     private lateinit var progressText: TextView
     private lateinit var eProgressBar: LinearProgressIndicator
@@ -100,6 +99,8 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
 
     private val extractionReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
+            if (!isAdded) return
+
             when (intent?.action) {
                 BroadcastConstants.ACTION_EXTRACTION_COMPLETE -> {
                     eProgressDialog.dismiss()
@@ -216,20 +217,9 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
                         sortAscending = false
                         editor.putBoolean("sortAscending", sortAscending)
                     }
-                    R.id.menu_about -> {
-                        val fragmentManager = parentFragmentManager
-                        val newFragment = AboutFragment()
-                        if (isLargeLayout) {
-                            // Show the fragment as a dialog.
-                            newFragment.show(fragmentManager, "AboutFragment")
-                        } else {
-                            // Show the fragment fullscreen.
-                            val transaction = fragmentManager.beginTransaction()
-                            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-                            transaction.add(android.R.id.content, newFragment)
-                                .addToBackStack(null)
-                                .commit()
-                        }
+                    R.id.menu_settings -> {
+                        val intent = Intent(requireContext(), SettingsActivity::class.java)
+                        startActivity(intent)
                     }
                 }
                 editor.apply()

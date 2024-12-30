@@ -29,5 +29,7 @@ object BroadcastConstants {
     const val ACTION_ARCHIVE_PROGRESS = "ACTION_ARCHIVE_PROGRESS"
     const val EXTRA_PROGRESS = "progress"
     const val EXTRA_ERROR_MESSAGE = "error_message"
+
+    const val PREFERENCE_EXTRACT_DIR_PATH = "key_extract_path"
 }
 

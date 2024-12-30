@@ -43,9 +43,9 @@
     </item>
 
     <item
-        android:id="@+id/menu_about"
-        android:icon="@drawable/ic_info"
-        android:title="@string/about"
+        android:id="@+id/menu_settings"
+        android:icon="@drawable/ic_settings"
+        android:title="@string/action_settings"
         app:showAsAction="never" />
 </menu>
 

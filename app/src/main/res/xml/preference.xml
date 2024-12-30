@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~  Copyright (C) 2023  WirelessAlien <https://github.com/WirelessAlien>
+  ~
+  ~     This program is free software: you can redistribute it and/or modify
+  ~     it under the terms of the GNU General Public License as published by
+  ~     the Free Software Foundation, either version 3 of the License, or
+  ~     any later version.
+  ~
+  ~     This program is distributed in the hope that it will be useful,
+  ~     but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~     GNU General Public License for more details.
+  ~
+  ~     You should have received a copy of the GNU General Public License
+  ~     along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <com.wirelessalien.zipxtract.CustomEditTextPreference
+        android:key="key_extract_path"
+        android:title="@string/extract_path"
+        android:icon="@drawable/ic_folder_2"
+        android:summary="@string/extract_path_summary"
+        android:dialogTitle="@string/extract_path"/>
+
+    <PreferenceCategory>
+
+        <Preference
+            android:key="key_about"
+            android:title="@string/about"
+            android:icon="@drawable/ic_info"/>
+
+        <Preference
+            android:key="key_privacy_policy"
+            android:title="@string/privacy_policy"
+            android:icon="@drawable/ic_privacy_policy"/>
+    </PreferenceCategory>
+
+</PreferenceScreen>
