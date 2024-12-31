@@ -32,7 +32,6 @@ import com.wirelessalien.zipxtract.AboutFragment
 import com.wirelessalien.zipxtract.R
 
 class SettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeListener {
-    private var isLargeLayout: Boolean = false
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.preference, rootKey)
 
@@ -40,20 +39,16 @@ class SettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeLis
         if (aboutPreference != null) {
             aboutPreference.onPreferenceClickListener =
                 Preference.OnPreferenceClickListener {
-                    isLargeLayout = resources.getBoolean(R.bool.large_layout)
                     val fragmentManager = parentFragmentManager
                     val newFragment = AboutFragment()
-                    if (isLargeLayout) {
-                        // Show the fragment as a dialog.
-                        newFragment.show(fragmentManager, "AboutFragment")
-                    } else {
-                        // Show the fragment fullscreen.
-                        val transaction = fragmentManager.beginTransaction()
-                        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-                        transaction.add(android.R.id.content, newFragment)
-                            .addToBackStack(null)
-                            .commit()
-                    }
+
+                    // Show the fragment fullscreen.
+                    val transaction = fragmentManager.beginTransaction()
+                    transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+                    transaction.add(android.R.id.content, newFragment)
+                        .addToBackStack(null)
+                        .commit()
+
                     true
                 }
         }

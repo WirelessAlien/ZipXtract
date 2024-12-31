@@ -123,7 +123,6 @@ class ExtractMultipartZipService : Service() {
         }
 
         val file = File(filePath)
-        var parentDir = file.parentFile ?: File(Environment.getExternalStorageDirectory().absolutePath)
 
         try {
 
@@ -147,6 +146,7 @@ class ExtractMultipartZipService : Service() {
             val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
             val extractPath = sharedPreferences.getString(PREFERENCE_EXTRACT_DIR_PATH, null)
 
+            val parentDir: File
             if (!extractPath.isNullOrEmpty()) {
                 parentDir = if (File(extractPath).isAbsolute) {
                     File(extractPath)
