@@ -56,6 +56,7 @@ import androidx.core.content.FileProvider
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.Lifecycle
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
@@ -331,9 +332,11 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             binding.externalStorageChip.setOnClickListener {
                 val currentPath = currentPath ?: Environment.getExternalStorageDirectory().absolutePath
                 val basePath = Environment.getExternalStorageDirectory().absolutePath
-                if (currentPath.startsWith(basePath)) {
+                if (currentPath.startsWith(basePath) && !currentPath.startsWith(sdCardPath)) {
+                    parentFragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
                     navigateToPath(sdCardPath)
-                } else {
+                } else if (currentPath.startsWith(sdCardPath) && !currentPath.startsWith(basePath)) {
+                    parentFragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
                     navigateToPath(basePath)
                 }
             }
