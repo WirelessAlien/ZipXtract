@@ -130,7 +130,7 @@
     <string name="no_files_to_archive">No files were provided</string>
     <string name="tar_creation_success">Tar file created successfully</string>
     <string name="extracting_progress">Extracting… %1$d %%</string>
-    <string name="compressing_progress">Compressing… %1$d %%</string>
+    <string name="compressing_progress">Archiving… %1$d %%</string>
     <string name="home">Home</string>
     <string name="privacy_policy">Privacy Policy</string>
     <string name="source_code">Source Code</string>
@@ -164,5 +164,7 @@
     <string name="extract_path">Extract folder</string>
     <string name="archive_path">Archive folder</string>
     <string name="archive_path_summary">Modify the default extract folder. \nDefault is \"parent folder\"</string>
-    <string name="extract_path_summary">Modify the default extract folder. \nDefault is \"parent folder\" or /storage/emulated/0/ZipXtract (for \"Open With\" menu extracted archive)\n</string>
+    <string name="extract_path_summary">Modify the default extract folder. \nDefault is \"parent folder\" or Internal Storage/ZipXtract (for \"Open With\" menu extracted archive)</string>
+    <string name="info_tip">Useful Tip</string>
+    <string name="info_tip_description">\u25CF Long press on files and folders or click on file and folder icons to select them for archive creation.\n\n\u25CF Click on a file to display the extraction menu, where you can choose the appropriate extraction option.\n\n\u25CF Files extracted using the \"Open With\" menu of OS will default to the \"Internal Storage/ZipXtract\" directory. This can be modified in the app settings.\n\n\u25CF The default location for archive creation and extraction within the app is the parent directory of the respective file/files. This can also be changed in the app settings.</string>
 </resources>
