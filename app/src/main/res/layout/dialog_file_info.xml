@@ -28,25 +28,25 @@
         android:layout_height="wrap_content"
         android:textStyle="bold"
         android:textSize="16sp"
-        android:paddingBottom="8dp" />
+        android:paddingBottom="16dp" />
 
     <TextView
         android:id="@+id/file_path"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingBottom="8dp" />
+        android:paddingBottom="16dp" />
 
     <TextView
         android:id="@+id/file_size"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingBottom="8dp" />
+        android:paddingBottom="16dp" />
 
     <TextView
         android:id="@+id/last_modified"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingBottom="8dp" />
+        android:paddingBottom="16dp" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/ok_button"
