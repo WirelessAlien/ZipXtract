@@ -974,7 +974,11 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             if (supportedExtensions.any { fileExtension.endsWith(it) }) {
                 startExtractionCsService(filePaths)
             } else {
-                showPasswordInputDialog(filePaths)
+                if (file.extension.equals("rar", ignoreCase = true)) {
+                    showPasswordInputMultiDialog(filePaths)
+                } else {
+                    showPasswordInputDialog(filePaths)
+                }
             }
             bottomSheetDialog.dismiss()
         }

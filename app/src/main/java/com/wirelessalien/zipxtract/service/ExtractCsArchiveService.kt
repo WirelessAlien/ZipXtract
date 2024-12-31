@@ -135,7 +135,11 @@ class ExtractCsArchiveService : Service() {
 
         val parentDir: File
         if (!extractPath.isNullOrEmpty()) {
-            parentDir = File(extractPath)
+            parentDir = if (File(extractPath).isAbsolute) {
+                File(extractPath)
+            } else {
+                File(Environment.getExternalStorageDirectory(), extractPath)
+            }
             if (!parentDir.exists()) {
                 parentDir.mkdirs()
             }
@@ -146,7 +150,7 @@ class ExtractCsArchiveService : Service() {
                 parentDir.mkdirs()
             }
         } else {
-            parentDir = file.parentFile ?: cacheDir
+            parentDir = file.parentFile ?: File(Environment.getExternalStorageDirectory().absolutePath)
         }
 
         val outputFile = File(parentDir, file.nameWithoutExtension)

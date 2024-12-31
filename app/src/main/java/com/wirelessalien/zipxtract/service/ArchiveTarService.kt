@@ -23,9 +23,11 @@ import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
 import android.os.Build
+import android.os.Environment
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import androidx.preference.PreferenceManager
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_COMPLETE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_ERROR
@@ -34,6 +36,7 @@ import com.wirelessalien.zipxtract.constant.BroadcastConstants.ARCHIVE_NOTIFICAT
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_DIR_PATH
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_ERROR_MESSAGE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_PROGRESS
+import com.wirelessalien.zipxtract.constant.BroadcastConstants.PREFERENCE_ARCHIVE_DIR_PATH
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -121,11 +124,28 @@ class ArchiveTarService : Service() {
         }
         try {
             val baseDirectory = File(filesToArchive.first()).parentFile?.absolutePath ?: ""
-            val tarFile = File(baseDirectory, "$archiveName.tar")
+            val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
+            val archivePath = sharedPreferences.getString(PREFERENCE_ARCHIVE_DIR_PATH, null)
+            val parentDir: File
+
+            if (!archivePath.isNullOrEmpty()) {
+                parentDir = if (File(archivePath).isAbsolute) {
+                    File(archivePath)
+                } else {
+                    File(Environment.getExternalStorageDirectory(), archivePath)
+                }
+                if (!parentDir.exists()) {
+                    parentDir.mkdirs()
+                }
+            } else {
+                parentDir = File(filesToArchive.first()).parentFile ?: Environment.getExternalStorageDirectory()
+            }
+
+            var tarFile = File(parentDir, "$archiveName.tar")
             var counter = 1
 
             while (tarFile.exists()) {
-                tarFile.renameTo(File(baseDirectory, "$archiveName ($counter).tar"))
+                tarFile = File(parentDir, "$archiveName ($counter).tar")
                 counter++
             }
 

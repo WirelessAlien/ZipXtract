@@ -30,7 +30,6 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.preference.PreferenceManager
 import com.wirelessalien.zipxtract.ArchiveOpenMultipartRarCallback
 import com.wirelessalien.zipxtract.R
-import com.wirelessalien.zipxtract.constant.BroadcastConstants
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_COMPLETE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_ERROR
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_PROGRESS
@@ -38,6 +37,7 @@ import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRACTION_NOTIFI
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_DIR_PATH
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_ERROR_MESSAGE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_PROGRESS
+import com.wirelessalien.zipxtract.constant.BroadcastConstants.PREFERENCE_EXTRACT_DIR_PATH
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -155,23 +155,31 @@ class ExtractRarService : Service() {
         }
 
         val file = File(filePath)
+        val inputDir = file.parentFile ?: File(Environment.getExternalStorageDirectory().absolutePath)
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
-        val extractPath = sharedPreferences.getString(BroadcastConstants.PREFERENCE_EXTRACT_DIR_PATH, null)
-
+        val extractPath = sharedPreferences.getString(PREFERENCE_EXTRACT_DIR_PATH, null)
         val parentDir: File
+
         if (!extractPath.isNullOrEmpty()) {
-            parentDir = File(extractPath)
-            if (!parentDir.exists()) {
-                parentDir.mkdirs()
+            parentDir = if (File(extractPath).isAbsolute) {
+                File(extractPath)
+            } else {
+                File(Environment.getExternalStorageDirectory(), extractPath)
             }
-        } else if (useAppNameDir) {
-            val rootDir = File(Environment.getExternalStorageDirectory().absolutePath)
-            parentDir = File(rootDir, getString(R.string.app_name))
             if (!parentDir.exists()) {
                 parentDir.mkdirs()
             }
         } else {
-            parentDir = file.parentFile ?: cacheDir
+            parentDir = if (useAppNameDir) {
+                val rootDir = File(Environment.getExternalStorageDirectory().absolutePath)
+                File(rootDir, getString(R.string.app_name)).apply {
+                    if (!exists()) {
+                        mkdirs()
+                    }
+                }
+            } else {
+                file.parentFile ?: File(Environment.getExternalStorageDirectory().absolutePath)
+            }
         }
 
         val baseFileName = file.nameWithoutExtension
@@ -186,7 +194,7 @@ class ExtractRarService : Service() {
         }
 
         try {
-            val archiveOpenVolumeCallback = ArchiveOpenMultipartRarCallback(parentDir)
+            val archiveOpenVolumeCallback = ArchiveOpenMultipartRarCallback(inputDir)
             val inStream: IInStream? = archiveOpenVolumeCallback.getStream(file.name)
             if (inStream != null) {
                 val inArchive: IInArchive = SevenZip.openInArchive(archiveFormat, inStream, archiveOpenVolumeCallback)

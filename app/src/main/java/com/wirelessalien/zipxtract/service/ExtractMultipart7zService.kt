@@ -23,6 +23,7 @@ import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
 import android.os.Build
+import android.os.Environment
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
@@ -154,15 +155,19 @@ class ExtractMultipart7zService : Service() {
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
         val extractPath = sharedPreferences.getString(PREFERENCE_EXTRACT_DIR_PATH, null)
 
-        val baseDirectory = File(filePath).parentFile?.absolutePath ?: ""
+        val inputDir = file.parentFile ?: File(Environment.getExternalStorageDirectory().absolutePath)
         val parentDir: File
         if (!extractPath.isNullOrEmpty()) {
-            parentDir = File(extractPath)
+            parentDir = if (File(extractPath).isAbsolute) {
+                File(extractPath)
+            } else {
+                File(Environment.getExternalStorageDirectory(), extractPath)
+            }
             if (!parentDir.exists()) {
                 parentDir.mkdirs()
             }
         } else {
-            parentDir = File(baseDirectory)
+            parentDir = file.parentFile ?: File(Environment.getExternalStorageDirectory().absolutePath)
         }
 
         val baseFileName = File(filePath).nameWithoutExtension
@@ -177,7 +182,7 @@ class ExtractMultipart7zService : Service() {
         }
 
         try {
-            val archiveOpenVolumeCallback = ArchiveOpenMultipart7zCallback(parentDir)
+            val archiveOpenVolumeCallback = ArchiveOpenMultipart7zCallback(inputDir)
             val inStream: IInStream = VolumedArchiveInStream(file.name, archiveOpenVolumeCallback)
             val inArchive: IInArchive = SevenZip.openInArchive(archiveFormat, inStream)
 

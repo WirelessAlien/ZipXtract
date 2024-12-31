@@ -155,7 +155,11 @@ class ExtractArchiveService : Service() {
 
             val parentDir: File
             if (!extractPath.isNullOrEmpty()) {
-                parentDir = File(extractPath)
+                parentDir = if (File(extractPath).isAbsolute) {
+                    File(extractPath)
+                } else {
+                    File(Environment.getExternalStorageDirectory(), extractPath)
+                }
                 if (!parentDir.exists()) {
                     parentDir.mkdirs()
                 }
@@ -166,7 +170,7 @@ class ExtractArchiveService : Service() {
                     parentDir.mkdirs()
                 }
             } else {
-                parentDir = file.parentFile ?: cacheDir
+                parentDir = file.parentFile ?: File(Environment.getExternalStorageDirectory().absolutePath)
             }
 
             val baseFileName = file.name.substring(0, file.name.lastIndexOf('.'))
@@ -224,7 +228,11 @@ class ExtractArchiveService : Service() {
 
             val parentDir: File
             if (!extractPath.isNullOrEmpty()) {
-                parentDir = File(extractPath)
+                parentDir = if (File(extractPath).isAbsolute) {
+                    File(extractPath)
+                } else {
+                    File(Environment.getExternalStorageDirectory(), extractPath)
+                }
                 if (!parentDir.exists()) {
                     parentDir.mkdirs()
                 }
@@ -235,7 +243,7 @@ class ExtractArchiveService : Service() {
                     parentDir.mkdirs()
                 }
             } else {
-                parentDir = file.parentFile ?: cacheDir
+                parentDir = file.parentFile ?: File(Environment.getExternalStorageDirectory().absolutePath)
             }
 
             val baseFileName = file.name.substring(0, file.name.lastIndexOf('.'))

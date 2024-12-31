@@ -24,10 +24,11 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import androidx.fragment.app.FragmentTransaction
+import androidx.preference.EditTextPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
+import androidx.preference.PreferenceManager
 import com.wirelessalien.zipxtract.AboutFragment
-import com.wirelessalien.zipxtract.CustomEditTextPreference
 import com.wirelessalien.zipxtract.R
 
 class SettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeListener {
@@ -74,10 +75,28 @@ class SettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeLis
 //            true
 //        }
 
-        val extractPathPreference = findPreference<CustomEditTextPreference>("key_extract_path")
+        val extractPathPreference = findPreference<EditTextPreference>("key_extract_path")
         extractPathPreference?.let {
+            val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
             val defaultPath = Environment.getExternalStorageDirectory().absolutePath + "/"
-            it.text = defaultPath
+            val savedPath = sharedPreferences.getString("key_extract_path", defaultPath)
+            if (!savedPath!!.startsWith(defaultPath)) {
+                it.text = defaultPath + savedPath
+            } else {
+                it.text = savedPath
+            }
+        }
+
+        val archivePathPreference = findPreference<EditTextPreference>("key_archive_path")
+        archivePathPreference?.let {
+            val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
+            val defaultPath = Environment.getExternalStorageDirectory().absolutePath + "/"
+            val savedPath = sharedPreferences.getString("key_archive_path", defaultPath)
+            if (!savedPath!!.startsWith(defaultPath)) {
+                it.text = defaultPath + savedPath
+            } else {
+                it.text = savedPath
+            }
         }
     }
 

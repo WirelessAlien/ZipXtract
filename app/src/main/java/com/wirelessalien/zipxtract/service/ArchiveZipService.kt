@@ -23,9 +23,11 @@ import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
 import android.os.Build
+import android.os.Environment
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import androidx.preference.PreferenceManager
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.constant.BroadcastConstants
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_COMPLETE
@@ -33,6 +35,7 @@ import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_ER
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ARCHIVE_NOTIFICATION_CHANNEL_ID
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_DIR_PATH
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_ERROR_MESSAGE
+import com.wirelessalien.zipxtract.constant.BroadcastConstants.PREFERENCE_ARCHIVE_DIR_PATH
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -175,11 +178,28 @@ class ArchiveZipService : Service() {
             }
 
             val baseDirectory = File(selectedFiles.first()).parentFile
-            var outputFile = File(baseDirectory, "$archiveName.zip")
+            val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
+            val archivePath = sharedPreferences.getString(PREFERENCE_ARCHIVE_DIR_PATH, null)
+            val parentDir: File
+
+            if (!archivePath.isNullOrEmpty()) {
+                parentDir = if (File(archivePath).isAbsolute) {
+                    File(archivePath)
+                } else {
+                    File(Environment.getExternalStorageDirectory(), archivePath)
+                }
+                if (!parentDir.exists()) {
+                    parentDir.mkdirs()
+                }
+            } else {
+                parentDir = File(selectedFiles.first()).parentFile ?: Environment.getExternalStorageDirectory()
+            }
+
+            var outputFile = File(parentDir, "$archiveName.zip")
             var counter = 1
 
             while (outputFile.exists()) {
-                outputFile = File(baseDirectory, "$archiveName ($counter).zip")
+                outputFile = File(parentDir, "$archiveName ($counter).zip")
                 counter++
             }
 
@@ -231,7 +251,7 @@ class ArchiveZipService : Service() {
 
                 if (progressMonitor.result == ProgressMonitor.Result.SUCCESS) {
                     showCompletionNotification()
-                    sendLocalBroadcast(Intent(ACTION_ARCHIVE_COMPLETE).putExtra(EXTRA_DIR_PATH, baseDirectory?.path))
+                    sendLocalBroadcast(Intent(ACTION_ARCHIVE_COMPLETE).putExtra(EXTRA_DIR_PATH, parentDir.absolutePath))
                 } else {
                     showErrorNotification(progressMonitor.result.toString())
                     sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, progressMonitor.result.toString()))

@@ -17,12 +17,19 @@
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <com.wirelessalien.zipxtract.CustomEditTextPreference
+    <EditTextPreference
         android:key="key_extract_path"
         android:title="@string/extract_path"
         android:icon="@drawable/ic_folder_2"
         android:summary="@string/extract_path_summary"
         android:dialogTitle="@string/extract_path"/>
+
+    <EditTextPreference
+        android:key="key_archive_path"
+        android:title="@string/archive_path"
+        android:icon="@drawable/ic_folder_2"
+        android:summary="@string/archive_path_summary"
+        android:dialogTitle="@string/archive_path"/>
 
     <PreferenceCategory>
 

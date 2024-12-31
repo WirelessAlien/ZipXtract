@@ -23,9 +23,11 @@ import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
 import android.os.Build
+import android.os.Environment
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import androidx.preference.PreferenceManager
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_COMPLETE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_ERROR
@@ -34,6 +36,7 @@ import com.wirelessalien.zipxtract.constant.BroadcastConstants.ARCHIVE_NOTIFICAT
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_DIR_PATH
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_ERROR_MESSAGE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_PROGRESS
+import com.wirelessalien.zipxtract.constant.BroadcastConstants.PREFERENCE_ARCHIVE_DIR_PATH
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -127,18 +130,35 @@ class CompressCsArchiveService : Service() {
 
         val file = File(filePath)
         val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
-        var outputFile = if (format == CompressorStreamFactory.BZIP2) {
-            File(file.parent, "${file.name}.bz2")
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
+        val archivePath = sharedPreferences.getString(PREFERENCE_ARCHIVE_DIR_PATH, null)
+        val parentDir: File
+
+        if (!archivePath.isNullOrEmpty()) {
+            parentDir = if (File(archivePath).isAbsolute) {
+                File(archivePath)
+            } else {
+                File(Environment.getExternalStorageDirectory(), archivePath)
+            }
+            if (!parentDir.exists()) {
+                parentDir.mkdirs()
+            }
         } else {
-            File(file.parent, "${file.name}.$format")
+            parentDir = File(filePath).parentFile ?: Environment.getExternalStorageDirectory()
+        }
+
+        var outputFile = if (format == CompressorStreamFactory.BZIP2) {
+            File(parentDir, "${File(filePath).name}.bz2")
+        } else {
+            File(parentDir, "${File(filePath).name}.$format")
         }
         var counter = 1
 
         while (outputFile.exists()) {
             outputFile = if (format == CompressorStreamFactory.BZIP2) {
-                File(file.parent, "${file.name}_$counter.bz2")
+                File(parentDir, "${File(filePath).name}_$counter.bz2")
             } else {
-                File(file.parent, "${file.name}_$counter.$format")
+                File(parentDir, "${File(filePath).name}_$counter.$format")
             }
             counter++
         }

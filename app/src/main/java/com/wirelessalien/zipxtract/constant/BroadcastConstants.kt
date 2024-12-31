@@ -31,5 +31,6 @@ object BroadcastConstants {
     const val EXTRA_ERROR_MESSAGE = "error_message"
 
     const val PREFERENCE_EXTRACT_DIR_PATH = "key_extract_path"
+    const val PREFERENCE_ARCHIVE_DIR_PATH = "key_archive_path"
 }
 
