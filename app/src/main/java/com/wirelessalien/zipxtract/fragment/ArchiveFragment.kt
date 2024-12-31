@@ -88,7 +88,6 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
         SORT_BY_NAME, SORT_BY_SIZE, SORT_BY_MODIFIED, SORT_BY_EXTENSION
     }
     private var isSearchActive: Boolean = false
-    private var isLargeLayout: Boolean = false
 
     private var sortBy: SortBy = SortBy.SORT_BY_NAME
     private var sortAscending: Boolean = true
@@ -155,7 +154,6 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
         sharedPreferences = requireActivity().getPreferences(Context.MODE_PRIVATE)
         sortBy = SortBy.valueOf(sharedPreferences.getString("sortBy", SortBy.SORT_BY_NAME.name) ?: SortBy.SORT_BY_NAME.name)
         sortAscending = sharedPreferences.getBoolean("sortAscending", true)
-        isLargeLayout = resources.getBoolean(R.bool.large_layout)
 
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
         adapter = FileAdapter(requireContext(), null, ArrayList())

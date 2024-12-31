@@ -21,6 +21,8 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.BroadcastReceiver
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -60,6 +62,7 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.Lifecycle
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
@@ -138,7 +141,6 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     private var areFabsVisible: Boolean = false
     private lateinit var eProgressBar: LinearProgressIndicator
     private lateinit var aProgressBar: LinearProgressIndicator
-    private var isLargeLayout: Boolean = false
     private lateinit var binding: FragmentMainBinding
 
     private val extractionReceiver = object : BroadcastReceiver() {
@@ -232,17 +234,22 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentMainBinding.inflate(inflater, container, false)
+
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
+        val isDialogShown = sharedPreferences.getBoolean("isInfoDialogShown", false)
+
+        if (!isDialogShown) {
+            showInfoDialog()
+        }
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        sharedPreferences = requireActivity().getPreferences(Context.MODE_PRIVATE)
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
         sortBy = SortBy.valueOf(sharedPreferences.getString("sortBy", SortBy.SORT_BY_NAME.name) ?: SortBy.SORT_BY_NAME.name)
         sortAscending = sharedPreferences.getBoolean("sortAscending", true)
-
-        isLargeLayout = resources.getBoolean(R.bool.large_layout)
 
         (activity as AppCompatActivity).setSupportActionBar(binding.toolbar)
 
@@ -487,54 +494,59 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         areFabsVisible = false
     }
 
+    private fun showInfoDialog() {
+        MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
+            .setTitle(getString(R.string.info_tip))
+            .setMessage(getString(R.string.info_tip_description))
+            .setPositiveButton(getString(R.string.ok)) { dialog, _ ->
+                with(sharedPreferences.edit()) {
+                    putBoolean("isInfoDialogShown", true)
+                    apply()
+                }
+                dialog.dismiss()
+            }
+            .show()
+    }
+
     private fun show7zOptionsDialog() {
         val fragmentManager = parentFragmentManager
         val newFragment = SevenZOptionDialogFragment.newInstance(adapter)
-        if (isLargeLayout) {
-            // Show the fragment as a dialog.
-            newFragment.show(fragmentManager, "SevenZOptionDialogFragment")
-        } else {
-            // Show the fragment fullscreen.
-            val transaction = fragmentManager.beginTransaction()
-            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-            transaction.add(android.R.id.content, newFragment)
-                .addToBackStack(null)
-                .commit()
-        }
+
+        // Show the fragment fullscreen.
+        val transaction = fragmentManager.beginTransaction()
+        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+        transaction.add(android.R.id.content, newFragment)
+            .addToBackStack(null)
+            .commit()
+
         actionMode?.finish() // Destroy the action mode
     }
 
     private fun showTarOptionsDialog() {
         val fragmentManager = parentFragmentManager
         val newFragment = TarOptionsDialogFragment.newInstance(adapter)
-        if (isLargeLayout) {
-            // Show the fragment as a dialog.
-            newFragment.show(fragmentManager, "TarOptionDialogFragment")
-        } else {
-            // Show the fragment fullscreen.
-            val transaction = fragmentManager.beginTransaction()
-            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-            transaction.add(android.R.id.content, newFragment)
-                .addToBackStack(null)
-                .commit()
-        }
+
+        // Show the fragment fullscreen.
+        val transaction = fragmentManager.beginTransaction()
+        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+        transaction.add(android.R.id.content, newFragment)
+            .addToBackStack(null)
+            .commit()
+
         actionMode?.finish() // Destroy the action mode
     }
 
     private fun showZipOptionsDialog() {
         val fragmentManager = parentFragmentManager
         val newFragment = ZipOptionDialogFragment.newInstance(adapter)
-        if (isLargeLayout) {
-            // Show the fragment as a dialog.
-            newFragment.show(fragmentManager, "ZipOptionDialogFragment")
-        } else {
-            // Show the fragment fullscreen.
-            val transaction = fragmentManager.beginTransaction()
-            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-            transaction.add(android.R.id.content, newFragment)
-                .addToBackStack(null)
-                .commit()
-        }
+
+        // Show the fragment fullscreen.
+        val transaction = fragmentManager.beginTransaction()
+        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+        transaction.add(android.R.id.content, newFragment)
+            .addToBackStack(null)
+            .commit()
+
         actionMode?.finish()
     }
 
@@ -629,17 +641,14 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                         R.id.m_archive_7z -> {
                             val fragmentManager = parentFragmentManager
                             val newFragment = SevenZOptionDialogFragment.newInstance(adapter)
-                            if (isLargeLayout) {
-                                // Show the fragment as a dialog.
-                                newFragment.show(fragmentManager, "SevenZOptionDialogFragment")
-                            } else {
-                                // Show the fragment fullscreen.
-                                val transaction = fragmentManager.beginTransaction()
-                                transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-                                transaction.add(android.R.id.content, newFragment)
-                                    .addToBackStack(null)
-                                    .commit()
-                            }
+
+                            // Show the fragment fullscreen.
+                            val transaction = fragmentManager.beginTransaction()
+                            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+                            transaction.add(android.R.id.content, newFragment)
+                                .addToBackStack(null)
+                                .commit()
+
                             actionMode?.finish() // Destroy the action mode
                             true
                         }
@@ -647,17 +656,14 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                         R.id.m_archive_zip -> {
                             val fragmentManager = parentFragmentManager
                             val newFragment = ZipOptionDialogFragment.newInstance(adapter)
-                            if (isLargeLayout) {
-                                // Show the fragment as a dialog.
-                                newFragment.show(fragmentManager, "ZipOptionDialogFragment")
-                            } else {
-                                // Show the fragment fullscreen.
-                                val transaction = fragmentManager.beginTransaction()
-                                transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-                                transaction.add(android.R.id.content, newFragment)
-                                    .addToBackStack(null)
-                                    .commit()
-                            }
+
+                            // Show the fragment fullscreen.
+                            val transaction = fragmentManager.beginTransaction()
+                            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+                            transaction.add(android.R.id.content, newFragment)
+                                .addToBackStack(null)
+                                .commit()
+
                             actionMode?.finish() // Destroy the action mode
                             true
                         }
@@ -978,7 +984,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 startExtractionCsService(filePaths)
             } else {
                 if (file.extension.equals("rar", ignoreCase = true)) {
-                    showPasswordInputMultiDialog(filePaths)
+                    showPasswordInputMultiRarDialog(filePaths)
                 } else {
                     showPasswordInputDialog(filePaths)
                 }
@@ -987,7 +993,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         }
 
         btnMultiExtract.setOnClickListener {
-            showPasswordInputMultiDialog(filePath)
+            showPasswordInputMultiRarDialog(filePath)
             bottomSheetDialog.dismiss()
         }
 
@@ -1060,7 +1066,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             .show()
     }
 
-    private fun showPasswordInputMultiDialog(file: String) {
+    private fun showPasswordInputMultiRarDialog(file: String) {
         val dialogView = layoutInflater.inflate(R.layout.password_input_dialog, null)
         val passwordEditText = dialogView.findViewById<TextInputEditText>(R.id.passwordInput)
 
@@ -1168,9 +1174,23 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         filePathTextView.text = getString(R.string.file_path, file.absolutePath)
         val fileSizeText = bytesToString(file.length())
         fileSizeTextView.text = getString(R.string.file_size, fileSizeText)
-        val dateFormat =
-            DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT, Locale.getDefault())
+        val dateFormat = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT, Locale.getDefault())
         lastModifiedTextView.text = getString(R.string.last_modified, dateFormat.format(Date(file.lastModified())))
+
+        val clipboardManager = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+
+        fileNameTextView.setOnClickListener {
+            val clip = ClipData.newPlainText("File Name", file.name)
+            clipboardManager.setPrimaryClip(clip)
+            Toast.makeText(requireContext(), getString(R.string.copied_to_clipboard), Toast.LENGTH_SHORT).show()
+        }
+
+        filePathTextView.setOnClickListener {
+            val clip = ClipData.newPlainText("File Path", file.absolutePath)
+            clipboardManager.setPrimaryClip(clip)
+            Toast.makeText(requireContext(), getString(R.string.copied_to_clipboard), Toast.LENGTH_SHORT).show()
+        }
+
         val dialog = MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
             .setView(dialogView)
             .create()
