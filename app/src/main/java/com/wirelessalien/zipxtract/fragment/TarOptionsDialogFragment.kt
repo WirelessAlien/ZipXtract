@@ -90,12 +90,17 @@ class TarOptionsDialogFragment : DialogFragment() {
             }
         }
 
+        val defaultName = if (selectedFilePaths.isNotEmpty()) {
+            File(selectedFilePaths.first()).name
+        } else {
+            "outputTar"
+        }
+        binding.archiveNameEditText.setText(defaultName)
+        binding.archiveNameEditText.setOnClickListener {
+            binding.archiveNameEditText.selectAll()
+        }
+
         binding.okButton.setOnClickListener {
-            val defaultName = if (selectedFilePaths.isNotEmpty()) {
-                File(selectedFilePaths.first()).name
-            } else {
-                "outputTar"
-            }
             val archiveName = binding.archiveNameEditText.text.toString().ifBlank { defaultName }
 
             val mainFragment = parentFragmentManager.findFragmentById(R.id.container) as? MainFragment

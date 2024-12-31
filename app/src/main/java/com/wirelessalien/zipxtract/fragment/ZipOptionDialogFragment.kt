@@ -107,6 +107,12 @@ class ZipOptionDialogFragment : DialogFragment() {
                 .show()
         }
 
+        val defaultName = if (selectedFilePaths.isNotEmpty()) {
+            File(selectedFilePaths.first()).name
+        } else {
+            "outputZp"
+        }
+
         val compressionMethodSpinner = binding.compressionMethodInput
         val compressionLevelSpinner = binding.compressionLevelInput
         val encryptionMethodSpinner = binding.encryptionMethodInput
@@ -128,6 +134,11 @@ class ZipOptionDialogFragment : DialogFragment() {
             if (!isChecked) {
                 splitSizeInput.text?.clear()
             }
+        }
+
+        zipNameEditText.setText(defaultName)
+        zipNameEditText.setOnClickListener {
+            zipNameEditText.selectAll()
         }
 
         val compressionMethods = CompressionMethod.entries.filter { it != CompressionMethod.AES_INTERNAL_ONLY }.map { it.name }.toTypedArray()
@@ -153,11 +164,6 @@ class ZipOptionDialogFragment : DialogFragment() {
         val mainFragment = parentFragmentManager.findFragmentById(com.wirelessalien.zipxtract.R.id.container) as? MainFragment
 
         binding.okButton.setOnClickListener {
-            val defaultName = if (selectedFilePaths.isNotEmpty()) {
-                File(selectedFilePaths.first()).name
-            } else {
-                "outputZp"
-            }
             val archiveName = zipNameEditText.text.toString().ifBlank { defaultName }
             val password = passwordInput.text.toString()
             val isEncryptionEnabled = password.isNotEmpty()

@@ -91,14 +91,19 @@ class SevenZOptionDialogFragment : DialogFragment() {
             }
         }
 
+        val defaultName = if (selectedFilePaths.isNotEmpty()) {
+            File(selectedFilePaths.first()).name
+        } else {
+            "outputSvnZ"
+        }
+        binding.archiveNameEditText.setText(defaultName)
+        binding.archiveNameEditText.setOnClickListener {
+            binding.archiveNameEditText.selectAll()
+        }
+
         val mainFragment = parentFragmentManager.findFragmentById(R.id.container) as? MainFragment
 
         binding.okButton.setOnClickListener {
-            val defaultName = if (selectedFilePaths.isNotEmpty()) {
-                File(selectedFilePaths.first()).name
-            } else {
-                "outputSvnZ"
-            }
             val archiveName = binding.archiveNameEditText.text.toString().ifBlank { defaultName }
             val password = binding.passwordEditText.text.toString()
             val compressionLevel = when (binding.compressionSpinner.selectedItemPosition) {
@@ -118,11 +123,6 @@ class SevenZOptionDialogFragment : DialogFragment() {
         }
 
         binding.noPasswordButton.setOnClickListener {
-            val defaultName = if (selectedFilePaths.isNotEmpty()) {
-                File(selectedFilePaths.first()).name
-            } else {
-                "outputSvnZ"
-            }
             val archiveName = binding.archiveNameEditText.text.toString().ifBlank { defaultName }
             val compressionLevel = when (binding.compressionSpinner.selectedItemPosition) {
                 0 -> 0
