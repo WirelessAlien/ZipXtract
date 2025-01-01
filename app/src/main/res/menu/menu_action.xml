@@ -28,4 +28,19 @@
         android:icon="@drawable/ic_select_all"
         app:showAsAction="ifRoom" />
 
+    <item
+        android:id="@+id/menu_action_copy_to"
+        android:title="@string/copy_to"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/menu_action_move_to"
+        android:title="@string/move"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/menu_action_delete"
+        android:title="@string/delete"
+        app:showAsAction="ifRoom" />
+
 </menu>

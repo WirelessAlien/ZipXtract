@@ -140,8 +140,8 @@
     <string name="about">About</string>
     <string name="delete">Delete</string>
     <string name="confirm_delete">Confirm Delete</string>
-    <string name="confirm_delete_message">Do you really want to delete this file?</string>
-    <string name="file_deleted">File Deleted</string>
+    <string name="confirm_delete_message">Do you really want to delete?</string>
+    <string name="file_deleted">Deleted</string>
     <string name="file_name">Name: %1$s</string>
     <string name="file_path">Path: %1$s</string>
     <string name="file_size">Size: %1$s</string>
@@ -167,4 +167,8 @@
     <string name="extract_path_summary">Modify the default extract folder. \nDefault is \"parent folder\" or Internal Storage/ZipXtract (for \"Open With\" menu extracted archive)</string>
     <string name="info_tip">Useful Tip</string>
     <string name="info_tip_description">\u25CF Long press on files and folders or click on file and folder icons to select them for archive creation.\n\n\u25CF Click on a file to display the extraction menu, where you can choose the appropriate extraction option.\n\n\u25CF Files extracted using the \"Open With\" menu of OS will default to the \"Internal Storage/ZipXtract\" directory. This can be modified in the app settings.\n\n\u25CF The default location for archive creation and extraction within the app is the parent directory of the respective file/files. This can also be changed in the app settings.</string>
+    <string name="move">Move to</string>
+    <string name="copy_to">Copy to</string>
+    <string name="paste">Paste</string>
+    <string name="the_file_doesn_t_exist">The file doesn\'t exist: %1$s</string>
 </resources>

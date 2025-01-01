@@ -136,6 +136,19 @@
         app:layout_behavior="com.google.android.material.behavior.HideViewOnScrollBehavior"
         android:src="@drawable/ic_compress" />
 
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/pasteFab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginBottom="80dp"
+        android:layout_marginEnd="16dp"
+        app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Medium"
+        android:text="@string/paste"
+        android:visibility="gone"
+        app:layout_behavior="com.google.android.material.behavior.HideViewOnScrollBehavior"
+        android:src="@drawable/ic_paste" />
+
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/createZipFab"
         android:layout_width="wrap_content"

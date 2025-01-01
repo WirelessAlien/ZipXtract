@@ -60,6 +60,7 @@ import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.preference.PreferenceManager
@@ -73,6 +74,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.transition.MaterialSharedAxis
 import com.wirelessalien.zipxtract.BuildConfig
+import com.wirelessalien.zipxtract.FileOperationViewModel
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.activity.SettingsActivity
 import com.wirelessalien.zipxtract.adapter.FileAdapter
@@ -139,6 +141,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     private lateinit var aProgressText: TextView
     private lateinit var eProgressText: TextView
     private var areFabsVisible: Boolean = false
+    private val fileOperationViewModel: FileOperationViewModel by activityViewModels()
     private lateinit var eProgressBar: LinearProgressIndicator
     private lateinit var aProgressBar: LinearProgressIndicator
     private lateinit var binding: FragmentMainBinding
@@ -326,6 +329,12 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
         currentPath = arguments?.getString("path")
         searchHandler = Handler(Looper.getMainLooper())
+
+        if (fileOperationViewModel.filesToCopyMove.isNotEmpty()) {
+            showPasteFab()
+        } else {
+            binding.pasteFab.visibility = View.GONE
+        }
 
         if (!checkStoragePermissions()) {
             showPermissionRequestLayout()
@@ -673,6 +682,22 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                             actionMode?.finish() // Destroy the action mode
                             true
                         }
+
+                        R.id.menu_action_copy_to -> {
+                            startCopyMoveAction(isCopy = true)
+                            true
+                        }
+
+                        R.id.menu_action_move_to -> {
+                            startCopyMoveAction(isCopy = false)
+                            true
+                        }
+
+                        R.id.menu_action_delete -> {
+                            deleteSelectedFiles()
+                            actionMode?.finish()
+                            true
+                        }
                         else -> false
                     }
                 }
@@ -686,6 +711,76 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
         toggleSelection(position)
         updateActionModeTitle()
+    }
+
+
+    private fun startCopyMoveAction(isCopy: Boolean) {
+        fileOperationViewModel.isCopyAction = isCopy
+        fileOperationViewModel.filesToCopyMove = selectedFiles.toList()
+        showPasteFab()
+        actionMode?.finish()
+    }
+
+    private fun showPasteFab() {
+        binding.pasteFab.visibility = View.VISIBLE
+        binding.pasteFab.setOnClickListener {
+            pasteFiles()
+        }
+    }
+
+    private fun pasteFiles() {
+        val destinationPath = currentPath ?: return
+        CoroutineScope(Dispatchers.IO).launch {
+            for (file in fileOperationViewModel.filesToCopyMove) {
+                if (file.exists()) {
+                    val destinationFile = File(destinationPath, file.name)
+                    if (fileOperationViewModel.isCopyAction) {
+                        file.copyRecursively(destinationFile, overwrite = true)
+                    } else {
+                        file.moveTo(destinationFile, overwrite = true)
+                    }
+                } else {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(requireContext(),
+                            getString(R.string.the_file_doesn_t_exist, file.name), Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+            withContext(Dispatchers.Main) {
+                fileOperationViewModel.filesToCopyMove = emptyList()
+                binding.pasteFab.visibility = View.GONE
+                updateAdapterWithFullList()
+            }
+        }
+    }
+
+    private fun File.moveTo(destination: File, overwrite: Boolean = false) {
+        if (overwrite && destination.exists()) {
+            destination.deleteRecursively()
+        }
+        this.copyRecursively(destination, overwrite)
+        this.deleteRecursively()
+    }
+
+    private fun deleteSelectedFiles() {
+        MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
+            .setTitle(getString(R.string.confirm_delete))
+            .setMessage(getString(R.string.confirm_delete_message))
+            .setPositiveButton(getString(R.string.delete)) { _, _ ->
+                CoroutineScope(Dispatchers.IO).launch {
+                    for (file in selectedFiles) {
+                        file.deleteRecursively()
+                    }
+                    withContext(Dispatchers.Main) {
+                        unselectAllFiles()
+                        updateAdapterWithFullList()
+                    }
+                }
+            }
+            .setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
+                dialog.dismiss()
+            }
+            .show()
     }
 
     fun toggleSelection(position: Int) {
