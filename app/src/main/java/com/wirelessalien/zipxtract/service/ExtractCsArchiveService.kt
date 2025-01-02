@@ -41,6 +41,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.compress.compressors.CompressorException
 import org.apache.commons.compress.compressors.CompressorStreamFactory
 import org.apache.commons.compress.compressors.lzma.LZMACompressorInputStream
@@ -50,7 +52,6 @@ import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
-import java.io.OutputStream
 import java.nio.file.Files
 
 class ExtractCsArchiveService : Service() {
@@ -128,8 +129,8 @@ class ExtractCsArchiveService : Service() {
             stopForegroundService()
             return
         }
+
         val file = File(filePath)
-        val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
         val extractPath = sharedPreferences.getString(BroadcastConstants.PREFERENCE_EXTRACT_DIR_PATH, null)
 
@@ -153,26 +154,35 @@ class ExtractCsArchiveService : Service() {
             parentDir = file.parentFile ?: File(Environment.getExternalStorageDirectory().absolutePath)
         }
 
-        val outputFile = File(parentDir, file.nameWithoutExtension)
-        val fin: InputStream
-        val outStream: OutputStream
+        val baseFileName = file.name.substring(0, file.name.lastIndexOf('.'))
+        var newFileName = baseFileName
+        var destinationDir = File(parentDir, newFileName)
+        var counter = 1
+
+        while (destinationDir.exists()) {
+            newFileName = "$baseFileName ($counter)"
+            destinationDir = File(parentDir, newFileName)
+            counter++
+        }
+
+        destinationDir.mkdirs()
 
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                fin = Files.newInputStream(file.toPath())
-                outStream = Files.newOutputStream(outputFile.toPath())
+            val totalBytes = file.length()
+            var bytesRead = 0L
+            val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+
+            val fi: InputStream = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                Files.newInputStream(file.toPath())
             } else {
-                fin = FileInputStream(file)
-                outStream = FileOutputStream(outputFile)
+                FileInputStream(file)
             }
-
-            val inStream = BufferedInputStream(fin)
-
+            val bi = BufferedInputStream(fi)
             val compressorInputStream = when (file.extension.lowercase()) {
-                "lzma" -> LZMACompressorInputStream(inStream)
+                "lzma" -> LZMACompressorInputStream(bi)
                 else -> {
                     try {
-                        CompressorStreamFactory().createCompressorInputStream(inStream)
+                        CompressorStreamFactory().createCompressorInputStream(bi)
                     } catch (e: CompressorException) {
                         showErrorNotification(getString(R.string.unsupported_compression_format))
                         sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(EXTRA_ERROR_MESSAGE, getString(R.string.unsupported_compression_format)))
@@ -181,23 +191,29 @@ class ExtractCsArchiveService : Service() {
                 }
             }
 
-            val totalBytes = file.length()
-            var bytesRead = 0L
-
-            var n: Int
-            while (compressorInputStream.read(buffer).also { n = it } != -1) {
-                outStream.write(buffer, 0, n)
-                bytesRead += n
-                val progress = (bytesRead * 100 / totalBytes).toInt()
-                updateProgress(progress)
+            TarArchiveInputStream(compressorInputStream).use { tarInput ->
+                var entry: TarArchiveEntry? = tarInput.nextEntry
+                while (entry != null) {
+                    val outputFile = File(destinationDir, entry.name)
+                    if (entry.isDirectory) {
+                        outputFile.mkdirs()
+                    } else {
+                        outputFile.parentFile?.mkdirs()
+                        FileOutputStream(outputFile).use { output ->
+                            var n: Int
+                            while (tarInput.read(buffer).also { n = it } != -1) {
+                                output.write(buffer, 0, n)
+                                bytesRead += n
+                                val progress = (bytesRead * 100 / totalBytes).toInt()
+                                updateProgress(progress)
+                            }
+                        }
+                    }
+                    entry = tarInput.nextEntry
+                }
             }
-
-            compressorInputStream.close()
-            outStream.close()
-
             showCompletionNotification()
-            sendLocalBroadcast(Intent(ACTION_EXTRACTION_COMPLETE).putExtra(EXTRA_DIR_PATH, outputFile.absolutePath))
-
+            sendLocalBroadcast(Intent(ACTION_EXTRACTION_COMPLETE).putExtra(EXTRA_DIR_PATH, destinationDir.absolutePath))
         } catch (e: CompressorException) {
             e.printStackTrace()
             showErrorNotification(e.message ?: getString(R.string.general_error_msg))
