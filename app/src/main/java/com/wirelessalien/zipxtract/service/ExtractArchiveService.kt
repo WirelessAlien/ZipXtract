@@ -56,7 +56,10 @@ import net.sf.sevenzipjbinding.PropID
 import net.sf.sevenzipjbinding.SevenZip
 import net.sf.sevenzipjbinding.SevenZipException
 import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import java.io.File
+import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.OutputStream
@@ -143,9 +146,15 @@ class ExtractArchiveService : Service() {
         }
 
         val file = File(filePath)
-        if (file.extension.equals("zip", ignoreCase = true)) {
-            extractZipArchive(file, password, useAppNameDir)
-            return
+        when {
+            file.extension.equals("zip", ignoreCase = true) -> {
+                extractZipArchive(file, password, useAppNameDir)
+                return
+            }
+            file.extension.equals("tar", ignoreCase = true) -> {
+                extractTarArchive(file, useAppNameDir)
+                return
+            }
         }
 
         try {
@@ -209,6 +218,78 @@ class ExtractArchiveService : Service() {
                 }
             }
         } catch (e: Exception) {
+            e.printStackTrace()
+            showErrorNotification(e.message ?: getString(R.string.general_error_msg))
+            sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message ?: getString(R.string.general_error_msg)))
+        }
+    }
+
+    private fun extractTarArchive(file: File, useAppNameDir: Boolean) {
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
+        val extractPath = sharedPreferences.getString(PREFERENCE_EXTRACT_DIR_PATH, null)
+
+        val parentDir: File
+        if (!extractPath.isNullOrEmpty()) {
+            parentDir = if (File(extractPath).isAbsolute) {
+                File(extractPath)
+            } else {
+                File(Environment.getExternalStorageDirectory(), extractPath)
+            }
+            if (!parentDir.exists()) {
+                parentDir.mkdirs()
+            }
+        } else if (useAppNameDir) {
+            val rootDir = File(Environment.getExternalStorageDirectory().absolutePath)
+            parentDir = File(rootDir, getString(R.string.app_name))
+            if (!parentDir.exists()) {
+                parentDir.mkdirs()
+            }
+        } else {
+            parentDir = file.parentFile ?: File(Environment.getExternalStorageDirectory().absolutePath)
+        }
+
+        val baseFileName = file.name.substring(0, file.name.lastIndexOf('.'))
+        var newFileName = baseFileName
+        var destinationDir = File(parentDir, newFileName)
+        var counter = 1
+
+        while (destinationDir.exists()) {
+            newFileName = "$baseFileName ($counter)"
+            destinationDir = File(parentDir, newFileName)
+            counter++
+        }
+
+        destinationDir.mkdirs()
+
+        try {
+            val totalBytes = file.length()
+            var bytesRead = 0L
+            val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+
+            TarArchiveInputStream(FileInputStream(file)).use { tarInput ->
+                var entry: TarArchiveEntry? = tarInput.nextEntry
+                while (entry != null) {
+                    val outputFile = File(destinationDir, entry.name)
+                    if (entry.isDirectory) {
+                        outputFile.mkdirs()
+                    } else {
+                        outputFile.parentFile?.mkdirs()
+                        FileOutputStream(outputFile).use { output ->
+                            var n: Int
+                            while (tarInput.read(buffer).also { n = it } != -1) {
+                                output.write(buffer, 0, n)
+                                bytesRead += n
+                                val progress = (bytesRead * 100 / totalBytes).toInt()
+                                updateProgress(progress)
+                            }
+                        }
+                    }
+                    entry = tarInput.nextEntry
+                }
+            }
+            showCompletionNotification()
+            sendLocalBroadcast(Intent(ACTION_EXTRACTION_COMPLETE).putExtra(EXTRA_DIR_PATH, destinationDir.absolutePath))
+        } catch (e: IOException) {
             e.printStackTrace()
             showErrorNotification(e.message ?: getString(R.string.general_error_msg))
             sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message ?: getString(R.string.general_error_msg)))
