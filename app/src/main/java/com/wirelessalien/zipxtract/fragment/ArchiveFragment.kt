@@ -63,6 +63,7 @@ import com.wirelessalien.zipxtract.activity.SettingsActivity
 import com.wirelessalien.zipxtract.adapter.FileAdapter
 import com.wirelessalien.zipxtract.constant.BroadcastConstants
 import com.wirelessalien.zipxtract.databinding.FragmentArchiveBinding
+import com.wirelessalien.zipxtract.service.DeleteFilesService
 import com.wirelessalien.zipxtract.service.ExtractArchiveService
 import com.wirelessalien.zipxtract.service.ExtractCsArchiveService
 import com.wirelessalien.zipxtract.service.ExtractMultipart7zService
@@ -450,12 +451,11 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
                 .setTitle(getString(R.string.confirm_delete))
                 .setMessage(getString(R.string.confirm_delete_message))
                 .setPositiveButton(getString(R.string.delete)) { _, _ ->
-                    if (file.delete()) {
-                        Toast.makeText(requireContext(), getString(R.string.file_deleted), Toast.LENGTH_SHORT).show()
-                        updateAdapterWithFullList()
-                    } else {
-                        Toast.makeText(requireContext(), getString(R.string.general_error_msg), Toast.LENGTH_SHORT).show()
+                    val filesToDelete = arrayListOf(file.absolutePath)
+                    val intent = Intent(requireContext(), DeleteFilesService::class.java).apply {
+                        putStringArrayListExtra(DeleteFilesService.EXTRA_FILES_TO_DELETE, filesToDelete)
                     }
+                    ContextCompat.startForegroundService(requireContext(), intent)
                     bottomSheetDialog.dismiss()
                 }
                 .setNegativeButton(getString(R.string.cancel)) { dialog, _ ->

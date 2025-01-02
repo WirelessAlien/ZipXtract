@@ -93,6 +93,8 @@ import com.wirelessalien.zipxtract.service.ArchiveSplitZipService
 import com.wirelessalien.zipxtract.service.ArchiveTarService
 import com.wirelessalien.zipxtract.service.ArchiveZipService
 import com.wirelessalien.zipxtract.service.CompressCsArchiveService
+import com.wirelessalien.zipxtract.service.CopyMoveService
+import com.wirelessalien.zipxtract.service.DeleteFilesService
 import com.wirelessalien.zipxtract.service.ExtractArchiveService
 import com.wirelessalien.zipxtract.service.ExtractCsArchiveService
 import com.wirelessalien.zipxtract.service.ExtractMultipart7zService
@@ -730,36 +732,17 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
     private fun pasteFiles() {
         val destinationPath = currentPath ?: return
-        CoroutineScope(Dispatchers.IO).launch {
-            for (file in fileOperationViewModel.filesToCopyMove) {
-                if (file.exists()) {
-                    val destinationFile = File(destinationPath, file.name)
-                    if (fileOperationViewModel.isCopyAction) {
-                        file.copyRecursively(destinationFile, overwrite = true)
-                    } else {
-                        file.moveTo(destinationFile, overwrite = true)
-                    }
-                } else {
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(requireContext(),
-                            getString(R.string.the_file_doesn_t_exist, file.name), Toast.LENGTH_SHORT).show()
-                    }
-                }
-            }
-            withContext(Dispatchers.Main) {
-                fileOperationViewModel.filesToCopyMove = emptyList()
-                binding.pasteFab.visibility = View.GONE
-                updateAdapterWithFullList()
-            }
-        }
-    }
+        val filesToCopyMove = fileOperationViewModel.filesToCopyMove.map { it.absolutePath }
+        val isCopyAction = fileOperationViewModel.isCopyAction
 
-    private fun File.moveTo(destination: File, overwrite: Boolean = false) {
-        if (overwrite && destination.exists()) {
-            destination.deleteRecursively()
+        val intent = Intent(requireContext(), CopyMoveService::class.java).apply {
+            putStringArrayListExtra(CopyMoveService.EXTRA_FILES_TO_COPY_MOVE, ArrayList(filesToCopyMove))
+            putExtra(CopyMoveService.EXTRA_DESTINATION_PATH, destinationPath)
+            putExtra(CopyMoveService.EXTRA_IS_COPY_ACTION, isCopyAction)
         }
-        this.copyRecursively(destination, overwrite)
-        this.deleteRecursively()
+        ContextCompat.startForegroundService(requireContext(), intent)
+        fileOperationViewModel.filesToCopyMove = emptyList()
+        binding.pasteFab.visibility = View.GONE
     }
 
     private fun deleteSelectedFiles() {
@@ -767,15 +750,12 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             .setTitle(getString(R.string.confirm_delete))
             .setMessage(getString(R.string.confirm_delete_message))
             .setPositiveButton(getString(R.string.delete)) { _, _ ->
-                CoroutineScope(Dispatchers.IO).launch {
-                    for (file in selectedFiles) {
-                        file.deleteRecursively()
-                    }
-                    withContext(Dispatchers.Main) {
-                        unselectAllFiles()
-                        updateAdapterWithFullList()
-                    }
+                val filesToDelete = selectedFiles.map { it.absolutePath }
+                val intent = Intent(requireContext(), DeleteFilesService::class.java).apply {
+                    putStringArrayListExtra(DeleteFilesService.EXTRA_FILES_TO_DELETE, ArrayList(filesToDelete))
                 }
+                ContextCompat.startForegroundService(requireContext(), intent)
+                unselectAllFiles()
             }
             .setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
                 dialog.dismiss()
@@ -1018,12 +998,11 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 .setTitle(getString(R.string.confirm_delete))
                 .setMessage(getString(R.string.confirm_delete_message))
                 .setPositiveButton(getString(R.string.delete)) { _, _ ->
-                    if (file.delete()) {
-                        Toast.makeText(requireContext(), getString(R.string.file_deleted), Toast.LENGTH_SHORT).show()
-                        updateAdapterWithFullList()
-                    } else {
-                        Toast.makeText(requireContext(), getString(R.string.general_error_msg), Toast.LENGTH_SHORT).show()
+                    val filesToDelete = arrayListOf(file.absolutePath)
+                    val intent = Intent(requireContext(), DeleteFilesService::class.java).apply {
+                        putStringArrayListExtra(DeleteFilesService.EXTRA_FILES_TO_DELETE, filesToDelete)
                     }
+                    ContextCompat.startForegroundService(requireContext(), intent)
                     bottomSheetDialog.dismiss()
                 }
                 .setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
