@@ -15,7 +15,7 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.wirelessalien.zipxtract
+package com.wirelessalien.zipxtract.fragment
 
 import android.app.Dialog
 import android.content.Intent
@@ -23,6 +23,7 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.fragment.app.DialogFragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.databinding.FragmentDonationBinding
 
 class DonationFragment : DialogFragment() {

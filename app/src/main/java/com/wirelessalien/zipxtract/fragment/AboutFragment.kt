@@ -15,7 +15,7 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.wirelessalien.zipxtract
+package com.wirelessalien.zipxtract.fragment
 
 import android.app.Dialog
 import android.content.Intent
@@ -26,6 +26,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import androidx.fragment.app.DialogFragment
+import com.wirelessalien.zipxtract.BuildConfig
+import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.databinding.FragmentAboutBinding
 
 

@@ -15,7 +15,7 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.wirelessalien.zipxtract
+package com.wirelessalien.zipxtract.viewmodel
 
 import androidx.lifecycle.ViewModel
 import java.io.File

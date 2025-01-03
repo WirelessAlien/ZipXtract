@@ -74,7 +74,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.transition.MaterialSharedAxis
 import com.wirelessalien.zipxtract.BuildConfig
-import com.wirelessalien.zipxtract.FileOperationViewModel
+import com.wirelessalien.zipxtract.viewmodel.FileOperationViewModel
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.activity.SettingsActivity
 import com.wirelessalien.zipxtract.adapter.FileAdapter
@@ -136,7 +136,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     private var searchView: SearchView? = null
     private var isObserving: Boolean = false
     private var fileUpdateJob: Job? = null
-    private var searchHandler: Handler? = null
+    private var searchHandler: Handler? = Handler(Looper.getMainLooper())
     private var searchRunnable: Runnable? = null
     private lateinit var eProgressDialog: AlertDialog
     private lateinit var aProgressDialog: AlertDialog
@@ -1531,6 +1531,15 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         isSearchActive = !query.isNullOrEmpty()
         binding.circularProgressBar.visibility = View.VISIBLE
 
+        if (query.isNullOrEmpty()) {
+            // Show all files if the query is empty
+            updateAdapterWithFullList()
+            binding.circularProgressBar.visibility = View.GONE
+            return
+        }
+
+        adapter.updateFilesAndFilter(ArrayList())
+
         val basePath = Environment.getExternalStorageDirectory().absolutePath
         val sdCardPath = getSdCardPath()
         val searchPath = if (currentPath?.startsWith(sdCardPath ?: "") == true) {
@@ -1540,7 +1549,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         }
 
         CoroutineScope(Dispatchers.IO).launch {
-            val result = query?.let { searchAllFiles(File(searchPath), it) } ?: emptyList()
+            val result = searchAllFiles(File(searchPath), query)
 
             withContext(Dispatchers.Main) {
                 adapter.updateFilesAndFilter(ArrayList(result))

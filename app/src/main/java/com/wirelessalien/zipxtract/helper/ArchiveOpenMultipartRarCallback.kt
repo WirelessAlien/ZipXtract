@@ -15,7 +15,7 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.wirelessalien.zipxtract
+package com.wirelessalien.zipxtract.helper
 
 
 import net.sf.sevenzipjbinding.*

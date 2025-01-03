@@ -29,6 +29,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.os.Handler
+import android.os.Looper
 import android.os.storage.StorageManager
 import android.view.LayoutInflater
 import android.view.Menu
@@ -94,7 +95,7 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
     private var sortAscending: Boolean = true
     private lateinit var sharedPreferences: SharedPreferences
     private var searchView: SearchView? = null
-    private var searchHandler: Handler? = null
+    private var searchHandler: Handler? = Handler(Looper.getMainLooper())
     private var searchRunnable: Runnable? = null
 
     private val extractionReceiver = object : BroadcastReceiver() {
@@ -180,7 +181,7 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
                     override fun onQueryTextChange(newText: String?): Boolean {
                         // Perform search as the user types with a delay
                         searchRunnable?.let { searchHandler?.removeCallbacks(it) }
-                        searchRunnable = kotlinx.coroutines.Runnable {
+                        searchRunnable = Runnable {
                             searchFiles(newText)
                         }
                         searchHandler?.postDelayed(searchRunnable!!, 200)
@@ -264,6 +265,8 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
     private fun searchFiles(query: String?) {
         isSearchActive = !query.isNullOrEmpty()
         binding.progressBar.visibility = View.VISIBLE
+
+        adapter.updateFilesAndFilter(ArrayList())
 
         CoroutineScope(Dispatchers.IO).launch {
             val result = query?.let { searchAllFiles(getArchiveFiles(), it) } ?: getArchiveFiles()
