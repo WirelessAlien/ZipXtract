@@ -361,7 +361,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                     }
                 }
                 editor.apply()
-                initRecyclerView()
+                updateAdapterWithFullList()
                 return true
             }
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
