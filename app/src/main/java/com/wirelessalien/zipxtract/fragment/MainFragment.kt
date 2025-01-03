@@ -147,6 +147,27 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     private lateinit var eProgressBar: LinearProgressIndicator
     private lateinit var aProgressBar: LinearProgressIndicator
     private lateinit var binding: FragmentMainBinding
+    private val handler = Handler(Looper.getMainLooper())
+
+    private val updateProgressRunnable = object : Runnable {
+        override fun run() {
+            if (aProgressBar.progress >= 100) {
+                aProgressBar.progress = 70
+            } else {
+                aProgressBar.progress += 1
+            }
+            aProgressText.text = getString(R.string.compressing_progress, aProgressBar.progress)
+            handler.postDelayed(this, 1000)
+
+            if (eProgressBar.progress >= 100) {
+                eProgressBar.progress = 70
+            } else {
+                eProgressBar.progress += 1
+            }
+            eProgressText.text = getString(R.string.extracting_progress, eProgressBar.progress)
+            handler.postDelayed(this, 1000)
+        }
+    }
 
     private val extractionReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -154,6 +175,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
             when (intent?.action) {
                 ACTION_EXTRACTION_COMPLETE -> {
+                    handler.removeCallbacks(updateProgressRunnable)
                     val dirPath = intent.getStringExtra(EXTRA_DIR_PATH)
                     if (dirPath != null) {
                         Snackbar.make(binding.root, getString(R.string.extraction_success), Snackbar.LENGTH_LONG)
@@ -168,6 +190,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                     eProgressDialog.dismiss()
                 }
                 ACTION_EXTRACTION_ERROR -> {
+                    handler.removeCallbacks(updateProgressRunnable)
                     unselectAllFiles()
                     eProgressDialog.dismiss()
                     val errorMessage = intent.getStringExtra(EXTRA_ERROR_MESSAGE)
@@ -176,10 +199,17 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 ACTION_EXTRACTION_PROGRESS -> {
                     val progress = intent.getIntExtra(EXTRA_PROGRESS, 0)
                     updateProgressBar(progress)
-                    eProgressBar.progress = progress
-                    eProgressText.text = getString(R.string.extracting_progress, progress)
+                    if (progress == 100) {
+                        eProgressBar.progress = 80
+                        eProgressText.text = getString(R.string.extracting_progress, 80)
+                        handler.post(updateProgressRunnable)
+                    } else {
+                        eProgressBar.progress = progress
+                        eProgressText.text = getString(R.string.extracting_progress, progress)
+                    }
                 }
                 ACTION_ARCHIVE_COMPLETE -> {
+                    handler.removeCallbacks(updateProgressRunnable)
                     val dirPath = intent.getStringExtra(EXTRA_DIR_PATH)
                     if (dirPath != null) {
                         Snackbar.make(binding.root, getString(R.string.archive_success), Snackbar.LENGTH_LONG)
@@ -194,6 +224,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                     aProgressDialog.dismiss()
                 }
                 ACTION_ARCHIVE_ERROR -> {
+                    handler.removeCallbacks(updateProgressRunnable)
                     unselectAllFiles()
                     aProgressDialog.dismiss()
                     val errorMessage = intent.getStringExtra(EXTRA_ERROR_MESSAGE)
@@ -202,8 +233,14 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 ACTION_ARCHIVE_PROGRESS -> {
                     val progress = intent.getIntExtra(EXTRA_PROGRESS, 0)
                     updateProgressBar(progress)
-                    aProgressBar.progress = progress
-                    aProgressText.text = getString(R.string.compressing_progress, progress)
+                    if (progress == 100) {
+                        aProgressBar.progress = 80
+                        aProgressText.text = getString(R.string.compressing_progress, 80)
+                        handler.post(updateProgressRunnable)
+                    } else {
+                        aProgressBar.progress = progress
+                        aProgressText.text = getString(R.string.compressing_progress, progress)
+                    }
                 }
             }
         }
