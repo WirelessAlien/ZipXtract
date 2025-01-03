@@ -58,18 +58,44 @@ class CopyMoveService : Service() {
         return START_STICKY
     }
 
+    private fun countTotalFiles(files: List<File>): Int {
+        var count = 0
+        for (file in files) {
+            if (file.isDirectory) {
+                count += countTotalFiles(file.listFiles()?.toList() ?: emptyList())
+            } else {
+                count++
+            }
+        }
+        return count
+    }
+
     private fun copyMoveFiles(files: List<File>, destinationPath: String, isCopyAction: Boolean) {
+        val totalFilesCount = countTotalFiles(files)
         var processedFilesCount = 0
+
+        fun copyMoveFile(file: File, destination: File) {
+            if (file.isDirectory) {
+                file.listFiles()?.forEach { copyMoveFile(it, File(destination, it.name)) }
+            } else {
+                if (isCopyAction) {
+                    file.copyTo(destination, overwrite = true)
+                } else {
+                    file.moveTo(destination, overwrite = true)
+                }
+                processedFilesCount++
+                updateNotification(processedFilesCount, totalFilesCount)
+            }
+        }
+
         for (file in files) {
             val destinationFile = File(destinationPath, file.name)
-            if (isCopyAction) {
-                file.copyRecursively(destinationFile, overwrite = true)
-            } else {
-                file.moveTo(destinationFile, overwrite = true)
+            if (file.absolutePath == destinationFile.absolutePath) {
+                continue // Skip if the source and destination paths are the same
             }
-            processedFilesCount++
-            updateNotification(processedFilesCount, files.size)
+            copyMoveFile(file, destinationFile)
         }
+
         stopForegroundService()
         stopSelf()
     }
@@ -78,7 +104,7 @@ class CopyMoveService : Service() {
         if (overwrite && destination.exists()) {
             destination.deleteRecursively()
         }
-        this.copyRecursively(destination, overwrite)
+        this.copyRecursively(destination, overwrite = true)
         this.deleteRecursively()
     }
 
