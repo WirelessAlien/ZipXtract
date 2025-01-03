@@ -93,14 +93,14 @@
     <string name="size">Size</string>
     <string name="time_of_creation">Modified</string>
     <string name="extension">Extension</string>
-    <string name="unsupported_compression_format">Unsupported compression format</string>
-    <string name="extraction_ongoing">Extracting file</string>
-    <string name="archive_ongoing">Archiving file</string>
+    <string name="unsupported_compression_format">This compression format is not supported.</string>
+    <string name="extraction_ongoing">Extracting…</string>
+    <string name="archive_ongoing">Archiving…</string>
     <string name="operation_cancelled">Operation cancelled</string>
     <string name="compress_archive_notification_name">Compress Archive</string>
     <string name="extract_archive_notification_name">Extract Archive</string>
     <string name="tar_creation_failed">Tar creation failed</string>
-    <string name="compression_ongoing">Compressing file</string>
+    <string name="compression_ongoing">Compressing…</string>
     <string name="compression_failed">Compression failed</string>
     <string name="compression_success">Compression successful</string>
     <string name="enter_archive_name">Enter archive name</string>
@@ -108,7 +108,6 @@
     <string name="show_hide_selected_files">Show/Hide Selected Files</string>
     <string name="background">Background</string>
     <string name="extracting">Extracting…</string>
-    <string name="archiving">Archiving…</string>
     <string name="open_with">Open with</string>
     <string name="compress_with">Compress with:</string>
     <string name="lzma" translatable="false">LZMA</string>
@@ -126,7 +125,7 @@
     <string name="order">Order</string>
     <string name="ascending">Ascending</string>
     <string name="descending">Descending</string>
-    <string name="general_error_msg">Something went wrong</string>
+    <string name="general_error_msg">An unexpected error occurred.</string>
     <string name="no_files_to_archive">No files were provided</string>
     <string name="tar_creation_success">Tar file created successfully</string>
     <string name="extracting_progress">Extracting… %1$d %%</string>
@@ -135,7 +134,7 @@
     <string name="privacy_policy">Privacy Policy</string>
     <string name="source_code">Source Code</string>
     <string name="license">License</string>
-    <string name="author_wirelessalien">Author: WirelessAlien</string>
+    <string name="author_wirelessalien" translatable="false">Author: WirelessAlien</string>
     <string name="report_an_issue">Report an Issue</string>
     <string name="about">About</string>
     <string name="delete">Delete</string>
@@ -146,8 +145,8 @@
     <string name="file_path">Path: %1$s</string>
     <string name="file_size">Size: %1$s</string>
     <string name="last_modified">Last Modified: %1$s</string>
-    <string name="grant_access">Grant Access</string>
-    <string name="storage_access_permission_text">We need access to your storage to proceed. Please grant the necessary permissions.</string>
+    <string name="grant_access">Allow Access</string>
+    <string name="storage_access_permission_text">This app needs access to your device storage to function properly. Please grant the necessary permissions.</string>
     <string name="archive_success">File archived successfully</string>
     <string name="sd_card">SD Card</string>
     <string name="close">Close</string>
