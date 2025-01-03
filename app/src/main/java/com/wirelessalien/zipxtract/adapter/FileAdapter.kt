@@ -145,7 +145,7 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val file = filteredFiles[position]
 
-        holder.fileName.text = truncateFileName(file.name, 35)
+        holder.fileName.text = file.name
 
         val dateFormat =
             DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT, Locale.getDefault())
@@ -201,16 +201,6 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
             holder.constLayout.setBackgroundColor(context.getColor(R.color.md_theme_surface))
 
         }
-    }
-
-    private fun truncateFileName(fileName: String, maxLength: Int): String {
-        if (fileName.length <= maxLength) {
-            return fileName
-        }
-        val keepLength = (maxLength - 3) / 2
-        val start = fileName.substring(0, keepLength)
-        val end = fileName.substring(fileName.length - keepLength)
-        return "$start...$end"
     }
 
     fun updateFilesAndFilter(newFiles: ArrayList<File>, query: String? = null) {
