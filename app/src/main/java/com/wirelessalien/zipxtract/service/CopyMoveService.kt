@@ -49,7 +49,7 @@ class CopyMoveService : Service() {
         val isCopyAction = intent.getBooleanExtra(EXTRA_IS_COPY_ACTION, true)
 
         createNotificationChannel()
-        startForeground(NOTIFICATION_ID, createNotification(0, filesToCopyMove.size))
+        startForeground(NOTIFICATION_ID, createNotification(0, filesToCopyMove.size, isCopyAction))
 
         CoroutineScope(Dispatchers.IO).launch {
             copyMoveFiles(filesToCopyMove, destinationPath, isCopyAction)
@@ -84,7 +84,7 @@ class CopyMoveService : Service() {
                     file.moveTo(destination, overwrite = true)
                 }
                 processedFilesCount++
-                updateNotification(processedFilesCount, totalFilesCount)
+                updateNotification(processedFilesCount, totalFilesCount, isCopyAction)
             }
         }
 
@@ -120,18 +120,29 @@ class CopyMoveService : Service() {
         }
     }
 
-    private fun createNotification(progress: Int, total: Int): Notification {
+    private fun createNotification(progress: Int, total: Int, isCopyAction: Boolean): Notification {
+        val title = if (isCopyAction) {
+            getString(R.string.copying_files)
+        } else {
+            getString(R.string.moving_files)
+        }
+        val contentText = if (isCopyAction) {
+            getString(R.string.copying_files_progress, progress, total)
+        } else {
+            getString(R.string.moving_files_progress, progress, total)
+        }
+
         return NotificationCompat.Builder(this, COPY_MOVE_NOTIFICATION_CHANNEL_ID)
-            .setContentTitle(getString(R.string.copying_moving_files))
-            .setContentText(getString(R.string.copying_moving_files_progress, progress, total))
+            .setContentTitle(title)
+            .setContentText(contentText)
             .setSmallIcon(R.drawable.ic_notification_icon)
             .setProgress(total, progress, false)
             .setOngoing(true)
             .build()
     }
 
-    private fun updateNotification(progress: Int, total: Int) {
-        val notification = createNotification(progress, total)
+    private fun updateNotification(progress: Int, total: Int, isCopyAction: Boolean) {
+        val notification = createNotification(progress, total, isCopyAction)
         val notificationManager = getSystemService(NotificationManager::class.java)
         notificationManager.notify(NOTIFICATION_ID, notification)
     }

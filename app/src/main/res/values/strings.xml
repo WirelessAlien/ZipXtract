@@ -173,8 +173,10 @@
     <string name="the_file_doesn_t_exist">The file doesn\'t exist: %1$s</string>
     <string name="delete_files_notification_name">Delete File</string>
     <string name="deleting_files">Deleting files: %1$d/%2$d</string>
-    <string name="delete_ongoing">Deleting...</string>
+    <string name="delete_ongoing">Deleting…</string>
     <string name="copy_move_files_notification_name">Copy/Move Files</string>
-    <string name="copying_moving_files">Progress...</string>
-    <string name="copying_moving_files_progress">Progress %1$d/%2$d</string>
+    <string name="copying_files_progress">Copying files: %1$d/%2$d</string>
+    <string name="moving_files_progress">Moving files: %1$d/%2$d</string>
+    <string name="copying_files">Copying…</string>
+    <string name="moving_files">Moving…</string>
 </resources>
