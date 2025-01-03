@@ -990,10 +990,33 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         val extractBtn = view.findViewById<MaterialButton>(R.id.btnExtract)
         val btnOpenWith = view.findViewById<MaterialButton>(R.id.btnOpenWith)
         val fileNameTv = view.findViewById<TextView>(R.id.fileName)
+        val fileExtensionTv = view.findViewById<TextView>(R.id.fileExtension)
+        val fileModifiedTv = view.findViewById<TextView>(R.id.fileDate)
+        val fileSizeTv = view.findViewById<TextView>(R.id.fileSize)
         val btnDelete = view.findViewById<MaterialButton>(R.id.btnDelete)
 
 
         fileNameTv.text = file.name
+
+        fileExtensionTv.text = if (file.extension.isNotEmpty()) {
+            if (file.extension.length > 4) {
+                "FILE"
+            } else {
+                if (file.extension.length == 4) {
+                    fileExtensionTv.textSize = 12f
+                } else {
+                    fileExtensionTv.textSize = 14f
+                }
+                file.extension.uppercase(Locale.getDefault())
+            }
+        } else {
+            "..."
+        }
+
+        fileSizeTv.text = bytesToString(file.length())
+
+        val dateFormat = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT, Locale.getDefault())
+        fileModifiedTv.text = dateFormat.format(Date(file.lastModified()))
 
         btnLzma.setOnClickListener {
             startCompressService(filePath, CompressorStreamFactory.LZMA)
@@ -1082,10 +1105,33 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         val btnMultiZipExtract = bottomSheetView.findViewById<MaterialButton>(R.id.btnMultiZipExtract)
         val btnOpenWith = bottomSheetView.findViewById<MaterialButton>(R.id.btnOpenWith)
         val fileNameTv = bottomSheetView.findViewById<TextView>(R.id.fileName)
+        val fileExtensionTv = bottomSheetView.findViewById<TextView>(R.id.fileExtension)
+        val fileModifiedTv = bottomSheetView.findViewById<TextView>(R.id.fileDate)
+        val fileSizeTv = bottomSheetView.findViewById<TextView>(R.id.fileSize)
         val btnDelete = bottomSheetView.findViewById<MaterialButton>(R.id.btnDelete)
 
         val filePath = file.absolutePath
         fileNameTv.text = file.name
+
+        fileExtensionTv.text = if (file.extension.isNotEmpty()) {
+            if (file.extension.length > 4) {
+                "FILE"
+            } else {
+                if (file.extension.length == 4) {
+                    fileExtensionTv.textSize = 12f
+                } else {
+                    fileExtensionTv.textSize = 14f
+                }
+                file.extension.uppercase(Locale.getDefault())
+            }
+        } else {
+            "..."
+        }
+
+        fileSizeTv.text = bytesToString(file.length())
+
+        val dateFormat = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT, Locale.getDefault())
+        fileModifiedTv.text = dateFormat.format(Date(file.lastModified()))
 
         btnExtract.setOnClickListener {
             val fileExtension = file.name.split('.').takeLast(2).joinToString(".").lowercase()

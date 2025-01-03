@@ -1,110 +1,183 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical">
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <TextView
-        android:id="@+id/fileName"
+    <com.google.android.material.bottomsheet.BottomSheetDragHandleView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="File Name"
-        android:textSize="18sp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="30dp"
-        android:layout_marginEnd="16dp"
-        android:textStyle="bold"/>
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnOpenWith"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/open_with"
-        style="@style/Widget.Material3.Button.TonalButton"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginTop="20dp"
-        app:cornerRadius="5dp"/>
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnExtract"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        style="@style/Widget.Material3.Button.TonalButton"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginTop="20dp"
-        app:cornerRadius="5dp"
-        android:text="@string/extract" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/multi_part_extract"
-        android:textSize="18sp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="20dp"
-        android:textStyle="bold"/>
+        android:layout_gravity="center_horizontal"/>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:orientation="horizontal">
+        android:orientation="vertical">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="50dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp">
+
+            <TextView
+                android:id="@+id/fileDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="5dp"
+                android:gravity="center_vertical"
+                android:alpha="0.7"
+                android:text="TextView"
+                android:textSize="12sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+            <TextView
+                android:id="@+id/fileSize"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:gravity="center_vertical"
+                android:alpha="0.7"
+                android:text="TextView"
+                android:textSize="12sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/cardView" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardView"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                style="@style/Widget.Material3.CardView.Filled"
+                android:elevation="3dp"
+                app:cardCornerRadius="5dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <TextView
+                    android:id="@+id/fileExtension"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:fontFamily="@font/nova_square"
+                    android:text="FILE"
+                    android:textSize="14sp"
+                    android:textStyle="bold"/>
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                android:id="@+id/fileName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:text="TextView"
+                android:textSize="15sp"
+                android:ellipsize="middle"
+                android:maxLines="1"
+                app:layout_constraintStart_toEndOf="@+id/cardView"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <com.google.android.material.divider.MaterialDivider
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginEnd="16dp"/>
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnMultiExtract"
-            android:layout_width="0dp"
+            android:id="@+id/btnOpenWith"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:text="@string/open_with"
             style="@style/Widget.Material3.Button.TonalButton"
-            android:layout_weight="1"
-            app:cornerRadius="5dp"
-            android:text="@string/rar" />
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginTop="20dp"
+            app:cornerRadius="5dp"/>
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnMulti7zExtract"
-            android:layout_width="0dp"
+            android:id="@+id/btnExtract"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             style="@style/Widget.Material3.Button.TonalButton"
-            android:layout_weight="1"
-            android:layout_marginStart="10dp"
-            android:layout_marginEnd="5dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginTop="20dp"
             app:cornerRadius="5dp"
-            android:text="@string/_7z" />
+            android:text="@string/extract" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/multi_part_extract"
+            android:textSize="16sp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="20dp"
+            android:textStyle="bold"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnMultiExtract"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_weight="1"
+                app:cornerRadius="5dp"
+                android:text="@string/rar" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnMulti7zExtract"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_weight="1"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="5dp"
+                app:cornerRadius="5dp"
+                android:text="@string/_7z" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnMultiZipExtract"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_marginStart="10dp"
+                app:cornerRadius="5dp"
+                android:text="@string/zip" />
+        </LinearLayout>
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnMultiZipExtract"
-            android:layout_width="0dp"
+            android:id="@+id/btnFileInfo"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            style="@style/Widget.Material3.Button.TonalButton"
-            android:layout_marginStart="10dp"
             app:cornerRadius="5dp"
-            android:text="@string/zip" />
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="16dp"
+            android:text="@string/file_info" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnDelete"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cornerRadius="5dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="20dp"
+            android:text="@string/delete" />
     </LinearLayout>
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnFileInfo"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:cornerRadius="5dp"
-        style="@style/Widget.Material3.Button.TonalButton"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginEnd="16dp"
-        android:text="@string/file_info" />
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnDelete"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:cornerRadius="5dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="20dp"
-        android:text="@string/delete" />
-</LinearLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
