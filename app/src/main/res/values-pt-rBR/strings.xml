@@ -1,61 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="pick_file">Selecionar Arquivo</string>
     <string name="extract">Extrair</string>
-    <string name="file_picked_fail">Nenhum arquivo selecionado</string>
-    <string name="select_output_directory_extract">Por favor selecione onde extrair os arquivos</string>
-    <string name="save">Salvar</string>
     <string name="compression_method">Método de Compressão</string>
     <string name="copied_to_clipboard">Copiado para a área de transferência</string>
-    <string name="password">senha</string>
-    <string name="extract_to">Extrair Para</string>
-    <string name="create">Criar</string>
-    <string name="save_zip_to">Salvar o Zip Em</string>
-    <string name="directory_path">Pasta Selecionada: %1$s</string>
-    <string name="selected_file_cleared">Arquivo Selecionado Limpado</string>
-    <string name="pick_file_extract">Por favor selecione um arquivo para extrair</string>
     <string name="settings_info_text">O método de criptografia padrão para arquivos é o AES, que oferece um alto nível de segurança. No entanto, esteja ciente de que a criptografia AES pode ser demorada, principalmente em dispositivos de baixa performance.
 \n
 \nPara usuários com dispositivos menos potentes, é possível usar uma alternativa como o ZIP_STANDARD. No entanto, saiba que esse método não oferece o mesmo nível de segurança que o AES.
 \n
 \nSe a segurança for sua principal preocupação, recomendamos fortemente o uso do AES, apesar de seu tempo de processamento mais longo.</string>
-    <string name="file_picked_success">Arquivo Selecionado com Sucesso</string>
-    <string name="selected_files_text">Arquivos Selecionados: %1$d</string>
     <string name="folder">Pasta</string>
-    <string name="output_file_name">arquivoZip.zip</string>
     <string name="no_file_selected">Nenhum Arquivo Selecionado</string>
-    <string name="select_output_directory">Por favor selecione um diretório como destino</string>
     <string name="compression_level">Nível de Compressão</string>
-    <string name="permission_required">Permissão de armazenamento é necessária para extrair arquivos</string>
-    <string name="selected_file_text">Arquivo Selecionado: %1$s</string>
     <string name="liberapay">Liberapay</string>
-    <string name="zip_without_zip">Nome do Zip (sem .zip)</string>
     <string name="no_password">Sem Senha</string>
-    <string name="version">Versão:</string>
-    <string name="not_selected">Não Selecionado</string>
     <string name="ok">OK</string>
-    <string name="open_settings">Abrir Configurações</string>
-    <string name="please_select_files">Por favor selecione arquivos</string>
     <string name="create_zip">Comprimir o ZIP</string>
-    <string name="invalid_uri">URI de arquivo inválido</string>
-    <string name="files">Arquivos</string>
-    <string name="select">Selecionar</string>
     <string name="encryption_method">Método de Encriptação</string>
     <string name="cancel">Cancelar</string>
-    <string name="archive_file_name_failed">Falha ao pegar o nome do arquivo</string>
-    <string name="percent">%</string>
     <string name="permission_denied">Permissão Negada</string>
-    <string name="output_directory_cleared">Diretório de destino limpado</string>
     <string name="zip_creation_failed">Erro ao criar arquivo zip</string>
     <string name="donate">Doar</string>
-    <string name="not_encrypted">Não Criptografado</string>
-    <string name="no_directory_selected">Nenhum Diretório Selecionado</string>
     <string name="open_folder">Abrir Pasta</string>
     <string name="extraction_success">Arquivo extraído com sucesso</string>
-    <string name="compression_settings">Configurações de Compressão</string>
-    <string name="files_select_request">Por favor selecione arquivos</string>
-    <string name="encrypt">Criptografar</string>
-    <string name="file">Arquivo</string>
     <string name="share">Compartilhar o Link pro Aplicativo</string>
     <string name="enter_password">Digite a Senha</string>
     <string name="extraction_failed">A Extração Falhou:</string>
@@ -71,5 +37,4 @@
     <string name="split_size_mb">Dividir Tamanho</string>
     <string name="encryption_strength">Intensidade da encriptação</string>
     <string name="_ten">O padrão é 64kb</string>
-    <string name="please_wait_end_of_job">Aguarde... Se você selecionou arquivos grandes, isso pode levar alguns minutos</string>
 </resources>

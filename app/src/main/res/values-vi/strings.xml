@@ -1,29 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="pick_file">Chọn tệp</string>
     <string name="extract">Giải nén</string>
-    <string name="extract_to">Giải nén ra</string>
-    <string name="not_selected">Không được chọn</string>
-    <string name="selected_file_text">Tệp đã chọn: %1$s</string>
-    <string name="directory_path">Thư mục đã chọn: %1$s</string>
-    <string name="selected_files_text">Tệp đã chọn: %1$d</string>
-    <string name="no_directory_selected">Chưa chọn thư mục nào</string>
-    <string name="version">Phiên bản:</string>
-    <string name="save_zip_to">Lưu Zip vào</string>
     <string name="create_zip">Nén ZIP</string>
-    <string name="select">Chọn</string>
-    <string name="file">Tệp</string>
-    <string name="files">Tệp</string>
     <string name="folder">Thư mục</string>
     <string name="donate">Quyên tặng</string>
-    <string name="create">Tạo</string>
     <string name="compression_level">Mức nén</string>
     <string name="compression_method">Phương pháp nén</string>
-    <string name="compression_settings">Thiết đặt nén</string>
-    <string name="file_picked_success">Đã chọn tệp thành công</string>
     <string name="settings_info_text">Mã hóa tệp bằng phương pháp mã hóa AES tốn nhiều thời gian. Nếu bạn có thiết bị cấp thấp, bạn nên sử dụng phương pháp mặc định (ZIP_TIÊU CHUẨN).</string>
     <string name="no_file_selected">Chưa chọn tệp nào</string>
     <string name="encryption_method">Phương pháp mã hóa</string>
-    <string name="file_picked_fail">Chưa chọn tệp nào</string>
     <string name="cancel">Hủy</string>
 </resources>
