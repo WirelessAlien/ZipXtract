@@ -38,6 +38,7 @@ import android.os.Handler
 import android.os.Looper
 import android.os.storage.StorageManager
 import android.provider.Settings
+import android.text.Editable
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -53,6 +54,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
 import androidx.appcompat.widget.SearchView
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.view.MenuHost
@@ -74,7 +76,6 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.transition.MaterialSharedAxis
 import com.wirelessalien.zipxtract.BuildConfig
-import com.wirelessalien.zipxtract.viewmodel.FileOperationViewModel
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.activity.SettingsActivity
 import com.wirelessalien.zipxtract.adapter.FileAdapter
@@ -100,6 +101,7 @@ import com.wirelessalien.zipxtract.service.ExtractCsArchiveService
 import com.wirelessalien.zipxtract.service.ExtractMultipart7zService
 import com.wirelessalien.zipxtract.service.ExtractMultipartZipService
 import com.wirelessalien.zipxtract.service.ExtractRarService
+import com.wirelessalien.zipxtract.viewmodel.FileOperationViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -246,6 +248,17 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         }
     }
 
+    private val requestNotificationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            // Permission granted
+        } else {
+            // Permission denied
+            Toast.makeText(requireContext(), getString(R.string.permission_denied), Toast.LENGTH_SHORT).show()
+        }
+    }
+
     private fun navigateToParentDir(parentDir: File) {
         val fragment = MainFragment().apply {
             arguments = Bundle().apply {
@@ -272,6 +285,12 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         super.onCreate(savedInstanceState)
         enterTransition = MaterialSharedAxis(MaterialSharedAxis.Z, true)
         exitTransition = MaterialSharedAxis(MaterialSharedAxis.Z, false)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (!NotificationManagerCompat.from(requireContext()).areNotificationsEnabled()) {
+                requestNotificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -1321,35 +1340,37 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     private fun showFileInfo(file: File) {
         val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_file_info, null)
 
-        val fileNameTextView = dialogView.findViewById<TextView>(R.id.file_name)
-        val filePathTextView = dialogView.findViewById<TextView>(R.id.file_path)
+        val fileNameTextView = dialogView.findViewById<TextInputEditText>(R.id.file_name)
+        val filePathTextView = dialogView.findViewById<TextInputEditText>(R.id.file_path)
         val fileSizeTextView = dialogView.findViewById<TextView>(R.id.file_size)
         val lastModifiedTextView = dialogView.findViewById<TextView>(R.id.last_modified)
         val okButton = dialogView.findViewById<Button>(R.id.ok_button)
 
-        fileNameTextView.text = getString(R.string.file_name, file.name)
-        filePathTextView.text = getString(R.string.file_path, file.absolutePath)
+        fileNameTextView.text = Editable.Factory.getInstance().newEditable(file.name)
+        filePathTextView.text = Editable.Factory.getInstance().newEditable(file.absolutePath)
         val fileSizeText = bytesToString(file.length())
-        fileSizeTextView.text = getString(R.string.file_size, fileSizeText)
+        fileSizeTextView.text = fileSizeText
         val dateFormat = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT, Locale.getDefault())
-        lastModifiedTextView.text = getString(R.string.last_modified, dateFormat.format(Date(file.lastModified())))
+        lastModifiedTextView.text = dateFormat.format(Date(file.lastModified()))
 
         val clipboardManager = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-
-        fileNameTextView.setOnClickListener {
+        fileNameTextView.setOnLongClickListener {
             val clip = ClipData.newPlainText("File Name", file.name)
             clipboardManager.setPrimaryClip(clip)
             Toast.makeText(requireContext(), getString(R.string.copied_to_clipboard), Toast.LENGTH_SHORT).show()
+            true
         }
 
-        filePathTextView.setOnClickListener {
+        filePathTextView.setOnLongClickListener {
             val clip = ClipData.newPlainText("File Path", file.absolutePath)
             clipboardManager.setPrimaryClip(clip)
             Toast.makeText(requireContext(), getString(R.string.copied_to_clipboard), Toast.LENGTH_SHORT).show()
+            true
         }
 
         val dialog = MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
             .setView(dialogView)
+            .setTitle(getString(R.string.file_info))
             .create()
 
         okButton.setOnClickListener {

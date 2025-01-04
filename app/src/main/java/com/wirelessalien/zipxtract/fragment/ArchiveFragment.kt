@@ -596,13 +596,12 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
         val lastModifiedTextView = dialogView.findViewById<TextView>(R.id.last_modified)
         val okButton = dialogView.findViewById<Button>(R.id.ok_button)
 
-        fileNameTextView.text = getString(R.string.file_name, file.name)
-        filePathTextView.text = getString(R.string.file_path, file.absolutePath)
+        fileNameTextView.text = file.name
+        filePathTextView.text = file.absolutePath
         val fileSizeText = bytesToString(file.length())
-        fileSizeTextView.text = getString(R.string.file_size, fileSizeText)
-        val dateFormat =
-            DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT, Locale.getDefault())
-        lastModifiedTextView.text = getString(R.string.last_modified, dateFormat.format(Date(file.lastModified())))
+        fileSizeTextView.text = fileSizeText
+        val dateFormat = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT, Locale.getDefault())
+        lastModifiedTextView.text = dateFormat.format(Date(file.lastModified()))
         val dialog = MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
             .setView(dialogView)
             .create()

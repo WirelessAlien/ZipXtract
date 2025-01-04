@@ -141,10 +141,9 @@
     <string name="confirm_delete">Confirm Delete</string>
     <string name="confirm_delete_message">Do you really want to delete?</string>
     <string name="file_deleted">Deleted</string>
-    <string name="file_name">Name: %1$s</string>
-    <string name="file_path">Path: %1$s</string>
-    <string name="file_size">Size: %1$s</string>
-    <string name="last_modified">Last Modified: %1$s</string>
+    <string name="file_path">Path</string>
+    <string name="file_size">Size</string>
+    <string name="last_modified">Last Modified</string>
     <string name="grant_access">Allow Access</string>
     <string name="storage_access_permission_text">This app needs access to your device storage to function properly. Please grant the necessary permissions.</string>
     <string name="archive_success">File archived successfully</string>

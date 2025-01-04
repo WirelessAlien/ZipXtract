@@ -22,36 +22,82 @@
     android:orientation="vertical"
     android:padding="16dp">
 
-    <TextView
-        android:id="@+id/file_name"
+    <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textStyle="bold"
-        android:textSize="16sp"
-        android:paddingBottom="16dp" />
+        android:hint="@string/name">
 
-    <TextView
-        android:id="@+id/file_path"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingBottom="16dp" />
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/file_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/Widget.Material3.TextInputEditText.OutlinedBox.Dense"
+            android:textStyle="bold"
+            android:inputType="none"
+            android:cursorVisible="false"
+            android:clickable="true"
+            android:focusable="false"/>
+    </com.google.android.material.textfield.TextInputLayout>
 
-    <TextView
-        android:id="@+id/file_size"
+    <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingBottom="16dp" />
+        android:layout_marginTop="16dp"
+        android:hint="@string/file_path">
 
-    <TextView
-        android:id="@+id/last_modified"
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/file_path"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            style="@style/Widget.Material3.TextInputEditText.OutlinedBox.Dense"
+            android:inputType="none"
+            android:cursorVisible="false"
+            android:clickable="false"
+            android:focusable="false"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingBottom="16dp" />
+        android:layout_marginTop="16dp"
+        android:hint="@string/file_size">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/file_size"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            style="@style/Widget.Material3.TextInputEditText.OutlinedBox.Dense"
+            android:inputType="none"
+            android:cursorVisible="false"
+            android:clickable="false"
+            android:focusable="false"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:hint="@string/last_modified">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/last_modified"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            style="@style/Widget.Material3.TextInputEditText.OutlinedBox.Dense"
+            android:inputType="none"
+            android:cursorVisible="false"
+            android:clickable="false"
+            android:focusable="false"/>
+    </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/ok_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
         app:cornerRadius="5dp"
         style="@style/Widget.Material3.Button.TonalButton"
         android:text="@string/ok" />
