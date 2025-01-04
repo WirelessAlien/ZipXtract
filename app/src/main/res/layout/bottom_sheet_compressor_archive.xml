@@ -77,7 +77,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:fontFamily="@font/nova_square"
+                    android:fontFamily="@font/bebasneue_regular"
                     android:text="FILE"
                     android:textSize="14sp"
                     android:textStyle="bold"/>
