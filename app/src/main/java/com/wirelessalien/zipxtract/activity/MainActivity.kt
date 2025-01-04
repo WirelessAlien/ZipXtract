@@ -65,12 +65,12 @@ class MainActivity : AppCompatActivity() {
             val textView = dialogView.findViewById<TextView>(R.id.crash_log_text)
             textView.text = crashLog.toString()
 
-            MaterialAlertDialogBuilder(this)
+            MaterialAlertDialogBuilder(this, R.style.MaterialDialog)
                 .setTitle(getString(R.string.crash_log))
                 .setView(dialogView)
                 .setPositiveButton(getString(R.string.copy_text)) { _: DialogInterface?, _: Int ->
                     val clipboard = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
-                    val clip = ClipData.newPlainText("ShowCase Crash Log", crashLog.toString())
+                    val clip = ClipData.newPlainText("ZipXtract Crash Log", crashLog.toString())
                     clipboard.setPrimaryClip(clip)
                     Toast.makeText(this@MainActivity, R.string.copied_to_clipboard, Toast.LENGTH_SHORT).show()
                 }

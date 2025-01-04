@@ -66,7 +66,7 @@
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 style="@style/Widget.Material3.CardView.Filled"
-                android:elevation="3dp"
+                android:elevation="0dp"
                 app:cardCornerRadius="5dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -79,7 +79,7 @@
                     android:layout_gravity="center"
                     android:fontFamily="@font/bebasneue_regular"
                     android:text="FILE"
-                    android:textSize="14sp"
+                    android:textSize="18sp"
                     android:textStyle="bold"/>
             </com.google.android.material.card.MaterialCardView>
 
@@ -139,7 +139,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="16dp"
             android:orientation="horizontal">
 
             <com.google.android.material.button.MaterialButton
@@ -193,12 +193,23 @@
         </LinearLayout>
 
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnFileInfo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cornerRadius="5dp"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="16dp"
+            android:text="@string/file_info" />
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnDelete"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:cornerRadius="5dp"
             android:layout_marginStart="16dp"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="16dp"
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="20dp"
             android:text="@string/delete" />

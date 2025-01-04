@@ -20,6 +20,8 @@ package com.wirelessalien.zipxtract.fragment
 
 import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -31,6 +33,7 @@ import android.os.Environment
 import android.os.Handler
 import android.os.Looper
 import android.os.storage.StorageManager
+import android.text.Editable
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -420,7 +423,7 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
         }
 
         btnMultiExtract.setOnClickListener {
-            showPasswordInputMultiDialog(filePath)
+            showPasswordInputMultiRarDialog(filePath)
             bottomSheetDialog.dismiss()
         }
 
@@ -492,7 +495,7 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
             .show()
     }
 
-    private fun showPasswordInputMultiDialog(file: String) {
+    private fun showPasswordInputMultiRarDialog(file: String) {
         val dialogView = layoutInflater.inflate(R.layout.password_input_dialog, null)
         val passwordEditText = dialogView.findViewById<TextInputEditText>(R.id.passwordInput)
 
@@ -590,20 +593,37 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
     private fun showFileInfo(file: File) {
         val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_file_info, null)
 
-        val fileNameTextView = dialogView.findViewById<TextView>(R.id.file_name)
-        val filePathTextView = dialogView.findViewById<TextView>(R.id.file_path)
+        val fileNameTextView = dialogView.findViewById<TextInputEditText>(R.id.file_name)
+        val filePathTextView = dialogView.findViewById<TextInputEditText>(R.id.file_path)
         val fileSizeTextView = dialogView.findViewById<TextView>(R.id.file_size)
         val lastModifiedTextView = dialogView.findViewById<TextView>(R.id.last_modified)
         val okButton = dialogView.findViewById<Button>(R.id.ok_button)
 
-        fileNameTextView.text = file.name
-        filePathTextView.text = file.absolutePath
+        fileNameTextView.text = Editable.Factory.getInstance().newEditable(file.name)
+        filePathTextView.text = Editable.Factory.getInstance().newEditable(file.absolutePath)
         val fileSizeText = bytesToString(file.length())
         fileSizeTextView.text = fileSizeText
         val dateFormat = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT, Locale.getDefault())
         lastModifiedTextView.text = dateFormat.format(Date(file.lastModified()))
+
+        val clipboardManager = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        fileNameTextView.setOnLongClickListener {
+            val clip = ClipData.newPlainText("File Name", file.name)
+            clipboardManager.setPrimaryClip(clip)
+            Toast.makeText(requireContext(), getString(R.string.copied_to_clipboard), Toast.LENGTH_SHORT).show()
+            true
+        }
+
+        filePathTextView.setOnLongClickListener {
+            val clip = ClipData.newPlainText("File Path", file.absolutePath)
+            clipboardManager.setPrimaryClip(clip)
+            Toast.makeText(requireContext(), getString(R.string.copied_to_clipboard), Toast.LENGTH_SHORT).show()
+            true
+        }
+
         val dialog = MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
             .setView(dialogView)
+            .setTitle(getString(R.string.file_info))
             .create()
 
         okButton.setOnClickListener {

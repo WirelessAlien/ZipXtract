@@ -1,60 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="extract">Распаковать</string>
-    <string name="extract_to">Распаковать в</string>
-    <string name="not_selected">Не выбрано</string>
-    <string name="save_zip_to">Сохранить Zip в</string>
     <string name="donate">Пожертвовать</string>
-    <string name="create">Создать</string>
     <string name="encryption_method">Метод шифрования</string>
     <string name="compression_level">Уровень сжатия</string>
     <string name="compression_method">Способ сжатия</string>
-    <string name="compression_settings">Настройки сжатия</string>
     <string name="ok">OK</string>
-    <string name="output_directory_cleared">Целевая папка очищена</string>
-    <string name="selected_file_cleared">Выделенный файл очищен</string>
     <string name="enter_password">Введите пароль</string>
-    <string name="encrypt">Зашифровать</string>
-    <string name="not_encrypted">Не зашифровано</string>
     <string name="zip_creation_success">Zip-файл создан успешно</string>
-    <string name="please_select_files">Пожалуйста выберите файлы</string>
     <string name="zip_creation_failed">Ошибка создания файла zip</string>
-    <string name="select_output_directory">Пожалуйста выберите целевую папку</string>
-    <string name="save">Сохранить</string>
     <string name="copied_to_clipboard">Скопировано в буфер обмена</string>
-    <string name="pick_file_extract">Пожалуйста выберите файл для распаковки</string>
-    <string name="permission_required">Доступ к хранилищу требуется для извлечения файлов</string>
-    <string name="select_output_directory_extract">Пожалуйста выберите куда извлечь файлы</string>
-    <string name="archive_file_name_failed">Не удалось получить название файла архива</string>
-    <string name="invalid_uri">Неправельный URI файла архива</string>
     <string name="share">Поделиться ссылкой на приложение</string>
     <string name="sevenz_creation_success">7z файл создан успешно</string>
     <string name="enter_name_of_archive_optional">Введите название архива (необязательно)</string>
     <string name="split_size_mb">Разделить по размеру</string>
     <string name="split_zip">Разделить Zip</string>
     <string name="_ten">По умолчанию 64kb</string>
-    <string name="please_wait_end_of_job">Подождите... Если вы выбрали большие файлы, это может занять несколько минут</string>
-    <string name="pick_file">Выберите файл</string>
-    <string name="selected_file_text">Выбранный файл: %1$s</string>
-    <string name="directory_path">Выбранная папка: %1$s</string>
     <string name="no_file_selected">Нет выбранных файлов</string>
-    <string name="selected_files_text">Выбранные файлы: %1$d</string>
-    <string name="no_directory_selected">Не выбрана папка</string>
-    <string name="version">Версия:</string>
-    <string name="password">пароль</string>
     <string name="create_zip">Сжать ZIP</string>
-    <string name="zip_without_zip">Название Zip файла (без .zip)</string>
-    <string name="files_select_request">Пожалуйста выберите файлы</string>
     <string name="open_folder">Открыть папку</string>
     <string name="permission_denied">Разрешение отклонено</string>
-    <string name="open_settings">Открыть настройки</string>
-    <string name="select">Выбрать</string>
     <string name="folder">Папка</string>
-    <string name="file">Файл</string>
-    <string name="file_picked_success">Файлы выбранны</string>
     <string name="cancel">Отмена</string>
-    <string name="files">Файлы</string>
-    <string name="file_picked_fail">Нет выбранных файлов</string>
     <string name="extraction_failed">Не удалось извлечь:</string>
     <string name="no_password">Нет пароля</string>
     <string name="extraction_success">Файл извлеченён успешно</string>
@@ -69,7 +36,5 @@
 \n
 \nЕсли безопасность является вашей основной целью, мы настоятельно рекомендуем использовать AES, несмотря на более длительное время обработки.</string>
     <string name="liberapay">Liberapay</string>
-    <string name="output_file_name">outputZip.zip</string>
     <string name="solid_compression">Непрерывный архив</string>
-    <string name="percent">%</string>
 </resources>

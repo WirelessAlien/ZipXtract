@@ -72,7 +72,7 @@
                     app:chipIconVisible="true"
                     app:chipIcon="@drawable/ic_change"
                     app:chipCornerRadius="4dp"
-                    android:text="Storage"/>
+                    android:text="@string/storage"/>
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/internalStorageChip"

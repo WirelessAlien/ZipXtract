@@ -415,7 +415,6 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 }
             }
         }
-
         startFileObserver()
 
         val filter = IntentFilter().apply {
@@ -1008,6 +1007,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         val btnGzip = view.findViewById<MaterialButton>(R.id.btnGzip)
         val extractBtn = view.findViewById<MaterialButton>(R.id.btnExtract)
         val btnOpenWith = view.findViewById<MaterialButton>(R.id.btnOpenWith)
+        val btnFileInfo = view.findViewById<MaterialButton>(R.id.btnFileInfo)
         val fileNameTv = view.findViewById<TextView>(R.id.fileName)
         val fileExtensionTv = view.findViewById<TextView>(R.id.fileExtension)
         val fileModifiedTv = view.findViewById<TextView>(R.id.fileDate)
@@ -1022,9 +1022,9 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 "FILE"
             } else {
                 if (file.extension.length == 4) {
-                    fileExtensionTv.textSize = 12f
+                    fileExtensionTv.textSize = 16f
                 } else {
-                    fileExtensionTv.textSize = 14f
+                    fileExtensionTv.textSize = 18f
                 }
                 file.extension.uppercase(Locale.getDefault())
             }
@@ -1069,6 +1069,11 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
             }
             startActivity(Intent.createChooser(intent, getString(R.string.open_with)))
+            bottomSheetDialog.dismiss()
+        }
+
+        btnFileInfo.setOnClickListener {
+            showFileInfo(file)
             bottomSheetDialog.dismiss()
         }
 
@@ -1137,9 +1142,9 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 "FILE"
             } else {
                 if (file.extension.length == 4) {
-                    fileExtensionTv.textSize = 12f
+                    fileExtensionTv.textSize = 16f
                 } else {
-                    fileExtensionTv.textSize = 14f
+                    fileExtensionTv.textSize = 18f
                 }
                 file.extension.uppercase(Locale.getDefault())
             }

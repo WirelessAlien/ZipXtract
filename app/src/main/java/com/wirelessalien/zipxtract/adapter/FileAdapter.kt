@@ -180,9 +180,9 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
                             "FILE"
                         } else {
                             if (file.extension.length == 4) {
-                                holder.fileExtension.textSize = 12f
+                                holder.fileExtension.textSize = 16f
                             } else {
-                                holder.fileExtension.textSize = 14f
+                                holder.fileExtension.textSize = 18f
                             }
                             file.extension.uppercase(Locale.getDefault())
                         }

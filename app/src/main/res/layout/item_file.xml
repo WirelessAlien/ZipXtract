@@ -54,8 +54,8 @@
             android:id="@+id/card_view"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            style="@style/Widget.Material3.CardView.Elevated"
-            android:elevation="3dp"
+            style="@style/Widget.Material3.CardView.Filled"
+            android:elevation="0dp"
             app:cardCornerRadius="5dp"
             android:layout_margin="5dp"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -66,7 +66,7 @@
                 android:id="@+id/file_icon"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:padding="10dp"
+                android:padding="8dp"
                 android:src="@drawable/ic_unknown"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -79,7 +79,7 @@
                 android:layout_gravity="center"
                 android:fontFamily="@font/bebasneue_regular"
                 android:text="FILE"
-                android:textSize="14sp"
+                android:textSize="18sp"
                 android:textStyle="bold"
                 android:visibility="gone" />
         </com.google.android.material.card.MaterialCardView>

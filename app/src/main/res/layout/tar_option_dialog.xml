@@ -19,6 +19,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
+    android:clickable="true"
     android:background="@color/md_theme_surface"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 

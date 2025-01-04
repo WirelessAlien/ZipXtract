@@ -39,7 +39,7 @@ class SettingsActivity : AppCompatActivity() {
 
         // Display the fragment as the main content.
         supportFragmentManager.beginTransaction()
-            .replace(R.id.fragmentCntainer, SettingsFragment())
+            .replace(R.id.fragmentContainer, SettingsFragment())
             .commit()
 
         // Add back button to the activity

@@ -1,15 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="extract_to">Ekstrak ke</string>
-    <string name="not_selected">Tidak ada yg dipilh</string>
-    <string name="selected_file_text">Berkas yg dipilih: %1$s</string>
-    <string name="directory_path">Folder yg dipilih: %1$s</string>
-    <string name="select">Pilih</string>
-    <string name="file">Berkas</string>
-    <string name="save_zip_to">Lokasi Zip</string>
-    <string name="no_directory_selected">Tidak ada direktori yg dipilih</string>
     <string name="create_zip">ZIP Kompresi</string>
-    <string name="files">Paket</string>
     <string name="folder">Folder</string>
     <string name="donate">Donasi</string>
     <string name="liberapay">Liberapay</string>
@@ -17,50 +8,25 @@
     <string name="max_available_thread">0 dari maks thread tersedia</string>
     <string name="compress_sevenz">7z Kompresi</string>
     <string name="extract">Ekstrak</string>
-    <string name="pick_file">Pilih Berkas</string>
     <string name="enter_name_of_archive_optional">Isikan nama arsip (opsional)</string>
     <string name="no_file_selected">Tidak ada berkas yg dipilih</string>
-    <string name="selected_files_text">Paket yg dipilih: %1$d</string>
-    <string name="percent">%</string>
-    <string name="version">Versi:</string>
     <string name="zip_creation_failed">Gagal membuat berkas zip</string>
     <string name="_ten">Bawaan di 64kb</string>
-    <string name="create">Buat</string>
     <string name="encryption_method">Metode Enkripsi</string>
     <string name="compression_level">Level Kompresi</string>
     <string name="compression_method">Metode Kompresi</string>
-    <string name="compression_settings">Pengaturan Kompresi</string>
-    <string name="file_picked_success">Berhasil Memilih Berkas</string>
     <string name="settings_info_text">Metode enkripsi bawaan adalah AES, dengan keamanan data level tinggi. Namun, AES membutuhkan proses yang memakan waktu, terutama pada gawai kelas bawah.
 \n
 \nUntuk pengguna dengan gawai dimaksud, pilih metode ZIP_STANDARD. Metode enkripsi ini tidak menyediakan level keamanan yang sama dengan AES.
 \n
 \nJika keamanan data menjadi pertimbangan, sangat dianjurkan untuk menggunakan AES walaupun memakan waktu lebih.</string>
-    <string name="file_picked_fail">Tidak memlih berkas</string>
     <string name="ok">Oke</string>
-    <string name="output_directory_cleared">Direktori tujuan dihapus</string>
-    <string name="selected_file_cleared">Berkas dipilih dihapus</string>
     <string name="enter_password">Masukkan Kata Sandi</string>
-    <string name="password">Kata Sandi</string>
-    <string name="zip_without_zip">Nama berkas ZIP (tanpa .zip)</string>
-    <string name="encrypt">Enkripsi</string>
-    <string name="output_file_name">hasilZip.zip</string>
-    <string name="not_encrypted">Tidak Terenkripsi</string>
-    <string name="please_select_files">Pilih berkas</string>
-    <string name="select_output_directory">Pilih direktori tujuan</string>
-    <string name="files_select_request">Pilih berkas</string>
     <string name="open_folder">Buka Folder</string>
-    <string name="save">Simpan</string>
     <string name="zip_creation_success">Berhasil membuat berkas Zip</string>
     <string name="copied_to_clipboard">Salin ke Papan Klip</string>
-    <string name="pick_file_extract">Pilih berkas untuk diekstraksi</string>
     <string name="permission_denied">Akses Ditolak</string>
-    <string name="permission_required">Akses Penyimpanan dibutuhkan untuk ekstraksi berkas</string>
-    <string name="open_settings">Buka Pengaturan</string>
     <string name="cancel">Batal</string>
-    <string name="select_output_directory_extract">Pilih lokasi tujuan ekstraksi berkas</string>
-    <string name="archive_file_name_failed">Gagal memperoleh nama arsip</string>
-    <string name="invalid_uri">URI Arsip tidak valid</string>
     <string name="no_password">Tidak Ada Kata Sandi</string>
     <string name="extraction_failed">Gagal Ekstraksi:</string>
     <string name="share">Berbagi Link Aplikasi</string>
@@ -68,7 +34,6 @@
     <string name="extraction_success">Berhasil mengekstrak berkas</string>
     <string name="sevenz_creation_success">Berhasil membuat berkas 7z</string>
     <string name="thread_count">Jumlah Thread</string>
-    <string name="please_wait_end_of_job">Silahkan Tunggu...Jika berkas berukuran besar, akan memakan waktu sebentar</string>
     <string name="encryption_strength">Kekuatan Enkripsi</string>
     <string name="split_size_mb">Ukuran Split</string>
     <string name="split_zip">Zip Split</string>
