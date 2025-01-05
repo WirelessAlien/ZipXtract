@@ -97,10 +97,10 @@
     <string name="extension">Erweiterung</string>
     <string name="close">Schließen</string>
     <string name="extract_path">Ordner für extrahierte Dateien</string>
-    <string name="archive_path">Archivierter Dateienordner</string>
+    <string name="archive_path">Ordner für archivierte Dateien</string>
     <string name="archive_path_summary">Ändern Sie den Standard-Extrakt-Ordner.\nStandard ist \"Elternordner\"</string>
     <string name="extract_path_summary">Ändern Sie den Standard-Extrakt-Ordner.\nStandard ist \"Elternordner\" oder Interner Speicher/ZipXtract (für \"Öffnen mit\" Menü extrahiert Archiv)</string>
-    <string name="compress_tar">Archiv TAR</string>
+    <string name="compress_tar">TAR archivieren</string>
     <string name="compression_success">Compression erfolgreich</string>
     <string name="archive_success">Archiviert erfolgreich</string>
     <string name="tar_creation_success">TAR-Datei erfolgreich archiviert</string>
