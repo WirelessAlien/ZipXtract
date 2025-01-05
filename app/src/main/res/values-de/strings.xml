@@ -25,7 +25,7 @@
     <string name="share">App-Link teilen</string>
     <string name="enter_password">Password eingeben</string>
     <string name="extraction_failed">Entpacken fehlgeschlagen:</string>
-    <string name="zip_creation_success">Zip-Datei erfolgreich erstellt</string>
+    <string name="zip_creation_success">ZIP-Datei erfolgreich archiviert</string>
     <string name="sevenz_creation_success">7z-Datei erfolgreich erstellt</string>
     <string name="sevenz_creation_failed">Erstellen der 7z-Datei fehlgeschlagen</string>
     <string name="compress_sevenz">7z archivieren</string>
