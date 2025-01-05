@@ -1,1 +1,51 @@
-A fully open-source tool to extract zip, rar, tar, bz2, gz, 7z, xz, jar & z etc. Encrypted .zip, .7z and .rar file also supported. It can be used to compress zip & 7z. This app is still in development, any feature request, report issue in Github: https://github.com/WirelessAlien/ZipXtract
+<div style="text-align: left;">ZipXtract is a fully open-source Android application designed to handle a wide range of archive formats, including:</div>
+<ul>
+  <li>RAR (with RAR5 and multi-volume support)</li>
+  <li>ZIP (including password-protected and split archives)</li>
+  <li>TAR</li>
+  <li>BZ2</li>
+  <li>GZ</li>
+  <li>7z (with password protection and multi-volume support)</li>
+  <li>XZ</li>
+  <li>JAR</li>
+  <li>more...</li>
+</ul>
+
+<h2>Features</h2>
+
+<h3>Extraction:</h3>
+<ul>
+  <li>Supports various formats: RAR, ZIP, TAR, BZ2, GZ, 7Z, XZ, JAR etc.</li>
+  <li>Handles encrypted ZIP and 7z files.</li>
+  <li>Extracts multi-volume RAR archives.</li>
+  <li>Extracts multi-volume 7z archives.</li>
+  <li>Extracts split ZIP files.</li>
+</ul>
+
+<h3>Creation:</h3>
+<ul>
+  <li>Create ZIP and 7Z archives, with options for encryption.</li>
+  <li>Create split ZIP archives.</li>
+</ul>
+
+<p>and basic file operations like <strong>Delete, Copy, Move.</strong></p>
+
+<p><strong>Note</strong>: The F-Droid version does not include RAR extraction and 7z compression features due to licensing restrictions. For the complete version, please use the GitHub or IzzyOnDroid releases.</p>
+
+<h2>Usage tip</h2>
+<ul>
+  <li>Long-press files and folders or click file/folder icons to select them for archiving.</li>
+  <li>Click a file to display the extraction menu for choosing extraction options.</li>
+  <li>Files extracted using "Open With" menu of OS are stored in <tt>Internal Storage/ZipXtract</tt> by default. Modify this in app settings.</li>
+  <li>The default location for archiving or extracting archives (within the app) is the parent directory of the respective file(s). This can be changed in the app settings.</li>
+</ul>
+
+<h3>Translate</h3>
+<p>Help localise the app through&nbsp;<a href="https://hosted.weblate.org/engage/zipxtract/">Weblate</a></p>
+
+<h2>License</h2>
+<p>This project is licensed under the GNU General Public License v3.0. See the <a href="https://github.com/WirelessAlien/ZipXtract/blob/master/LICENSE">LICENSE</a> file for details.</p>
+
+<h2>Contact</h2>
+<p>For any inquiries or feedback, please open an issue on the <a href="https://github.com/WirelessAlien/ZipXtract/issues">GitHub repository</a>.</p>
+
