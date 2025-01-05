@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="extract">Estrai</string>
+    <string name="create_zip">Comprimi in ZIP</string>
+    <string name="encryption_method">Metodo cifratura</string>
+    <string name="compression_level">Livello di compressione</string>
+    <string name="compression_method">Metodo di compressione</string>
+    <string name="zip_creation_success">File zip cancellato correttamente</string>
+    <string name="cancel">Annulla</string>
+    <string name="extraction_failed">Estrazione fallita:</string>
+    <string name="no_password">Senza password</string>
+    <string name="sevenz_creation_failed">Errore durante la creazione del file 7z</string>
+    <string name="compress_sevenz">Comprimi in 7z</string>
+    <string name="solid_compression">Compressione solida</string>
+    <string name="enter_name_of_archive_optional">Inserisci nome dell\'archivio (facoltativo)</string>
+    <string name="split_size_mb">Dimensione da dividere</string>
+    <string name="split_zip">Dividi zip</string>
+    <string name="encryption_strength">Forza cifratura</string>
+    <string name="_ten">Predefinito 64kb</string>
+    <string name="no_file_selected">Nessun file selezionato</string>
+    <string name="donate">Dona</string>
+    <string name="folder">Cartella</string>
+    <string name="liberapay">Liberapay</string>
+    <string name="settings_info_text">Il metodo di cifratura predefinito per i file è AES, che offre un alto livello di sicurezza. Tuttavia, tieni a mente che la cifratura con AES può richiedere molto tempo, soprattutto su dispositivi di bassa gamma.
+\n
+\nPer gli utenti con dispositivi meno potenti, è possibile utilizzare un\'alternativa come ZIP_STANDARD. Tuttavia, tieni a mente che questo metodo non offre lo stesso livello di sicurezza di AES.
+\n
+\nSe la sicurezza è la priorità, consigliamo fortemente di usare AES nonostante i tempi di elaborazione più lunghi.</string>
+    <string name="ok">OK</string>
+    <string name="enter_password">Inserisci password</string>
+    <string name="permission_denied">Permesso negato</string>
+    <string name="zip_creation_failed">Errore durante la creazione del file zip</string>
+    <string name="open_folder">Apri cartella</string>
+    <string name="copied_to_clipboard">Copiato negli appunti</string>
+    <string name="extraction_success">File estratto correttamente</string>
+    <string name="share">Condividi link app</string>
+    <string name="sevenz_creation_success">File 7z creato correttamente</string>
+    <string name="thread_count">Numero thread</string>
+    <string name="max_available_thread">0 per il numero massimo di thread</string>
+</resources>

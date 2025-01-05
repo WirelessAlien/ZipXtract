@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="no_file_selected">Няма Избран Файл</string>
+    <string name="create_zip">Компресирай ZIP</string>
+    <string name="folder">Папка</string>
+    <string name="donate">Дарете</string>
+    <string name="liberapay">Liberapay</string>
+    <string name="compression_method">Метод на компресиране</string>
+    <string name="ok">Добре</string>
+    <string name="enter_password">Въведи парола</string>
+    <string name="cancel">Отказ</string>
+    <string name="share">Сподели връзка на приложението</string>
+    <string name="compress_sevenz">Компресирай 7z</string>
+    <string name="thread_count">Брой нишки</string>
+    <string name="max_available_thread">0 за максимален брой налични нишки</string>
+    <string name="solid_compression">Солидна компресия</string>
+    <string name="enter_name_of_archive_optional">Въведи име на архив (по избор)</string>
+    <string name="split_size_mb">Разделен размер</string>
+    <string name="split_zip">Разделен Zip</string>
+    <string name="encryption_strength">Надеждно шифроване</string>
+    <string name="_ten">По подразбиране е 64kb</string>
+    <string name="extract">Извлечи</string>
+    <string name="settings_info_text">Методът за шифроване по подразбиране за файлове е AES, който осигурява високо ниво на сигурност. Все пак, имайте предвид, че AES шифроването може да отнеме много време, особено на устройства от по-нисък клас.\n\nЗа потребители с по-малко мощни устройства може да се използва алтернатива като ZIP_STANDARD. Имайте предвид обаче, че този метод не предлага същото ниво на сигурност като AES.\n\nАко сигурността е основната ви грижа, силно препоръчваме да използвате AES въпреки по-дългото време за обработка.</string>
+    <string name="encryption_method">Метод на шифроване</string>
+    <string name="zip_creation_success">Zip файлът е създаден успешно</string>
+    <string name="compression_level">Ниво на компресиране</string>
+    <string name="zip_creation_failed">Грешка при създаването на zip файл</string>
+    <string name="open_folder">Отвори папка</string>
+    <string name="copied_to_clipboard">Копирано в клипборда</string>
+    <string name="no_password">Няма парола</string>
+    <string name="extraction_success">Файлът е извлечен успешно</string>
+    <string name="sevenz_creation_failed">Грешка при създаването на 7z файл</string>
+    <string name="permission_denied">Разрешението е отказано</string>
+    <string name="extraction_failed">Неуспешно извличане:</string>
+    <string name="sevenz_creation_success">7z файлът е създаден успешно</string>
+</resources>

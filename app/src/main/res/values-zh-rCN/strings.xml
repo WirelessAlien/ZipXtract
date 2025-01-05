@@ -1,62 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="file_picked_fail">未选择文件</string>
-    <string name="select_output_directory_extract">请选择在何处提取文件</string>
-    <string name="save">保存</string>
     <string name="compression_method">压缩方式</string>
     <string name="copied_to_clipboard">已拷贝到剪贴板</string>
-    <string name="password">密码</string>
-    <string name="extract_to">提取到</string>
-    <string name="create">创建</string>
-    <string name="save_zip_to">保存 Zip 到</string>
-    <string name="directory_path">已选目录: %1$s</string>
-    <string name="selected_file_cleared">文件选择已清空</string>
-    <string name="pick_file_extract">请选择要提取的文件</string>
-    <string name="settings_info_text">文件的默认加密方法是 AES，它提供了高级别的安全性。 但是，请注意，AES 加密可能非常耗时，尤其是在低端设备上。\n\n对于设备功能较弱的用户，可以使用 ZIP_STANDARD 等替代方案。 但是，请注意，此方法无法提供与 AES 相同级别的安全性。\n\n如果安全性是您最关心的问题，我们强烈建议使用 AES，尽管其处理时间较长。</string>
-    <string name="file_picked_success">文件选取成功</string>
-    <string name="selected_files_text">已选择文件: %1$d</string>
+    <string name="settings_info_text">文件的默认加密方法是 AES，它提供了高级别的安全性。但是，请注意，AES 加密可能非常耗时，尤其是在低端设备上。
+\n
+\n对于设备功能较弱的用户，可以使用ZIP_STANDARD等替代方案。但是，请注意，此方法不提供与 AES 相同的安全级别。
+\n
+\n如果安全性是您最关心的问题，我们强烈建议您使用 AES，尽管它的处理时间较长。</string>
     <string name="folder">文件夹</string>
-    <string name="output_file_name">outputZip.zip</string>
     <string name="no_file_selected">未选择文件</string>
-    <string name="select_output_directory">请选择输出目录</string>
     <string name="compression_level">压缩等级</string>
-    <string name="permission_required">需要存储权限以提取文件</string>
-    <string name="selected_file_text">已选文件: %1$s</string>
     <string name="liberapay">Liberapay</string>
-    <string name="zip_without_zip">Zip 名称（不带 .zip）</string>
     <string name="no_password">无密码</string>
-    <string name="version">版本:</string>
-    <string name="not_selected">未选择</string>
     <string name="ok">OK</string>
-    <string name="open_settings">打开设置</string>
-    <string name="please_select_files">请选择文件</string>
     <string name="create_zip">压缩 ZIP</string>
-    <string name="pick_file">选取文件</string>
-    <string name="invalid_uri">无效的归档文件 URL</string>
-    <string name="files">文件</string>
-    <string name="select">选择</string>
     <string name="encryption_method">加密方式</string>
     <string name="cancel">取消</string>
-    <string name="archive_file_name_failed">获取归档文件名失败</string>
-    <string name="percent">%</string>
     <string name="permission_denied">没有权限</string>
-    <string name="output_directory_cleared">输出目录已清空</string>
     <string name="zip_creation_failed">创建 zip 文件出错</string>
     <string name="extract">解压</string>
     <string name="donate">捐赠</string>
-    <string name="not_encrypted">不加密</string>
-    <string name="no_directory_selected">未选择目录</string>
     <string name="open_folder">打开目录</string>
     <string name="extraction_success">文件提取成功</string>
-    <string name="compression_settings">压缩设置</string>
-    <string name="files_select_request">请选择文件</string>
-    <string name="encrypt">加密</string>
-    <string name="file">文件</string>
     <string name="share">分享应用链接</string>
     <string name="enter_password">输入密码</string>
     <string name="extraction_failed">提取失败:</string>
     <string name="zip_creation_success">Zip 文件创建成功</string>
+    <string name="thread_count">线程数</string>
     <string name="sevenz_creation_success">7z 文件创建成功</string>
+    <string name="max_available_thread">0 代表最大可用线程</string>
+    <string name="enter_name_of_archive_optional">输入归档名称（可选）</string>
+    <string name="solid_compression">固实压缩</string>
     <string name="sevenz_creation_failed">创建 7z 文件出错</string>
     <string name="compress_sevenz">压缩 7z</string>
+    <string name="encryption_strength">加密强度</string>
+    <string name="_ten">默认为64KB</string>
+    <string name="split_zip">Zip分卷</string>
+    <string name="split_size_mb">分卷大小</string>
 </resources>

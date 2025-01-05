@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="create_zip">ZIP Kompresi</string>
+    <string name="folder">Folder</string>
+    <string name="donate">Donasi</string>
+    <string name="liberapay">Liberapay</string>
+    <string name="solid_compression">Kompresi Padat</string>
+    <string name="max_available_thread">0 dari maks thread tersedia</string>
+    <string name="compress_sevenz">7z Kompresi</string>
+    <string name="extract">Ekstrak</string>
+    <string name="enter_name_of_archive_optional">Isikan nama arsip (opsional)</string>
+    <string name="no_file_selected">Tidak ada berkas yg dipilih</string>
+    <string name="zip_creation_failed">Gagal membuat berkas zip</string>
+    <string name="_ten">Bawaan di 64kb</string>
+    <string name="encryption_method">Metode Enkripsi</string>
+    <string name="compression_level">Level Kompresi</string>
+    <string name="compression_method">Metode Kompresi</string>
+    <string name="settings_info_text">Metode enkripsi bawaan adalah AES, dengan keamanan data level tinggi. Namun, AES membutuhkan proses yang memakan waktu, terutama pada gawai kelas bawah.
+\n
+\nUntuk pengguna dengan gawai dimaksud, pilih metode ZIP_STANDARD. Metode enkripsi ini tidak menyediakan level keamanan yang sama dengan AES.
+\n
+\nJika keamanan data menjadi pertimbangan, sangat dianjurkan untuk menggunakan AES walaupun memakan waktu lebih.</string>
+    <string name="ok">Oke</string>
+    <string name="enter_password">Masukkan Kata Sandi</string>
+    <string name="open_folder">Buka Folder</string>
+    <string name="zip_creation_success">Berhasil membuat berkas Zip</string>
+    <string name="copied_to_clipboard">Salin ke Papan Klip</string>
+    <string name="permission_denied">Akses Ditolak</string>
+    <string name="cancel">Batal</string>
+    <string name="no_password">Tidak Ada Kata Sandi</string>
+    <string name="extraction_failed">Gagal Ekstraksi:</string>
+    <string name="share">Berbagi Link Aplikasi</string>
+    <string name="sevenz_creation_failed">Gagal membuat berkas 7z</string>
+    <string name="extraction_success">Berhasil mengekstrak berkas</string>
+    <string name="sevenz_creation_success">Berhasil membuat berkas 7z</string>
+    <string name="thread_count">Jumlah Thread</string>
+    <string name="encryption_strength">Kekuatan Enkripsi</string>
+    <string name="split_size_mb">Ukuran Split</string>
+    <string name="split_zip">Zip Split</string>
+</resources>

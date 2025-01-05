@@ -1,74 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="solana">Solana</string>
     <string name="compression_method">Méthode de compression</string>
-    <string name="doge_coin">Doge Coins</string>
-    <string name="extract_to">Extraire vers</string>
-    <string name="create">Créer</string>
-    <string name="save_zip_to">Enregistrer le zip dans</string>
-    <string name="directory_path">Dossier sélectionné : %1$s</string>
-    <string name="bitcoin">Bitcoin</string>
-    <string name="polygon">Polygon</string>
-    <string name="selected_files_text">Fichiers sélectionnés : %1$d</string>
-    <string name="ethereum">Ethereum</string>
     <string name="folder">Dossier</string>
-    <string name="no_file_selected">Pas de fichier sélectionné</string>
+    <string name="no_file_selected">Aucun fichier sélectionné</string>
     <string name="compression_level">Niveau de compression</string>
-    <string name="selected_file_text">Fichuer sélectionné : %1$s</string>
-    <string name="version">Version :</string>
-    <string name="not_selected">Non-sélectionné</string>
     <string name="create_zip">Compresser au format zip</string>
-    <string name="github_icon">Icône de Github</string>
-    <string name="pick_file">Choisir un fichier</string>
-    <string name="files">Fichiers</string>
-    <string name="select">Sélectionner</string>
-    <string name="encryption_method">Méthode d\'encryptage</string>
-    <string name="percent">%</string>
-    <string name="tron">Tron</string>
+    <string name="encryption_method">Méthode de chiffrement</string>
     <string name="extract">Extraire</string>
     <string name="donate">Faire un don</string>
-    <string name="no_directory_selected">Pas de répertoire sélectionné</string>
-    <string name="compression_settings">Paramètres de compression</string>
-    <string name="share_icon">Icône de partage</string>
-    <string name="file">Fichier</string>
-    <string name="bitcoin_cash">Bitcoin Cash</string>
-    <string name="bnb_smart_chain">BNB Smart Chain</string>
-    <string name="file_picked_fail">Pas de fichier sélectionné</string>
-    <string name="select_output_directory_extract">Veuillez choisir où extraire les fichiers</string>
-    <string name="save">Enregistrer</string>
     <string name="copied_to_clipboard">Copié dans le presse-papier</string>
-    <string name="password">mot de passe</string>
-    <string name="selected_file_cleared">Fichier sélectionné annulé</string>
-    <string name="pick_file_extract">Veuillez choisir un fichier à extraire</string>
-    <string name="settings_info_text">La méthode de cryptage par défaut pour les fichiers est AES, qui fournit un niveau élevé de sécurité. Cependant, sachez que le cryptage AES peut prendre du temps, en particulier sur les dispositifs bas de gamme. Pour les utilisateurs avec des appareils moins puissants, une alternative comme Zip_standard peut être utilisée. Cependant, veuillez noter que cette méthode n\'offre pas le même niveau de sécurité que les AES. Si la sécurité est votre principale préoccupation, nous vous recommandons fortement d\'utiliser AES malgré son temps de traitement plus long.</string>
-    <string name="file_picked_success">Fichiier sélectionné avec succès</string>
-    <string name="output_file_name">extrantZip.zip</string>
-    <string name="select_output_directory">Veuillez choisir le dossier de sortie</string>
-    <string name="permission_required">La permission d\'accès au stockage est requise pour extraire des fichiers</string>
+    <string name="settings_info_text">La méthode de chiffrement par défaut est AES, qui offre un haut niveau de sécurité. Cependant, soyez informés que le chiffrement AES peut être lent à s\'effectuer, et plus particulièrement sur les appareils bas de gamme
+\n
+\nPour les utilisateurs qui possèdent un appareil peu puissant, une alternative comme (ZIP_STANDARD) est envisageable. Notez cependant que cette méthode n\'offre pas le même niveau de sécurité que le chiffrement AES.
+\n
+\nSi la sécurité fait partie de vos priorités, nous vous recommandons grandement d\'utiliser le chiffrement AES, malgré son processus de travail plus long.</string>
     <string name="liberapay">Liberapay</string>
-    <string name="zip_without_zip">Nom du fichier Zip (sans l\'extension .zip)</string>
     <string name="no_password">Pas de mot de passe</string>
     <string name="ok">OK</string>
-    <string name="open_settings">Ouvrir les paramètres</string>
-    <string name="please_select_files">Veuillez sélectionner les fichiers</string>
-    <string name="invalid_uri">URI du fichier d\'archive invalide</string>
     <string name="cancel">Annuler</string>
-    <string name="archive_file_name_failed">Échec de récupération du nom du fichier d\'archive</string>
     <string name="permission_denied">Permission refusée</string>
-    <string name="output_directory_cleared">Dossier de sortie annulé</string>
     <string name="zip_creation_failed">Erreur pendant la création du fichier Zip</string>
-    <string name="not_encrypted">Non-encrypté</string>
     <string name="open_folder">Ouvrir dossier</string>
     <string name="extraction_success">Fichier extrait avec succès</string>
-    <string name="files_select_request">Veuillez séléctionner les fichiers</string>
-    <string name="encrypt">Encrypter</string>
     <string name="share">Partager le lien vers l\'application</string>
     <string name="enter_password">Entrez le mot de passe</string>
     <string name="extraction_failed">Échec de l\'extraction :</string>
     <string name="zip_creation_success">Fichier Zip créé avec succès</string>
-    <string name="sevenz_creation_success">Fichier 7z créé avec succès</string>
-    <string name="sevenz_creation_failed">Erreur pendant la création du fichier 7z</string>
-    <string name="compress_sevenz">Compresser au format 7z</string>
-    <string name="please_wait_end_of_job">Veuillez patienter… si vous avez sélectionné des fichiers volumineux, cela peut prendre quelques instants</string>
-
+    <string name="sevenz_creation_success">Archive 7z créée avec succès</string>
+    <string name="sevenz_creation_failed">Erreur lors de la création de l\'archive 7z</string>
+    <string name="compress_sevenz">Compresser en 7z</string>
+    <string name="thread_count">Nombre de fils d\'exécution</string>
+    <string name="max_available_thread">0 pour le numbre maximum de fils disponible</string>
+    <string name="enter_name_of_archive_optional">Entrez le nom de l\'archive (facultatif)</string>
+    <string name="solid_compression">Compression compacte</string>
+    <string name="split_zip">Zip en plusieurs parties</string>
+    <string name="_ten">Valeur par défaut est 64kb</string>
+    <string name="split_size_mb">Taille des parties de Zip</string>
+    <string name="encryption_strength">Puissance de chiffrement</string>
 </resources>

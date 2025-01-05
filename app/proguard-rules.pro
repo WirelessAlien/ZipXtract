@@ -19,3 +19,7 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+-dontwarn org.brotli.dec.BrotliInputStream
+-dontwarn com.github.luben.zstd.ZstdOutputStream
+-dontwarn com.github.luben.zstd.ZstdInputStream

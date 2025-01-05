@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_info_text">फाइलों के लिए तयशुदा कूटलेखन विधि AES है, जो उच्च स्तर की सुरक्षा प्रदान करती है। हालांकि, कृपया ध्यान रखें कि AES कूटलेखन समय लेने वाला हो सकता है, खासकर निचले स्तर के उपकरणों पर।
+\n
+\nकम शक्तिशाली उपकरण वाले उपयोगकर्ताओं के लिए, ZIP_STANDARD जैसे विकल्प का उपयोग किया जा सकता है। हालांकि, कृपया ध्यान दें कि यह विधि AES के समान सुरक्षा स्तर प्रदान नहीं करती है।
+\n
+\nयदि सुरक्षा आपकी प्राथमिक चिंता है, तो हम लंबे समय तक प्रसंस्करण समय के बावजूद AES का उपयोग करने की दृढ़ता से अनुशंसा करते हैं।</string>
+    <string name="ok">ठीक है</string>
+    <string name="enter_password">पासवर्ड दर्ज करें</string>
+    <string name="extraction_failed">निष्कर्षण विफल:</string>
+    <string name="no_password">कोई पासवर्ड नहीं</string>
+    <string name="extraction_success">फाइल सफलतापूर्वक निकाली गई</string>
+    <string name="share">ऐप लिंक साझा करें</string>
+    <string name="zip_creation_success">Zip फाइल सफलतापूर्वक बनाई गई</string>
+    <string name="zip_creation_failed">Zip फाइल बनाने में त्रुटि</string>
+    <string name="open_folder">फोल्डर खोलें</string>
+    <string name="copied_to_clipboard">क्लिपबोर्ड पर कॉपी किया गया</string>
+    <string name="permission_denied">अनुमति अस्वीकृत</string>
+    <string name="cancel">रद्द करें</string>
+    <string name="create_zip">Zip संपीड़ित करें</string>
+    <string name="extract">निष्कर्षित करें</string>
+    <string name="no_file_selected">कोई फाइल चयनित नहीं</string>
+    <string name="folder">फोल्डर</string>
+    <string name="donate">दान करें</string>
+    <string name="liberapay">Liberapay</string>
+    <string name="encryption_method">कूटलेखन विधि</string>
+    <string name="compression_level">संपीड़न स्तर</string>
+    <string name="compression_method">संपीड़न विधि</string>
+    <string name="sevenz_creation_success">7z फाइल सफलतापूर्वक बनाई गई</string>
+    <string name="sevenz_creation_failed">7z फाइल बनाने में त्रुटि</string>
+    <string name="compress_sevenz">7z संपीड़ित करें</string>
+    <string name="thread_count">थ्रेड गिनती</string>
+    <string name="max_available_thread">अधिकतम उपलब्ध थ्रेड के लिए 0</string>
+    <string name="enter_name_of_archive_optional">संग्रह का नाम दर्ज करें (वैकल्पिक)</string>
+    <string name="solid_compression">ठोस संपीड़न</string>
+    <string name="split_size_mb">विभाजित आकार</string>
+    <string name="split_zip">विभाजित Zip</string>
+    <string name="encryption_strength">कूटलेखन ताकत</string>
+    <string name="_ten">तयशुदा 64kb है</string>
+</resources>

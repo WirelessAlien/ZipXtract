@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="extract">Распаковать</string>
+    <string name="donate">Пожертвовать</string>
+    <string name="encryption_method">Метод шифрования</string>
+    <string name="compression_level">Уровень сжатия</string>
+    <string name="compression_method">Способ сжатия</string>
+    <string name="ok">OK</string>
+    <string name="enter_password">Введите пароль</string>
+    <string name="zip_creation_success">Zip-файл создан успешно</string>
+    <string name="zip_creation_failed">Ошибка создания файла zip</string>
+    <string name="copied_to_clipboard">Скопировано в буфер обмена</string>
+    <string name="share">Поделиться ссылкой на приложение</string>
+    <string name="sevenz_creation_success">7z файл создан успешно</string>
+    <string name="enter_name_of_archive_optional">Введите название архива (необязательно)</string>
+    <string name="split_size_mb">Разделить по размеру</string>
+    <string name="split_zip">Разделить Zip</string>
+    <string name="_ten">По умолчанию 64kb</string>
+    <string name="no_file_selected">Нет выбранных файлов</string>
+    <string name="create_zip">Сжать ZIP</string>
+    <string name="open_folder">Открыть папку</string>
+    <string name="permission_denied">Разрешение отклонено</string>
+    <string name="folder">Папка</string>
+    <string name="cancel">Отмена</string>
+    <string name="extraction_failed">Не удалось извлечь:</string>
+    <string name="no_password">Нет пароля</string>
+    <string name="extraction_success">Файл извлеченён успешно</string>
+    <string name="sevenz_creation_failed">Ошибка создания файла 7z</string>
+    <string name="compress_sevenz">Сжать в 7z</string>
+    <string name="thread_count">Количество потоков</string>
+    <string name="max_available_thread">0 для максимально доступных потоков</string>
+    <string name="encryption_strength">Стойкость шифрования</string>
+    <string name="settings_info_text">Методом шифрования по умолчанию для файлов является AES, который обеспечивает высокий уровень безопасности. Однако имейте в виду, что шифрование AES может быть трудоёмким, особенно на более слабых устройствах.
+\n
+\nДля пользователей с менее мощными устройствами может использоваться ZIP_STANDARD. Однако, обратите внимание, что этот метод не обеспечивает такого же уровня безопасности, как AES.
+\n
+\nЕсли безопасность является вашей основной целью, мы настоятельно рекомендуем использовать AES, несмотря на более длительное время обработки.</string>
+    <string name="liberapay">Liberapay</string>
+    <string name="solid_compression">Непрерывный архив</string>
+</resources>

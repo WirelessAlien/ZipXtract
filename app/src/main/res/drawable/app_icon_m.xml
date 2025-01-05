@@ -1,0 +1,56 @@
+<!--
+  ~  Copyright (C) 2023  WirelessAlien <https://github.com/WirelessAlien>
+  ~
+  ~     This program is free software: you can redistribute it and/or modify
+  ~     it under the terms of the GNU General Public License as published by
+  ~     the Free Software Foundation, either version 3 of the License, or
+  ~     any later version.
+  ~
+  ~     This program is distributed in the hope that it will be useful,
+  ~     but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~     GNU General Public License for more details.
+  ~
+  ~     You should have received a copy of the GNU General Public License
+  ~     along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24"
+    android:tint="?attr/colorControlNormal">
+  <path
+      android:pathData="M3,14V10C3,6.229 3,4.343 4.172,3.172C5.343,2 7.229,2 11,2H13C16.771,2 18.657,2 19.828,3.172C20.482,3.825 20.771,4.7 20.899,6M21,10V14C21,17.771 21,19.657 19.828,20.828C18.657,22 16.771,22 13,22H11C7.229,22 5.343,22 4.172,20.828C3.518,20.175 3.229,19.3 3.101,18"
+      android:strokeWidth="1.6320000000000001"
+      android:fillColor="#00000000"
+      android:strokeColor="#1C274C"
+      android:strokeLineCap="round"/>
+  <path
+      android:pathData="M9.5,15.5V15.375C9.5,14.892 9.892,14.5 10.375,14.5H13.625C14.108,14.5 14.5,14.892 14.5,15.375V15.5C14.5,16.881 13.381,18 12,18C10.619,18 9.5,16.881 9.5,15.5Z"
+      android:strokeWidth="1.6320000000000001"
+      android:fillColor="#00000000"
+      android:strokeColor="#1C274C"
+      android:strokeLineCap="round"/>
+  <path
+      android:pathData="M9.5,3C9.5,2.529 9.5,2.293 9.646,2.146C9.793,2 10.029,2 10.5,2H11C11.471,2 11.707,2 11.854,2.146C12,2.293 12,2.529 12,3V3.5C12,3.971 12,4.207 11.854,4.354C11.707,4.5 11.471,4.5 11,4.5H10.5C10.029,4.5 9.793,4.5 9.646,4.354C9.5,4.207 9.5,3.971 9.5,3.5V3Z"
+      android:strokeWidth="1.6320000000000001"
+      android:fillColor="#00000000"
+      android:strokeColor="#1C274C"/>
+  <path
+      android:pathData="M9.5,8C9.5,7.529 9.5,7.293 9.646,7.146C9.793,7 10.029,7 10.5,7H11C11.471,7 11.707,7 11.854,7.146C12,7.293 12,7.529 12,8V8.5C12,8.971 12,9.207 11.854,9.354C11.707,9.5 11.471,9.5 11,9.5H10.5C10.029,9.5 9.793,9.5 9.646,9.354C9.5,9.207 9.5,8.971 9.5,8.5V8Z"
+      android:strokeWidth="1.6320000000000001"
+      android:fillColor="#00000000"
+      android:strokeColor="#1C274C"/>
+  <path
+      android:pathData="M12,5.5C12,5.029 12,4.793 12.146,4.646C12.293,4.5 12.529,4.5 13,4.5H13.5C13.971,4.5 14.207,4.5 14.354,4.646C14.5,4.793 14.5,5.029 14.5,5.5V6C14.5,6.471 14.5,6.707 14.354,6.854C14.207,7 13.971,7 13.5,7H13C12.529,7 12.293,7 12.146,6.854C12,6.707 12,6.471 12,6V5.5Z"
+      android:strokeWidth="1.6320000000000001"
+      android:fillColor="#00000000"
+      android:strokeColor="#1C274C"/>
+  <path
+      android:pathData="M12,10.5C12,10.029 12,9.793 12.146,9.646C12.293,9.5 12.529,9.5 13,9.5H13.5C13.971,9.5 14.207,9.5 14.354,9.646C14.5,9.793 14.5,10.029 14.5,10.5V11C14.5,11.471 14.5,11.707 14.354,11.854C14.207,12 13.971,12 13.5,12H13C12.529,12 12.293,12 12.146,11.854C12,11.707 12,11.471 12,11V10.5Z"
+      android:strokeWidth="1.6320000000000001"
+      android:fillColor="#00000000"
+      android:strokeColor="#1C274C"/>
+</vector>

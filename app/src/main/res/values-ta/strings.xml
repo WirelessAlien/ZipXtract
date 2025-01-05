@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="cancel">ரத்துசெய்</string>
+    <string name="extract">பிரித்தெடுக்கவும்</string>
+    <string name="create_zip">சிப் அமுக்கவும்</string>
+    <string name="no_file_selected">எந்தக் கோப்பும் தேர்வு செய்யப் படவில்லை</string>
+    <string name="liberapay">லிபர்பே</string>
+    <string name="folder">கோப்புறை</string>
+    <string name="encryption_method">குறியாக்க முறை</string>
+    <string name="compression_level">சுருக்க நிலை</string>
+    <string name="compression_method">சுருக்க முறை</string>
+    <string name="donate">நன்கொடை</string>
+    <string name="sevenz_creation_failed">7Z கோப்பை உருவாக்கும் பிழை</string>
+    <string name="compress_sevenz">சுருக்க 7Z</string>
+    <string name="thread_count">நூல் எண்ணிக்கை</string>
+    <string name="max_available_thread">கிடைக்கக்கூடிய அதிகபட்ச நூல்களுக்கு 0</string>
+    <string name="solid_compression">திட சுருக்க</string>
+    <string name="enter_name_of_archive_optional">காப்பகத்தின் பெயரை உள்ளிடவும் (விரும்பினால்)</string>
+    <string name="split_size_mb">பிளவு அளவு</string>
+    <string name="split_zip">பிளவு சிப்</string>
+    <string name="encryption_strength">குறியாக்க வலிமை</string>
+    <string name="_ten">இயல்புநிலை 64KB</string>
+    <string name="settings_info_text">கோப்புகளுக்கான இயல்புநிலை குறியாக்க முறை AES ஆகும், இது உயர் மட்ட பாதுகாப்பை வழங்குகிறது. இருப்பினும், AES குறியாக்கம் நேரத்தை எடுத்துக்கொள்ளும் என்பதை நினைவில் கொள்க, குறிப்பாக குறைந்த-இறுதி சாதனங்களில்.\n\n குறைந்த சக்திவாய்ந்த சாதனங்களைக் கொண்ட பயனர்களுக்கு, zip_standard போன்ற மாற்று பயன்படுத்தப்படலாம். இருப்பினும், இந்த முறை AES இன் அதே அளவிலான பாதுகாப்பை வழங்காது என்பதை நினைவில் கொள்க.\n\n பாதுகாப்பு உங்கள் முதன்மை அக்கறையாக இருந்தால், AES அதன் நீண்ட செயலாக்க நேரம் இருந்தபோதிலும் பயன்படுத்த நாங்கள் கடுமையாகப் பரிந்துரைக்கிறோம்.</string>
+    <string name="ok">சரி</string>
+    <string name="enter_password">கடவுச்சொல்லை உள்ளிடவும்</string>
+    <string name="zip_creation_success">சிப் கோப்பு வெற்றிகரமாக உருவாக்கப்பட்டது</string>
+    <string name="zip_creation_failed">சிப் கோப்பை உருவாக்கும் பிழை</string>
+    <string name="open_folder">திறந்த கோப்புறை</string>
+    <string name="copied_to_clipboard">கிளிப்போர்டுக்கு நகலெடுக்கப்பட்டது</string>
+    <string name="permission_denied">இசைவு மறுக்கப்பட்டது</string>
+    <string name="extraction_failed">பிரித்தெடுத்தல் தோல்வியுற்றது:</string>
+    <string name="no_password">கடவுச்சொல் இல்லை</string>
+    <string name="extraction_success">கோப்பு வெற்றிகரமாக பிரித்தெடுக்கப்பட்டது</string>
+    <string name="share">பயன்பாட்டு இணைப்பைப் பகிரவும்</string>
+    <string name="sevenz_creation_success">7Z கோப்பு வெற்றிகரமாக உருவாக்கப்பட்டது</string>
+</resources>

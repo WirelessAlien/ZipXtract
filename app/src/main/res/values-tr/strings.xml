@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="no_file_selected">Dosya Seçilmedi</string>
+    <string name="folder">Klasör</string>
+    <string name="encryption_method">Şifreleme Yöntemi</string>
+    <string name="compression_method">Sıkıştırma Yöntemi</string>
+    <string name="settings_info_text">Dosyalar için varsayılan şifreleme yöntemi, yüksek düzeyde güvenlik sağlayan AES\'dir. Ancak, AES şifrelemenin özellikle düşük kaliteli cihazlarda zaman alıcı olabileceğini lütfen unutmayın.\n\nDaha az güçlü cihazlara sahip kullanıcılar için ZIP_STANDARD gibi bir alternatif kullanılabilir. Ancak, bu yöntemin AES ile aynı güvenlik seviyesini sunmadığını lütfen unutmayın.\n\nGüvenlik birincil endişenizse, daha uzun işlem süresine rağmen AES kullanmanızı şiddetle tavsiye ederiz.</string>
+    <string name="ok">TAMAM</string>
+    <string name="enter_password">Parola Giriniz</string>
+    <string name="permission_denied">İzin Reddedildi</string>
+    <string name="zip_creation_failed">Zip dosyası oluşturulurken hata oluştu</string>
+    <string name="zip_creation_success">Zip dosyası başarıyla oluşturuldu</string>
+    <string name="open_folder">Klasörü Aç</string>
+    <string name="extraction_success">Dosya başarıyla çıkarıldı</string>
+    <string name="split_size_mb">Bölünmüş Boyut</string>
+    <string name="thread_count">Konu Sayısı</string>
+    <string name="solid_compression">Katı Sıkıştırma</string>
+    <string name="enter_name_of_archive_optional">Arşiv Adını Girin (İsteğe Bağlı)</string>
+    <string name="_ten">Varsayılan değer 64kb</string>
+    <string name="extract">Çıkar</string>
+    <string name="create_zip">ZIP Sıkıştır</string>
+    <string name="donate">Bağış</string>
+    <string name="liberapay">Liberapay</string>
+    <string name="compression_level">Sıkıştırma Seviyesi</string>
+    <string name="copied_to_clipboard">Panoya kopyalandı</string>
+    <string name="cancel">İptal</string>
+    <string name="extraction_failed">Çıkarma Başarısız:</string>
+    <string name="no_password">Parola Yok</string>
+    <string name="share">Uygulama Bağlantısını Paylaş</string>
+    <string name="sevenz_creation_success">7z dosyası başarıyla oluşturuldu</string>
+    <string name="sevenz_creation_failed">7z dosyası oluşturulurken hata oluştu</string>
+    <string name="compress_sevenz">7z Sıkıştır</string>
+    <string name="max_available_thread">0 maksimum kullanılabilir dişler için</string>
+    <string name="split_zip">Bölünmüş Zip</string>
+    <string name="encryption_strength">Parolama Gücü</string>
+</resources>

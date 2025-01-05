@@ -5,14 +5,14 @@ plugins {
 
 android {
     namespace 'com.wirelessalien.zipxtract'
-    compileSdk 33
+    compileSdk 34
 
     defaultConfig {
         applicationId "com.wirelessalien.zipxtract"
-        minSdk 23
-        targetSdk 33
-        versionCode 14
-        versionName "4.4"
+        minSdk 24
+        targetSdk 34
+        versionCode 15
+        versionName "5.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -38,35 +38,35 @@ android {
     }
     buildFeatures {
         viewBinding true
+        buildConfig true
+    }
+    dependenciesInfo {
+        includeInApk false
     }
 }
 
 dependencies {
 
-    implementation 'androidx.core:core-ktx:1.9.0'
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.9.0'
+    implementation 'androidx.core:core-ktx:1.13.1'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'com.google.android.material:material:1.13.0-alpha08'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+    implementation 'androidx.preference:preference-ktx:1.2.1'
+
+    //glide
+    implementation("com.github.bumptech.glide:glide:4.16.0")
 
     //Kotlin Coroutines
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.1'
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0'
 
-    //AndroidX Lifecycle
-    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.4.0"
-    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0"
-    implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.4.0"
+    //fragment
+    implementation 'androidx.fragment:fragment-ktx:1.6.2'
 
-    //AndroidX Navigation
-    implementation 'androidx.navigation:navigation-fragment-ktx:2.4.0'
-    implementation 'androidx.navigation:navigation-ui-ktx:2.4.0'
 
     //apache commons compress
-    implementation 'org.apache.commons:commons-compress:1.24.0'
-    implementation 'org.tukaani:xz:1.9'
+    implementation 'org.apache.commons:commons-compress:1.27.1'
+    implementation 'org.tukaani:xz:1.10'
 
     //zip4j
     implementation 'net.lingala.zip4j:zip4j:2.11.5'
@@ -74,4 +74,8 @@ dependencies {
     //7-Zip-Jbinding-4Android
     implementation 'com.github.omicronapps:7-Zip-JBinding-4Android:Release-16.02-2.02'
 
+
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 }

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="compression_level">Рівень стиснення</string>
+    <string name="enter_password">Введіть пароль</string>
+    <string name="zip_creation_failed">Помилка створення zip-файлу</string>
+    <string name="permission_denied">У дозволі відмовлено</string>
+    <string name="cancel">Скасувати</string>
+    <string name="extraction_failed">Не вдалося видобути:</string>
+    <string name="sevenz_creation_success">Файл 7z успішно створено</string>
+    <string name="max_available_thread">0 для максимальної кількості доступних потоків</string>
+    <string name="solid_compression">Цілісне стиснення</string>
+    <string name="encryption_strength">Надійність шифрування</string>
+    <string name="_ten">Типово – 64kb</string>
+    <string name="extract">Розпакувати</string>
+    <string name="no_file_selected">Немає вибраного файлу</string>
+    <string name="create_zip">Стиснути zip</string>
+    <string name="compression_method">Метод стиснення</string>
+    <string name="folder">Тека</string>
+    <string name="donate">Пожертвувати</string>
+    <string name="liberapay">Liberapay</string>
+    <string name="encryption_method">Метод шифрування</string>
+    <string name="settings_info_text">Типовий методом шифрування файлів – AES, який забезпечує високий рівень безпеки. Однак, майте на увазі, що шифрування AES може зайняти багато часу, особливо на пристроях нижчого класу.
+\n
+\nДля користувачів з менш потужними пристроями можна використовувати альтернативу, наприклад, ZIP_STANDARD. Однак зауважте, що цей метод не забезпечує такий самий рівень безпеки, як AES.
+\n
+\nЯкщо безпека є для вас першочерговим завданням, ми наполегливо рекомендуємо використовувати AES, попри його довший час обробки.</string>
+    <string name="ok">Гаразд</string>
+    <string name="zip_creation_success">Zip-файл успішно створено</string>
+    <string name="open_folder">Відкрити теку</string>
+    <string name="extraction_success">Файл успішно розпаковано</string>
+    <string name="copied_to_clipboard">Скопійовано в буфер обміну</string>
+    <string name="no_password">Немає пароля</string>
+    <string name="share">Поділитися посиланням на застосунок</string>
+    <string name="sevenz_creation_failed">Помилка при створенні 7z-файлу</string>
+    <string name="compress_sevenz">Стиснути в 7z</string>
+    <string name="thread_count">Кількість потоків</string>
+    <string name="split_size_mb">Розмір розділу</string>
+    <string name="split_zip">Розділити zip</string>
+    <string name="enter_name_of_archive_optional">Введіть назву архіва (необов\'язково)</string>
+</resources>

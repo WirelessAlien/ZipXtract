@@ -1,62 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="file_picked_fail">Keine Datei ausgewählt</string>
-    <string name="select_output_directory_extract">Bitte wählen Sie aus, wohin die Dateien entpackt werden sollen</string>
-    <string name="save">Speichern</string>
     <string name="compression_method">Kompressionsmethode</string>
     <string name="copied_to_clipboard">In die Zwischenablage kopiert</string>
-    <string name="password">passwort</string>
-    <string name="extract_to">Entpacken nach</string>
-    <string name="create">Erstellen</string>
-    <string name="save_zip_to">Zip speichern nach</string>
-    <string name="directory_path">Ausgewählter Ordner: %1$s</string>
-    <string name="selected_file_cleared">Ausgewählte Datei geleert</string>
-    <string name="pick_file_extract">Bitte Datei zum Extrahieren auswählen</string>
-    <string name="settings_info_text">Die Standardverschlüsselungsmethode für Dateien ist AES, die ein hohes Maß an Sicherheit bietet. Bitte beachten Sie jedoch, dass die AES-Verschlüsselung insbesondere auf Geräten der unteren Preisklasse zeitaufwändig sein kann.\n\nFür Benutzer mit weniger leistungsstarken Geräten kann eine Alternative wie ZIP_STANDARD verwendet werden. Bitte beachten Sie jedoch, dass diese Methode nicht das gleiche Sicherheitsniveau wie AES bietet.\n\nWenn Sicherheit Ihr Hauptanliegen ist, empfehlen wir trotz der längeren Verarbeitungszeit dringend die Verwendung von AES.</string>
-    <string name="file_picked_success">Datei erfolgreich ausgewählt</string>
-    <string name="selected_files_text">Ausgewählte Dateien: %1$d</string>
+    <string name="settings_info_text">Die Standardverschlüsselungsmethode ist AES, welche ein hohes Maß an Sicherheit bietet. Bitte beachten Sie, dass die AES-Verschlüsselung zeitaufwändig sein kann, insbesondere auf Geräten mit geringerer Leistung.
+\n
+\nFür Benutzer mit leistungsschwachen Geräten kann ZIP_STANDARD als Alternative verwendet werden. Bitte beachten Sie, dass AES ein höheres Maß an Sicherheit liefert.
+\n
+\nWenn Sicherheit Ihr Hauptanliegen ist, empfehlen wir trotz der längeren Verarbeitungszeit eindringlich die Verwendung von AES.</string>
     <string name="folder">Verzeichnis</string>
-    <string name="output_file_name">outputZip.zip</string>
     <string name="no_file_selected">Keine Datei ausgewählt</string>
-    <string name="select_output_directory">Bitte das Ausgabeverzeichnis auswählen</string>
     <string name="compression_level">Komprimierungslevel</string>
-    <string name="permission_required">Zum Extrahieren von Dateien ist eine Speichererlaubnis erforderlich</string>
-    <string name="selected_file_text">Ausgewählte Datei: %1$s</string>
     <string name="liberapay">Liberapay</string>
-    <string name="zip_without_zip">Zip-Name (ohne .zip)</string>
     <string name="no_password">Kein Passwort</string>
-    <string name="version">Version:</string>
-    <string name="not_selected">Nicht ausgewählt</string>
     <string name="ok">OK</string>
-    <string name="open_settings">Einstellungen öffnen</string>
-    <string name="please_select_files">Bitte Dateien auswählen</string>
     <string name="create_zip">ZIP komprimieren</string>
-    <string name="pick_file">Datei auswählen</string>
-    <string name="invalid_uri">Ungültige Archivdatei-URI</string>
-    <string name="files">Dateien</string>
-    <string name="select">Auswählen</string>
     <string name="encryption_method">Verschlüsselungsmethode</string>
     <string name="cancel">Abbrechen</string>
-    <string name="archive_file_name_failed">Der Name der Archivdatei konnte nicht ermittelt werden</string>
-    <string name="percent">%</string>
     <string name="permission_denied">Erlaubnis verweigert</string>
-    <string name="output_directory_cleared">Ausgabeverzeichnis geleert</string>
     <string name="zip_creation_failed">Fehler beim Erstellen der Zip-Datei</string>
     <string name="extract">Entpacken</string>
     <string name="donate">Spenden</string>
-    <string name="not_encrypted">Nicht verschlüsselt</string>
-    <string name="no_directory_selected">Keine Verzeichnis ausgewählt</string>
     <string name="open_folder">Verzeichnis öffnen</string>
     <string name="extraction_success">Datei erfolgreich extrahiert</string>
-    <string name="compression_settings">Komprimierungseinstellungen</string>
-    <string name="files_select_request">Bitte Dateien auswählen</string>
-    <string name="encrypt">Verschlüsseln</string>
-    <string name="file">Datei</string>
     <string name="share">App-Link teilen</string>
     <string name="enter_password">Password eingeben</string>
-    <string name="extraction_failed">Extraktion fehlgeschlagen:</string>
+    <string name="extraction_failed">Entpacken fehlgeschlagen:</string>
     <string name="zip_creation_success">Zip-Datei erfolgreich erstellt</string>
     <string name="sevenz_creation_success">7z-Datei erfolgreich erstellt</string>
-    <string name="sevenz_creation_failed">Fehler beim Erstellen der 7z-Datei</string>
-    <string name="compress_sevenz">7z komprimieren</string>
+    <string name="sevenz_creation_failed">Erstellen der 7z-Datei fehlgeschlagen</string>
+    <string name="compress_sevenz">Komprimiere 7z</string>
+    <string name="thread_count">Anzahl Threads</string>
+    <string name="max_available_thread">0 für maximal verfügbare Threads</string>
+    <string name="enter_name_of_archive_optional">Archivnamen eingeben (optional)</string>
+    <string name="solid_compression">Solide Kompression (tar)</string>
+    <string name="_ten">64kb (Standard)</string>
+    <string name="split_size_mb">Größe Teilarchiv</string>
+    <string name="split_zip">Zip aufteilen</string>
+    <string name="encryption_strength">Verschlüsselungsstärke</string>
 </resources>

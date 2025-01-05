@@ -17,10 +17,6 @@
   -->
 
 <resources>
-
-    <style name="MaterialButtonStyle" parent="Widget.Material3.Button.IconButton">
-    </style>
-
     <!-- dialog style -->
     <style name="MaterialDialog" parent="@style/ThemeOverlay.Material3.MaterialAlertDialog">
         <item name="shapeAppearanceOverlay">@style/ShapeAppearanceOverlay.ZipXtract.Dialog.Rounded</item>
@@ -29,5 +25,21 @@
     <style name="ShapeAppearanceOverlay.ZipXtract.Dialog.Rounded" parent="">
         <item name="cornerFamily">rounded</item>
             <item name="cornerSize">10dp</item>
+    </style>
+
+    <style name="AppTheme.Transparent" parent="AppTheme">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:backgroundDimEnabled">false</item>
+    </style>
+
+    <style name="AppPreferenceThemeOverlay" parent="@style/PreferenceThemeOverlay">
+        <item name="switchPreferenceCompatStyle">@style/AppSwitchPreference</item>
+    </style>
+
+    <style name="AppSwitchPreference" parent="@style/Preference.SwitchPreferenceCompat.Material">
+        <item name="widgetLayout">@layout/preference_material_switch</item>
     </style>
 </resources>
