@@ -2,7 +2,7 @@ name: Test Release
 on:
   push:
     branches:
-      - rewrite
+      - master
   workflow_dispatch:
 
 jobs:
