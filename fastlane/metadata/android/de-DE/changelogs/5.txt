@@ -1,0 +1,3 @@
+Möglichkeit zum Extrahieren verschlüsselter 7z- und Zip-Dateien hinzugefügt
+Unterstützung für jar, z erweitert
+Fortschrittsanzeige für zip, 7z hinzugefügt

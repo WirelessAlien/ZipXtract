@@ -1,0 +1,3 @@
+Möglichkeit der Zip-Erstellung hinzugefügt (verschlüsselt und unverschlüsselt) #9 
+Spenden-Dialog hinzugefügt #11 
+Methode zum Löschen des Caches hinzugefügt #8

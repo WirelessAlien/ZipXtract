@@ -1,0 +1,1 @@
+Möglichkeit zum Öffnen von Dateien aus dem Dateimanager hinzugefügt #4 #6

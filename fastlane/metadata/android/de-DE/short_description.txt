@@ -1,0 +1,1 @@
+Eine quelloffene Android-App zum Extrahieren und Erstellen verschiedener Archivformate wie ZIP, RAR, 7z und mehr
