@@ -54,7 +54,7 @@
     <string name="open_with">Öffnen mit</string>
     <string name="compress_with">Komprimieren mit:</string>
     <string name="confirm_delete">Bestätigung löschen</string>
-    <string name="confirm_delete_message">Sind Sie sicher, dass Sie diesen Artikel löschen möchten?</string>
+    <string name="confirm_delete_message">Sind Sie sicher, dass Sie dieses Element löschen möchten?</string>
     <string name="delete">Löschen</string>
     <string name="file_path">Pfad</string>
     <string name="multi_part_extract">Multi Part Extract:</string>
