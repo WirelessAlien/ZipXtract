@@ -47,7 +47,7 @@
     <string name="internal_storage">Interne Speicherung</string>
     <string name="root">Root</string>
     <string name="directory_empty">Ordner ist leer</string>
-    <string name="paste">Paste</string>
+    <string name="paste">Einfügen</string>
     <string name="archive">Archiv</string>
     <string name="show_hide_selected_files">Ausgewählte Dateien anzeigen/leiten</string>
     <string name="background">Hintergrund</string>
