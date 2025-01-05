@@ -76,7 +76,7 @@
     <string name="extraction_ongoing">Ausziehen..</string>
     <string name="archive_ongoing">Archivierung..</string>
     <string name="privacy_policy">Datenschutzerklärung</string>
-    <string name="crash_log">Crash Log</string>
+    <string name="crash_log">Absturzprotokoll</string>
     <string name="move">Bewegung</string>
     <string name="copy_to">Kopie an</string>
     <string name="action_settings">Einstellungen</string>
