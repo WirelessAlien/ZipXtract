@@ -17,7 +17,7 @@
     <string name="encryption_method">Verschlüsselungsmethode</string>
     <string name="cancel">Abbrechen</string>
     <string name="permission_denied">Erlaubnis verweigert</string>
-    <string name="zip_creation_failed">Fehler beim Erstellen der Zip-Datei</string>
+    <string name="zip_creation_failed">Fehler beim Archivieren der ZIP-Datei</string>
     <string name="extract">Entpacken</string>
     <string name="donate">Spenden</string>
     <string name="open_folder">Verzeichnis öffnen</string>
@@ -27,7 +27,7 @@
     <string name="extraction_failed">Entpacken fehlgeschlagen:</string>
     <string name="zip_creation_success">ZIP-Datei erfolgreich archiviert</string>
     <string name="sevenz_creation_success">7z-Datei erfolgreich archiviert</string>
-    <string name="sevenz_creation_failed">Fehlerarchivierung 7z Datei</string>
+    <string name="sevenz_creation_failed">Fehler beim Archivieren der 7z-Datei</string>
     <string name="compress_sevenz">7z archivieren</string>
     <string name="thread_count">Anzahl Threads</string>
     <string name="max_available_thread">0 für maximal verfügbare Threads</string>
