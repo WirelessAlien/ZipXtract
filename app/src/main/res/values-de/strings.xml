@@ -102,7 +102,7 @@
     <string name="extract_path_summary">Ändern Sie den Standard-Extrakt-Ordner.\nStandard ist \"Elternordner\" oder Interner Speicher/ZipXtract (für \"Öffnen mit\" Menü extrahiert Archiv)</string>
     <string name="compress_tar">TAR archivieren</string>
     <string name="compression_success">Komprimierung erfolgreich</string>
-    <string name="archive_success">Archiviert erfolgreich</string>
+    <string name="archive_success">Datei erfolgreich archiviert</string>
     <string name="tar_creation_success">TAR-Datei erfolgreich archiviert</string>
     <string name="file_deleted">Gelöscht</string>
     <string name="operation_cancelled">Betrieb abgesagt</string>
