@@ -87,7 +87,7 @@
     <string name="info_tip_description">● Lang drücken Sie Dateien und Ordner oder klicken Sie auf Datei/Ordner-Symbole, um sie für die Archivierung auszuwählen.\n\n● Klicken Sie auf eine Datei, um das Extraktionsmenü zur Auswahl der Extraktionsoptionen anzuzeigen.\n\n● Dateien, die mit dem Menü \"Öffnen mit\" von OS extrahiert werden, werden standardmäßig im internen Speicher/ZipXtract gespeichert. Ändern Sie dies in App-Einstellungen.\n\n● Der Standard-Standort für Archivierung oder Archivierung (innerhalb der App) ist das Stammverzeichnis der jeweiligen Datei(en). Dies kann in den App-Einstellungen geändert werden.</string>
     <string name="select_all">Alles auswählen</string>
     <string name="search">Suchen</string>
-    <string name="order">Ordnung</string>
+    <string name="order">Reihenfolge</string>
     <string name="ascending">Anschaffung</string>
     <string name="descending">In den Warenkorb</string>
     <string name="sort_by">Sortieren nach</string>
