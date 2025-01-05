@@ -24,7 +24,7 @@
     <string name="extraction_success">Datei erfolgreich extrahiert</string>
     <string name="share">App-Link teilen</string>
     <string name="enter_password">Password eingeben</string>
-    <string name="extraction_failed">Entpacken fehlgeschlagen:</string>
+    <string name="extraction_failed">Entpacken fehlgeschlagen</string>
     <string name="zip_creation_success">ZIP-Datei erfolgreich archiviert</string>
     <string name="sevenz_creation_success">7z-Datei erfolgreich archiviert</string>
     <string name="sevenz_creation_failed">Fehler beim Archivieren der 7z-Datei</string>
@@ -108,12 +108,12 @@
     <string name="operation_cancelled">Vorgang abgebrochen</string>
     <string name="tar_creation_failed">Fehler beim Archivieren der TAR-Datei</string>
     <string name="compression_failed">Komprimierung fehlgeschlagen</string>
-    <string name="general_error_msg">Ein unerwarteter Fehler aufgetreten</string>
+    <string name="general_error_msg">Ein unerwarteter Fehler ist aufgetreten</string>
     <string name="unsupported_compression_format">Dieses Kompressionsformat wird nicht unterstützt</string>
     <string name="access_denied">Zugang verweigert</string>
     <string name="no_files_to_archive">Für die Archivierung wurden keine Dateien ausgewählt</string>
-    <string name="sd_card_not_available">SD-Karte oder externer Speicher nicht erkannt</string>
-    <string name="copying_files">Kopieren..</string>
+    <string name="sd_card_not_available">SD-Karte oder externer Speicherung nicht erkannt</string>
+    <string name="copying_files">Wird kopiert …</string>
     <string name="moving_files">Umzug..</string>
     <string name="delete_ongoing">Löschen..</string>
 </resources>
