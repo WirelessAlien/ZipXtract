@@ -28,7 +28,7 @@
     <string name="zip_creation_success">Zip-Datei erfolgreich erstellt</string>
     <string name="sevenz_creation_success">7z-Datei erfolgreich erstellt</string>
     <string name="sevenz_creation_failed">Erstellen der 7z-Datei fehlgeschlagen</string>
-    <string name="compress_sevenz">Archiv 7z</string>
+    <string name="compress_sevenz">7z archivieren</string>
     <string name="thread_count">Anzahl Threads</string>
     <string name="max_available_thread">0 für maximal verfügbare Threads</string>
     <string name="enter_name_of_archive_optional">Archivname</string>
