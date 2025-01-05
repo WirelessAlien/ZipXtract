@@ -49,9 +49,9 @@
     <string name="directory_empty">Ordner ist leer</string>
     <string name="paste">Einfügen</string>
     <string name="archive">Archiv</string>
-    <string name="show_hide_selected_files">Ausgewählte Dateien anzeigen/leiten</string>
+    <string name="show_hide_selected_files">Ausgewählte Dateien anzeigen/ausblenden</string>
     <string name="background">Hintergrund</string>
-    <string name="open_with">Geöffnet mit</string>
+    <string name="open_with">Öffnen mit</string>
     <string name="compress_with">Komprimieren mit:</string>
     <string name="confirm_delete">Bestätigung löschen</string>
     <string name="confirm_delete_message">Sind Sie sicher, dass Sie diesen Artikel löschen möchten?</string>
