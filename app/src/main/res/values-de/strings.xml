@@ -88,8 +88,8 @@
     <string name="select_all">Alles auswählen</string>
     <string name="search">Suchen</string>
     <string name="order">Reihenfolge</string>
-    <string name="ascending">Anschaffung</string>
-    <string name="descending">In den Warenkorb</string>
+    <string name="ascending">Aufsteigend</string>
+    <string name="descending">Absteigend</string>
     <string name="sort_by">Sortieren nach</string>
     <string name="name">Name</string>
     <string name="size">Größe</string>
