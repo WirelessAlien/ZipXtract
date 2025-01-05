@@ -77,7 +77,7 @@
     <string name="archive_ongoing">Archivierung..</string>
     <string name="privacy_policy">Datenschutzerklärung</string>
     <string name="crash_log">Absturzprotokoll</string>
-    <string name="move">Bewegung</string>
+    <string name="move">Verschieben nach</string>
     <string name="copy_to">Kopie an</string>
     <string name="action_settings">Einstellungen</string>
     <string name="storage_access_permission_text">Diese App benötigt Zugriff auf den Speicher Ihres Geräts, um ordnungsgemäß zu funktionieren. Bitte erteilen Sie die erforderlichen Berechtigungen.</string>
