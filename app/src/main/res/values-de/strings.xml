@@ -105,7 +105,7 @@
     <string name="archive_success">Datei erfolgreich archiviert</string>
     <string name="tar_creation_success">TAR-Datei erfolgreich archiviert</string>
     <string name="file_deleted">Gelöscht</string>
-    <string name="operation_cancelled">Betrieb abgesagt</string>
+    <string name="operation_cancelled">Vorgang abgebrochen</string>
     <string name="tar_creation_failed">Fehlerarchivierung TAR-Datei</string>
     <string name="compression_failed">Komprimierung versagt</string>
     <string name="general_error_msg">Ein unerwarteter Fehler aufgetreten</string>
