@@ -27,7 +27,7 @@
     <string name="extraction_failed">Entpacken fehlgeschlagen:</string>
     <string name="zip_creation_success">ZIP-Datei erfolgreich archiviert</string>
     <string name="sevenz_creation_success">7z-Datei erfolgreich archiviert</string>
-    <string name="sevenz_creation_failed">Erstellen der 7z-Datei fehlgeschlagen</string>
+    <string name="sevenz_creation_failed">Fehlerarchivierung 7z Datei</string>
     <string name="compress_sevenz">7z archivieren</string>
     <string name="thread_count">Anzahl Threads</string>
     <string name="max_available_thread">0 für maximal verfügbare Threads</string>
