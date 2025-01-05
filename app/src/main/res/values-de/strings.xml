@@ -31,13 +31,13 @@
     <string name="compress_sevenz">Komprimiere 7z</string>
     <string name="thread_count">Anzahl Threads</string>
     <string name="max_available_thread">0 für maximal verfügbare Threads</string>
-    <string name="enter_name_of_archive_optional">Archivnamen eingeben (optional)</string>
+    <string name="enter_name_of_archive_optional">Archivname</string>
     <string name="solid_compression">Solide Kompression (tar)</string>
     <string name="_ten">64 kb (Standard)</string>
     <string name="split_size_mb">Größe Teilarchiv</string>
     <string name="split_zip">ZIP aufteilen</string>
     <string name="encryption_strength">Verschlüsselungsstärke</string>
-    <string name="storage">Lagerung</string>
+    <string name="storage">Speicherung</string>
     <string name="home">Home</string>
     <string name="file_size">Größe</string>
     <string name="last_modified">Letzte Änderung</string>
