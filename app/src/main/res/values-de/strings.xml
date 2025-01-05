@@ -58,7 +58,7 @@
     <string name="delete">Löschen</string>
     <string name="file_path">Pfad</string>
     <string name="multi_part_extract">Multi Part Extract:</string>
-    <string name="copy_text">Kopie</string>
+    <string name="copy_text">Kopieren</string>
     <string name="info_tip">Nützlicher Tipp</string>
     <string name="deleting_files">Löschen von Dateien: %1$d/%2$d</string>
     <string name="extracting_progress">... %1$d %%</string>
