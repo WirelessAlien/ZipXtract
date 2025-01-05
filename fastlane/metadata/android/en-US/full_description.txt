@@ -1,51 +1,58 @@
-<div style="text-align: left;">ZipXtract is a fully open-source Android application designed to handle a wide range of archive formats, including:</div>
+<p style="text-align: left;">ZipXtract is a fully open-source Android application designed to handle a wide range of archive formats, including:</p>
 <ul>
-  <li>RAR (with RAR5 and multi-volume support)</li>
-  <li>ZIP (including password-protected and split archives)</li>
-  <li>TAR</li>
-  <li>BZ2</li>
-  <li>GZ</li>
-  <li>7z (with password protection and multi-volume support)</li>
-  <li>XZ</li>
-  <li>JAR</li>
-  <li>more...</li>
+<li>RAR (with RAR5 and multi-volume support)</li>
+<li>ZIP (including password-protected and split archives)</li>
+<li>TAR</li>
+<li>BZ2</li>
+<li>GZ</li>
+<li>7z (with password protection and multi-volume support)</li>
+<li>XZ</li>
+<li>JAR</li>
+<li>...</li>
 </ul>
 
 <h2>Features</h2>
 
 <h3>Extraction:</h3>
 <ul>
-  <li>Supports various formats: RAR, ZIP, TAR, BZ2, GZ, 7Z, XZ, JAR etc.</li>
-  <li>Handles encrypted ZIP and 7z files.</li>
-  <li>Extracts multi-volume RAR archives.</li>
-  <li>Extracts multi-volume 7z archives.</li>
-  <li>Extracts split ZIP files.</li>
+<li>Supports various formats: RAR, ZIP, TAR, BZ2, GZ, 7z, XZ, JAR etc.</li>
+<li>Handles encrypted ZIP and 7z files.</li>
+<li>Extracts multi-volume RAR archives.</li>
+<li>Extracts multi-volume archives.</li>
+<li>Extracts split ZIP files.</li>
 </ul>
 
 <h3>Creation:</h3>
 <ul>
-  <li>Create ZIP and 7Z archives, with options for encryption.</li>
-  <li>Create split ZIP archives.</li>
+<li>Create ZIP and 7z archives, with options for encryption.</li>
+<li>Create split ZIP archives.</li>
 </ul>
 
-<p>and basic file operations like <strong>Delete, Copy, Move.</strong></p>
+<blockquote>
+<p><strong>NOTE:</strong><br />
+The F-Droid version does not include RAR extraction and 7z compression features due to licensing restrictions. For the complete version, please use the GitHub or IzzyOnDroid releases.</p>
+</blockquote>
 
-<p><strong>Note</strong>: The F-Droid version does not include RAR extraction and 7z compression features due to licensing restrictions. For the complete version, please use the GitHub or IzzyOnDroid releases.</p>
-
-<h2>Usage tip</h2>
+<h2>Usage Tip</h2>
+<p>General tips for archive extraction and archive creation:</p>
 <ul>
-  <li>Long-press files and folders or click file/folder icons to select them for archiving.</li>
-  <li>Click a file to display the extraction menu for choosing extraction options.</li>
-  <li>Files extracted using "Open With" menu of OS are stored in <tt>Internal Storage/ZipXtract</tt> by default. Modify this in app settings.</li>
-  <li>The default location for archiving or extracting archives (within the app) is the parent directory of the respective file(s). This can be changed in the app settings.</li>
+<li>Long-press files and folders or click file/folder icons to select them for archiving.</li>
+<li>Click a file to display the extraction menu for choosing extraction options.</li>
+<li>Files extracted using the "Open With" menu of the OS are stored in <strong>Internal Storage/ZipXtract</strong> by default. Modify this in app settings.</li>
+<li>The default location for archiving or extracting archives (within the app) is the parent directory of the respective file(s). This can be changed in the app settings.</li>
 </ul>
 
-<h3>Translate</h3>
-<p>Help localise the app through&nbsp;<a href="https://hosted.weblate.org/engage/zipxtract/">Weblate</a></p>
+<h2>App Permission</h2>
+<p>Read and Write Storage Permission (Android 10 and below) and Manage External Storage Permission (Android 11 and above). The app does not have internet permission. Read more - <a href="https://sites.google.com/view/privacy-policy-zipxtract/home">Privacy policy</a></p>
+
+<h2>Translate</h2>
+<p>
+Help localize the app through&nbsp;<a href="https://hosted.weblate.org/engage/zipxtract/">Weblate
+</a>
+</p>
 
 <h2>License</h2>
 <p>This project is licensed under the GNU General Public License v3.0. See the <a href="https://github.com/WirelessAlien/ZipXtract/blob/master/LICENSE">LICENSE</a> file for details.</p>
 
 <h2>Contact</h2>
 <p>For any inquiries or feedback, please open an issue on the <a href="https://github.com/WirelessAlien/ZipXtract/issues">GitHub repository</a>.</p>
-
