@@ -113,7 +113,7 @@
     <string name="file_deleted">Видалено</string>
     <string name="operation_cancelled">Операцію скасовано</string>
     <string name="tar_creation_failed">Не вдалося архівувати TAR-файл</string>
-    <string name="compression_failed">Помилка стиснення</string>
+    <string name="compression_failed">Стиснення не вдалося</string>
     <string name="general_error_msg">Сталася неочікувана помилка</string>
     <string name="unsupported_compression_format">Цей формат стиснення не підтримується</string>
 </resources>
