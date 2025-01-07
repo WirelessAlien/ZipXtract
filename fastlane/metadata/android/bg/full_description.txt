@@ -1,1 +1,58 @@
-Инструмент с напълно отворен код за извличане на zip, rar, tar, bz2, gz, 7z, xz, jar & z и др. Поддържат се и шифровани .zip, .7z и .rar файлове. Може да се използва за компресиране на zip & 7z. Това приложение все още е в процес на разработка, всяка заявка за функция, докладвайте за проблем в Github: https://github.com/WirelessAlien/ZipXtract
+<p style="text-align: left;">ZipXtract е приложение за Android с напълно отворен код, предназначено да обработва широк набор от архивни формати, включително:</p>
+<ul>
+<li>RAR (с RAR5 и многотомна поддръжка)</li>
+<li>ZIP (включително защитени с парола и разделени архиви)</li>
+<li>TAR</li>
+<li>BZ2</li>
+<li>GZ</li>
+<li>7z (със защита с парола и многотомна поддръжка)</li>
+<li>XZ</li>
+<li>JAR</li>
+<li>...</li>
+</ul>
+
+<h2>Характеристики</h2>
+
+<h3>Извличане на:</h3>
+<ul>
+<li>Поддържа различни формати: RAR, ZIP, TAR, BZ2, GZ, 7z, XZ, JAR etc.</li>
+<li>Обработва криптирани ZIP и 7z файлове.</li>
+<li>Извлича многотомни RAR архиви.</li>
+<li>Извлича многотомни архиви.</li>
+<li>Извлича разделени ZIP файлове.</li>
+</ul>
+
+<h3>Създаване:</h3>
+<ul>
+<li>Създавайте ZIP и 7z архиви с опции за криптиране.</li>
+<li>Създавайте разделени ZIP архиви.</li>
+</ul>
+
+<blockquote>
+<p><strong>ЗАБЕЛЕЖКА:</strong><br />
+Версията на F-Droid не включва функции за извличане на RAR и 7z компресия поради лицензионни ограничения. За пълната версия, моля, използвайте версиите GitHub или IzzyOnDroid.</p>
+</blockquote>
+
+<h2>Usage Tip</h2>
+<p>General tips for archive extraction and archive creation:</p>
+<ul>
+<li>Long-press files and folders or click file/folder icons to select them for archiving.</li>
+<li>Click a file to display the extraction menu for choosing extraction options.</li>
+<li>Files extracted using the "Open With" menu of the OS are stored in <strong>Internal Storage/ZipXtract</strong> by default. Modify this in app settings.</li>
+<li>The default location for archiving or extracting archives (within the app) is the parent directory of the respective file(s). This can be changed in the app settings.</li>
+</ul>
+
+<h2>App Permission</h2>
+<p>Read and Write Storage Permission (Android 10 and below) and Manage External Storage Permission (Android 11 and above). The app does not have internet permission. Read more - <a href="https://sites.google.com/view/privacy-policy-zipxtract/home">Privacy policy</a></p>
+
+<h2>Translate</h2>
+<p>
+Help localize the app through&nbsp;<a href="https://hosted.weblate.org/engage/zipxtract/">Weblate
+</a>
+</p>
+
+<h2>License</h2>
+<p>This project is licensed under the GNU General Public License v3.0. See the <a href="https://github.com/WirelessAlien/ZipXtract/blob/master/LICENSE">LICENSE</a> file for details.</p>
+
+<h2>Contact</h2>
+<p>For any inquiries or feedback, please open an issue on the <a href="https://github.com/WirelessAlien/ZipXtract/issues">GitHub repository</a>.</p>
