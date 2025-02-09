@@ -1,1 +1,58 @@
-சிப், ரார், தார், பிஎச் 2, சிஇசட், 7 சட், எக்ச்இசட், சார் & சட் போன்றவற்றை பிரித்தெடுப்பதற்கான முழு திறந்த மூல கருவி. சிப் & 7Z ஐ சுருக்க இதைப் பயன்படுத்தலாம். இந்த பயன்பாடு இன்னும் வளர்ச்சியில் உள்ளது, எந்தவொரு அம்சக் கோரிக்கையும், Github இல் அறிக்கை வெளியீடு: https://github.com/wireslealalien/zipxtract
+<p style="text-align: left;"> சுருக்குபிரி என்பது பிரித்தெடுப்பதற்கான முழு திறந்த மூல கருவி Android பயன்பாடு. பின்வரும் வடிவங்களை ஆதரிக்கும்:</p>
+<ul>
+<li>ரார்(with ரார்5 and multi-volume support)</li>
+<li>சிப்(including password-protected and split archives)</li>
+<li>தார்</li>
+<li>பிஇசட்2</li>
+<li>சிஇசட்</li>
+<li>7ஃ (with password protection and multi-volume support)</li>
+<li>எக்ச்இசட்</li>
+<li>சார் </li>
+<li>...</li>
+</ul>
+
+<h2>Features</h2>
+
+<h3>Extraction:</h3>
+<ul>
+<li>Supports various formats: RAR, ZIP, TAR, BZ2, GZ, 7z, XZ, JAR etc.</li>
+<li>Handles encrypted ZIP and 7z files.</li>
+<li>Extracts multi-volume RAR archives.</li>
+<li>Extracts multi-volume archives.</li>
+<li>Extracts split ZIP files.</li>
+</ul>
+
+<h3>Creation:</h3>
+<ul>
+<li>Create ZIP and 7z archives, with options for encryption.</li>
+<li>Create split ZIP archives.</li>
+</ul>
+
+<blockquote>
+<p><strong>NOTE:</strong><br />
+The F-Droid version does not include RAR extraction and 7z compression features due to licensing restrictions. For the complete version, please use the GitHub or IzzyOnDroid releases.</p>
+</blockquote>
+
+<h2>Usage Tip</h2>
+<p>General tips for archive extraction and archive creation:</p>
+<ul>
+<li>Long-press files and folders or click file/folder icons to select them for archiving.</li>
+<li>Click a file to display the extraction menu for choosing extraction options.</li>
+<li>Files extracted using the "Open With" menu of the OS are stored in <strong>Internal Storage/ZipXtract</strong> by default. Modify this in app settings.</li>
+<li>The default location for archiving or extracting archives (within the app) is the parent directory of the respective file(s). This can be changed in the app settings.</li>
+</ul>
+
+<h2>App Permission</h2>
+<p>Read and Write Storage Permission (Android 10 and below) and Manage External Storage Permission (Android 11 and above). The app does not have internet permission. Read more - <a href="https://sites.google.com/view/privacy-policy-zipxtract/home">Privacy policy</a></p>
+
+<h2>Translate</h2>
+<p>
+Help localize the app through&nbsp;<a href="https://hosted.weblate.org/engage/zipxtract/">Weblate
+</a>
+</p>
+
+<h2>License</h2>
+<p>This project is licensed under the GNU General Public License v3.0. See the <a href="https://github.com/WirelessAlien/ZipXtract/blob/master/LICENSE">LICENSE</a> file for details.</p>
+
+<h2>Contact</h2>
+<p>For any inquiries or feedback, please open an issue on the <a href="https://github.com/WirelessAlien/ZipXtract/issues">GitHub repository</a>.</p>
