@@ -1,0 +1,1 @@
+Bug Fix: OutOfMemoryError beim Entpacken großer 7z-Archive
