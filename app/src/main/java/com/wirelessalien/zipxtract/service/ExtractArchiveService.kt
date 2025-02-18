@@ -347,6 +347,8 @@ class ExtractArchiveService : Service() {
                                         outputStream.write(bytes)
                                     }
                                 }
+                                val lastModifiedTime = ArchiveEntry.mtime(entry)
+                                outputFile.setLastModified(lastModifiedTime * 1000)
                             }
                             entry = Archive.readNextHeader(archive)
                         }
@@ -452,6 +454,8 @@ class ExtractArchiveService : Service() {
                                 updateProgress(progress)
                             }
                         }
+                        outputFile.setLastModified(entry.modTime.time)
+
                     }
                     entry = tarInput.nextEntry
                 }

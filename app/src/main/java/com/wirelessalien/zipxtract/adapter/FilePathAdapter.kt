@@ -20,21 +20,17 @@ package com.wirelessalien.zipxtract.adapter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.wirelessalien.zipxtract.R
+import com.wirelessalien.zipxtract.databinding.ListItemFileBinding
 import java.io.File
 
 class FilePathAdapter(private val filePaths: MutableList<String>, private val onDeleteClick: (String) -> Unit) :
     RecyclerView.Adapter<FilePathAdapter.ViewHolder>() {
 
-    inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val filePathText: TextView = itemView.findViewById(R.id.textFileName)
-        val deleteButton: Button = itemView.findViewById(R.id.deleteBtn)
+    inner class ViewHolder(private val binding: ListItemFileBinding) : RecyclerView.ViewHolder(binding.root) {
 
         init {
-            deleteButton.setOnClickListener {
+            binding.deleteBtn.setOnClickListener {
                 val position = adapterPosition
                 if (position != RecyclerView.NO_POSITION) {
                     val filePath = filePaths[position]
@@ -42,23 +38,27 @@ class FilePathAdapter(private val filePaths: MutableList<String>, private val on
                 }
             }
         }
+
+        fun bind(filePath: String) {
+            binding.textFileName.text = filePath
+
+            val file = File(filePath)
+            if (file.isDirectory) {
+                binding.deleteBtn.visibility = View.GONE
+            } else {
+                binding.deleteBtn.visibility = View.VISIBLE
+            }
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.list_item_file, parent, false)
-        return ViewHolder(view)
+        val binding = ListItemFileBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return ViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val filePath = filePaths[position]
-        holder.filePathText.text = filePath
-
-        val file = File(filePath)
-        if (file.isDirectory) {
-            holder.deleteButton.visibility = View.GONE
-        } else {
-            holder.deleteButton.visibility = View.VISIBLE
-        }
+        holder.bind(filePath)
     }
 
     override fun getItemCount(): Int {

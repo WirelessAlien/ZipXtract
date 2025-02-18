@@ -44,6 +44,7 @@ import kotlinx.coroutines.launch
 import org.apache.commons.compress.compressors.CompressorException
 import org.apache.commons.compress.compressors.CompressorStreamFactory
 import java.io.BufferedInputStream
+import java.io.BufferedOutputStream
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -176,7 +177,8 @@ class CompressCsArchiveService : Service() {
             }
 
             val inStream = BufferedInputStream(fin)
-            val compressorOutputStream = CompressorStreamFactory().createCompressorOutputStream(format, outStream)
+            val bufferedOutStream = BufferedOutputStream(outStream)
+            val compressorOutputStream = CompressorStreamFactory().createCompressorOutputStream(format, bufferedOutStream)
 
             val totalBytes = file.length()
             var bytesRead = 0L

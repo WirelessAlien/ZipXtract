@@ -20,21 +20,19 @@ package com.wirelessalien.zipxtract.activity
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.provider.OpenableColumns
 import android.util.Log
 import android.view.View
-import android.widget.ProgressBar
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.textfield.TextInputEditText
 import com.wirelessalien.zipxtract.R
+import com.wirelessalien.zipxtract.databinding.DialogCrashLogBinding
+import com.wirelessalien.zipxtract.databinding.PasswordInputOpenWithBinding
 import com.wirelessalien.zipxtract.service.ExtractArchiveService
 import com.wirelessalien.zipxtract.service.ExtractCsArchiveService
 import com.wirelessalien.zipxtract.service.ExtractRarService
@@ -53,6 +51,7 @@ class OpenWithActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         val fileName = "Crash_Log.txt"
         val crashLogFile = File(cacheDir, fileName)
         if (crashLogFile.exists()) {
@@ -69,14 +68,13 @@ class OpenWithActivity : AppCompatActivity() {
                 e.printStackTrace()
             }
 
-            val dialogView = layoutInflater.inflate(R.layout.dialog_crash_log, null)
-            val textView = dialogView.findViewById<TextView>(R.id.crash_log_text)
-            textView.text = crashLog.toString()
+            val dialogBinding = DialogCrashLogBinding.inflate(layoutInflater)
+            dialogBinding.crashLogText.text = crashLog.toString()
 
             MaterialAlertDialogBuilder(this, R.style.MaterialDialog)
                 .setTitle(getString(R.string.crash_log))
-                .setView(dialogView)
-                .setPositiveButton(getString(R.string.copy_text)) { _: DialogInterface?, _: Int ->
+                .setView(dialogBinding.root)
+                .setPositiveButton(getString(R.string.copy_text)) { _, _ ->
                     val clipboard = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
                     val clip = ClipData.newPlainText("ZipXtract Crash Log", crashLog.toString())
                     clipboard.setPrimaryClip(clip)
@@ -97,13 +95,13 @@ class OpenWithActivity : AppCompatActivity() {
     }
 
     private fun showPasswordInputDialog(uri: Uri) {
-        val dialogView = layoutInflater.inflate(R.layout.password_input_open_with, null)
-        val passwordEditText = dialogView.findViewById<TextInputEditText>(R.id.passwordInput)
-        val progressBar = dialogView.findViewById<ProgressBar>(R.id.progressIndicator)
+        val dialogBinding = PasswordInputOpenWithBinding.inflate(layoutInflater)
+        val passwordEditText = dialogBinding.passwordInput
+        val progressBar = dialogBinding.progressIndicator
 
         MaterialAlertDialogBuilder(this, R.style.MaterialDialog)
             .setTitle(getString(R.string.enter_password))
-            .setView(dialogView)
+            .setView(dialogBinding.root)
             .setPositiveButton(getString(R.string.ok)) { _, _ ->
                 val password = passwordEditText.text.toString()
                 progressBar.visibility = View.VISIBLE

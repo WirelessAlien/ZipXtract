@@ -7,13 +7,10 @@ import android.util.SparseBooleanArray
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.LinearLayout
-import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.google.android.material.card.MaterialCardView
 import com.wirelessalien.zipxtract.R
+import com.wirelessalien.zipxtract.databinding.ItemFileBinding
 import com.wirelessalien.zipxtract.fragment.MainFragment
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -98,22 +95,13 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
         innerPaths
     }
 
-    inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView), View.OnLongClickListener, View.OnClickListener {
-        val fileIcon: ImageView = itemView.findViewById(R.id.file_icon)
-        val fileName: TextView = itemView.findViewById(R.id.file_name)
-        val fileSize: TextView = itemView.findViewById(R.id.file_size)
-        val fileDate: TextView = itemView.findViewById(R.id.file_date)
-        val fileExtension: TextView = itemView.findViewById(R.id.file_extension)
-        val fileCheckIcon: ImageView = itemView.findViewById(R.id.check_icon)
-        private val fileIconCv: MaterialCardView = itemView.findViewById(R.id.card_view)
-        val constLayout: LinearLayout = itemView.findViewById(R.id.linear_layout)
-
+    inner class ViewHolder(val binding: ItemFileBinding) : RecyclerView.ViewHolder(binding.root), View.OnLongClickListener, View.OnClickListener {
         init {
             itemView.isClickable = true
             itemView.isFocusable = true
             itemView.setOnClickListener(this)
             itemView.setOnLongClickListener(this)
-            fileIconCv.setOnClickListener(this)
+            binding.cardView.setOnClickListener(this)
         }
 
         override fun onClick(v: View?) {
@@ -138,26 +126,27 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_file, parent, false)
-        return ViewHolder(view)
+        val binding = ItemFileBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return ViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val file = filteredFiles[position]
+        val binding = holder.binding
 
-        holder.fileName.text = file.name
+        binding.fileName.text = file.name
 
         val dateFormat =
             DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT, Locale.getDefault())
-        holder.fileDate.text = dateFormat.format(Date(getFileTimeOfCreation(file)))
+        binding.fileDate.text = dateFormat.format(Date(getFileTimeOfCreation(file)))
 
         if (file.isDirectory) {
-            holder.fileIcon.setImageResource(R.drawable.ic_folder)
-            holder.fileSize.text = context.getString(R.string.folder)
-            holder.fileIcon.visibility = View.VISIBLE
-            holder.fileExtension.visibility = View.GONE
+            binding.fileIcon.setImageResource(R.drawable.ic_folder)
+            binding.fileSize.text = context.getString(R.string.folder)
+            binding.fileIcon.visibility = View.VISIBLE
+            binding.fileExtension.visibility = View.GONE
         } else {
-            holder.fileSize.text = bytesToString(file.length())
+            binding.fileSize.text = bytesToString(file.length())
 
             when (file.extension.lowercase(Locale.getDefault())) {
                 "png", "jpg", "bmp", "jpeg", "gif", "webp" -> {
@@ -168,21 +157,21 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
                     Glide.with(context)
                         .load(file)
                         .thumbnail(requestBuilder)
-                        .into(holder.fileIcon)
-                    holder.fileIcon.visibility = View.VISIBLE
-                    holder.fileExtension.visibility = View.GONE
+                        .into(binding.fileIcon)
+                    binding.fileIcon.visibility = View.VISIBLE
+                    binding.fileExtension.visibility = View.GONE
                 }
                 else -> {
-                    holder.fileIcon.visibility = View.GONE
-                    holder.fileExtension.visibility = View.VISIBLE
-                    holder.fileExtension.text = if (file.extension.isNotEmpty()) {
+                    binding.fileIcon.visibility = View.GONE
+                    binding.fileExtension.visibility = View.VISIBLE
+                    binding.fileExtension.text = if (file.extension.isNotEmpty()) {
                         if (file.extension.length > 4) {
                             "FILE"
                         } else {
                             if (file.extension.length == 4) {
-                                holder.fileExtension.textSize = 16f
+                                binding.fileExtension.textSize = 16f
                             } else {
-                                holder.fileExtension.textSize = 18f
+                                binding.fileExtension.textSize = 18f
                             }
                             file.extension.uppercase(Locale.getDefault())
                         }
@@ -194,12 +183,11 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
         }
 
         if (selectedItems.get(position, false)) {
-            holder.fileCheckIcon.visibility = View.VISIBLE
-            holder.constLayout.setBackgroundColor(context.getColor(R.color.md_theme_primary_90))
+            binding.checkIcon.visibility = View.VISIBLE
+            binding.linearLayout.setBackgroundColor(context.getColor(R.color.md_theme_primary_90))
         } else {
-            holder.fileCheckIcon.visibility = View.GONE
-            holder.constLayout.setBackgroundColor(context.getColor(R.color.md_theme_surface))
-
+            binding.checkIcon.visibility = View.GONE
+            binding.linearLayout.setBackgroundColor(context.getColor(R.color.md_theme_surface))
         }
     }
 

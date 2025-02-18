@@ -83,9 +83,13 @@ class ZipOptionDialogFragment : DialogFragment() {
 
     private fun initializeUI() {
         filePathAdapter = FilePathAdapter(selectedFilePaths) { filePath ->
-            selectedFilePaths.remove(filePath)
-            filePathAdapter.removeFilePath(filePath)
-            filePathAdapter.notifyDataSetChanged()
+            val position = selectedFilePaths.indexOf(filePath)
+            if (position != -1) {
+                selectedFilePaths.removeAt(position)
+                filePathAdapter.removeFilePath(filePath)
+                filePathAdapter.notifyItemRemoved(position)
+                filePathAdapter.notifyItemRangeChanged(position, selectedFilePaths.size)
+            }
         }
 
         binding.filePathsRv.layoutManager = LinearLayoutManager(context)

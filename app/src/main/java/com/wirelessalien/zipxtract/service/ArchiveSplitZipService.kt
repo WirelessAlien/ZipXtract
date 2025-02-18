@@ -236,6 +236,8 @@ class ArchiveSplitZipService : Service() {
                             }
                         }
                     }
+
+                    destFile.setLastModified(file.lastModified())
                 }
 
                 zipFile.createSplitZipFileFromFolder(renamedTempDir, zipParameters, true, splitSize)
