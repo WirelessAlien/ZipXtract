@@ -464,6 +464,7 @@ class ExtractArchiveService : Service() {
             sendLocalBroadcast(Intent(ACTION_EXTRACTION_COMPLETE).putExtra(EXTRA_DIR_PATH, destinationDir.absolutePath))
         } catch (e: IOException) {
             e.printStackTrace()
+            tryLibArchiveAndroid(file, destinationDir)
             showErrorNotification(e.message ?: getString(R.string.general_error_msg))
             sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message ?: getString(R.string.general_error_msg)))
         }
@@ -535,9 +536,17 @@ class ExtractArchiveService : Service() {
 
         } catch (e: ZipException) {
             e.printStackTrace()
-            showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-            sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR)
-                .putExtra(EXTRA_ERROR_MESSAGE, e.message ?: getString(R.string.general_error_msg)))
+            val errorMessage = when (e.type) {
+                ZipException.Type.WRONG_PASSWORD -> getString(R.string.wrong_password)
+                ZipException.Type.UNKNOWN_COMPRESSION_METHOD -> {
+                    tryLibArchiveAndroid(file, File(Environment.getExternalStorageDirectory().absolutePath))
+                    return
+                }
+                ZipException.Type.UNSUPPORTED_ENCRYPTION -> getString(R.string.general_error_msg)
+                else -> e.message ?: getString(R.string.general_error_msg)
+            }
+            showErrorNotification(errorMessage)
+            sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(EXTRA_ERROR_MESSAGE, errorMessage))
         }
     }
 
@@ -563,15 +572,56 @@ class ExtractArchiveService : Service() {
             totalSize = inArchive.numberOfItems.toLong()
         }
 
+        private var errorBroadcasted = false
+
         override fun setOperationResult(p0: ExtractOperationResult?) {
-            if (p0 == ExtractOperationResult.UNSUPPORTEDMETHOD) {
-                hasUnsupportedMethod = true
-            } else if (p0 == ExtractOperationResult.OK) {
-                try {
-                    uos?.close()
-                    extractedSize++
-                } catch (e: SevenZipException) {
-                    e.printStackTrace()
+            when (p0) {
+                ExtractOperationResult.UNSUPPORTEDMETHOD -> {
+                    hasUnsupportedMethod = true
+                }
+                ExtractOperationResult.WRONG_PASSWORD -> {
+                    if (!errorBroadcasted) {
+                        showErrorNotification(getString(R.string.wrong_password))
+                        sendLocalBroadcast(
+                            Intent(ACTION_EXTRACTION_ERROR).putExtra(
+                                EXTRA_ERROR_MESSAGE,
+                                getString(R.string.wrong_password)
+                            )
+                        )
+                        errorBroadcasted = true
+                    }
+                }
+                ExtractOperationResult.DATAERROR, ExtractOperationResult.CRCERROR, ExtractOperationResult.UNAVAILABLE, ExtractOperationResult.HEADERS_ERROR, ExtractOperationResult.UNEXPECTED_END, ExtractOperationResult.UNKNOWN_OPERATION_RESULT -> {
+                    if (!errorBroadcasted) {
+                        showErrorNotification(getString(R.string.general_error_msg))
+                        sendLocalBroadcast(
+                            Intent(ACTION_EXTRACTION_ERROR).putExtra(
+                                EXTRA_ERROR_MESSAGE,
+                                getString(R.string.general_error_msg)
+                            )
+                        )
+                        errorBroadcasted = true
+                    }
+                }
+                ExtractOperationResult.OK -> {
+                    try {
+                        uos?.close()
+                        extractedSize++
+                    } catch (e: SevenZipException) {
+                        e.printStackTrace()
+                    }
+                }
+                else -> {
+                    if (!errorBroadcasted) {
+                        showErrorNotification(getString(R.string.general_error_msg))
+                        sendLocalBroadcast(
+                            Intent(ACTION_EXTRACTION_ERROR).putExtra(
+                                EXTRA_ERROR_MESSAGE,
+                                getString(R.string.general_error_msg)
+                            )
+                        )
+                        errorBroadcasted = true
+                    }
                 }
             }
         }

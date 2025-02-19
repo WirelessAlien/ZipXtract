@@ -110,6 +110,13 @@ class SevenZOptionDialogFragment : DialogFragment() {
         binding.okButton.setOnClickListener {
             val archiveName = binding.archiveNameEditText.text.toString().ifBlank { defaultName }
             val password = binding.passwordEditText.text.toString()
+            val confirmPassword = binding.confirmPasswordEditText.text.toString()
+
+            if (password != confirmPassword) {
+                binding.confirmPasswordEditText.error = getString(R.string.passwords_do_not_match)
+                return@setOnClickListener
+            }
+
             val compressionLevel = when (binding.compressionSpinner.selectedItemPosition) {
                 0 -> 0
                 1 -> 1
