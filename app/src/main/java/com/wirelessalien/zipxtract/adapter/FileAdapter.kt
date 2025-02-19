@@ -196,6 +196,11 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
         notifyDataSetChanged()
     }
 
+    fun removeItem(position: Int) {
+        files.removeAt(position)
+        notifyItemRemoved(position)
+    }
+
     fun updateFilesAndFilter(newFiles: ArrayList<File>, query: String? = null) {
         files.clear()
         files.addAll(newFiles)

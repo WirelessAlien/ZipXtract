@@ -452,6 +452,12 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
                         putStringArrayListExtra(DeleteFilesService.EXTRA_FILES_TO_DELETE, filesToDelete)
                     }
                     ContextCompat.startForegroundService(requireContext(), intent)
+
+                    val position = adapter.files.indexOf(file)
+                    if (position != -1) {
+                        adapter.removeItem(position)
+                    }
+
                     bottomSheetDialog.dismiss()
                 }
                 .setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
