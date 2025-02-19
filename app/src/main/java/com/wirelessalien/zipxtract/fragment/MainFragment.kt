@@ -184,8 +184,8 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                     handler.removeCallbacks(updateProgressRunnable)
                     val dirPath = intent.getStringExtra(EXTRA_DIR_PATH)
                     if (dirPath != null) {
-                        Snackbar.make(binding.root, getString(R.string.extraction_success), Snackbar.LENGTH_LONG)
-                            .setAction(getString(R.string.open_folder)) {
+                        Snackbar.make(binding.root, getString(R.string.open_folder), Snackbar.LENGTH_LONG)
+                            .setAction(getString(R.string.ok)) {
                                 navigateToParentDir(File(dirPath))
                             }
                             .show()

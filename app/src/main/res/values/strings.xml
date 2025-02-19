@@ -72,6 +72,7 @@
     <string name="crash_log">Crash Log</string>
     <string name="confirm_password">Confirm Password</string>
     <string name="passwords_do_not_match">Password do not match</string>
+    <string name="wrong_password">Wrong password</string>
 
     <!-- Menu items -->
     <string name="move">Move to</string>
@@ -172,6 +173,4 @@
     <string name="gzip" translatable="false">GZIP</string>
     <string name="liberapay" translatable="false">Liberapay</string>
     <string name="author_wirelessalien" translatable="false">Author: WirelessAlien</string>
-    <string name="wrong_password">Wrong password</string>
-
 </resources>
