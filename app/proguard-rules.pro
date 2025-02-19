@@ -24,6 +24,15 @@
 -dontwarn com.github.luben.zstd.ZstdOutputStream
 -dontwarn com.github.luben.zstd.ZstdInputStream
 
+# ZStd
+-dontwarn com.github.luben.zstd.BufferPool
+
+# ASM
+-dontwarn org.objectweb.asm.**
+
+# Commons Compress
+-dontwarn org.apache.commons.compress.harmony.**
+
 # Keep JNI classes and methods
 -keep class net.sf.sevenzipjbinding.** { *; }
 -keep class org.apache.commons.compress.** { *; }
