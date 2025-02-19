@@ -191,6 +191,11 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
         }
     }
 
+    fun clearSelection() {
+        selectedItems.clear()
+        notifyDataSetChanged()
+    }
+
     fun updateFilesAndFilter(newFiles: ArrayList<File>, query: String? = null) {
         files.clear()
         files.addAll(newFiles)

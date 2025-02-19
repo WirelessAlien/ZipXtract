@@ -218,8 +218,8 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                     handler.removeCallbacks(updateProgressRunnable)
                     val dirPath = intent.getStringExtra(EXTRA_DIR_PATH)
                     if (dirPath != null) {
-                        Snackbar.make(binding.root, getString(R.string.archive_success), Snackbar.LENGTH_LONG)
-                            .setAction(getString(R.string.open_folder)) {
+                        Snackbar.make(binding.root, getString(R.string.open_folder), Snackbar.LENGTH_LONG)
+                            .setAction(getString(R.string.ok)) {
                                 navigateToParentDir(File(dirPath))
                             }
                             .show()
@@ -276,13 +276,10 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     }
 
     private fun unselectAllFiles() {
-        for (i in 0 until adapter.itemCount) {
-            if (selectedFiles.contains(adapter.files[i])) {
-                adapter.toggleSelection(i)
-            }
-        }
         selectedFiles.clear()
+        adapter.clearSelection()
         updateActionModeTitle()
+        actionMode?.finish()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -394,8 +391,11 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 if (selectedFiles.isNotEmpty()) {
                     unselectAllFiles()
                 } else {
-                    isEnabled = false
-                    requireActivity().onBackPressed()
+                    if (parentFragmentManager.backStackEntryCount > 0) {
+                        parentFragmentManager.popBackStack()
+                    } else {
+                        requireActivity().finish()
+                    }
                 }
             }
         })
@@ -731,6 +731,21 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                         R.id.m_archive_zip -> {
                             val fragmentManager = parentFragmentManager
                             val newFragment = ZipOptionDialogFragment.newInstance(adapter)
+
+                            // Show the fragment fullscreen.
+                            val transaction = fragmentManager.beginTransaction()
+                            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+                            transaction.add(android.R.id.content, newFragment)
+                                .addToBackStack(null)
+                                .commit()
+
+                            actionMode?.finish() // Destroy the action mode
+                            true
+                        }
+
+                        R.id.m_archive_tar -> {
+                            val fragmentManager = parentFragmentManager
+                            val newFragment = TarOptionsDialogFragment.newInstance(adapter)
 
                             // Show the fragment fullscreen.
                             val transaction = fragmentManager.beginTransaction()

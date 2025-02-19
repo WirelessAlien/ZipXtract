@@ -198,7 +198,13 @@ class ArchiveSplitZipService : Service() {
             } else {
                 parentDir = File(selectedFiles.first()).parentFile ?: Environment.getExternalStorageDirectory()
             }
-            val outputFile = File(parentDir, "$archiveName.zip")
+            var outputFile = File(parentDir, "$archiveName.zip")
+            var counter = 1
+
+            while (outputFile.exists()) {
+                outputFile = File(parentDir, "$archiveName ($counter).zip")
+                counter++
+            }
             val zipFile = ZipFile(outputFile)
             if (isEncrypted) {
                 zipFile.setPassword(password?.toCharArray())
@@ -249,7 +255,7 @@ class ArchiveSplitZipService : Service() {
 
                 if (progressMonitor.result == ProgressMonitor.Result.SUCCESS) {
                     showCompletionNotification()
-                    sendLocalBroadcast(Intent(ACTION_ARCHIVE_COMPLETE).putExtra(EXTRA_DIR_PATH, outputFile.absolutePath))
+                    sendLocalBroadcast(Intent(ACTION_ARCHIVE_COMPLETE).putExtra(EXTRA_DIR_PATH, parentDir))
                 } else {
                     showErrorNotification(getString(R.string.zip_creation_failed))
                     sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, progressMonitor.result))
