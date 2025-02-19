@@ -19,7 +19,8 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             debuggable = false
         }
@@ -42,6 +43,22 @@ android {
     }
     dependenciesInfo {
         includeInApk false
+    }
+
+    packagingOptions {
+        resources {
+            excludes += [
+                    'META-INF/**',
+                    '**.txt'
+            ]
+        }
+        jniLibs {
+            useLegacyPackaging = true
+            keepDebugSymbols += [
+                    'lib7-Zip-JBinding.so',
+                    'libarchive-jni.so'
+            ]
+        }
     }
 }
 
