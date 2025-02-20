@@ -1,0 +1,5 @@
+Complete rewrite of source code
+New UI and UX
+Added support for more archive format
+Multiple bug fix
+and more...
