@@ -28,7 +28,6 @@ import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.preference.PreferenceManager
-import com.wirelessalien.zipxtract.helper.ArchiveOpenMultipartRarCallback
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_COMPLETE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_ERROR
@@ -38,6 +37,7 @@ import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_DIR_PATH
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_ERROR_MESSAGE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_PROGRESS
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.PREFERENCE_EXTRACT_DIR_PATH
+import com.wirelessalien.zipxtract.helper.ArchiveOpenMultipartRarCallback
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -250,13 +250,53 @@ class ExtractRarService : Service() {
             totalSize = inArchive.numberOfItems.toLong()
         }
 
+        private var errorBroadcasted = false
+
         override fun setOperationResult(p0: ExtractOperationResult?) {
-            if (p0 == ExtractOperationResult.OK) {
-                try {
-                    uos?.close()
-                    extractedSize++
-                } catch (e: IOException) {
-                    e.printStackTrace()
+            when (p0) {
+                ExtractOperationResult.WRONG_PASSWORD -> {
+                    if (!errorBroadcasted) {
+                        showErrorNotification(getString(R.string.wrong_password))
+                        sendLocalBroadcast(
+                            Intent(ACTION_EXTRACTION_ERROR).putExtra(
+                                EXTRA_ERROR_MESSAGE,
+                                getString(R.string.wrong_password)
+                            )
+                        )
+                        errorBroadcasted = true
+                    }
+                }
+                ExtractOperationResult.DATAERROR, ExtractOperationResult.UNSUPPORTEDMETHOD, ExtractOperationResult.CRCERROR, ExtractOperationResult.UNAVAILABLE, ExtractOperationResult.HEADERS_ERROR, ExtractOperationResult.UNEXPECTED_END, ExtractOperationResult.UNKNOWN_OPERATION_RESULT -> {
+                    if (!errorBroadcasted) {
+                        showErrorNotification(getString(R.string.general_error_msg))
+                        sendLocalBroadcast(
+                            Intent(ACTION_EXTRACTION_ERROR).putExtra(
+                                EXTRA_ERROR_MESSAGE,
+                                getString(R.string.general_error_msg)
+                            )
+                        )
+                        errorBroadcasted = true
+                    }
+                }
+                ExtractOperationResult.OK -> {
+                    try {
+                        uos?.close()
+                        extractedSize++
+                    } catch (e: IOException) {
+                        e.printStackTrace()
+                    }
+                }
+                else -> {
+                    if (!errorBroadcasted) {
+                        showErrorNotification(getString(R.string.general_error_msg))
+                        sendLocalBroadcast(
+                            Intent(ACTION_EXTRACTION_ERROR).putExtra(
+                                EXTRA_ERROR_MESSAGE,
+                                getString(R.string.general_error_msg)
+                            )
+                        )
+                        errorBroadcasted = true
+                    }
                 }
             }
         }

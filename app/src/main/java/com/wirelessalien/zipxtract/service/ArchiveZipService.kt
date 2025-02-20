@@ -240,6 +240,8 @@ class ArchiveZipService : Service() {
                             }
                         }
                     }
+
+                    destFile.setLastModified(file.lastModified())
                 }
 
                 zipFile.addFolder(renamedTempDir, zipParameters)

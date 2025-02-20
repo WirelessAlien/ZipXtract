@@ -25,6 +25,9 @@ import android.content.Intent
 import android.os.Build
 import android.os.Environment
 import android.os.IBinder
+import android.system.Os
+import android.system.OsConstants
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.preference.PreferenceManager
@@ -41,6 +44,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import me.zhanghai.android.libarchive.Archive
+import me.zhanghai.android.libarchive.ArchiveEntry
 import net.lingala.zip4j.ZipFile
 import net.lingala.zip4j.exception.ZipException
 import net.lingala.zip4j.progress.ProgressMonitor
@@ -58,12 +63,17 @@ import net.sf.sevenzipjbinding.SevenZipException
 import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
+import java.io.BufferedInputStream
+import java.io.BufferedOutputStream
 import java.io.File
+import java.io.FileDescriptor
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.OutputStream
 import java.io.RandomAccessFile
+import java.nio.ByteBuffer
+import java.nio.charset.StandardCharsets
 
 
 class ExtractArchiveService : Service() {
@@ -136,7 +146,6 @@ class ExtractArchiveService : Service() {
     }
 
     private fun extractArchive(filePath: String, password: String?, useAppNameDir: Boolean) {
-
         if (filePath.isEmpty()) {
             val errorMessage = getString(R.string.no_files_to_archive)
             showErrorNotification(errorMessage)
@@ -198,14 +207,21 @@ class ExtractArchiveService : Service() {
                 destinationDir.mkdir()
 
                 try {
-                    inArchive.extract(null, false, ExtractCallback(inArchive, destinationDir, password))
-                    showCompletionNotification()
-                    sendLocalBroadcast(Intent(ACTION_EXTRACTION_COMPLETE).putExtra(EXTRA_DIR_PATH, destinationDir.absolutePath))
+                    val extractCallback = ExtractCallback(inArchive, destinationDir, password)
+                    inArchive.extract(null, false, extractCallback)
+
+                    if (extractCallback.hasUnsupportedMethod) {
+                        tryLibArchiveAndroid(file, destinationDir)
+                    } else {
+                        showCompletionNotification()
+                        sendLocalBroadcast(Intent(ACTION_EXTRACTION_COMPLETE).putExtra(EXTRA_DIR_PATH, destinationDir.absolutePath))
+                    }
                 } catch (e: SevenZipException) {
                     e.printStackTrace()
                     showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-                    sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message ?: getString(R.string.general_error_msg))
-                    )
+                    sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message ?: getString(R.string.general_error_msg)))
+                } finally {
+                    inArchive.close()
                 }
             } catch (e: SevenZipException) {
                 e.printStackTrace()
@@ -221,6 +237,161 @@ class ExtractArchiveService : Service() {
             e.printStackTrace()
             showErrorNotification(e.message ?: getString(R.string.general_error_msg))
             sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message ?: getString(R.string.general_error_msg)))
+        }
+    }
+
+    private fun tryLibArchiveAndroid(file: File, destinationDir: File) {
+        try {
+            val totalBytes = file.length()
+            var bytesProcessed = 0L
+
+            FileInputStream(file).use { fileInput ->
+                BufferedInputStream(fileInput).use {
+                    val fileDescriptor = fileInput.fd
+                    var archive: Long = 0
+                    try {
+                        archive = Archive.readNew()
+                        Archive.setCharset(
+                            archive,
+                            StandardCharsets.UTF_8.name().toByteArray(StandardCharsets.UTF_8)
+                        )
+                        Archive.readSupportFilterAll(archive)
+                        Archive.readSupportFormatAll(archive)
+
+                        val buffer = ByteBuffer.allocateDirect(DEFAULT_BUFFER_SIZE)
+
+                        Archive.readSetCallbackData(archive, fileDescriptor)
+                        Archive.readSetReadCallback(
+                            archive,
+                            object : Archive.ReadCallback<FileDescriptor> {
+                                override fun onRead(
+                                    archive: Long,
+                                    clientData: FileDescriptor
+                                ): ByteBuffer? {
+                                    buffer.clear()
+                                    try {
+                                        val bytesRead = Os.read(clientData, buffer)
+                                        bytesProcessed += bytesRead
+                                        val progress = (bytesProcessed * 100 / totalBytes).toInt()
+                                        updateProgress(progress)
+                                        buffer.flip()
+                                        return buffer
+                                    } catch (e: Exception) {
+                                        Log.e("ExtractArchiveService", "Read error", e)
+                                    }
+                                    return null
+                                }
+
+                            })
+
+                        Archive.readSetSkipCallback(
+                            archive,
+                            object : Archive.SkipCallback<FileDescriptor> {
+                                override fun onSkip(
+                                    archive: Long,
+                                    clientData: FileDescriptor,
+                                    request: Long
+                                ): Long {
+                                    try {
+                                        return Os.lseek(clientData, request, OsConstants.SEEK_CUR)
+                                    } catch (e: Exception) {
+                                        Log.e("ExtractArchiveService", "Skip error", e)
+                                    }
+                                    return 0
+                                }
+                            })
+
+                        Archive.readSetSeekCallback(
+                            archive,
+                            object : Archive.SeekCallback<FileDescriptor> {
+                                override fun onSeek(
+                                    archive: Long,
+                                    clientData: FileDescriptor,
+                                    offset: Long,
+                                    whence: Int
+                                ): Long {
+                                    try {
+                                        return Os.lseek(clientData, offset, whence)
+                                    } catch (e: Exception) {
+                                        Log.e("ExtractArchiveService", "Seek error", e)
+                                    }
+                                    return 0
+                                }
+                            })
+
+                        Archive.readOpen1(archive)
+
+                        var entry = Archive.readNextHeader(archive)
+                        while (entry != 0L) {
+                            val entryPath = getEntryPath(entry)
+                            val outputFile = File(destinationDir, entryPath)
+
+                            outputFile.parentFile?.mkdirs()
+
+                            if (entryPath.endsWith("/")) {
+                                outputFile.mkdirs()
+                            } else {
+                                BufferedOutputStream(outputFile.outputStream()).use { outputStream ->
+                                    val readBuffer = ByteBuffer.allocateDirect(DEFAULT_BUFFER_SIZE)
+
+                                    while (true) {
+                                        readBuffer.clear()
+                                        Archive.readData(archive, readBuffer)
+                                        val bytesRead = readBuffer.position()
+
+                                        if (bytesRead <= 0) break
+
+                                        readBuffer.flip()
+                                        val bytes = ByteArray(bytesRead)
+                                        readBuffer.get(bytes)
+                                        outputStream.write(bytes)
+                                    }
+                                }
+                                val lastModifiedTime = ArchiveEntry.mtime(entry)
+                                outputFile.setLastModified(lastModifiedTime * 1000)
+                            }
+                            entry = Archive.readNextHeader(archive)
+                        }
+
+                        showCompletionNotification()
+                        sendLocalBroadcast(
+                            Intent(ACTION_EXTRACTION_COMPLETE)
+                                .putExtra(EXTRA_DIR_PATH, destinationDir.absolutePath)
+                        )
+
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        val errorMessage = e.message ?: getString(R.string.general_error_msg)
+                        showErrorNotification(errorMessage)
+                        sendLocalBroadcast(
+                            Intent(ACTION_EXTRACTION_ERROR).putExtra(
+                                EXTRA_ERROR_MESSAGE,
+                                errorMessage
+                            )
+                        )
+                    } finally {
+                        if (archive != 0L) {
+                            Archive.free(archive)
+                        }
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            val errorMessage = e.message ?: getString(R.string.general_error_msg)
+            showErrorNotification(errorMessage)
+            sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(EXTRA_ERROR_MESSAGE, errorMessage))
+        }
+    }
+
+    private fun getEntryPath(entry: Long): String {
+        val utf8Path = ArchiveEntry.pathnameUtf8(entry)
+        val defaultPath = ArchiveEntry.pathname(entry)
+
+        return when {
+            utf8Path != null -> utf8Path
+            defaultPath != null -> String(defaultPath, StandardCharsets.UTF_8)
+            else -> ""
         }
     }
 
@@ -283,6 +454,8 @@ class ExtractArchiveService : Service() {
                                 updateProgress(progress)
                             }
                         }
+                        outputFile.setLastModified(entry.modTime.time)
+
                     }
                     entry = tarInput.nextEntry
                 }
@@ -291,6 +464,7 @@ class ExtractArchiveService : Service() {
             sendLocalBroadcast(Intent(ACTION_EXTRACTION_COMPLETE).putExtra(EXTRA_DIR_PATH, destinationDir.absolutePath))
         } catch (e: IOException) {
             e.printStackTrace()
+            tryLibArchiveAndroid(file, destinationDir)
             showErrorNotification(e.message ?: getString(R.string.general_error_msg))
             sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message ?: getString(R.string.general_error_msg)))
         }
@@ -362,9 +536,17 @@ class ExtractArchiveService : Service() {
 
         } catch (e: ZipException) {
             e.printStackTrace()
-            showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-            sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR)
-                .putExtra(EXTRA_ERROR_MESSAGE, e.message ?: getString(R.string.general_error_msg)))
+            val errorMessage = when (e.type) {
+                ZipException.Type.WRONG_PASSWORD -> getString(R.string.wrong_password)
+                ZipException.Type.UNKNOWN_COMPRESSION_METHOD -> {
+                    tryLibArchiveAndroid(file, File(Environment.getExternalStorageDirectory().absolutePath))
+                    return
+                }
+                ZipException.Type.UNSUPPORTED_ENCRYPTION -> getString(R.string.general_error_msg)
+                else -> e.message ?: getString(R.string.general_error_msg)
+            }
+            showErrorNotification(errorMessage)
+            sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(EXTRA_ERROR_MESSAGE, errorMessage))
         }
     }
 
@@ -384,18 +566,62 @@ class ExtractArchiveService : Service() {
         private var uos: OutputStream? = null
         private var totalSize: Long = 0
         private var extractedSize: Long = 0
+        var hasUnsupportedMethod = false
 
         init {
             totalSize = inArchive.numberOfItems.toLong()
         }
 
+        private var errorBroadcasted = false
+
         override fun setOperationResult(p0: ExtractOperationResult?) {
-            if (p0 == ExtractOperationResult.OK) {
-                try {
-                    uos?.close()
-                    extractedSize++
-                } catch (e: SevenZipException) {
-                    e.printStackTrace()
+            when (p0) {
+                ExtractOperationResult.UNSUPPORTEDMETHOD -> {
+                    hasUnsupportedMethod = true
+                }
+                ExtractOperationResult.WRONG_PASSWORD -> {
+                    if (!errorBroadcasted) {
+                        showErrorNotification(getString(R.string.wrong_password))
+                        sendLocalBroadcast(
+                            Intent(ACTION_EXTRACTION_ERROR).putExtra(
+                                EXTRA_ERROR_MESSAGE,
+                                getString(R.string.wrong_password)
+                            )
+                        )
+                        errorBroadcasted = true
+                    }
+                }
+                ExtractOperationResult.DATAERROR, ExtractOperationResult.CRCERROR, ExtractOperationResult.UNAVAILABLE, ExtractOperationResult.HEADERS_ERROR, ExtractOperationResult.UNEXPECTED_END, ExtractOperationResult.UNKNOWN_OPERATION_RESULT -> {
+                    if (!errorBroadcasted) {
+                        showErrorNotification(getString(R.string.general_error_msg))
+                        sendLocalBroadcast(
+                            Intent(ACTION_EXTRACTION_ERROR).putExtra(
+                                EXTRA_ERROR_MESSAGE,
+                                getString(R.string.general_error_msg)
+                            )
+                        )
+                        errorBroadcasted = true
+                    }
+                }
+                ExtractOperationResult.OK -> {
+                    try {
+                        uos?.close()
+                        extractedSize++
+                    } catch (e: SevenZipException) {
+                        e.printStackTrace()
+                    }
+                }
+                else -> {
+                    if (!errorBroadcasted) {
+                        showErrorNotification(getString(R.string.general_error_msg))
+                        sendLocalBroadcast(
+                            Intent(ACTION_EXTRACTION_ERROR).putExtra(
+                                EXTRA_ERROR_MESSAGE,
+                                getString(R.string.general_error_msg)
+                            )
+                        )
+                        errorBroadcasted = true
+                    }
                 }
             }
         }

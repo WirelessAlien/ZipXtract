@@ -54,6 +54,7 @@ import net.sf.sevenzipjbinding.impl.RandomAccessFileOutStream
 import java.io.File
 import java.io.IOException
 import java.io.RandomAccessFile
+import java.util.Date
 
 class Archive7zService : Service() {
 
@@ -81,7 +82,7 @@ class Archive7zService : Service() {
         val password = intent.getStringExtra(EXTRA_PASSWORD)
         val compressionLevel = intent.getIntExtra(EXTRA_COMPRESSION_LEVEL, 1)
         val solid = intent.getBooleanExtra(EXTRA_SOLID, false)
-        val threadCount = intent.getIntExtra(EXTRA_THREAD_COUNT, 1)
+        val threadCount = intent.getIntExtra(EXTRA_THREAD_COUNT, -1)
         val filesToArchive = intent.getStringArrayListExtra(EXTRA_FILES_TO_ARCHIVE) ?: return START_NOT_STICKY
 
         startForeground(NOTIFICATION_ID, createNotification(0))
@@ -165,12 +166,16 @@ class Archive7zService : Service() {
 
                 outArchive.setLevel(compressionLevel)
                 outArchive.setSolid(solid)
+                outArchive.setSolidSize(8192)
                 outArchive.setThreadCount(threadCount)
-                outArchive.setHeaderEncryption(true)
+
+                if (!password.isNullOrEmpty() && outArchive is IOutFeatureSetEncryptHeader) {
+                    outArchive.setHeaderEncryption(true)
+                }
 
                 outArchive.createArchive(
                     RandomAccessFileOutStream(raf), filesToArchive.size,
-                    object : IOutCreateCallback<IOutItem7z>, ICryptoGetTextPassword, IOutFeatureSetEncryptHeader {
+                    object : IOutCreateCallback<IOutItem7z>, ICryptoGetTextPassword {
                         override fun cryptoGetTextPassword(): String? {
                             return password
                         }
@@ -198,6 +203,7 @@ class Archive7zService : Service() {
                             item.dataSize = file.length()
                             item.propertyPath = relativePath
                             item.propertyIsDir = file.isDirectory
+                            item.propertyLastModificationTime = Date(file.lastModified())
 
                             return item
                         }
@@ -205,10 +211,6 @@ class Archive7zService : Service() {
                         override fun getStream(i: Int): ISequentialInStream {
 
                             return RandomAccessFileInStream(RandomAccessFile(filesToArchive[i], "r"))
-                        }
-
-                        override fun setHeaderEncryption(enabled: Boolean) {
-                            outArchive.setHeaderEncryption(enabled)
                         }
                     })
 

@@ -75,9 +75,13 @@ class SevenZOptionDialogFragment : DialogFragment() {
 
     private fun initializeUI() {
         filePathAdapter = FilePathAdapter(selectedFilePaths) { filePath ->
-            selectedFilePaths.remove(filePath)
-            filePathAdapter.removeFilePath(filePath)
-            filePathAdapter.notifyDataSetChanged()
+            val position = selectedFilePaths.indexOf(filePath)
+            if (position != -1) {
+                selectedFilePaths.removeAt(position)
+                filePathAdapter.removeFilePath(filePath)
+                filePathAdapter.notifyItemRemoved(position)
+                filePathAdapter.notifyItemRangeChanged(position, selectedFilePaths.size)
+            }
         }
 
         binding.filePathsRv.layoutManager = LinearLayoutManager(context)
@@ -106,6 +110,13 @@ class SevenZOptionDialogFragment : DialogFragment() {
         binding.okButton.setOnClickListener {
             val archiveName = binding.archiveNameEditText.text.toString().ifBlank { defaultName }
             val password = binding.passwordEditText.text.toString()
+            val confirmPassword = binding.confirmPasswordEditText.text.toString()
+
+            if (password != confirmPassword) {
+                binding.confirmPasswordEditText.error = getString(R.string.passwords_do_not_match)
+                return@setOnClickListener
+            }
+
             val compressionLevel = when (binding.compressionSpinner.selectedItemPosition) {
                 0 -> 0
                 1 -> 1

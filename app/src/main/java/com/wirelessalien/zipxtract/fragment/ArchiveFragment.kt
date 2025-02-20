@@ -41,7 +41,6 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.MimeTypeMap
-import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -56,17 +55,19 @@ import androidx.lifecycle.Lifecycle
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialog
-import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.google.android.material.snackbar.Snackbar
-import com.google.android.material.textfield.TextInputEditText
 import com.wirelessalien.zipxtract.BuildConfig
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.activity.SettingsActivity
 import com.wirelessalien.zipxtract.adapter.FileAdapter
 import com.wirelessalien.zipxtract.constant.BroadcastConstants
+import com.wirelessalien.zipxtract.databinding.BottomSheetOptionBinding
+import com.wirelessalien.zipxtract.databinding.DialogFileInfoBinding
 import com.wirelessalien.zipxtract.databinding.FragmentArchiveBinding
+import com.wirelessalien.zipxtract.databinding.PasswordInputDialogBinding
+import com.wirelessalien.zipxtract.databinding.ProgressDialogExtractBinding
 import com.wirelessalien.zipxtract.service.DeleteFilesService
 import com.wirelessalien.zipxtract.service.ExtractArchiveService
 import com.wirelessalien.zipxtract.service.ExtractCsArchiveService
@@ -111,8 +112,8 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
                     val dirPath = intent.getStringExtra(BroadcastConstants.EXTRA_DIR_PATH)
 
                     if (dirPath != null) {
-                        Snackbar.make(binding.root, getString(R.string.extraction_success), Snackbar.LENGTH_LONG)
-                            .setAction(getString(R.string.open_folder)) {
+                        Snackbar.make(binding.root, getString(R.string.open_folder), Snackbar.LENGTH_LONG)
+                            .setAction(getString(R.string.ok)) {
                                 navigateToParentDir(File(dirPath))
                             }
                             .show()
@@ -359,17 +360,16 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
     }
 
     private fun extractProgressDialog() {
-        val ePDialogView = layoutInflater.inflate(R.layout.progress_dialog_extract, null)
-        eProgressBar = ePDialogView.findViewById(R.id.progressBar)
-        progressText = ePDialogView.findViewById(R.id.progressText)
-        val backgroundButton = ePDialogView.findViewById<Button>(R.id.backgroundButton)
+        val binding = ProgressDialogExtractBinding.inflate(layoutInflater)
+        eProgressBar = binding.progressBar
+        progressText = binding.progressText
 
-        backgroundButton.setOnClickListener {
+        binding.backgroundButton.setOnClickListener {
             eProgressDialog.dismiss()
         }
 
         eProgressDialog = MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
-            .setView(ePDialogView)
+            .setView(binding.root)
             .setCancelable(false)
             .create()
     }
@@ -389,24 +389,14 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
 
     @SuppressLint("InflateParams")
     private fun showBottomSheetOptions(filePaths: String, file: File) {
-        val bottomSheetView = layoutInflater.inflate(R.layout.bottom_sheet_option, null)
+        val binding = BottomSheetOptionBinding.inflate(layoutInflater)
         val bottomSheetDialog = BottomSheetDialog(requireContext())
-        bottomSheetDialog.setContentView(bottomSheetView)
-
-        val btnExtract = bottomSheetView.findViewById<MaterialButton>(R.id.btnExtract)
-        val btnMultiExtract = bottomSheetView.findViewById<MaterialButton>(R.id.btnMultiExtract)
-        val btnMulti7zExtract = bottomSheetView.findViewById<MaterialButton>(R.id.btnMulti7zExtract)
-        val btnFileInfo = bottomSheetView.findViewById<MaterialButton>(R.id.btnFileInfo)
-        val btnMultiZipExtract = bottomSheetView.findViewById<MaterialButton>(R.id.btnMultiZipExtract)
-        val btnOpenWith = bottomSheetView.findViewById<MaterialButton>(R.id.btnOpenWith)
-        val fileNameTv = bottomSheetView.findViewById<TextView>(R.id.fileName)
-        val btnDelete = bottomSheetView.findViewById<MaterialButton>(R.id.btnDelete)
-
+        bottomSheetDialog.setContentView(binding.root)
 
         val filePath = file.absolutePath
-        fileNameTv.text = file.name
+        binding.fileName.text = file.name
 
-        btnExtract.setOnClickListener {
+        binding.btnExtract.setOnClickListener {
             val fileExtension = file.name.split('.').takeLast(2).joinToString(".").lowercase()
             val supportedExtensions = listOf("tar.bz2", "tar.gz", "tar.lz4", "tar.lzma", "tar.sz", "tar.xz")
 
@@ -422,27 +412,27 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
             bottomSheetDialog.dismiss()
         }
 
-        btnMultiExtract.setOnClickListener {
+        binding.btnMultiExtract.setOnClickListener {
             showPasswordInputMultiRarDialog(filePath)
             bottomSheetDialog.dismiss()
         }
 
-        btnMulti7zExtract.setOnClickListener {
+        binding.btnMulti7zExtract.setOnClickListener {
             showPasswordInputMulti7zDialog(filePath)
             bottomSheetDialog.dismiss()
         }
 
-        btnMultiZipExtract.setOnClickListener {
+        binding.btnMultiZipExtract.setOnClickListener {
             showPasswordInputMultiZipDialog(filePath)
             bottomSheetDialog.dismiss()
         }
 
-        btnFileInfo.setOnClickListener {
+        binding.btnFileInfo.setOnClickListener {
             showFileInfo(file)
             bottomSheetDialog.dismiss()
         }
 
-        btnOpenWith.setOnClickListener {
+        binding.btnOpenWith.setOnClickListener {
             val uri = FileProvider.getUriForFile(requireContext(), "${BuildConfig.APPLICATION_ID}.fileprovider", file)
             val intent = Intent(Intent.ACTION_VIEW).apply {
                 setDataAndType(uri, getMimeType(file))
@@ -452,7 +442,7 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
             bottomSheetDialog.dismiss()
         }
 
-        btnDelete.setOnClickListener {
+        binding.btnDelete.setOnClickListener {
             MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
                 .setTitle(getString(R.string.confirm_delete))
                 .setMessage(getString(R.string.confirm_delete_message))
@@ -462,6 +452,12 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
                         putStringArrayListExtra(DeleteFilesService.EXTRA_FILES_TO_DELETE, filesToDelete)
                     }
                     ContextCompat.startForegroundService(requireContext(), intent)
+
+                    val position = adapter.files.indexOf(file)
+                    if (position != -1) {
+                        adapter.removeItem(position)
+                    }
+
                     bottomSheetDialog.dismiss()
                 }
                 .setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
@@ -479,14 +475,13 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
     }
 
     private fun showPasswordInputDialog(file: String) {
-        val dialogView = layoutInflater.inflate(R.layout.password_input_dialog, null)
-        val passwordEditText = dialogView.findViewById<TextInputEditText>(R.id.passwordInput)
+        val binding = PasswordInputDialogBinding.inflate(layoutInflater)
 
         MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
             .setTitle(getString(R.string.enter_password))
-            .setView(dialogView)
+            .setView(binding.root)
             .setPositiveButton(getString(R.string.ok)) { _, _ ->
-                val password = passwordEditText.text.toString()
+                val password = binding.passwordInput.text.toString()
                 startExtractionService(file, password.ifBlank { null })
             }
             .setNegativeButton(getString(R.string.no_password)) { _, _ ->
@@ -496,14 +491,13 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
     }
 
     private fun showPasswordInputMultiRarDialog(file: String) {
-        val dialogView = layoutInflater.inflate(R.layout.password_input_dialog, null)
-        val passwordEditText = dialogView.findViewById<TextInputEditText>(R.id.passwordInput)
+        val binding = PasswordInputDialogBinding.inflate(layoutInflater)
 
         MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
             .setTitle(getString(R.string.enter_password))
-            .setView(dialogView)
+            .setView(binding.root)
             .setPositiveButton(getString(R.string.ok)) { _, _ ->
-                val password = passwordEditText.text.toString()
+                val password = binding.passwordInput.text.toString()
                 startRarExtractionService(file, password.ifBlank { null })
             }
             .setNegativeButton(getString(R.string.no_password)) { _, _ ->
@@ -513,14 +507,13 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
     }
 
     private fun showPasswordInputMulti7zDialog(file: String) {
-        val dialogView = layoutInflater.inflate(R.layout.password_input_dialog, null)
-        val passwordEditText = dialogView.findViewById<TextInputEditText>(R.id.passwordInput)
+        val binding = PasswordInputDialogBinding.inflate(layoutInflater)
 
         MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
             .setTitle(getString(R.string.enter_password))
-            .setView(dialogView)
+            .setView(binding.root)
             .setPositiveButton(getString(R.string.ok)) { _, _ ->
-                val password = passwordEditText.text.toString()
+                val password = binding.passwordInput.text.toString()
                 startMulti7zExtractionService(file, password.ifBlank { null })
             }
             .setNegativeButton(getString(R.string.no_password)) { _, _ ->
@@ -530,14 +523,13 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
     }
 
     private fun showPasswordInputMultiZipDialog(file: String) {
-        val dialogView = layoutInflater.inflate(R.layout.password_input_dialog, null)
-        val passwordEditText = dialogView.findViewById<TextInputEditText>(R.id.passwordInput)
+        val binding = PasswordInputDialogBinding.inflate(layoutInflater)
 
         MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
             .setTitle(getString(R.string.enter_password))
-            .setView(dialogView)
+            .setView(binding.root)
             .setPositiveButton(getString(R.string.ok)) { _, _ ->
-                val password = passwordEditText.text.toString()
+                val password = binding.passwordInput.text.toString()
                 startMultiZipExtractionService(file, password.ifBlank { null })
             }
             .setNegativeButton(getString(R.string.no_password)) { _, _ ->
@@ -591,30 +583,24 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
     }
 
     private fun showFileInfo(file: File) {
-        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_file_info, null)
+        val binding = DialogFileInfoBinding.inflate(LayoutInflater.from(requireContext()))
 
-        val fileNameTextView = dialogView.findViewById<TextInputEditText>(R.id.file_name)
-        val filePathTextView = dialogView.findViewById<TextInputEditText>(R.id.file_path)
-        val fileSizeTextView = dialogView.findViewById<TextView>(R.id.file_size)
-        val lastModifiedTextView = dialogView.findViewById<TextView>(R.id.last_modified)
-        val okButton = dialogView.findViewById<Button>(R.id.ok_button)
-
-        fileNameTextView.text = Editable.Factory.getInstance().newEditable(file.name)
-        filePathTextView.text = Editable.Factory.getInstance().newEditable(file.absolutePath)
+        binding.fileName.text = Editable.Factory.getInstance().newEditable(file.name)
+        binding.filePath.text = Editable.Factory.getInstance().newEditable(file.absolutePath)
         val fileSizeText = bytesToString(file.length())
-        fileSizeTextView.text = fileSizeText
+        binding.fileSize.text = Editable.Factory.getInstance().newEditable(fileSizeText)
         val dateFormat = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT, Locale.getDefault())
-        lastModifiedTextView.text = dateFormat.format(Date(file.lastModified()))
+        binding.lastModified.text = Editable.Factory.getInstance().newEditable(dateFormat.format(Date(file.lastModified())))
 
         val clipboardManager = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        fileNameTextView.setOnLongClickListener {
+        binding.fileName.setOnLongClickListener {
             val clip = ClipData.newPlainText("File Name", file.name)
             clipboardManager.setPrimaryClip(clip)
             Toast.makeText(requireContext(), getString(R.string.copied_to_clipboard), Toast.LENGTH_SHORT).show()
             true
         }
 
-        filePathTextView.setOnLongClickListener {
+        binding.filePath.setOnLongClickListener {
             val clip = ClipData.newPlainText("File Path", file.absolutePath)
             clipboardManager.setPrimaryClip(clip)
             Toast.makeText(requireContext(), getString(R.string.copied_to_clipboard), Toast.LENGTH_SHORT).show()
@@ -622,11 +608,11 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
         }
 
         val dialog = MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
-            .setView(dialogView)
+            .setView(binding.root)
             .setTitle(getString(R.string.file_info))
             .create()
 
-        okButton.setOnClickListener {
+        binding.okButton.setOnClickListener {
             dialog.dismiss()
         }
 

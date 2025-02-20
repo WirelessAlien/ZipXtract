@@ -83,9 +83,13 @@ class ZipOptionDialogFragment : DialogFragment() {
 
     private fun initializeUI() {
         filePathAdapter = FilePathAdapter(selectedFilePaths) { filePath ->
-            selectedFilePaths.remove(filePath)
-            filePathAdapter.removeFilePath(filePath)
-            filePathAdapter.notifyDataSetChanged()
+            val position = selectedFilePaths.indexOf(filePath)
+            if (position != -1) {
+                selectedFilePaths.removeAt(position)
+                filePathAdapter.removeFilePath(filePath)
+                filePathAdapter.notifyItemRemoved(position)
+                filePathAdapter.notifyItemRangeChanged(position, selectedFilePaths.size)
+            }
         }
 
         binding.filePathsRv.layoutManager = LinearLayoutManager(context)
@@ -118,6 +122,7 @@ class ZipOptionDialogFragment : DialogFragment() {
         val encryptionMethodSpinner = binding.encryptionMethodInput
         val encryptionStrengthSpinner = binding.encryptionStrengthInput
         val passwordInput = binding.passwordEditText
+        val confirmPasswordInput = binding.confirmPasswordEditText
         val zipNameEditText = binding.zipNameEditText
 
         val splitZipCheckbox = binding.splitZipCheckbox
@@ -166,6 +171,12 @@ class ZipOptionDialogFragment : DialogFragment() {
         binding.okButton.setOnClickListener {
             val archiveName = zipNameEditText.text.toString().ifBlank { defaultName }
             val password = passwordInput.text.toString()
+            val confirmPassword = confirmPasswordInput.text.toString()
+
+            if (password != confirmPassword) {
+                confirmPasswordInput.error = getString(com.wirelessalien.zipxtract.R.string.passwords_do_not_match)
+                return@setOnClickListener
+            }
             val isEncryptionEnabled = password.isNotEmpty()
             val selectedCompressionMethod = CompressionMethod.valueOf(compressionMethods[compressionMethodSpinner.selectedItemPosition])
             val selectedCompressionLevel = CompressionLevel.valueOf(compressionLevels[compressionLevelSpinner.selectedItemPosition])
@@ -204,6 +215,7 @@ class ZipOptionDialogFragment : DialogFragment() {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 val selectedEncryptionMethod = EncryptionMethod.valueOf(encryptionMethods[position])
                 passwordInput.isEnabled = selectedEncryptionMethod != EncryptionMethod.NONE
+                confirmPasswordInput.isEnabled = selectedEncryptionMethod != EncryptionMethod.NONE
                 encryptionStrengthSpinner.isEnabled = selectedEncryptionMethod == EncryptionMethod.AES
             }
 

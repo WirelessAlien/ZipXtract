@@ -23,3 +23,32 @@
 -dontwarn org.brotli.dec.BrotliInputStream
 -dontwarn com.github.luben.zstd.ZstdOutputStream
 -dontwarn com.github.luben.zstd.ZstdInputStream
+
+# ZStd
+-dontwarn com.github.luben.zstd.BufferPool
+
+# ASM
+-dontwarn org.objectweb.asm.**
+
+# Commons Compress
+-dontwarn org.apache.commons.compress.harmony.**
+
+# Keep JNI classes and methods
+-keep class net.sf.sevenzipjbinding.** { *; }
+-keep class org.apache.commons.compress.** { *; }
+-keep class me.zhanghai.android.libarchive.** { *; }
+
+# Keep native method names
+-keepclasseswithmembernames class * {
+    native <methods>;
+}
+
+# Keep classes that are referenced by native code
+-keepclasseswithmembers class * {
+    native <methods>;
+}
+
+# Keep all method names for classes that have native methods
+-keepclasseswithmembers,includedescriptorclasses class * {
+    native <methods>;
+}

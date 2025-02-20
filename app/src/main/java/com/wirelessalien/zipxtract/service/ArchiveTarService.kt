@@ -52,6 +52,7 @@ import net.sf.sevenzipjbinding.impl.RandomAccessFileOutStream
 import java.io.File
 import java.io.IOException
 import java.io.RandomAccessFile
+import java.util.Date
 
 class ArchiveTarService : Service() {
 
@@ -174,6 +175,7 @@ class ArchiveTarService : Service() {
                             item.dataSize = file.length()
                             item.propertyPath = relativePath
                             item.propertyIsDir = file.isDirectory
+                            item.propertyLastModificationTime = Date(file.lastModified())
 
                             return item
                         }
