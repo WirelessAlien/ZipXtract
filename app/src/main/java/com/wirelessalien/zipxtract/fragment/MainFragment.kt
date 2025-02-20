@@ -47,7 +47,6 @@ import android.view.ViewGroup
 import android.webkit.MimeTypeMap
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -108,9 +107,7 @@ import com.wirelessalien.zipxtract.service.ExtractRarService
 import com.wirelessalien.zipxtract.viewmodel.FileOperationViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.Runnable
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.lingala.zip4j.model.enums.AesKeyStrength
@@ -141,7 +138,6 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     private var fileObserver: FileObserver? = null
     private var searchView: SearchView? = null
     private var isObserving: Boolean = false
-    private var fileUpdateJob: Job? = null
     private var searchHandler: Handler? = Handler(Looper.getMainLooper())
     private var searchRunnable: Runnable? = null
     private lateinit var eProgressDialog: AlertDialog
@@ -386,20 +382,6 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             }
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
-        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                if (selectedFiles.isNotEmpty()) {
-                    unselectAllFiles()
-                } else {
-                    if (parentFragmentManager.backStackEntryCount > 0) {
-                        parentFragmentManager.popBackStack()
-                    } else {
-                        requireActivity().finish()
-                    }
-                }
-            }
-        })
-
         currentPath = arguments?.getString("path")
         searchHandler = Handler(Looper.getMainLooper())
 
@@ -546,6 +528,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     }
 
     private fun navigateToPath(path: String) {
+        binding.circularProgressBar.visibility = View.VISIBLE
         val fragment = MainFragment().apply {
             arguments = Bundle().apply {
                 putString("path", path)
@@ -966,26 +949,16 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 fileObserver = object : FileObserver(directoryToObserve, CREATE or DELETE or MOVE_SELF or MODIFY) {
                     override fun onEvent(event: Int, path: String?) {
-                        if (event and (CREATE or DELETE) != 0 && path != null) {
-                            val fullPath = "$directoryToObserve/$path"
-                            val file = File(fullPath)
-
-                            if (file.isDirectory || event and CREATE != 0) {
-                                updateAdapterWithFullList()
-                            }
+                        if ((event and (CREATE or DELETE or MOVED_TO or MODIFY)) != 0 && path != null) {
+                            updateAdapterWithFullList()
                         }
                     }
                 }
             } else {
                 fileObserver = object : FileObserver(directoryToObserve.absolutePath, CREATE or DELETE or MOVED_TO or MODIFY) {
                     override fun onEvent(event: Int, path: String?) {
-                        if (event and (CREATE or DELETE) != 0 && path != null) {
-                            val fullPath = "$directoryToObserve/$path"
-                            val file = File(fullPath)
-
-                            if (file.isDirectory || event and CREATE != 0) {
-                                updateAdapterWithFullList()
-                            }
+                        if ((event and (CREATE or DELETE or MOVED_TO or MODIFY)) != 0 && path != null) {
+                            updateAdapterWithFullList()
                         }
                     }
                 }
@@ -993,13 +966,6 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
             fileObserver?.startWatching()
             isObserving = true
-
-            fileUpdateJob = CoroutineScope(Dispatchers.Main).launch {
-                while (isObserving) {
-                    updateAdapterWithFullList()
-                    delay(2000)
-                }
-            }
         }
     }
 
@@ -1007,9 +973,6 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         // Stop the file observer when the activity is destroyed
         fileObserver?.stopWatching()
         isObserving = false
-
-        // Cancel the continuous update job
-        fileUpdateJob?.cancel()
     }
 
     override fun onDestroy() {

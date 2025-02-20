@@ -1,5 +1,6 @@
 package com.wirelessalien.zipxtract.adapter
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.icu.text.DateFormat
 import android.os.Build
@@ -9,6 +10,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DecodeFormat
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.request.RequestOptions
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.databinding.ItemFileBinding
 import com.wirelessalien.zipxtract.fragment.MainFragment
@@ -48,7 +52,7 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
                 selectedItems.put(position, true)
             }
         }
-        notifyDataSetChanged()
+        notifyItemChanged(position)
     }
 
     private fun toggleDirectorySelection(position: Int) {
@@ -148,14 +152,21 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
         } else {
             binding.fileSize.text = bytesToString(file.length())
 
+            val imageLoadingOptions = RequestOptions()
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .override(48, 48)
+                .format(DecodeFormat.PREFER_RGB_565)
+
             when (file.extension.lowercase(Locale.getDefault())) {
                 "png", "jpg", "bmp", "jpeg", "gif", "webp" -> {
                     val requestBuilder = Glide.with(context)
                         .asDrawable()
+                        .apply(imageLoadingOptions)
                         .sizeMultiplier(0.25f)
 
                     Glide.with(context)
                         .load(file)
+                        .apply(imageLoadingOptions)
                         .thumbnail(requestBuilder)
                         .into(binding.fileIcon)
                     binding.fileIcon.visibility = View.VISIBLE
@@ -191,6 +202,7 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     fun clearSelection() {
         selectedItems.clear()
         notifyDataSetChanged()
@@ -201,6 +213,7 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
         notifyItemRemoved(position)
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     fun updateFilesAndFilter(newFiles: ArrayList<File>, query: String? = null) {
         files.clear()
         files.addAll(newFiles)
@@ -210,7 +223,6 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
         } else {
             files
         }
-
         notifyDataSetChanged()
     }
 
