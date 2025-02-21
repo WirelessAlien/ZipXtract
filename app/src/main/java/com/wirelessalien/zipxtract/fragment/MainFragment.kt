@@ -38,6 +38,7 @@ import android.os.Looper
 import android.os.storage.StorageManager
 import android.provider.Settings
 import android.text.Editable
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -107,7 +108,17 @@ import com.wirelessalien.zipxtract.service.ExtractRarService
 import com.wirelessalien.zipxtract.viewmodel.FileOperationViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.Runnable
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.lingala.zip4j.model.enums.AesKeyStrength
@@ -120,6 +131,7 @@ import java.nio.file.Files
 import java.nio.file.attribute.BasicFileAttributes
 import java.util.Date
 import java.util.Locale
+import kotlin.coroutines.cancellation.CancellationException
 
 class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.OnFileLongClickListener {
 
@@ -150,6 +162,10 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     private lateinit var aProgressBar: LinearProgressIndicator
     private lateinit var binding: FragmentMainBinding
     private val handler = Handler(Looper.getMainLooper())
+    private var fileLoadingJob: Job? = null
+    private val coroutineScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+    private var searchJob: Job? = null
+
 
     private val updateProgressRunnable = object : Runnable {
         override fun run() {
@@ -179,10 +195,11 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 ACTION_EXTRACTION_COMPLETE -> {
                     handler.removeCallbacks(updateProgressRunnable)
                     val dirPath = intent.getStringExtra(EXTRA_DIR_PATH)
+                    Log.d("MainFragment", "onReceive: $dirPath")
                     if (dirPath != null) {
                         Snackbar.make(binding.root, getString(R.string.open_folder), Snackbar.LENGTH_LONG)
                             .setAction(getString(R.string.ok)) {
-                                navigateToParentDir(File(dirPath))
+                                navigateToPath(dirPath)
                             }
                             .show()
                     } else {
@@ -216,7 +233,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                     if (dirPath != null) {
                         Snackbar.make(binding.root, getString(R.string.open_folder), Snackbar.LENGTH_LONG)
                             .setAction(getString(R.string.ok)) {
-                                navigateToParentDir(File(dirPath))
+                                navigateToPath(dirPath)
                             }
                             .show()
                     } else {
@@ -257,18 +274,6 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             // Permission denied
             Toast.makeText(requireContext(), getString(R.string.permission_denied), Toast.LENGTH_SHORT).show()
         }
-    }
-
-    private fun navigateToParentDir(parentDir: File) {
-        val fragment = MainFragment().apply {
-            arguments = Bundle().apply {
-                putString("path", parentDir.absolutePath)
-            }
-        }
-        parentFragmentManager.beginTransaction()
-            .replace(R.id.container, fragment)
-            .addToBackStack(null)
-            .commit()
     }
 
     private fun unselectAllFiles() {
@@ -528,16 +533,11 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     }
 
     private fun navigateToPath(path: String) {
+        fileLoadingJob?.cancel()
         binding.circularProgressBar.visibility = View.VISIBLE
-        val fragment = MainFragment().apply {
-            arguments = Bundle().apply {
-                putString("path", path)
-            }
-        }
-        parentFragmentManager.beginTransaction()
-            .replace(R.id.container, fragment)
-            .addToBackStack(null)
-            .commit()
+        currentPath = path
+        updateCurrentPathChip()
+        updateAdapterWithFullList()
     }
 
     private fun showExtendedFabs() {
@@ -977,9 +977,18 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
     override fun onDestroy() {
         super.onDestroy()
-
+        fileLoadingJob?.cancel()
+        coroutineScope.cancel()
         stopFileObserver()
         LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(extractionReceiver)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (checkStoragePermissions()) {
+            updateAdapterWithFullList()
+            startFileObserver()
+        }
     }
 
     private fun showCompressorArchiveDialog(filePath: String, file: File) {
@@ -1433,7 +1442,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             return@withContext files
         }
 
-        for (file in fileList) {
+        fileList.forEach { file ->
             if (file.isDirectory) {
                 directories.add(file)
             } else {
@@ -1441,6 +1450,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             }
         }
 
+        // Sort files based on current criteria
         when (sortBy) {
             SortBy.SORT_BY_NAME -> {
                 directories.sortBy { it.name }
@@ -1471,6 +1481,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
         withContext(Dispatchers.Main) {
             binding.statusTextView.visibility = View.GONE
+            binding.circularProgressBar.progress = 100
         }
 
         combinedList
@@ -1491,15 +1502,36 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
     private fun updateAdapterWithFullList() {
         if (!isSearchActive) {
-            CoroutineScope(Dispatchers.IO).launch {
-                val fullFileList = getFiles()
-                withContext(Dispatchers.Main) {
-                    if (fullFileList.isEmpty()) {
-                        binding.statusTextView.visibility = View.VISIBLE
-                    } else {
-                        binding.statusTextView.visibility = View.GONE
+
+            fileLoadingJob?.cancel()
+
+            CoroutineScope(Dispatchers.Main).launch {
+                binding.circularProgressBar.visibility = View.VISIBLE
+                binding.statusTextView.visibility = View.GONE
+            }
+
+            fileLoadingJob = coroutineScope.launch(Dispatchers.IO) {
+                try {
+                    val fullFileList = getFiles()
+
+                    withContext(Dispatchers.Main) {
+                        binding.circularProgressBar.visibility = View.GONE
+                        if (fullFileList.isEmpty()) {
+                            binding.statusTextView.visibility = View.VISIBLE
+                        } else {
+                            binding.statusTextView.visibility = View.GONE
+                        }
+                        adapter.updateFilesAndFilter(fullFileList)
                     }
-                    adapter.updateFilesAndFilter(fullFileList)
+                } catch (e: Exception) {
+                    if (e is CancellationException) throw e
+                    withContext(Dispatchers.Main) {
+                        binding.circularProgressBar.visibility = View.GONE
+                        binding.statusTextView.apply {
+                            text = getString(R.string.general_error_msg)
+                            visibility = View.VISIBLE
+                        }
+                    }
                 }
             }
         }
@@ -1510,7 +1542,6 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         binding.circularProgressBar.visibility = View.VISIBLE
 
         if (query.isNullOrEmpty()) {
-            // Show all files if the query is empty
             updateAdapterWithFullList()
             binding.circularProgressBar.visibility = View.GONE
             return
@@ -1526,27 +1557,49 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             basePath
         }
 
-        CoroutineScope(Dispatchers.IO).launch {
-            val result = searchAllFiles(File(searchPath), query)
+        // Cancel previous search if any
+        searchJob?.cancel()
 
-            withContext(Dispatchers.Main) {
-                adapter.updateFilesAndFilter(ArrayList(result))
-                binding.circularProgressBar.visibility = View.GONE
-            }
+        searchJob = coroutineScope.launch {
+            searchAllFiles(File(searchPath), query)
+                .flowOn(Dispatchers.IO)
+                .catch { e ->
+                    withContext(Dispatchers.Main) {
+                        binding.circularProgressBar.visibility = View.GONE
+                        binding.statusTextView.apply {
+                            text = e.message ?: getString(R.string.general_error_msg)
+                            visibility = View.VISIBLE
+                        }
+                    }
+                }
+                .collect { files ->
+                    withContext(Dispatchers.Main) {
+                        adapter.updateFilesAndFilter(ArrayList(files))
+                        binding.circularProgressBar.visibility = View.GONE
+                    }
+                }
         }
     }
 
-    private fun searchAllFiles(directory: File, query: String): List<File> {
-        val result = mutableListOf<File>()
-        val files = directory.listFiles() ?: return result
+    private fun searchAllFiles(directory: File, query: String): Flow<List<File>> = flow {
+        val results = mutableListOf<File>()
 
-        for (file in files) {
-            if (file.isDirectory) {
-                result.addAll(searchAllFiles(file, query))
-            } else if (file.name.contains(query, true)) {
-                result.add(file)
+        suspend fun searchRecursively(dir: File) {
+            val files = dir.listFiles() ?: return
+
+            for (file in files) {
+                if (!currentCoroutineContext().isActive) return
+
+                if (file.isDirectory) {
+                    searchRecursively(file)
+                } else if (file.name.contains(query, true)) {
+                    results.add(file)
+                    emit(results.toList())
+                }
             }
         }
-        return result
-    }
+
+        searchRecursively(directory)
+        emit(results)
+    }.distinctUntilChanged { old, new -> old.size == new.size }
 }

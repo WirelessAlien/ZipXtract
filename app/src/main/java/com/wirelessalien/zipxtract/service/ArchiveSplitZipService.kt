@@ -200,10 +200,6 @@ class ArchiveSplitZipService : Service() {
             }
             val outputFile = File(parentDir, "$archiveName.zip")
 
-            while (outputFile.exists()) {
-                showErrorNotification(getString(R.string.zip_creation_failed))
-                sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, getString(R.string.file_already_exists)))
-            }
             val zipFile = ZipFile(outputFile)
             if (isEncrypted) {
                 zipFile.setPassword(password?.toCharArray())
