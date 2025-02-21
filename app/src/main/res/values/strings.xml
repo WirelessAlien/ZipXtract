@@ -73,6 +73,7 @@
     <string name="confirm_password">Confirm Password</string>
     <string name="passwords_do_not_match">Password do not match</string>
     <string name="wrong_password">Wrong password</string>
+    <string name="file_already_exists">File already exists</string>
 
     <!-- Menu items -->
     <string name="move">Move to</string>

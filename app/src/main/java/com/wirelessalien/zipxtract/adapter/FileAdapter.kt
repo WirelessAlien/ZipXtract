@@ -239,7 +239,7 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
                 System.currentTimeMillis()
             }
         } catch (e: NoSuchFileException) {
-            System.currentTimeMillis()
+            0L
         }
     }
 

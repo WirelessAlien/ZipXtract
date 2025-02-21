@@ -1477,11 +1477,15 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     }
 
     private fun getFileTimeOfCreation(file: File): Long {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val attr = Files.readAttributes(file.toPath(), BasicFileAttributes::class.java)
-            attr.lastModifiedTime().toMillis()
+        return if (file.exists()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val attr = Files.readAttributes(file.toPath(), BasicFileAttributes::class.java)
+                attr.lastModifiedTime().toMillis()
+            } else {
+                file.lastModified()
+            }
         } else {
-            file.lastModified()
+            0L
         }
     }
 
