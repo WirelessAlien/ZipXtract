@@ -33,6 +33,11 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.os.FileObserver
+import android.os.FileObserver.CREATE
+import android.os.FileObserver.DELETE
+import android.os.FileObserver.MOVED_FROM
+import android.os.FileObserver.MOVED_TO
+import android.os.FileObserver.MOVE_SELF
 import android.os.Handler
 import android.os.Looper
 import android.os.storage.StorageManager
@@ -58,6 +63,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
+import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
@@ -947,25 +953,83 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             val directoryToObserve = File(currentPath ?: Environment.getExternalStorageDirectory().absolutePath)
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                fileObserver = object : FileObserver(directoryToObserve, CREATE or DELETE or MOVE_SELF or MODIFY) {
+                fileObserver = object : FileObserver(directoryToObserve, CREATE or DELETE or MOVE_SELF or MOVED_TO or MOVED_FROM or MODIFY or CLOSE_WRITE or ATTRIB) {
                     override fun onEvent(event: Int, path: String?) {
-                        if ((event and (CREATE or DELETE or MOVED_TO or MODIFY)) != 0 && path != null) {
-                            updateAdapterWithFullList()
-                        }
+                        if (path == null) return
+
+                        val file = File(directoryToObserve, path)
+                        handleFileEvent(event, file)
                     }
                 }
             } else {
-                fileObserver = object : FileObserver(directoryToObserve.absolutePath, CREATE or DELETE or MOVED_TO or MODIFY) {
+                fileObserver = object : FileObserver(directoryToObserve.absolutePath, CREATE or DELETE or MOVE_SELF or MOVED_TO or MOVED_FROM or MODIFY or CLOSE_WRITE or ATTRIB) {
                     override fun onEvent(event: Int, path: String?) {
-                        if ((event and (CREATE or DELETE or MOVED_TO or MODIFY)) != 0 && path != null) {
-                            updateAdapterWithFullList()
-                        }
+                        if (path == null) return
+
+                        val file = File(directoryToObserve, path)
+                        handleFileEvent(event, file)
                     }
                 }
             }
 
             fileObserver?.startWatching()
             isObserving = true
+        }
+    }
+
+    private fun handleFileEvent(event: Int, file: File) {
+        CoroutineScope(Dispatchers.Main).launch {
+            when {
+                (event and CREATE) != 0 || (event and MOVED_TO) != 0 || (event and MOVED_FROM) != 0 || (event and MOVE_SELF) != 0 -> {
+                    // Check if the file already exists in the list
+                    val existingPosition = adapter.files.indexOfFirst { it.absolutePath == file.absolutePath }
+                    if (existingPosition != -1) {
+                        // Update the existing file entry
+                        adapter.files[existingPosition] = file
+                        adapter.notifyItemChanged(existingPosition)
+                    } else {
+                        // Add new file
+                        val position = findInsertPosition(file)
+                        adapter.files.add(position, file)
+                        adapter.notifyItemInserted(position)
+                    }
+                }
+                (event and DELETE) != 0 -> {
+                    // Remove deleted file
+                    val position = adapter.files.indexOfFirst { it.absolutePath == file.absolutePath }
+                    if (position != -1) {
+                        adapter.files.removeAt(position)
+                        adapter.notifyItemRemoved(position)
+                    }
+                }
+//                (event and MODIFY) != 0 -> {
+//                    // Update modified file
+//                    val position = adapter.files.indexOfFirst { it.absolutePath == file.absolutePath }
+//                    if (position != -1) {
+//                        adapter.files[position] = file
+//                        adapter.notifyItemChanged(position)
+//                    }
+//                }
+            }
+        }
+    }
+
+    private fun findInsertPosition(newFile: File): Int {
+        val comparator = when (sortBy) {
+            SortBy.SORT_BY_NAME -> compareBy { it.name }
+            SortBy.SORT_BY_SIZE -> compareBy { it.length() }
+            SortBy.SORT_BY_MODIFIED -> compareBy { getFileTimeOfCreation(it) }
+            SortBy.SORT_BY_EXTENSION -> compareBy<File> { it.extension }
+        }
+
+        val finalComparator = if (sortAscending) {
+            compareBy<File> { !it.isDirectory }.then(comparator)
+        } else {
+            compareBy<File> { !it.isDirectory }.then(comparator.reversed())
+        }
+
+        return adapter.files.binarySearch(newFile, finalComparator).let {
+            if (it < 0) -(it + 1) else it
         }
     }
 

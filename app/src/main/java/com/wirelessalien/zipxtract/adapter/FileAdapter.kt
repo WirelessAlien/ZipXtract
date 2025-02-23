@@ -110,7 +110,7 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
 
         override fun onClick(v: View?) {
             if (v?.id == R.id.card_view) {
-                onLongClick(v)
+                mainFragment?.startActionMode(adapterPosition)
             } else {
                 if (mainFragment?.actionMode != null) {
                     mainFragment.toggleSelection(adapterPosition)
@@ -124,7 +124,9 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
         }
 
         override fun onLongClick(v: View?): Boolean {
-            mainFragment?.startActionMode(adapterPosition)
+            val file = filteredFiles[adapterPosition]
+            onFileLongClickListener?.onFileLongClick(file, v ?: itemView)
+            toggleSelection(adapterPosition)
             return true
         }
     }

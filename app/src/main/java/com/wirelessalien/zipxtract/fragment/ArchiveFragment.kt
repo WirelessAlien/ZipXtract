@@ -76,6 +76,15 @@ import com.wirelessalien.zipxtract.service.ExtractMultipartZipService
 import com.wirelessalien.zipxtract.service.ExtractRarService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -90,6 +99,8 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
     private lateinit var eProgressDialog: AlertDialog
     private lateinit var progressText: TextView
     private lateinit var eProgressBar: LinearProgressIndicator
+    private val coroutineScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+    private var searchJob: Job? = null
     enum class SortBy {
         SORT_BY_NAME, SORT_BY_SIZE, SORT_BY_MODIFIED, SORT_BY_EXTENSION
     }
@@ -243,17 +254,6 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
         loadArchiveFiles()
     }
 
-    private fun searchAllFiles(files: List<File>, query: String): List<File> {
-        val result = mutableListOf<File>()
-
-        for (file in files) {
-            if (file.name.contains(query, true)) {
-                result.add(file)
-            }
-        }
-        return result
-    }
-
     private fun loadArchiveFiles() {
         binding.progressBar.visibility = View.VISIBLE
 
@@ -272,15 +272,39 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
 
         adapter.updateFilesAndFilter(ArrayList())
 
-        CoroutineScope(Dispatchers.IO).launch {
-            val result = query?.let { searchAllFiles(getArchiveFiles(), it) } ?: getArchiveFiles()
+        searchJob?.cancel()
 
-            withContext(Dispatchers.Main) {
-                adapter.updateFilesAndFilter(ArrayList(result))
-                binding.progressBar.visibility = View.GONE
-            }
+        searchJob = coroutineScope.launch {
+            searchAllFiles(query)
+                .flowOn(Dispatchers.IO)
+                .catch { e ->
+                    withContext(Dispatchers.Main) {
+                        binding.progressBar.visibility = View.GONE
+                        Toast.makeText(requireContext(), e.message, Toast.LENGTH_SHORT).show()
+                    }
+                }
+                .collect { files ->
+                    withContext(Dispatchers.Main) {
+                        adapter.updateFilesAndFilter(ArrayList(files))
+                        binding.progressBar.visibility = View.GONE
+                    }
+                }
         }
     }
+
+    private fun searchAllFiles(query: String?): Flow<List<File>> = flow {
+        val results = mutableListOf<File>()
+        val archiveFiles = getArchiveFiles()
+
+        for (file in archiveFiles) {
+            if (!currentCoroutineContext().isActive) return@flow
+
+            if (query.isNullOrEmpty() || file.name.contains(query, true)) {
+                results.add(file)
+                emit(results.toList())
+            }
+        }
+    }.distinctUntilChanged { old, new -> old.size == new.size }
 
     private fun getArchiveFiles(): ArrayList<File> {
         val archiveFiles = ArrayList<File>()
