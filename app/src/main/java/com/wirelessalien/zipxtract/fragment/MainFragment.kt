@@ -63,7 +63,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
-import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
@@ -361,26 +360,32 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                     R.id.menu_sort_by_name -> {
                         sortBy = SortBy.SORT_BY_NAME
                         editor.putString("sortBy", sortBy.name)
+                        updateAdapterWithFullList()
                     }
                     R.id.menu_sort_by_size -> {
                         sortBy = SortBy.SORT_BY_SIZE
                         editor.putString("sortBy", sortBy.name)
+                        updateAdapterWithFullList()
                     }
                     R.id.menu_sort_by_time_of_creation -> {
                         sortBy = SortBy.SORT_BY_MODIFIED
                         editor.putString("sortBy", sortBy.name)
+                        updateAdapterWithFullList()
                     }
                     R.id.menu_sort_by_extension -> {
                         sortBy = SortBy.SORT_BY_EXTENSION
                         editor.putString("sortBy", sortBy.name)
+                        updateAdapterWithFullList()
                     }
                     R.id.menu_sort_ascending -> {
                         sortAscending = true
                         editor.putBoolean("sortAscending", sortAscending)
+                        updateAdapterWithFullList()
                     }
                     R.id.menu_sort_descending -> {
                         sortAscending = false
                         editor.putBoolean("sortAscending", sortAscending)
+                        updateAdapterWithFullList()
                     }
                     R.id.menu_settings -> {
                         val intent = Intent(requireContext(), SettingsActivity::class.java)
@@ -388,7 +393,6 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                     }
                 }
                 editor.apply()
-                updateAdapterWithFullList()
                 return true
             }
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
@@ -1566,6 +1570,8 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
     private fun updateAdapterWithFullList() {
         if (!isSearchActive) {
+
+            adapter.updateFilesAndFilter(ArrayList())
 
             fileLoadingJob?.cancel()
 
