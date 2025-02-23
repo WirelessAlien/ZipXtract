@@ -35,6 +35,8 @@ import android.os.Environment
 import android.os.FileObserver
 import android.os.FileObserver.CREATE
 import android.os.FileObserver.DELETE
+import android.os.FileObserver.DELETE_SELF
+import android.os.FileObserver.MODIFY
 import android.os.FileObserver.MOVED_FROM
 import android.os.FileObserver.MOVED_TO
 import android.os.FileObserver.MOVE_SELF
@@ -957,7 +959,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             val directoryToObserve = File(currentPath ?: Environment.getExternalStorageDirectory().absolutePath)
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                fileObserver = object : FileObserver(directoryToObserve, CREATE or DELETE or MOVE_SELF or MOVED_TO or MOVED_FROM or MODIFY or CLOSE_WRITE or ATTRIB) {
+                fileObserver = object : FileObserver(directoryToObserve, CREATE or DELETE or MOVE_SELF or MOVED_TO or MOVED_FROM or MODIFY or CLOSE_WRITE or ATTRIB or DELETE_SELF) {
                     override fun onEvent(event: Int, path: String?) {
                         if (path == null) return
 
@@ -966,7 +968,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                     }
                 }
             } else {
-                fileObserver = object : FileObserver(directoryToObserve.absolutePath, CREATE or DELETE or MOVE_SELF or MOVED_TO or MOVED_FROM or MODIFY or CLOSE_WRITE or ATTRIB) {
+                fileObserver = object : FileObserver(directoryToObserve.absolutePath, CREATE or DELETE or MOVE_SELF or MOVED_TO or MOVED_FROM or MODIFY or CLOSE_WRITE or ATTRIB or DELETE_SELF) {
                     override fun onEvent(event: Int, path: String?) {
                         if (path == null) return
 
@@ -998,7 +1000,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                         adapter.notifyItemInserted(position)
                     }
                 }
-                (event and DELETE) != 0 -> {
+                (event and DELETE) != 0 || (event and DELETE_SELF) != 0 -> {
                     // Remove deleted file
                     val position = adapter.files.indexOfFirst { it.absolutePath == file.absolutePath }
                     if (position != -1) {
@@ -1006,14 +1008,14 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                         adapter.notifyItemRemoved(position)
                     }
                 }
-//                (event and MODIFY) != 0 -> {
-//                    // Update modified file
-//                    val position = adapter.files.indexOfFirst { it.absolutePath == file.absolutePath }
-//                    if (position != -1) {
-//                        adapter.files[position] = file
-//                        adapter.notifyItemChanged(position)
-//                    }
-//                }
+                (event and MODIFY) != 0 -> {
+                    // Update modified file
+                    val position = adapter.files.indexOfFirst { it.absolutePath == file.absolutePath }
+                    if (position != -1) {
+                        adapter.files[position] = file
+                        adapter.notifyItemChanged(position)
+                    }
+                }
             }
         }
     }
@@ -1054,7 +1056,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     override fun onResume() {
         super.onResume()
         if (checkStoragePermissions()) {
-            updateAdapterWithFullList()
+//            updateAdapterWithFullList()
             startFileObserver()
         }
     }
