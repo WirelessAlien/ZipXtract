@@ -33,26 +33,26 @@
 Версията на F-Droid не включва функции за извличане на RAR и 7z компресия поради лицензионни ограничения. За пълната версия, моля, използвайте версиите GitHub или IzzyOnDroid.</p>
 </blockquote>
 
-<h2>Usage Tip</h2>
-<p>General tips for archive extraction and archive creation:</p>
+<h2>Съвет за използване</h2>
+<p>Общи съвети за извличане на архиви и създаване на архиви:</p>
 <ul>
-<li>Long-press files and folders or click file/folder icons to select them for archiving.</li>
-<li>Click a file to display the extraction menu for choosing extraction options.</li>
-<li>Files extracted using the "Open With" menu of the OS are stored in <strong>Internal Storage/ZipXtract</strong> by default. Modify this in app settings.</li>
-<li>The default location for archiving or extracting archives (within the app) is the parent directory of the respective file(s). This can be changed in the app settings.</li>
+<li>Дълго натискане на файлове и папки или щракване върху икони на файлове/папки, за да ги изберете за архивиране.</li>
+<li>Щракнете върху файл, за да се покаже менюто за извличане за избор на опции за извличане.</li>
+<li>Файловете, извлечени от менюто “Отвори с“ на операционната система, се съхраняват в <strong>Вътрешно хранилище/ZipXtract</strong> по подразбиране. Променете това в настройките на приложението.</li>
+<li>Местоположението по подразбиране за архивиране или извличане на архиви (в рамките на приложението) е основната директория на съответния(те) файл(ве). Това може да бъде променено в настройките на приложението.</li>
 </ul>
 
-<h2>App Permission</h2>
-<p>Read and Write Storage Permission (Android 10 and below) and Manage External Storage Permission (Android 11 and above). The app does not have internet permission. Read more - <a href="https://sites.google.com/view/privacy-policy-zipxtract/home">Privacy policy</a></p>
+<h2>Разрешение за приложение</h2>
+<p>Разрешение за четене и запис в хранилището (Android 10 и по-ниски) и Управление на разрешението за външно хранилище (Android 11 и по-високи). Приложението няма разрешение за достъп до интернет. Прочетете повече- <a href="https://sites.google.com/view/privacy-policy-zipxtract/home">Политика за поверителност</a></p>
 
-<h2>Translate</h2>
+<h2>Превод</h2>
 <p>
-Help localize the app through&nbsp;<a href="https://hosted.weblate.org/engage/zipxtract/">Weblate
+Помогнете за локализирането на приложението чрез&nbsp;<a href="https://hosted.weblate.org/engage/zipxtract/">Weblate
 </a>
 </p>
 
-<h2>License</h2>
-<p>This project is licensed under the GNU General Public License v3.0. See the <a href="https://github.com/WirelessAlien/ZipXtract/blob/master/LICENSE">LICENSE</a> file for details.</p>
+<h2>Лиценз</h2>
+<p>Този проект е лицензиран под GNU General Public License v3.0. Вижте <a href="https://github.com/WirelessAlien/ZipXtract/blob/master/LICENSE">LICENSE</a> файл за подробности.</p>
 
-<h2>Contact</h2>
-<p>For any inquiries or feedback, please open an issue on the <a href="https://github.com/WirelessAlien/ZipXtract/issues">GitHub repository</a>.</p>
+<h2>Контакт</h2>
+<p>За всякакви запитвания или обратна връзка, моля, отворете проблем на <a href="https://github.com/WirelessAlien/ZipXtract/issues">GitHub хранилище</a>.</p>
