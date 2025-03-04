@@ -14,9 +14,12 @@
   ~
   ~     You should have received a copy of the GNU General Public License
   ~     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-  --><resources>
+  -->
+
+<resources>
     <!-- App name -->
     <string name="app_name" translatable="false">ZipXtract</string>
+
     <!-- General strings -->
     <string name="folder">Folder</string>
     <string name="share">Share App Link</string>
@@ -35,11 +38,14 @@
     <string name="directory_empty">Folder is empty</string>
     <string name="paste">Paste</string>
     <string name="storage">Storage</string>
+
     <!-- Bottom navigation -->
     <string name="archive">Archive</string>
     <string name="home">Home</string>
+
     <!-- Snackbar actions -->
     <string name="open_folder">Open Folder</string>
+
     <!-- Dialog strings (General dialogs and common strings of different dialog) -->
     <string name="enter_name_of_archive_optional">Archive Name</string>
     <string name="show_hide_selected_files">Show/Hide Selected Files</string>
@@ -62,8 +68,13 @@
     <string name="multi_part_extract">Multi Part Extract:</string>
     <string name="copy_text">Copy</string>
     <string name="info_tip">Useful Tip</string>
-    <string name="info_tip_description">● Long-press files and folders or click file/folder icons to select them for archiving.\n\n● Click a file to display the extraction menu for choosing extraction options.\n\n● Files extracted using \"Open With\" menu of OS are stored in Internal Storage/ZipXtract by default. Modify this in app settings.\n\n● The default location for archiving or extracting archives (within the app) is the parent directory of the respective file(s). This can be changed in the app settings.</string>
+    <string name="info_tip_description">\u25CF Long-press files and folders or click file/folder icons to select them for archiving.\n\n\u25CF Click a file to display the extraction menu for choosing extraction options.\n\n\u25CF Files extracted using \"Open With\" menu of OS are stored in "Internal Storage/ZipXtract" by default. Modify this in app settings.\n\n\u25CF The default location for archiving or extracting archives (within the app) is the parent directory of the respective file(s). This can be changed in the app settings.</string>
     <string name="crash_log">Crash Log</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="passwords_do_not_match">Password do not match</string>
+    <string name="wrong_password">Wrong password</string>
+    <string name="file_already_exists">File already exists</string>
+
     <!-- Menu items -->
     <string name="move">Move to</string>
     <string name="copy_to">Copy to</string>
@@ -79,11 +90,13 @@
     <string name="time_of_creation">Modified</string>
     <string name="extension">Extension</string>
     <string name="close">Close</string>
+
     <!-- Settings -->
     <string name="extract_path">Extracted files folder</string>
     <string name="archive_path">Archived files folder</string>
     <string name="archive_path_summary">Modify the default extract folder. \nDefault is \"parent folder\"</string>
     <string name="extract_path_summary">Modify the default extract folder. \nDefault is \"parent folder\" or Internal Storage/ZipXtract (for \"Open With\" menu extracted archive)</string>
+
     <!-- ZIP archive options -->
     <string name="create_zip">Archive ZIP</string>
     <string name="encryption_method">Encryption Method</string>
@@ -94,13 +107,16 @@
     <string name="split_zip">Split ZIP</string>
     <string name="_ten">Default is 64kb</string>
     <string name="settings_info_text">The default encryption method for files is AES, which provides a high level of security. However, please be aware that AES encryption can be time-consuming, particularly on lower-end devices.\n\nFor users with less powerful devices, an alternative like ZIP_STANDARD can be use. However, please note that this method does not offer the same level of security as AES.\n\nIf security is your primary concern, we strongly recommend using AES despite its longer processing time.</string>
+
     <!-- TAR archive options -->
     <string name="compress_tar">Archive TAR</string>
+
     <!-- 7z archive options -->
     <string name="compress_sevenz">Archive 7z</string>
     <string name="solid_compression">Solid Compression</string>
     <string name="thread_count">Thread Count</string>
     <string name="max_available_thread">0 for maximum available threads</string>
+
     <!-- Success toast messages -->
     <string name="compression_success">Compression successful</string>
     <string name="extraction_success">File extracted successfully</string>
@@ -111,25 +127,29 @@
     <string name="file_deleted">Deleted</string>
     <string name="copied_to_clipboard">Copied to clipboard</string>
     <string name="operation_cancelled">Operation cancelled</string>
+
     <!-- Error toast messages -->
     <string name="tar_creation_failed">Error archiving TAR file</string>
     <string name="compression_failed">Compression failed</string>
     <string name="sevenz_creation_failed">Error archiving 7z file</string>
     <string name="zip_creation_failed">Error archiving ZIP file</string>
-    <string name="general_error_msg">An unexpected error occurred</string>
-    <string name="unsupported_compression_format">This compression format is not supported</string>
+    <string name="general_error_msg">An unexpected error occurred.</string>
+    <string name="unsupported_compression_format">This compression format is not supported.</string>
     <string name="extraction_failed">Extraction Failed</string>
     <string name="access_denied">Access denied</string>
     <string name="no_files_to_archive">No files were selected for archiving</string>
     <string name="permission_denied">Permission Denied</string>
     <string name="no_file_selected">No File Selected</string>
     <string name="sd_card_not_available">SD card or external storage not detected</string>
+
+
     <!-- Notification title-->
     <string name="copying_files">Copying…</string>
     <string name="moving_files">Moving…</string>
     <string name="delete_ongoing">Deleting…</string>
     <string name="extraction_ongoing">Extracting…</string>
     <string name="archive_ongoing">Archiving…</string>
+
     <!-- Notification content-->
     <string name="copying_files_progress">Copying files: %1$d/%2$d</string>
     <string name="moving_files_progress">Moving files: %1$d/%2$d</string>
@@ -137,11 +157,13 @@
     <string name="extracting_progress">Extracting… %1$d %%</string>
     <string name="compressing_progress">Archiving… %1$d %%</string>
     <string name="compression_ongoing">Compressing…</string>
+
     <!-- Notification channel name-->
     <string name="delete_files_notification_name">Delete File</string>
     <string name="copy_move_files_notification_name">Copy/Move Files</string>
     <string name="extract_archive_notification_name">Extract Archive</string>
     <string name="compress_archive_notification_name">Compress Archive</string>
+
     <!-- non-translatable strings -->
     <string name="zip" translatable="false">ZIP</string>
     <string name="_7z" translatable="false">7z</string>
