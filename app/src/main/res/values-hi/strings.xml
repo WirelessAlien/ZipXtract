@@ -116,4 +116,8 @@
     <string name="general_error_msg">अप्रत्याशित त्रुटि हुई</string>
     <string name="unsupported_compression_format">यह संपीड़न प्रारूप समर्थित नहीं है</string>
     <string name="access_denied">एक्सेस इनकार</string>
+    <string name="confirm_password">पासवर्ड की पुष्टि</string>
+    <string name="passwords_do_not_match">पासवर्ड से मेल नहीं खाता</string>
+    <string name="wrong_password">गलत पासवर्ड</string>
+    <string name="file_already_exists">पहले से ही मौजूद है</string>
 </resources>
