@@ -116,4 +116,8 @@
     <string name="delete_ongoing">Eliminando…</string>
     <string name="extraction_ongoing">Estraendo…</string>
     <string name="archive_ongoing">Archiviando…</string>
+    <string name="confirm_password">Conferma la password</string>
+    <string name="passwords_do_not_match">La password non corrisponde</string>
+    <string name="wrong_password">Password sbagliata</string>
+    <string name="file_already_exists">File già esiste</string>
 </resources>
