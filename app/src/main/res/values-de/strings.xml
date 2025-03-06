@@ -116,4 +116,8 @@
     <string name="copying_files">Wird kopiert …</string>
     <string name="moving_files">Wird verschoben …</string>
     <string name="delete_ongoing">Wird gelöscht …</string>
+    <string name="passwords_do_not_match">Passwort passt nicht</string>
+    <string name="confirm_password">Bestätig Passwort</string>
+    <string name="wrong_password">Falsches Passwort</string>
+    <string name="file_already_exists">Datei existiert schon</string>
 </resources>
