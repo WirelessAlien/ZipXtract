@@ -116,4 +116,8 @@
     <string name="copy_move_files_notification_name">Fichiers Copie/Move</string>
     <string name="extract_archive_notification_name">Extrait Archive</string>
     <string name="compress_archive_notification_name">Compress Archive</string>
+    <string name="file_already_exists">Le fichier existe déjà</string>
+    <string name="confirm_password">Confirmer mot de passe</string>
+    <string name="passwords_do_not_match">Mot de passe ne correspond pas</string>
+    <string name="wrong_password">Mot de passe faux</string>
 </resources>
