@@ -112,4 +112,8 @@
     <string name="copy_move_files_notification_name">Okładka</string>
     <string name="extract_archive_notification_name">Archiwa nadzwyczajne</string>
     <string name="compress_archive_notification_name">Strona internetowa</string>
+    <string name="confirm_password">Administratorka</string>
+    <string name="passwords_do_not_match">Hasło nie pasuje</string>
+    <string name="wrong_password">Wrong password</string>
+    <string name="file_already_exists">Archiwum już istnieje</string>
 </resources>
