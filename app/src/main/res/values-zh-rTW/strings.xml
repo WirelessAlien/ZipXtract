@@ -116,4 +116,8 @@
     <string name="moving_files_progress">移案档案:%1$d/%2$d</string>
     <string name="deleting_files">删除档案:%1$d/%2$d</string>
     <string name="extracting_progress">%1$d %%</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="passwords_do_not_match">密码不匹配</string>
+    <string name="file_already_exists">已经存在档案</string>
+    <string name="wrong_password">左边</string>
 </resources>
