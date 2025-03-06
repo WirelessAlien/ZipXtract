@@ -116,4 +116,8 @@
     <string name="select_all">Seleccione todos</string>
     <string name="search">Búsqueda</string>
     <string name="order">Orden</string>
+    <string name="confirm_password">Confirma Contraseña</string>
+    <string name="passwords_do_not_match">La contraseña no empareja</string>
+    <string name="wrong_password">Contraseña incorrecta</string>
+    <string name="file_already_exists">La lima ya existe</string>
 </resources>
