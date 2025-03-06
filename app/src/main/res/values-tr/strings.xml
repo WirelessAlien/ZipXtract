@@ -111,4 +111,8 @@
     <string name="copying_files">Kopyalama..</string>
     <string name="moving_files">Move..</string>
     <string name="delete_ongoing">Deleting..</string>
+    <string name="confirm_password">Şifreyi Onaylayın</string>
+    <string name="passwords_do_not_match">Şifre eşleşmeyin</string>
+    <string name="wrong_password">Yanlış şifre</string>
+    <string name="file_already_exists">Dosya zaten var</string>
 </resources>
