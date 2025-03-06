@@ -112,4 +112,8 @@
     <string name="extraction_ongoing">Extraindo..</string>
     <string name="archive_ongoing">Arquivar..</string>
     <string name="copying_files_progress">Arquivos de cópia: %1$d/%2$d</string>
+    <string name="confirm_password">Confirmar senha</string>
+    <string name="passwords_do_not_match">Senha não coincide</string>
+    <string name="wrong_password">Palavra-passe errada</string>
+    <string name="file_already_exists">O arquivo já existe</string>
 </resources>
