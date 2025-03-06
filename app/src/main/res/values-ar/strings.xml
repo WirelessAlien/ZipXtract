@@ -111,4 +111,8 @@
     <string name="tar_creation_failed">حدث خطأ في أرشفة ملف TAR</string>
     <string name="compression_failed">فشل الضغط</string>
     <string name="sevenz_creation_failed">حدث خطأ في أرشفة ملف 7z</string>
+    <string name="confirm_password">كلمة السر</string>
+    <string name="wrong_password">كلمة سر خاطئة</string>
+    <string name="passwords_do_not_match">كلمة السر لا تتطابق</string>
+    <string name="file_already_exists">الملف موجود بالفعل</string>
 </resources>
