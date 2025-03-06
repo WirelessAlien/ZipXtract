@@ -116,4 +116,8 @@
     <string name="storage_access_permission_text">该软件需要你的授权才能访问内置存储，以保证基本功能正常。</string>
     <string name="sd_card">SD卡</string>
     <string name="root_access">操作根目录</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="passwords_do_not_match">密码不匹配</string>
+    <string name="wrong_password">左边</string>
+    <string name="file_already_exists">已经存在档案</string>
 </resources>
