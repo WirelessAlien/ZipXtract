@@ -116,4 +116,8 @@
     <string name="operation_cancelled">Операция отменена</string>
     <string name="tar_creation_failed">Ошибка при создании TAR-архива</string>
     <string name="compression_failed">Сжатие не удалось</string>
+    <string name="confirm_password">Подтвердить пароль</string>
+    <string name="passwords_do_not_match">Пароль не совпадает</string>
+    <string name="wrong_password">Неверный пароль</string>
+    <string name="file_already_exists">Файл уже существует</string>
 </resources>
