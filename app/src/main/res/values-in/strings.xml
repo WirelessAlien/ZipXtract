@@ -116,4 +116,8 @@
     <string name="extract_path">Folder file yang diekstrak</string>
     <string name="archive_path">File Folder</string>
     <string name="archive_path_summary">Modifikasi folder ekstrak default.\nDefault adalah \" folder induk\"</string>
+    <string name="confirm_password">Konfirmasi Password</string>
+    <string name="passwords_do_not_match">Sandi tidak cocok</string>
+    <string name="wrong_password">Login</string>
+    <string name="file_already_exists">File sudah ada</string>
 </resources>
