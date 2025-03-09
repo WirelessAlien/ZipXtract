@@ -108,7 +108,7 @@
     <string name="operation_cancelled">Vorgang abgebrochen</string>
     <string name="tar_creation_failed">Fehler beim Archivieren der TAR-Datei</string>
     <string name="compression_failed">Komprimierung fehlgeschlagen</string>
-    <string name="general_error_msg">Ein unerwarteter Fehler ist aufgetreten</string>
+    <string name="general_error_msg">Ein unerwarteter Fehler ist aufgetreten.</string>
     <string name="unsupported_compression_format">Dieses Kompression Format ist nicht unterstützt.</string>
     <string name="access_denied">Zugang verweigert</string>
     <string name="no_files_to_archive">Für die Archivierung wurden keine Dateien ausgewählt</string>
