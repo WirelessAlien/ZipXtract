@@ -64,7 +64,7 @@
     <string name="source_code">மூலக் குறியீடு</string>
     <string name="background">பின்னணி</string>
     <string name="compression_failed">சுருக்க தோல்வியுற்றது</string>
-    <string name="general_error_msg">எதிர்பாராத பிழை ஏற்பட்டது</string>
+    <string name="general_error_msg">எதிர்பாராத பிழை ஏற்பட்டது.</string>
     <string name="crash_log">செயலிழப்பு பதிவு</string>
     <string name="move">செல்லுங்கள்</string>
     <string name="license">உரிமம்</string>
@@ -107,9 +107,13 @@
     <string name="file_deleted">நீக்கப்பட்டது</string>
     <string name="operation_cancelled">செயல்பாடு ரத்து செய்யப்பட்டது</string>
     <string name="tar_creation_failed">தார் கோப்பை காப்பகப்படுத்தும் பிழை</string>
-    <string name="unsupported_compression_format">இந்த சுருக்க வடிவம் ஆதரிக்கப்படவில்லை</string>
+    <string name="unsupported_compression_format">இந்தச் சுருக்க வடிவம் ஆதரிக்கப்படவில்லை.</string>
     <string name="access_denied">அணுகல் மறுக்கப்பட்டது</string>
     <string name="no_files_to_archive">காப்பகத்திற்கு கோப்புகள் எதுவும் தேர்ந்தெடுக்கப்படவில்லை</string>
     <string name="sd_card_not_available">எச்டி அட்டை அல்லது வெளிப்புற சேமிப்பு கண்டறியப்படவில்லை</string>
     <string name="info_tip_description">● கோப்புகள் மற்றும் கோப்புறைகள் நீண்ட செயலற்றவை அல்லது காப்பகத்திற்கு அவற்றைத் தேர்ந்தெடுக்க கோப்பு/கோப்புறை சின்னங்களைக் சொடுக்கு செய்க.\n\n● பிரித்தெடுக்கும் விருப்பங்களைத் தேர்ந்தெடுப்பதற்கு பிரித்தெடுத்தல் மெனுவைக் காண்பிக்க ஒரு கோப்பைக் சொடுக்கு செய்க.\n\n● முஇதின் \"திறந்த\" மெனுவைப் பயன்படுத்தி பிரித்தெடுக்கப்பட்ட கோப்புகள் இயல்பாக உள் சேமிப்பிடத்தில்/ZIPxtract இல் சேமிக்கப்படுகின்றன. பயன்பாட்டு அமைப்புகளில் இதை மாற்றவும்.\n\n● காப்பகங்களைக் காப்பகப்படுத்த அல்லது பிரித்தெடுப்பதற்கான இயல்புநிலை இடம் (பயன்பாட்டிற்குள்) அந்தந்த கோப்பு(கள்) இன் பெற்றோர் அடைவு. பயன்பாட்டு அமைப்புகளில் இதை மாற்றலாம்.</string>
+    <string name="confirm_password">கடவுச்சொல்லை உறுதிப்படுத்து</string>
+    <string name="passwords_do_not_match">கடவுச்சொல் பொருந்தவில்லை</string>
+    <string name="wrong_password">தவறான கடவுச்சொல்</string>
+    <string name="file_already_exists">கோப்பு ஏற்கனவே உள்ளது</string>
 </resources>
