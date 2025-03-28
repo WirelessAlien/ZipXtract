@@ -37,7 +37,7 @@
 \nЕсли безопасность является вашей основной целью, мы настоятельно рекомендуем использовать AES, несмотря на более длительное время обработки.</string>
     <string name="liberapay">Liberapay</string>
     <string name="solid_compression">Непрерывный архив</string>
-    <string name="unsupported_compression_format">Этот формат сжатия не поддерживается</string>
+    <string name="unsupported_compression_format">Этот формат сжатия не поддерживается.</string>
     <string name="compression_ongoing">Сжатие…</string>
     <string name="delete_files_notification_name">Удалить файл</string>
     <string name="root_access">Root-доступ</string>
