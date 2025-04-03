@@ -63,7 +63,7 @@
     <string name="multi_part_extract">Массовое извлечение:</string>
     <string name="copy_text">Копировать</string>
     <string name="info_tip">Полезный совет</string>
-    <string name="general_error_msg">Возникла неожиданная ошибка</string>
+    <string name="general_error_msg">Возникла неожиданная ошибка.</string>
     <string name="access_denied">Доступ запрещен</string>
     <string name="no_files_to_archive">Файлы не были выбраны для архивации</string>
     <string name="sd_card_not_available">SD-карта или внешний накопитель не обнаружены</string>
