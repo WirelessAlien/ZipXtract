@@ -65,7 +65,7 @@
     <string name="info_tip_description">\u25CF Long-press files and folders or click file/folder icons to select them for archiving.\n\n\u25CF Click a file to display the extraction menu for choosing extraction options.\n\n\u25CF Files extracted using \"Open With\" menu of OS are stored in "Internal Storage/ZipXtract" by default. Modify this in app settings.\n\n\u25CF The default location for archiving or extracting archives (within the app) is the parent directory of the respective file(s). This can be changed in the app settings.</string>
     <string name="crash_log">Crash Log</string>
     <string name="confirm_password">Confirm Password</string>
-    <string name="passwords_do_not_match">Password do not match</string>
+    <string name="passwords_do_not_match">Passwords do not match</string>
     <string name="wrong_password">Wrong password</string>
     <string name="file_already_exists">File already exists</string>
     <!-- Menu items -->
