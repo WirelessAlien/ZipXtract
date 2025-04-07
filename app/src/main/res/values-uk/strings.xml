@@ -117,7 +117,7 @@
     <string name="general_error_msg">Сталася неочікувана помилка.</string>
     <string name="unsupported_compression_format">Цей формат стиснення не підтримується.</string>
     <string name="wrong_password">Неправильний пароль</string>
-    <string name="passwords_do_not_match">Пароль не збігається</string>
+    <string name="passwords_do_not_match">Паролі не збігаються</string>
     <string name="file_already_exists">Файл уже існує</string>
     <string name="confirm_password">Підтвердьте пароль</string>
 </resources>
