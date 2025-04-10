@@ -101,8 +101,6 @@ For any inquiries or feedback, please open an issue on the [GitHub repository](h
 
 <noscript><a href="https://liberapay.com/WirelessAlien/donate"><img alt="Donate using Liberapay" src="https://liberapay.com/assets/widgets/donate.svg"></a></noscript>  
 
-<a href="https://www.buymeacoffee.com/wirelessalien" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-blue.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
-
 #### Paypal
 * [Single Donation](https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-42024772MB847863LM7CZV7I)
 * [Monthly Donation](https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-3H0022989S4788323M7CZXHY)
