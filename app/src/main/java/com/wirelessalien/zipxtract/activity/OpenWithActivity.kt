@@ -22,6 +22,7 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.OpenableColumns
 import android.util.Log
@@ -52,6 +53,19 @@ class OpenWithActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        handleCrashLog()
+
+        when (intent?.action) {
+            Intent.ACTION_VIEW -> handleViewIntent()
+            Intent.ACTION_SEND -> handleSendIntent()
+            else -> {
+                Toast.makeText(this, getString(R.string.no_file_selected), Toast.LENGTH_SHORT).show()
+                finish()
+            }
+        }
+    }
+
+    private fun handleCrashLog() {
         val fileName = "Crash_Log.txt"
         val crashLogFile = File(cacheDir, fileName)
         if (crashLogFile.exists()) {
@@ -84,8 +98,26 @@ class OpenWithActivity : AppCompatActivity() {
                 .show()
             crashLogFile.delete()
         }
+    }
 
+    private fun handleViewIntent() {
         val uri = intent?.data
+        if (uri != null) {
+            showPasswordInputDialog(uri)
+        } else {
+            Toast.makeText(this, getString(R.string.no_file_selected), Toast.LENGTH_SHORT).show()
+            finish()
+        }
+    }
+
+    private fun handleSendIntent() {
+        val uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent.getParcelableExtra(Intent.EXTRA_STREAM, Uri::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            intent.getParcelableExtra(Intent.EXTRA_STREAM)
+        }
+
         if (uri != null) {
             showPasswordInputDialog(uri)
         } else {
