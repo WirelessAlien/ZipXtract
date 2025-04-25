@@ -28,6 +28,7 @@ import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.preference.PreferenceManager
+import com.github.luben.zstd.ZstdOutputStream
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_COMPLETE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_ERROR
@@ -59,6 +60,7 @@ class CompressCsArchiveService : Service() {
         const val NOTIFICATION_ID = 17
         const val EXTRA_FILE_PATH = "file_path"
         const val EXTRA_COMPRESSION_FORMAT = "compression_format"
+        const val ZSTD_FORMAT = "zstd"
     }
 
     private var compressionJob: Job? = null
@@ -74,6 +76,7 @@ class CompressCsArchiveService : Service() {
         val filePath = intent?.getStringExtra(EXTRA_FILE_PATH)
         val compressionFormat = intent?.getStringExtra(EXTRA_COMPRESSION_FORMAT)
 
+
         if (filePath == null || compressionFormat == null) {
             stopSelf()
             return START_NOT_STICKY
@@ -82,8 +85,13 @@ class CompressCsArchiveService : Service() {
         startForeground(NOTIFICATION_ID, createNotification(0))
 
         compressionJob = CoroutineScope(Dispatchers.IO).launch {
-            compressArchive(filePath, compressionFormat)
+            if (compressionFormat == ZSTD_FORMAT) {
+                compressWithZstd(filePath, compressionFormat)
+            } else {
+                compressArchive(filePath, compressionFormat)
+            }
         }
+
 
         return START_NOT_STICKY
     }
@@ -157,9 +165,9 @@ class CompressCsArchiveService : Service() {
 
         while (outputFile.exists()) {
             outputFile = if (format == CompressorStreamFactory.BZIP2) {
-                File(parentDir, "${File(filePath).name}_$counter.bz2")
+                File(parentDir, "($counter)${File(filePath).name}.bz2")
             } else {
-                File(parentDir, "${File(filePath).name}_$counter.$format")
+                File(parentDir, "($counter)${File(filePath).name}.$format")
             }
             counter++
         }
@@ -206,6 +214,80 @@ class CompressCsArchiveService : Service() {
             showErrorNotification(e.message ?: getString(R.string.general_error_msg))
             sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message ?: getString(R.string.general_error_msg)))
         } catch (e: IOException) {
+            e.printStackTrace()
+            showErrorNotification(e.message ?: getString(R.string.general_error_msg))
+            sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message ?: getString(R.string.general_error_msg)))
+        } finally {
+            stopForegroundService()
+        }
+    }
+
+    private fun compressWithZstd(inputFilePath: String, format: String) {
+
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
+        val compressionLevel = sharedPreferences.getString("zstd_compression_level", "3")?.toIntOrNull() ?: 3
+        val safeLevel = compressionLevel.coerceIn(0, 22)
+
+        if (inputFilePath.isEmpty()) {
+            val errorMessage = getString(R.string.no_files_to_archive)
+            showErrorNotification(errorMessage)
+            sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, errorMessage))
+            stopForegroundService()
+            return
+        }
+
+        val file = File(inputFilePath)
+        val archivePath = sharedPreferences.getString(PREFERENCE_ARCHIVE_DIR_PATH, null)
+        val parentDir: File
+
+        if (!archivePath.isNullOrEmpty()) {
+            parentDir = if (File(archivePath).isAbsolute) {
+                File(archivePath)
+            } else {
+                File(Environment.getExternalStorageDirectory(), archivePath)
+            }
+            if (!parentDir.exists()) {
+                parentDir.mkdirs()
+            }
+        } else {
+            parentDir = file.parentFile ?: Environment.getExternalStorageDirectory()
+        }
+
+        var outputFile = File(parentDir, "${file.name}.$format")
+        var counter = 1
+
+        while (outputFile.exists()) {
+            outputFile = File(parentDir, "($counter)${file.name}.$format")
+            counter++
+        }
+
+        try {
+            val compressor = ZstdOutputStream(FileOutputStream(outputFile)).apply {
+                setLevel(safeLevel)
+            }
+
+            FileInputStream(file).use { inputStream ->
+                val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+                var bytesRead: Int
+                val totalBytes = file.length()
+                var bytesProcessed = 0L
+
+                while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                    compressor.write(buffer, 0, bytesRead)
+                    bytesProcessed += bytesRead
+
+                    // Update progress (0-100%)
+                    val progress = (bytesProcessed * 100 / totalBytes).toInt()
+                    updateProgress(progress)
+                }
+            }
+
+            compressor.close()
+
+            showCompletionNotification()
+            sendLocalBroadcast(Intent(ACTION_ARCHIVE_COMPLETE).putExtra(EXTRA_DIR_PATH, outputFile.parent))
+
+        } catch (e: Exception) {
             e.printStackTrace()
             showErrorNotification(e.message ?: getString(R.string.general_error_msg))
             sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message ?: getString(R.string.general_error_msg)))

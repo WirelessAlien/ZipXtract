@@ -21,11 +21,6 @@
 #-renamesourcefileattribute SourceFile
 
 -dontwarn org.brotli.dec.BrotliInputStream
--dontwarn com.github.luben.zstd.ZstdOutputStream
--dontwarn com.github.luben.zstd.ZstdInputStream
-
-# ZStd
--dontwarn com.github.luben.zstd.BufferPool
 
 # ASM
 -dontwarn org.objectweb.asm.**
@@ -37,6 +32,7 @@
 -keep class net.sf.sevenzipjbinding.** { *; }
 -keep class org.apache.commons.compress.** { *; }
 -keep class me.zhanghai.android.libarchive.** { *; }
+-keep class com.github.luben.zstd.** { *; }
 
 # Keep native method names
 -keepclasseswithmembernames class * {
