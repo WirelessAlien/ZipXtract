@@ -11,8 +11,8 @@ android {
         applicationId "com.wirelessalien.zipxtract"
         minSdk 24
         targetSdk 34
-        versionCode 16
-        versionName "5.1"
+        versionCode 17
+        versionName "5.2"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -56,7 +56,8 @@ android {
             useLegacyPackaging = true
             keepDebugSymbols += [
                     'lib7-Zip-JBinding.so',
-                    'libarchive-jni.so'
+                    'libarchive-jni.so',
+                    'libzstd-jni-1.5.7-2.so'
             ]
         }
     }
