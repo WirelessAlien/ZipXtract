@@ -1108,6 +1108,11 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             bottomSheetDialog.dismiss()
         }
 
+        binding.btnZstd.setOnClickListener {
+            startCompressService(filePath, CompressorStreamFactory.ZSTANDARD)
+            bottomSheetDialog.dismiss()
+        }
+
         binding.btnExtract.setOnClickListener {
             startExtractionService(filePath, null)
             bottomSheetDialog.dismiss()
@@ -1196,7 +1201,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
         binding.btnExtract.setOnClickListener {
             val fileExtension = file.name.split('.').takeLast(2).joinToString(".").lowercase()
-            val supportedExtensions = listOf("tar.bz2", "tar.gz", "tar.lz4", "tar.lzma", "tar.sz", "tar.xz")
+            val supportedExtensions = listOf("tar.bz2", "tar.gz", "tar.lz4", "tar.lzma", "tar.sz", "tar.xz", "tar.zstd", "tar.zst")
 
             if (supportedExtensions.any { fileExtension.endsWith(it) }) {
                 startExtractionCsService(filePaths)

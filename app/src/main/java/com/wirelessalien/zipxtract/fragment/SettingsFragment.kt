@@ -23,6 +23,7 @@ import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
+import android.widget.Toast
 import androidx.fragment.app.FragmentTransaction
 import androidx.preference.EditTextPreference
 import androidx.preference.Preference
@@ -90,6 +91,23 @@ class SettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeLis
                 it.text = defaultPath + savedPath
             } else {
                 it.text = savedPath
+            }
+        }
+
+        val compressionPref = findPreference<EditTextPreference>("zstd_compression_level")
+        compressionPref?.setOnPreferenceChangeListener { _, newValue ->
+            try {
+                val level = (newValue as String).toInt()
+                if (level in 0..22) {
+                    true
+                } else {
+                    Toast.makeText(context,
+                        getString(R.string.please_enter_value_between_0_and_22), Toast.LENGTH_SHORT).show()
+                    false
+                }
+            } catch (e: NumberFormatException) {
+                Toast.makeText(context, getString(R.string.invalid_value), Toast.LENGTH_SHORT).show()
+                false
             }
         }
     }

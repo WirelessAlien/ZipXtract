@@ -174,4 +174,7 @@
     <string name="gzip" translatable="false">GZIP</string>
     <string name="liberapay" translatable="false">Liberapay</string>
     <string name="author_wirelessalien" translatable="false">Author: WirelessAlien</string>
+    <string name="zstd" translatable="false">ZSTD</string>
+    <string name="invalid_value">Invalid input</string>
+    <string name="please_enter_value_between_0_and_22">Enter a value between 0 and 22</string>
 </resources>
