@@ -8,12 +8,12 @@
     <string name="folder">폴더</string>
     <string name="license">라이센스</string>
     <string name="report_an_issue">자주 묻는 질문</string>
-    <string name="storage_access_permission_text">이 응용 프로그램은 적절한 기능을 위해 장치 저장소에 액세스해야합니다. 필요한 권한을 부여하십시오.</string>
+    <string name="storage_access_permission_text">이 응용 프로그램은 적절히 기능하기 위해 장치 저장소에 액세스해야합니다. 필요한 권한을 부여해 주십시오.</string>
     <string name="sd_card">SD 카드</string>
     <string name="root_access">루트 액세스</string>
-    <string name="root_access_summary">Enable root 디렉토리 액세스</string>
-    <string name="internal_storage">내부 저장</string>
-    <string name="root">이름 *</string>
+    <string name="root_access_summary">루트 경로 액세스 활성화</string>
+    <string name="internal_storage">내부 저장소</string>
+    <string name="root">루트</string>
     <string name="directory_empty">폴더는 빈</string>
     <string name="paste">뚱 베어</string>
     <string name="storage">제품 정보</string>
