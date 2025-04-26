@@ -1,0 +1,58 @@
+<p style="text-align: left;">ZipXtract는 아래와 같은 다양한 범주의 압축 포맷을 지원하기 위해 만들어진 완전 오픈 소스 안드로이드 앱입니다.</p>
+<ul>
+<li>RAR (RAR5 및 멀티 볼륨 지원)</li>
+<li>ZIP (비밀번호 보호 및 분할 압축 지원)</li>
+<li>TAR</li>
+<li>BZ2</li>
+<li>GZ</li>
+<li>7z (비밀번호 보호 및 멀티 볼륨 지원)</li>
+<li>XZ</li>
+<li>JAR</li>
+<li>…</li>
+</ul>
+
+<h2>특징</h2>
+
+<h3>압축해제:</h3>
+<ul>
+<li>다양한 포맷 지원: RAR, ZIP, TAR, BZ2, GZ, 7z, XZ, JAR 등</li>
+<li>암호화된 ZIP 및 7z 파일 제어.</li>
+<li>멀티 볼륨 RAR 압축파일 해제.</li>
+<li>멀티 볼륨 압축파일 해제.</li>
+<li>분할 ZIP 파일 해제.</li>
+</ul>
+
+<h3>압축:</h3>
+<ul>
+<li>ZIP 및 7z 압축파일 암호화 옵션.</li>
+<li>분할 ZIP 압축파일.</li>
+</ul>
+
+<blockquote>
+<p><strong>알림:</strong><br />
+F-Droid 버전에는 라이센스 제한으로 인해 RAR 압축해제 및 7z 압축 기능이 포함되어 있지 않습니다. 전체 기능을 사용하려면 GitHub 또는 IzzyOnDroid 릴리즈를 사용하십시오.</p>
+</blockquote>
+
+<h2>사용 팁</h2>
+<p>압축파일 해제 및 압축파일 생성을 위한 일반적인 팁:</p>
+<ul>
+<li>압축할 파일/폴더를 길게 누르거나 파일/폴더 아이콘을 선택합니다.</li>
+<li>파일을 클릭하면 압축해제 옵션을 선택할 수 있는 메뉴가 표시됩니다.</li>
+<li>OS의 "연결 프로그램" 메뉴를 사용해 해제된 파일은 기본적으로 <strong>내부 저장소/ZipXtract</strong>에 저장됩니다. 앱 설정에서 변경할 수 있습니다.</li>
+<li>압축 또는 (앱 내에서) 압축해제하는 기본 위치는 각 파일의 상위 경로입니다. 앱 설정에서 변경할 수 있습니다.</li>
+</ul>
+
+<h2>앱 권한</h2>
+<p>저장소 읽기 및 쓰기 권한(안드로이드 10 이하), 외부 저장소 관리 권한(안드로이드 11 이상). 이 앱은 인터넷 연결 권한을 요구하지 않습니다. 더 많은 정보는 - <a href="https://sites.google.com/view/privacy-policy-zipxtract/home">개인정보 정책</a></p>
+
+<h2>번역</h2>
+<p>
+Weblate에서 앱 번역을 도와주십시오. (<a href="https://hosted.weblate.org/engage/zipxtract/">)
+</a>
+</p>
+
+<h2>라이센스</h2>
+<p>이 프로젝트는 GNU 일반 공중 사용 허가서 v3.0.에 의해 라이선스가 부여됩니다. 자세한 사항은 <a href="https://github.com/WirelessAlien/ZipXtract/blob/master/LICENSE">라이센스</a> 파일을 확인해 주십시오.</p>
+
+<h2>연락</h2>
+<p>문의사항 또는 피드백이 있으실 경우, <a href="https://github.com/WirelessAlien/ZipXtract/issues">GitHub 레포지토리</a>에서 이슈를 개설해 주십시오.</p>
