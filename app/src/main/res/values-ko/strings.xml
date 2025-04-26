@@ -107,12 +107,12 @@
     <string name="archive_ongoing">압축중…</string>
     <string name="copying_files_progress">파일 복사: %1$d/%2$d</string>
     <string name="moving_files_progress">파일 이동: %1$d/%2$d</string>
-    <string name="deleting_files">삭제 파일: %1$d/%2$d</string>
-    <string name="extracting_progress">추출 ... %1$d %%</string>
-    <string name="compressing_progress">아카이브 ... %1$d %%</string>
-    <string name="compression_ongoing">...을 눌러</string>
+    <string name="deleting_files">파일 삭제: %1$d/%2$d</string>
+    <string name="extracting_progress">압축해제중… %1$d %%</string>
+    <string name="compressing_progress">압축중… %1$d %%</string>
+    <string name="compression_ongoing">압축중…</string>
     <string name="delete_files_notification_name">파일 삭제</string>
-    <string name="copy_move_files_notification_name">복사/파일</string>
-    <string name="extract_archive_notification_name">추출물 Archive</string>
-    <string name="compress_archive_notification_name">공지사항</string>
+    <string name="copy_move_files_notification_name">파일 복사/이동</string>
+    <string name="extract_archive_notification_name">파일 추출</string>
+    <string name="compress_archive_notification_name">파일 압축</string>
 </resources>
