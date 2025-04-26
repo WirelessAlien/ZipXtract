@@ -7,7 +7,7 @@
     <string name="grant_access">Grant 액세스</string>
     <string name="folder">폴더</string>
     <string name="license">라이센스</string>
-    <string name="report_an_issue">오류 보고</string>
+    <string name="report_an_issue">자주 묻는 질문</string>
     <string name="storage_access_permission_text">이 응용 프로그램은 적절한 기능을 위해 장치 저장소에 액세스해야합니다. 필요한 권한을 부여하십시오.</string>
     <string name="sd_card">SD 카드</string>
     <string name="root_access">루트 액세스</string>
