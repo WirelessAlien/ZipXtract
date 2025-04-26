@@ -1,2 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <string name="share">앱 링크 공유</string>
+    <string name="source_code">소스 코드</string>
+    <string name="privacy_policy">개인정보 정책</string>
+    <string name="about">정보</string>
+    <string name="grant_access">액세스 권한 부여</string>
+    <string name="folder">폴더</string>
+    <string name="license">라이센스</string>
+    <string name="report_an_issue">오류 보고</string>
+</resources>
