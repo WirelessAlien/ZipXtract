@@ -114,6 +114,10 @@
     <string name="operation_cancelled">Операцію скасовано</string>
     <string name="tar_creation_failed">Не вдалося архівувати TAR-файл</string>
     <string name="compression_failed">Не вдалося стиснути</string>
-    <string name="general_error_msg">Сталася неочікувана помилка</string>
-    <string name="unsupported_compression_format">Цей формат стиснення не підтримується</string>
+    <string name="general_error_msg">Сталася неочікувана помилка.</string>
+    <string name="unsupported_compression_format">Цей формат стиснення не підтримується.</string>
+    <string name="wrong_password">Неправильний пароль</string>
+    <string name="passwords_do_not_match">Паролі не збігаються</string>
+    <string name="file_already_exists">Файл уже існує</string>
+    <string name="confirm_password">Підтвердьте пароль</string>
 </resources>

@@ -37,7 +37,7 @@
 \nЕсли безопасность является вашей основной целью, мы настоятельно рекомендуем использовать AES, несмотря на более длительное время обработки.</string>
     <string name="liberapay">Liberapay</string>
     <string name="solid_compression">Непрерывный архив</string>
-    <string name="unsupported_compression_format">Этот формат сжатия не поддерживается</string>
+    <string name="unsupported_compression_format">Этот формат сжатия не поддерживается.</string>
     <string name="compression_ongoing">Сжатие…</string>
     <string name="delete_files_notification_name">Удалить файл</string>
     <string name="root_access">Root-доступ</string>
@@ -63,7 +63,7 @@
     <string name="multi_part_extract">Массовое извлечение:</string>
     <string name="copy_text">Копировать</string>
     <string name="info_tip">Полезный совет</string>
-    <string name="general_error_msg">Возникла неожиданная ошибка</string>
+    <string name="general_error_msg">Возникла неожиданная ошибка.</string>
     <string name="access_denied">Доступ запрещен</string>
     <string name="no_files_to_archive">Файлы не были выбраны для архивации</string>
     <string name="sd_card_not_available">SD-карта или внешний накопитель не обнаружены</string>
@@ -116,4 +116,8 @@
     <string name="operation_cancelled">Операция отменена</string>
     <string name="tar_creation_failed">Ошибка при создании TAR-архива</string>
     <string name="compression_failed">Сжатие не удалось</string>
+    <string name="confirm_password">Подтвердить пароль</string>
+    <string name="passwords_do_not_match">Пароль не совпадает</string>
+    <string name="wrong_password">Неверный пароль</string>
+    <string name="file_already_exists">Файл уже существует</string>
 </resources>

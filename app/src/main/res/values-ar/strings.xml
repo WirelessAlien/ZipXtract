@@ -44,7 +44,7 @@
     <string name="compress_archive_notification_name">ضغط الأرشيف</string>
     <string name="zip_creation_failed">حدث خطأ في أرشفة ملف ZIP</string>
     <string name="general_error_msg">حدث خطأ غير متوقع</string>
-    <string name="info_tip_description">● الملفات والملفات ذات الطابع الطويل أو أيقونات الملف/الملف لاختيارها لحفظها.\n\n● أنقر ملف لعرض قائمة الاستخراج لاختيار خيارات الاستخراج.\n\n● تم تخزين الملفات المستخرجة باستخدام قائمة البرمجيات المفتوحة في الخزنة الداخلية/الزبدة بواسطة التقصير. عدّل هذا في أماكن التطبيق.\n\n● The default location for archiving or extracting archives (within the app) is the parent directory of the respective file(s). هذا يمكن تغييره في أماكن التطبيق.</string>
+    <string name="info_tip_description">● اضغط مطولاً على الملفات والمجلدات أو انقر فوق أيقونات الملفات/المجلدات لتحديدها للأرشفة.\n\n● انقر فوق ملف لعرض قائمة الاستخراج لاختيار خيارات الاستخراج.\n\n● يتم تخزين الملفات المستخرجة باستخدام قائمة \"فتح باستخدام\" في نظام التشغيل في مجلد ZipXtract في وحدة التخزين الداخلية افتراضيًا. يمكن تعديل ذلك في إعدادات التطبيق.\n● الموقع الافتراضي لأرشفة أو استخراج الأرشيفات (من داخل التطبيق) هو المجلد الرئيسي للملف/للملفات المعنية. يمكن تعديل ذلك في إعدادات التطبيق.</string>
     <string name="crash_log">سجل أعطال التطبيق</string>
     <string name="move">نقل إلى</string>
     <string name="copy_to">نسخ إلى</string>
@@ -111,4 +111,8 @@
     <string name="tar_creation_failed">حدث خطأ في أرشفة ملف TAR</string>
     <string name="compression_failed">فشل الضغط</string>
     <string name="sevenz_creation_failed">حدث خطأ في أرشفة ملف 7z</string>
+    <string name="confirm_password">كلمة السر</string>
+    <string name="wrong_password">كلمة سر خاطئة</string>
+    <string name="passwords_do_not_match">كلمة السر لا تتطابق</string>
+    <string name="file_already_exists">الملف موجود بالفعل</string>
 </resources>
