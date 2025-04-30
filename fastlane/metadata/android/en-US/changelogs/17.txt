@@ -1,0 +1,3 @@
+Add complete support for zstd/zst file #55
+Add "Send to" support to extract archive (now it supports "Open with" and "Send to") #51
+Update translation
