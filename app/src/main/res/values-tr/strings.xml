@@ -13,7 +13,7 @@
     <string name="liberapay">Liberapay</string>
     <string name="no_password">Şifre Yok</string>
     <string name="ok">OK</string>
-    <string name="create_zip">ZIP Oluştur</string>
+    <string name="create_zip">ZIP Dosyası Oluştur</string>
     <string name="encryption_method">Şifreleme Methodu</string>
     <string name="cancel">İptal</string>
     <string name="permission_denied">Erişim Reddedildi</string>
