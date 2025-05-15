@@ -30,7 +30,7 @@
     <string name="no_password">Няма парола</string>
     <string name="extraction_success">Файлът е извлечен успешно</string>
     <string name="sevenz_creation_failed">Грешка при архивиране на 7z файл</string>
-    <string name="permission_denied">Разрешението е отказано</string>
+    <string name="permission_denied">Отказано разрешение</string>
     <string name="extraction_failed">Неуспешно извличане</string>
     <string name="sevenz_creation_success">7z файлът е архивиран успешно</string>
     <string name="home">Начало</string>
@@ -92,7 +92,7 @@
     <string name="compression_success">Успешно компресиране</string>
     <string name="general_error_msg">Възникна неочаквана грешка.</string>
     <string name="unsupported_compression_format">Този формат на компресия не се поддържа.</string>
-    <string name="access_denied">Достъпът е отказан</string>
+    <string name="access_denied">Отказан достъп</string>
     <string name="no_files_to_archive">Няма избрани файлове за архивиране</string>
     <string name="sd_card_not_available">SD картата или външното хранилище не са открити</string>
     <string name="copying_files">Копиране…</string>
