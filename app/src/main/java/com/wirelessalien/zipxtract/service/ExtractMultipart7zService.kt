@@ -228,6 +228,8 @@ class ExtractMultipart7zService : Service() {
         private var uos: OutputStream? = null
         private var totalSize: Long = 0
         private var extractedSize: Long = 0
+        private var currentFileIndex: Int = -1
+        private var currentUnpackedFile: File? = null
 
         init {
             totalSize = inArchive.numberOfItems.toLong()
@@ -264,6 +266,15 @@ class ExtractMultipart7zService : Service() {
                 ExtractOperationResult.OK -> {
                     try {
                         uos?.close()
+                        if (this.currentUnpackedFile != null && this.currentUnpackedFile!!.isFile) {
+                            val modTime = inArchive.getProperty(this.currentFileIndex, PropID.LAST_MODIFICATION_TIME) as? java.util.Date
+                            if (modTime != null) {
+                                this.currentUnpackedFile!!.setLastModified(modTime.time)
+                            }
+                        }
+                        // Reset currentUnpackedFile and currentFileIndex for the next entry
+                        this.currentUnpackedFile = null
+                        this.currentFileIndex = -1
                         extractedSize++
                     } catch (e: IOException) {
                         e.printStackTrace()
@@ -285,21 +296,26 @@ class ExtractMultipart7zService : Service() {
         }
 
         override fun getStream(p0: Int, p1: ExtractAskMode?): ISequentialOutStream {
+            this.currentFileIndex = p0 // Store current file index
 
             val path: String = inArchive.getStringProperty(p0, PropID.PATH)
             val isDir: Boolean = inArchive.getProperty(p0, PropID.IS_FOLDER) as Boolean
-            val unpackedFile = File(dstDir, path)
+            this.currentUnpackedFile = File(dstDir, path) // Store current unpacked file
 
             if (isDir) {
-                unpackedFile.mkdirs()
+                this.currentUnpackedFile!!.mkdirs()
+                val modTime = inArchive.getProperty(this.currentFileIndex, PropID.LAST_MODIFICATION_TIME) as? java.util.Date
+                if (modTime != null) {
+                    this.currentUnpackedFile!!.setLastModified(modTime.time)
+                }
             } else {
                 try {
-                    val parentDir = unpackedFile.parentFile
+                    val parentDir = this.currentUnpackedFile!!.parentFile
                     if (parentDir != null && !parentDir.exists()) {
                         parentDir.mkdirs()
                     }
-                    unpackedFile.createNewFile()
-                    uos = FileOutputStream(unpackedFile)
+                    this.currentUnpackedFile!!.createNewFile()
+                    uos = FileOutputStream(this.currentUnpackedFile!!)
                 } catch (e: IOException) {
                     e.printStackTrace()
                 }

@@ -74,6 +74,7 @@ import java.io.OutputStream
 import java.io.RandomAccessFile
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
+import java.util.Date
 
 
 class ExtractArchiveService : Service() {
@@ -566,6 +567,8 @@ class ExtractArchiveService : Service() {
         private var uos: OutputStream? = null
         private var totalSize: Long = 0
         private var extractedSize: Long = 0
+        private var currentFileIndex: Int = -1
+        private var currentUnpackedFile: File? = null
         var hasUnsupportedMethod = false
 
         init {
@@ -606,6 +609,15 @@ class ExtractArchiveService : Service() {
                 ExtractOperationResult.OK -> {
                     try {
                         uos?.close()
+                        if (this.currentUnpackedFile != null && this.currentUnpackedFile!!.isFile) {
+                            val modTime = inArchive.getProperty(this.currentFileIndex, PropID.LAST_MODIFICATION_TIME) as? Date
+                            if (modTime != null) {
+                                this.currentUnpackedFile!!.setLastModified(modTime.time)
+                            }
+                        }
+                        // Reset currentUnpackedFile and currentFileIndex for the next entry
+                        this.currentUnpackedFile = null
+                        this.currentFileIndex = -1
                         extractedSize++
                     } catch (e: SevenZipException) {
                         e.printStackTrace()
@@ -627,21 +639,26 @@ class ExtractArchiveService : Service() {
         }
 
         override fun getStream(p0: Int, p1: ExtractAskMode?): ISequentialOutStream {
+            this.currentFileIndex = p0 // Store current file index
 
             val path: String = inArchive.getStringProperty(p0, PropID.PATH)
             val isDir: Boolean = inArchive.getProperty(p0, PropID.IS_FOLDER) as Boolean
-            val unpackedFile = File(dstDir.path, path)
+            this.currentUnpackedFile = File(dstDir.path, path) // Store current unpacked file
 
             if (isDir) {
-                unpackedFile.mkdir()
+                this.currentUnpackedFile!!.mkdir()
+                val modTime = inArchive.getProperty(this.currentFileIndex, PropID.LAST_MODIFICATION_TIME) as? Date
+                if (modTime != null) {
+                    this.currentUnpackedFile!!.setLastModified(modTime.time)
+                }
             } else {
                 try {
-                    val dir = unpackedFile.parent?.let { File(it) }
+                    val dir = this.currentUnpackedFile!!.parent?.let { File(it) }
                     if (dir != null && !dir.isDirectory) {
                         dir.mkdirs()
                     }
-                    unpackedFile.createNewFile()
-                    uos = FileOutputStream(unpackedFile)
+                    this.currentUnpackedFile!!.createNewFile()
+                    uos = FileOutputStream(this.currentUnpackedFile!!)
                 } catch (e: IOException) {
                     e.printStackTrace()
                 }
