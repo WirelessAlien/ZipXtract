@@ -38,6 +38,9 @@
     <string name="directory_empty">Folder is empty</string>
     <string name="paste">Paste</string>
     <string name="storage">Storage</string>
+    <string name="invalid_value">Invalid input</string>
+    <string name="please_enter_value_between_0_and_22">Enter a value between 0 and 22</string>
+    <string name="archiving_started_in_background">Archiving started in background</string>
 
     <!-- Bottom navigation -->
     <string name="archive">Archive</string>
@@ -74,6 +77,8 @@
     <string name="passwords_do_not_match">Password do not match</string>
     <string name="wrong_password">Wrong password</string>
     <string name="file_already_exists">File already exists</string>
+    <string name="select_archive_type_title">Select archive type</string>
+
 
     <!-- Menu items -->
     <string name="move">Move to</string>
@@ -175,6 +180,4 @@
     <string name="liberapay" translatable="false">Liberapay</string>
     <string name="author_wirelessalien" translatable="false">Author: WirelessAlien</string>
     <string name="zstd" translatable="false">ZSTD</string>
-    <string name="invalid_value">Invalid input</string>
-    <string name="please_enter_value_between_0_and_22">Enter a value between 0 and 22</string>
 </resources>

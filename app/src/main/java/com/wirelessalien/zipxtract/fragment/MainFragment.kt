@@ -469,6 +469,55 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
         updateCurrentPathChip()
 
+        handleOpenWithIntent()
+    }
+
+    private fun handleOpenWithIntent() {
+        val filePathsStringList = arguments?.getStringArrayList(ARG_FILE_PATHS_FOR_ARCHIVE)
+        val archiveType = arguments?.getString(ARG_ARCHIVE_TYPE)
+
+        if (!filePathsStringList.isNullOrEmpty() && archiveType != null) {
+
+            val validFilePaths = filePathsStringList.filter { File(it).exists() }
+
+            if (validFilePaths.isEmpty()) {
+                Toast.makeText(requireContext(), "No valid files found to archive.", Toast.LENGTH_LONG).show()
+                // Clear arguments even if no valid files, to prevent re-processing
+                arguments?.remove(ARG_FILE_PATHS_FOR_ARCHIVE)
+                arguments?.remove(ARG_ARCHIVE_TYPE)
+                updateAdapterWithFullList()
+                return
+            }
+
+            val fragmentManager = parentFragmentManager
+            val transaction = fragmentManager.beginTransaction()
+            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+
+            val newFragment = when (archiveType) {
+                "Zip" -> ZipOptionDialogFragment.newInstance(validFilePaths)
+                "7z" -> SevenZOptionDialogFragment.newInstance(validFilePaths)
+                "Tar" -> TarOptionsDialogFragment.newInstance(validFilePaths)
+                else -> null
+            }
+
+            newFragment?.let {
+                transaction.add(android.R.id.content, it).addToBackStack(null)
+                transaction.commit()
+            } ?: Toast.makeText(requireContext(), "Invalid archive type", Toast.LENGTH_SHORT).show()
+
+            arguments?.remove(ARG_FILE_PATHS_FOR_ARCHIVE)
+            arguments?.remove(ARG_ARCHIVE_TYPE)
+
+            Handler(Looper.getMainLooper()).postDelayed({
+                if (isAdded) {
+                    if (filePathsStringList.size > 1) {
+                        unselectAllFiles()
+                    }
+                    updateAdapterWithFullList()
+                }
+            }, 1000) // Delay to allow dialog to process & avoid immediate UI flicker
+
+        }
     }
 
     private fun getSdCardPath(): String? {
@@ -1679,4 +1728,9 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         searchRecursively(directory)
         emit(results)
     }.distinctUntilChanged { old, new -> old.size == new.size }
+
+    companion object {
+        const val ARG_FILE_PATHS_FOR_ARCHIVE = "com.wirelessalien.zipxtract.ARG_FILE_PATHS_FOR_ARCHIVE"
+        const val ARG_ARCHIVE_TYPE = "com.wirelessalien.zipxtract.ARG_ARCHIVE_TYPE"
+    }
 }

@@ -96,11 +96,37 @@ class MainActivity : AppCompatActivity() {
         if (savedInstanceState == null) {
             binding.bottomNav.selectedItemId = R.id.home
         }
+
+        handleIntent()
+    }
+
+    private fun handleIntent() {
+        if (intent.action == ACTION_CREATE_ARCHIVE) {
+            val filePaths = intent.getStringArrayListExtra(EXTRA_FILE_PATHS)
+            val archiveType = intent.getStringExtra(EXTRA_ARCHIVE_TYPE)
+            if (!filePaths.isNullOrEmpty() && archiveType != null) {
+                // Navigate to MainFragment and pass data for archive creation
+                val mainFragment = MainFragment().apply {
+                    arguments = Bundle().apply {
+                        putStringArrayList(MainFragment.ARG_FILE_PATHS_FOR_ARCHIVE, ArrayList(filePaths))
+                        putString(MainFragment.ARG_ARCHIVE_TYPE, archiveType)
+                    }
+                }
+                loadFragment(mainFragment)
+                binding.bottomNav.selectedItemId = R.id.home
+            }
+        }
     }
 
     private fun loadFragment(fragment: Fragment) {
         supportFragmentManager.commit {
             replace(R.id.container, fragment)
         }
+    }
+
+    companion object {
+        const val ACTION_CREATE_ARCHIVE = "com.wirelessalien.zipxtract.ACTION_CREATE_ARCHIVE"
+        const val EXTRA_FILE_PATHS = "com.wirelessalien.zipxtract.EXTRA_FILE_PATHS"
+        const val EXTRA_ARCHIVE_TYPE = "com.wirelessalien.zipxtract.EXTRA_ARCHIVE_TYPE"
     }
 }

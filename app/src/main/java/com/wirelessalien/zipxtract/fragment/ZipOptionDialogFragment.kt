@@ -27,6 +27,7 @@ import android.view.ViewGroup
 import android.view.Window
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.Toast
 import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -46,10 +47,19 @@ import java.io.File
 class ZipOptionDialogFragment : DialogFragment() {
 
     private lateinit var binding: ZipOptionDialogBinding
-    private lateinit var adapter: FileAdapter
+    private var adapter: FileAdapter? = null
     private lateinit var selectedFilePaths: MutableList<String>
     private lateinit var filePathAdapter: FilePathAdapter
+    private var launchedWithFilePaths = false
 
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        arguments?.getStringArrayList(ARG_FILE_PATHS)?.let {
+            selectedFilePaths = it.toMutableList()
+            launchedWithFilePaths = true
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -71,29 +81,56 @@ class ZipOptionDialogFragment : DialogFragment() {
         binding.progressIndicator.visibility = View.VISIBLE
 
         CoroutineScope(Dispatchers.Main).launch {
-            selectedFilePaths = withContext(Dispatchers.IO) {
-                adapter.getSelectedFilesPaths().toMutableList()
+            if (!::selectedFilePaths.isInitialized) {
+                if (adapter != null) {
+                    selectedFilePaths = withContext(Dispatchers.IO) {
+                        adapter!!.getSelectedFilesPaths().toMutableList()
+                    }
+                } else {
+                    binding.progressIndicator.visibility = View.GONE
+                    Toast.makeText(context, "Error: No file information provided.", Toast.LENGTH_LONG).show()
+                    dismiss()
+                    return@launch
+                }
             }
-
             binding.progressIndicator.visibility = View.GONE
-
             initializeUI()
         }
     }
 
     private fun initializeUI() {
+        if (!::selectedFilePaths.isInitialized || selectedFilePaths.isEmpty()) {
+            Toast.makeText(requireContext(), com.wirelessalien.zipxtract.R.string.no_files_to_archive, Toast.LENGTH_SHORT).show()
+            dismiss()
+            return
+        }
+
         filePathAdapter = FilePathAdapter(selectedFilePaths) { filePath ->
-            val position = selectedFilePaths.indexOf(filePath)
-            if (position != -1) {
-                selectedFilePaths.removeAt(position)
-                filePathAdapter.removeFilePath(filePath)
-                filePathAdapter.notifyItemRemoved(position)
-                filePathAdapter.notifyItemRangeChanged(position, selectedFilePaths.size)
+            if (!launchedWithFilePaths) {
+                val position = selectedFilePaths.indexOf(filePath)
+                if (position != -1) {
+                    selectedFilePaths.removeAt(position)
+                    filePathAdapter.removeFilePath(filePath)
+                    filePathAdapter.notifyItemRemoved(position)
+                    filePathAdapter.notifyItemRangeChanged(position, selectedFilePaths.size)
+
+                    if (selectedFilePaths.isEmpty()) {
+                        Toast.makeText(requireContext(), com.wirelessalien.zipxtract.R.string.no_files_to_archive, Toast.LENGTH_SHORT).show()
+                        dismiss()
+                    }
+                }
+            } else {
+                Toast.makeText(requireContext(), "File list is fixed for this operation.", Toast.LENGTH_SHORT).show()
             }
         }
 
         binding.filePathsRv.layoutManager = LinearLayoutManager(context)
         binding.filePathsRv.adapter = filePathAdapter
+
+        if (launchedWithFilePaths) {
+            binding.filePathsRv.visibility = View.GONE
+            binding.toggleFileViewBtn.visibility = View.GONE
+        }
 
         binding.toggleFileViewBtn.setOnClickListener {
             if (binding.filePathsRv.visibility == View.GONE) {
@@ -226,9 +263,20 @@ class ZipOptionDialogFragment : DialogFragment() {
     }
 
     companion object {
+        private const val ARG_FILE_PATHS = "arg_file_paths"
+
         fun newInstance(adapter: FileAdapter): ZipOptionDialogFragment {
             val fragment = ZipOptionDialogFragment()
             fragment.adapter = adapter
+            fragment.launchedWithFilePaths = false
+            return fragment
+        }
+
+        fun newInstance(filePaths: List<String>): ZipOptionDialogFragment {
+            val fragment = ZipOptionDialogFragment()
+            val args = Bundle()
+            args.putStringArrayList(ARG_FILE_PATHS, ArrayList(filePaths))
+            fragment.arguments = args
             return fragment
         }
     }

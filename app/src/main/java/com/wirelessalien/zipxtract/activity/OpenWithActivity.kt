@@ -57,7 +57,34 @@ class OpenWithActivity : AppCompatActivity() {
 
         when (intent?.action) {
             Intent.ACTION_VIEW -> handleViewIntent()
-            Intent.ACTION_SEND -> handleSendIntent()
+            Intent.ACTION_SEND -> {
+                val uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    intent.getParcelableExtra(Intent.EXTRA_STREAM, Uri::class.java)
+                } else {
+                    @Suppress("DEPRECATION")
+                    intent.getParcelableExtra(Intent.EXTRA_STREAM)
+                }
+                if (uri != null) {
+                    handleSingleSendIntent(uri)
+                } else {
+                    Toast.makeText(this, getString(R.string.no_file_selected), Toast.LENGTH_SHORT).show()
+                    finish()
+                }
+            }
+            Intent.ACTION_SEND_MULTIPLE -> {
+                val uris = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM, Uri::class.java)
+                } else {
+                    @Suppress("DEPRECATION")
+                    intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM)
+                }
+                if (!uris.isNullOrEmpty()) {
+                    handleMultipleSendIntent(uris)
+                } else {
+                    Toast.makeText(this, getString(R.string.no_file_selected), Toast.LENGTH_SHORT).show()
+                    finish()
+                }
+            }
             else -> {
                 Toast.makeText(this, getString(R.string.no_file_selected), Toast.LENGTH_SHORT).show()
                 finish()
@@ -110,20 +137,72 @@ class OpenWithActivity : AppCompatActivity() {
         }
     }
 
-    private fun handleSendIntent() {
-        val uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            intent.getParcelableExtra(Intent.EXTRA_STREAM, Uri::class.java)
-        } else {
-            @Suppress("DEPRECATION")
-            intent.getParcelableExtra(Intent.EXTRA_STREAM)
-        }
+    private fun handleSingleSendIntent(uri: Uri) {
+        val progressDialog = MaterialAlertDialogBuilder(this, R.style.MaterialDialog)
+            .setTitle(getString(R.string.copying_files))
+            .setView(R.layout.dialog_progress)
+            .setCancelable(false)
+            .show()
 
-        if (uri != null) {
-            showPasswordInputDialog(uri)
-        } else {
+        CoroutineScope(Dispatchers.IO).launch {
+            val filePath = getRealPathFromURI(uri, this@OpenWithActivity)
+            withContext(Dispatchers.Main) {
+                progressDialog.dismiss()
+                if (filePath != null) {
+                    showArchiveTypeDialog(listOf(filePath))
+                } else {
+                    Toast.makeText(this@OpenWithActivity, getString(R.string.no_file_selected), Toast.LENGTH_SHORT).show()
+                    finish()
+                }
+            }
+        }
+    }
+
+    private fun handleMultipleSendIntent(uris: List<Uri>) {
+        val progressDialog = MaterialAlertDialogBuilder(this, R.style.MaterialDialog)
+            .setTitle(getString(R.string.copying_files))
+            .setView(R.layout.dialog_progress)
+            .setCancelable(false)
+            .show()
+
+        CoroutineScope(Dispatchers.IO).launch {
+            val filePaths = getRealPathsFromURIs(uris, this@OpenWithActivity)
+            withContext(Dispatchers.Main) {
+                progressDialog.dismiss()
+                if (filePaths.isNotEmpty()) {
+                    showArchiveTypeDialog(filePaths)
+                } else {
+                    Toast.makeText(this@OpenWithActivity, getString(R.string.no_file_selected), Toast.LENGTH_SHORT).show() // Assuming new string
+                    finish()
+                }
+            }
+        }
+    }
+
+
+    private fun showArchiveTypeDialog(filePaths: List<String>) {
+        if (filePaths.isEmpty()) {
             Toast.makeText(this, getString(R.string.no_file_selected), Toast.LENGTH_SHORT).show()
             finish()
+            return
         }
+        val archiveTypes = arrayOf("Zip", "7z", "Tar")
+        MaterialAlertDialogBuilder(this, R.style.MaterialDialog)
+            .setTitle(getString(R.string.select_archive_type_title))
+            .setItems(archiveTypes) { _, which ->
+                val selectedType = archiveTypes[which]
+                val mainActivityIntent = Intent(this, MainActivity::class.java).apply {
+                    action = MainActivity.ACTION_CREATE_ARCHIVE
+                    putStringArrayListExtra(MainActivity.EXTRA_FILE_PATHS, ArrayList(filePaths))
+                    putExtra(MainActivity.EXTRA_ARCHIVE_TYPE, selectedType)
+                }
+                startActivity(mainActivityIntent)
+                finish()
+            }
+            .setOnCancelListener {
+                finish()
+            }
+            .show()
     }
 
     private fun showPasswordInputDialog(uri: Uri) {
@@ -218,6 +297,40 @@ class OpenWithActivity : AppCompatActivity() {
             return file.path
         }
         return null
+    }
+
+    private fun getRealPathsFromURIs(uris: List<Uri>, context: Context): List<String> {
+        val copiedPaths = mutableListOf<String>()
+
+        for (uri in uris) {
+            val returnCursor = context.contentResolver.query(uri, null, null, null, null)
+            returnCursor?.use { cursor ->
+                val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                cursor.moveToFirst()
+                val name = cursor.getString(nameIndex)
+                val file = File(context.filesDir, name)
+
+                try {
+                    val inputStream: InputStream? = context.contentResolver.openInputStream(uri)
+                    if (inputStream != null) {
+                        val outputStream = FileOutputStream(file)
+                        var read: Int
+                        val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+                        while (inputStream.read(buffer).also { read = it } != -1) {
+                            outputStream.write(buffer, 0, read)
+                        }
+                        inputStream.close()
+                        outputStream.close()
+                        copiedPaths.add(file.path)
+                    } else {
+                        Log.e("OpenWithActivity", "Failed to open input stream for URI: $uri")
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }
+        return copiedPaths
     }
 
     private fun startExtractionService(file: String, password: String?) {

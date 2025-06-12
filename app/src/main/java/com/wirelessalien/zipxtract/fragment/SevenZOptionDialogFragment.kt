@@ -24,6 +24,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
+import android.widget.Toast
 import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.wirelessalien.zipxtract.R
@@ -39,9 +40,18 @@ import java.io.File
 class SevenZOptionDialogFragment : DialogFragment() {
 
     private lateinit var binding: SevenZOptionDialogBinding
-    private lateinit var adapter: FileAdapter
+    private var adapter: FileAdapter? = null
     private lateinit var selectedFilePaths: MutableList<String>
     private lateinit var filePathAdapter: FilePathAdapter
+    private var launchedWithFilePaths = false
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        arguments?.getStringArrayList(ARG_FILE_PATHS)?.let {
+            selectedFilePaths = it.toMutableList()
+            launchedWithFilePaths = true
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -63,29 +73,56 @@ class SevenZOptionDialogFragment : DialogFragment() {
         binding.progressIndicator.visibility = View.VISIBLE
 
         CoroutineScope(Dispatchers.Main).launch {
-            selectedFilePaths = withContext(Dispatchers.IO) {
-                adapter.getSelectedFilesPaths().toMutableList()
+            if (!::selectedFilePaths.isInitialized) {
+                if (adapter != null) {
+                    selectedFilePaths = withContext(Dispatchers.IO) {
+                        adapter!!.getSelectedFilesPaths().toMutableList()
+                    }
+                } else {
+                    binding.progressIndicator.visibility = View.GONE
+                    Toast.makeText(context, "Error: No file information provided.", Toast.LENGTH_LONG).show()
+                    dismiss()
+                    return@launch
+                }
             }
-
             binding.progressIndicator.visibility = View.GONE
-
             initializeUI()
         }
     }
 
     private fun initializeUI() {
+        if (!::selectedFilePaths.isInitialized || selectedFilePaths.isEmpty()) {
+            Toast.makeText(requireContext(), R.string.no_files_to_archive, Toast.LENGTH_SHORT).show()
+            dismiss()
+            return
+        }
+
         filePathAdapter = FilePathAdapter(selectedFilePaths) { filePath ->
-            val position = selectedFilePaths.indexOf(filePath)
-            if (position != -1) {
-                selectedFilePaths.removeAt(position)
-                filePathAdapter.removeFilePath(filePath)
-                filePathAdapter.notifyItemRemoved(position)
-                filePathAdapter.notifyItemRangeChanged(position, selectedFilePaths.size)
+            if (!launchedWithFilePaths) {
+                val position = selectedFilePaths.indexOf(filePath)
+                if (position != -1) {
+                    selectedFilePaths.removeAt(position)
+                    filePathAdapter.removeFilePath(filePath)
+                    filePathAdapter.notifyItemRemoved(position)
+                    filePathAdapter.notifyItemRangeChanged(position, selectedFilePaths.size)
+
+                    if (selectedFilePaths.isEmpty()) {
+                        Toast.makeText(requireContext(), R.string.no_files_to_archive, Toast.LENGTH_SHORT).show()
+                        dismiss()
+                    }
+                }
+            } else {
+                Toast.makeText(requireContext(), "File list is fixed for this operation.", Toast.LENGTH_SHORT).show()
             }
         }
 
         binding.filePathsRv.layoutManager = LinearLayoutManager(context)
         binding.filePathsRv.adapter = filePathAdapter
+
+        if (launchedWithFilePaths) {
+            binding.filePathsRv.visibility = View.GONE
+            binding.toggleFileViewBtn.visibility = View.GONE
+        }
 
         binding.toggleFileViewBtn.setOnClickListener {
             if (binding.filePathsRv.visibility == View.GONE) {
@@ -153,9 +190,20 @@ class SevenZOptionDialogFragment : DialogFragment() {
     }
 
     companion object {
+        private const val ARG_FILE_PATHS = "arg_file_paths"
+
         fun newInstance(adapter: FileAdapter): SevenZOptionDialogFragment {
             val fragment = SevenZOptionDialogFragment()
             fragment.adapter = adapter
+            fragment.launchedWithFilePaths = false
+            return fragment
+        }
+
+        fun newInstance(filePaths: List<String>): SevenZOptionDialogFragment {
+            val fragment = SevenZOptionDialogFragment()
+            val args = Bundle()
+            args.putStringArrayList(ARG_FILE_PATHS, ArrayList(filePaths))
+            fragment.arguments = args
             return fragment
         }
     }
