@@ -268,6 +268,8 @@ class ArchiveSplitZipService : Service() {
             e.printStackTrace()
             showErrorNotification(e.message ?: getString(R.string.general_error_msg))
             sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message))
+        } finally {
+            filesDir.deleteRecursively()
         }
     }
 

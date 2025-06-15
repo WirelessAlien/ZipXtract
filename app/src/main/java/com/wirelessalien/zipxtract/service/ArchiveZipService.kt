@@ -25,7 +25,6 @@ import android.content.Intent
 import android.os.Build
 import android.os.Environment
 import android.os.IBinder
-import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.preference.PreferenceManager
@@ -272,6 +271,8 @@ class ArchiveZipService : Service() {
             e.printStackTrace()
             showErrorNotification(e.message ?: getString(R.string.general_error_msg))
             sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message))
+        } finally {
+            filesDir.deleteRecursively()
         }
     }
 
