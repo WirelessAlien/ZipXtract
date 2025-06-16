@@ -180,4 +180,5 @@
     <string name="liberapay" translatable="false">Liberapay</string>
     <string name="author_wirelessalien" translatable="false">Author: WirelessAlien</string>
     <string name="zstd" translatable="false">ZSTD</string>
+    <string name="no_compression">No Compression</string>
 </resources>

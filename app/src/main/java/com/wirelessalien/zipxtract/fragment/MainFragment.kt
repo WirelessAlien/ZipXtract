@@ -1212,11 +1212,12 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         ContextCompat.startForegroundService(requireContext(), intent)
     }
 
-    fun startArchiveTarService(file: List<String>, archiveName: String) {
+    fun startArchiveTarService(file: List<String>, archiveName: String, compressionFormat: String) {
         aProgressDialog.show()
         val intent = Intent(requireContext(), ArchiveTarService::class.java).apply {
             putStringArrayListExtra(ArchiveTarService.EXTRA_FILES_TO_ARCHIVE, ArrayList(file))
             putExtra(ArchiveTarService.EXTRA_ARCHIVE_NAME, archiveName)
+            putExtra(ArchiveTarService.EXTRA_COMPRESSION_FORMAT, compressionFormat)
         }
         ContextCompat.startForegroundService(requireContext(), intent)
     }

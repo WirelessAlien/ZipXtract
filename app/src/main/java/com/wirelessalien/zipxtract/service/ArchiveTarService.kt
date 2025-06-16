@@ -49,6 +49,13 @@ import net.sf.sevenzipjbinding.SevenZipException
 import net.sf.sevenzipjbinding.impl.OutItemFactory
 import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream
 import net.sf.sevenzipjbinding.impl.RandomAccessFileOutStream
+import org.apache.commons.compress.compressors.CompressorStreamFactory
+import org.apache.commons.compress.compressors.bzip2.BZip2CompressorOutputStream
+import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream
+import org.apache.commons.compress.compressors.lzma.LZMACompressorOutputStream
+import org.apache.commons.compress.compressors.xz.XZCompressorOutputStream
+import org.apache.commons.compress.compressors.zstandard.ZstdCompressorOutputStream
+import java.io.BufferedOutputStream
 import java.io.File
 import java.io.IOException
 import java.io.RandomAccessFile
@@ -60,6 +67,7 @@ class ArchiveTarService : Service() {
         const val NOTIFICATION_ID = 15
         const val EXTRA_ARCHIVE_NAME = "archiveName"
         const val EXTRA_FILES_TO_ARCHIVE = "filesToArchive"
+        const val EXTRA_COMPRESSION_FORMAT = "compressionFormat"
     }
 
     private var archiveJob: Job? = null
@@ -74,11 +82,12 @@ class ArchiveTarService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val archiveName = intent?.getStringExtra(EXTRA_ARCHIVE_NAME) ?: return START_NOT_STICKY
         val filesToArchive = intent.getStringArrayListExtra(EXTRA_FILES_TO_ARCHIVE) ?: return START_NOT_STICKY
+        val compressionFormat = intent.getStringExtra(EXTRA_COMPRESSION_FORMAT) ?: "TAR_ONLY"
 
         startForeground(NOTIFICATION_ID, createNotification(0))
 
         archiveJob = CoroutineScope(Dispatchers.IO).launch {
-            createTarFile(archiveName, filesToArchive)
+            createTarFile(archiveName, filesToArchive, compressionFormat)
         }
         return START_STICKY
     }
@@ -114,7 +123,7 @@ class ArchiveTarService : Service() {
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
     }
 
-    private fun createTarFile(archiveName: String, filesToArchive: List<String>) {
+    private fun createTarFile(archiveName: String, filesToArchive: List<String>, compressionFormat: String) {
 
         if (filesToArchive.isEmpty()) {
             val errorMessage = getString(R.string.no_files_to_archive)
@@ -142,69 +151,113 @@ class ArchiveTarService : Service() {
                 parentDir = File(filesToArchive.first()).parentFile ?: Environment.getExternalStorageDirectory()
             }
 
-            var tarFile = File(parentDir, "$archiveName.tar")
+            val extension = getExtension(compressionFormat)
+            var tarFile = File(parentDir, "$archiveName$extension")
             var counter = 1
 
             while (tarFile.exists()) {
-                tarFile = File(parentDir, "$archiveName ($counter).tar")
+                tarFile = File(parentDir, "$archiveName ($counter)$extension")
                 counter++
             }
 
-            RandomAccessFile(tarFile, "rw").use { raf ->
-                val outArchive = SevenZip.openOutArchiveTar()
+            val finalTarFile = tarFile
+            var tempTarFile: File? = null
 
-                outArchive.createArchive(
-                    RandomAccessFileOutStream(raf), filesToArchive.size,
-                    object : IOutCreateCallback<IOutItemTar> {
-                        override fun setOperationResult(operationResultOk: Boolean) {}
+            try {
+                if (compressionFormat == "TAR_ONLY") {
+                    // Direct TAR creation (no intermediate compression)
+                    RandomAccessFile(finalTarFile, "rw").use { raf ->
+                        val outArchive = SevenZip.openOutArchiveTar()
+                        outArchive.createArchive(
+                            RandomAccessFileOutStream(raf), filesToArchive.size,
+                            createArchiveCallback(filesToArchive, baseDirectory)
+                        )
+                        outArchive.close()
+                    }
+                } else {
+                    // Two-step: 1. Create temporary TAR, 2. Compress temporary TAR
+                    tempTarFile = File.createTempFile("archive", ".tar", cacheDir)
+                    RandomAccessFile(tempTarFile, "rw").use { tempRaf ->
+                        val outArchive = SevenZip.openOutArchiveTar()
+                        outArchive.createArchive(
+                            RandomAccessFileOutStream(tempRaf), filesToArchive.size,
+                            createArchiveCallback(filesToArchive, baseDirectory)
+                        )
+                        outArchive.close()
+                    }
 
-                        override fun setTotal(total: Long) {}
-
-                        override fun setCompleted(complete: Long) {
-                            val totalSize = filesToArchive.sumOf { File(it).length() }
-                            val progress = ((complete.toDouble() / totalSize) * 100).toInt()
-                            startForeground(NOTIFICATION_ID, createNotification(progress))
-                            updateProgress(progress)
+                    tempTarFile.inputStream().use { fis ->
+                        BufferedOutputStream(finalTarFile.outputStream()).use { bos ->
+                            val compressorOutputStream = when (compressionFormat) {
+                                CompressorStreamFactory.LZMA -> LZMACompressorOutputStream(bos)
+                                CompressorStreamFactory.BZIP2 -> BZip2CompressorOutputStream(bos)
+                                CompressorStreamFactory.XZ -> XZCompressorOutputStream(bos)
+                                CompressorStreamFactory.ZSTANDARD -> ZstdCompressorOutputStream(bos)
+                                CompressorStreamFactory.GZIP -> GzipCompressorOutputStream(bos)
+                                else -> bos
+                            }
+                            compressorOutputStream.use { cos ->
+                                fis.copyTo(cos)
+                            }
                         }
-
-                        override fun getItemInformation(index: Int, outItemFactory: OutItemFactory<IOutItemTar>): IOutItemTar {
-                            val item = outItemFactory.createOutItem()
-                            val file = File(filesToArchive[index])
-                            val relativePath = file.absolutePath.removePrefix(baseDirectory).removePrefix("/")
-
-                            item.dataSize = file.length()
-                            item.propertyPath = relativePath
-                            item.propertyIsDir = file.isDirectory
-                            item.propertyLastModificationTime = Date(file.lastModified())
-
-                            return item
-                        }
-
-                        override fun getStream(i: Int): ISequentialInStream? {
-
-                            return if (File(filesToArchive[i]).isDirectory) null else RandomAccessFileInStream(RandomAccessFile(filesToArchive[i], "r"))
-                        }
-                    })
-
-                outArchive.close()
+                    }
+                }
                 stopForegroundService()
                 showCompletionNotification()
-                sendLocalBroadcast(Intent(ACTION_ARCHIVE_COMPLETE).putExtra(EXTRA_DIR_PATH, tarFile.parent))
+                sendLocalBroadcast(Intent(ACTION_ARCHIVE_COMPLETE).putExtra(EXTRA_DIR_PATH, finalTarFile.parent))
+
+            } catch (e: SevenZipException) {
+                e.printStackTrace()
+                showErrorNotification(e.message ?: getString(R.string.general_error_msg))
+                sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message))
+            } catch (e: IOException) {
+                e.printStackTrace()
+                showErrorNotification(e.message ?: getString(R.string.general_error_msg))
+                sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message))
+            } catch (e: OutOfMemoryError) {
+                e.printStackTrace()
+                showErrorNotification(e.message ?: getString(R.string.general_error_msg))
+                sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message))
+            } finally {
+                tempTarFile?.delete()
             }
-        } catch (e: SevenZipException) {
+        } catch (e: Exception) {
             e.printStackTrace()
             showErrorNotification(e.message ?: getString(R.string.general_error_msg))
             sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message))
-        } catch (e: IOException) {
-            e.printStackTrace()
-            showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-            sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message))
-        } catch (e: OutOfMemoryError) {
-            e.printStackTrace()
-            showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-            sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message))
-        } finally {
-            filesDir.deleteRecursively()
+            stopForegroundService()
+        }
+    }
+
+    private fun createArchiveCallback(filesToArchive: List<String>, baseDirectory: String): IOutCreateCallback<IOutItemTar> {
+        return object : IOutCreateCallback<IOutItemTar> {
+            override fun setOperationResult(operationResultOk: Boolean) {}
+
+            override fun setTotal(total: Long) {}
+
+            override fun setCompleted(complete: Long) {
+                val totalSize = filesToArchive.sumOf { File(it).length() }
+                val progress = ((complete.toDouble() / totalSize) * 100).toInt()
+                startForeground(NOTIFICATION_ID, createNotification(progress))
+                updateProgress(progress)
+            }
+
+            override fun getItemInformation(index: Int, outItemFactory: OutItemFactory<IOutItemTar>): IOutItemTar {
+                val item = outItemFactory.createOutItem()
+                val file = File(filesToArchive[index])
+                val relativePath = file.absolutePath.removePrefix(baseDirectory).removePrefix("/")
+
+                item.dataSize = file.length()
+                item.propertyPath = relativePath
+                item.propertyIsDir = file.isDirectory
+                item.propertyLastModificationTime = Date(file.lastModified())
+
+                return item
+            }
+
+            override fun getStream(i: Int): ISequentialInStream? {
+                return if (File(filesToArchive[i]).isDirectory) null else RandomAccessFileInStream(RandomAccessFile(filesToArchive[i], "r"))
+            }
         }
     }
 
@@ -213,8 +266,18 @@ class ArchiveTarService : Service() {
         val notificationManager = getSystemService(NotificationManager::class.java)
         notificationManager.notify(NOTIFICATION_ID, notification)
 
-        sendLocalBroadcast(Intent(ACTION_ARCHIVE_PROGRESS).putExtra(
-            EXTRA_PROGRESS, progress))
+        sendLocalBroadcast(Intent(ACTION_ARCHIVE_PROGRESS).putExtra(EXTRA_PROGRESS, progress))
+    }
+
+    private fun getExtension(compressionFormat: String): String {
+        return when (compressionFormat) {
+            CompressorStreamFactory.LZMA -> ".tar.lzma"
+            CompressorStreamFactory.BZIP2 -> ".tar.bz2"
+            CompressorStreamFactory.XZ -> ".tar.xz"
+            CompressorStreamFactory.ZSTANDARD -> ".tar.zst"
+            CompressorStreamFactory.GZIP -> ".tar.gz"
+            else -> ".tar"
+        }
     }
 
     private fun showCompletionNotification() {

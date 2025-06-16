@@ -43,6 +43,7 @@ class TarOptionsDialogFragment : DialogFragment() {
     private lateinit var selectedFilePaths: MutableList<String>
     private lateinit var filePathAdapter: FilePathAdapter
     private var launchedWithFilePaths = false
+    private var selectedCompressionFormat: String = "TAR_ONLY"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -141,11 +142,23 @@ class TarOptionsDialogFragment : DialogFragment() {
             binding.archiveNameEditText.selectAll()
         }
 
+        binding.compressionChipGroup.setOnCheckedStateChangeListener { _, checkedIds ->
+            val checkedId = checkedIds.firstOrNull() ?: View.NO_ID
+            selectedCompressionFormat = when (checkedId) {
+                R.id.chipTarLzma -> org.apache.commons.compress.compressors.CompressorStreamFactory.LZMA
+                R.id.chipTarBz2 -> org.apache.commons.compress.compressors.CompressorStreamFactory.BZIP2
+                R.id.chipTarXz -> org.apache.commons.compress.compressors.CompressorStreamFactory.XZ
+                R.id.chipTarZstd -> org.apache.commons.compress.compressors.CompressorStreamFactory.ZSTANDARD
+                R.id.chipTarGz -> org.apache.commons.compress.compressors.CompressorStreamFactory.GZIP
+                else -> "TAR_ONLY"
+            }
+        }
+
         binding.okButton.setOnClickListener {
             val archiveName = binding.archiveNameEditText.text.toString().ifBlank { defaultName }
 
             val mainFragment = parentFragmentManager.findFragmentById(R.id.container) as? MainFragment
-            mainFragment?.startArchiveTarService(selectedFilePaths, archiveName)
+            mainFragment?.startArchiveTarService(selectedFilePaths, archiveName, selectedCompressionFormat)
             dismiss()
         }
     }

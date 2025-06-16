@@ -208,6 +208,7 @@ class ExtractCsArchiveService : Service() {
                                 updateProgress(progress)
                             }
                         }
+                        outputFile.setLastModified(entry.lastModifiedDate.time)
                     }
                     entry = tarInput.nextEntry
                 }
