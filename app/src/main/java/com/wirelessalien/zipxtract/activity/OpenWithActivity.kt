@@ -186,7 +186,7 @@ class OpenWithActivity : AppCompatActivity() {
             finish()
             return
         }
-        val archiveTypes = arrayOf("Zip", "7z", "Tar")
+        val archiveTypes = arrayOf("ZIP", "7Z", "TAR")
         MaterialAlertDialogBuilder(this, R.style.MaterialDialog)
             .setTitle(getString(R.string.select_archive_type_title))
             .setItems(archiveTypes) { _, which ->
@@ -250,7 +250,7 @@ class OpenWithActivity : AppCompatActivity() {
 
     private fun handleFileExtraction(filePath: String, password: String?) {
         val fileExtension = filePath.split('.').takeLast(2).joinToString(".").lowercase()
-        val supportedExtensions = listOf("tar.bz2", "tar.gz", "tar.lz4", "tar.lzma", "tar.sz", "tar.xz")
+        val supportedExtensions = listOf("tar.bz2", "tar.gz", "tar.lz4", "tar.lzma", "tar.sz", "tar.xz", "tar.zstd", "tar.zst")
 
         when {
             supportedExtensions.any { fileExtension.endsWith(it) } -> {
