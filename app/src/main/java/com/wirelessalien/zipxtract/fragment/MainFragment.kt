@@ -1168,11 +1168,14 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         }
 
         binding.btnOpenWith.setOnClickListener {
-            val uri = FileProvider.getUriForFile(requireContext(), "${BuildConfig.APPLICATION_ID}.fileprovider", file)
-            val intent = Intent(Intent.ACTION_VIEW).apply {
-                setDataAndType(uri, getMimeType(file))
-                flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
-            }
+            val uri = FileProvider.getUriForFile(requireContext().applicationContext, "${BuildConfig.APPLICATION_ID}.provider", file)
+            val mime: String = getMimeType(uri.toString())
+
+            // Open file with user selected app
+            val intent = Intent(Intent.ACTION_VIEW)
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            intent.setDataAndType(uri, mime)
+
             startActivity(Intent.createChooser(intent, getString(R.string.open_with)))
             bottomSheetDialog.dismiss()
         }
@@ -1286,11 +1289,15 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         }
 
         binding.btnOpenWith.setOnClickListener {
-            val uri = FileProvider.getUriForFile(requireContext(), "${BuildConfig.APPLICATION_ID}.fileprovider", file)
-            val intent = Intent(Intent.ACTION_VIEW).apply {
-                setDataAndType(uri, getMimeType(file))
-                flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
-            }
+
+            val uri = FileProvider.getUriForFile(requireContext().applicationContext, "${BuildConfig.APPLICATION_ID}.provider", file)
+            val mime: String = getMimeType(uri.toString())
+
+            // Open file with user selected app
+            val intent = Intent(Intent.ACTION_VIEW)
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            intent.setDataAndType(uri, mime)
+
             startActivity(Intent.createChooser(intent, getString(R.string.open_with)))
             bottomSheetDialog.dismiss()
         }
@@ -1317,9 +1324,9 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         bottomSheetDialog.show()
     }
 
-    private fun getMimeType(file: File): String {
-        val extension = MimeTypeMap.getFileExtensionFromUrl(file.absolutePath)
-        return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "*/*"
+    private fun getMimeType(url: String): String {
+        val ext = MimeTypeMap.getFileExtensionFromUrl(url)
+        return MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext) ?: "text/plain"
     }
 
     private fun showPasswordInputDialog(file: String) {
