@@ -30,8 +30,10 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import com.google.android.material.chip.Chip
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.wirelessalien.zipxtract.R
+import com.wirelessalien.zipxtract.databinding.DialogArchiveTypeBinding
 import com.wirelessalien.zipxtract.databinding.DialogCrashLogBinding
 import com.wirelessalien.zipxtract.databinding.PasswordInputOpenWithBinding
 import com.wirelessalien.zipxtract.service.ExtractArchiveService
@@ -172,7 +174,7 @@ class OpenWithActivity : AppCompatActivity() {
                 if (filePaths.isNotEmpty()) {
                     showArchiveTypeDialog(filePaths)
                 } else {
-                    Toast.makeText(this@OpenWithActivity, getString(R.string.no_file_selected), Toast.LENGTH_SHORT).show() // Assuming new string
+                    Toast.makeText(this@OpenWithActivity, getString(R.string.no_file_selected), Toast.LENGTH_SHORT).show()
                     finish()
                 }
             }
@@ -186,18 +188,36 @@ class OpenWithActivity : AppCompatActivity() {
             finish()
             return
         }
+        val binding = DialogArchiveTypeBinding.inflate(layoutInflater)
+        val chipGroup = binding.chipGroupArchiveTypes
+
         val archiveTypes = arrayOf("ZIP", "7Z", "TAR")
+        archiveTypes.forEach { type ->
+            val chip = Chip(this).apply {
+                text = type
+                isCheckable = true
+            }
+            chipGroup.addView(chip)
+        }
+
         MaterialAlertDialogBuilder(this, R.style.MaterialDialog)
             .setTitle(getString(R.string.select_archive_type_title))
-            .setItems(archiveTypes) { _, which ->
-                val selectedType = archiveTypes[which]
-                val mainActivityIntent = Intent(this, MainActivity::class.java).apply {
-                    action = MainActivity.ACTION_CREATE_ARCHIVE
-                    putStringArrayListExtra(MainActivity.EXTRA_FILE_PATHS, ArrayList(filePaths))
-                    putExtra(MainActivity.EXTRA_ARCHIVE_TYPE, selectedType)
+            .setView(binding.root)
+            .setPositiveButton(getString(R.string.ok)) { _, _ ->
+                val selectedChipId = chipGroup.checkedChipId
+                if (selectedChipId != View.NO_ID) {
+                    val selectedChip = chipGroup.findViewById<Chip>(selectedChipId)
+                    val selectedType = selectedChip.text.toString()
+                    val mainActivityIntent = Intent(this, MainActivity::class.java).apply {
+                        action = MainActivity.ACTION_CREATE_ARCHIVE
+                        putStringArrayListExtra(MainActivity.EXTRA_FILE_PATHS, ArrayList(filePaths))
+                        putExtra(MainActivity.EXTRA_ARCHIVE_TYPE, selectedType)
+                    }
+                    startActivity(mainActivityIntent)
+                    finish()
+                } else {
+                    Toast.makeText(this, getString(R.string.general_error_msg), Toast.LENGTH_SHORT).show()
                 }
-                startActivity(mainActivityIntent)
-                finish()
             }
             .setOnCancelListener {
                 finish()

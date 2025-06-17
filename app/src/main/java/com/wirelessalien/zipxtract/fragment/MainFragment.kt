@@ -494,9 +494,9 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
 
             val newFragment = when (archiveType) {
-                "Zip" -> ZipOptionDialogFragment.newInstance(validFilePaths)
-                "7z" -> SevenZOptionDialogFragment.newInstance(validFilePaths)
-                "Tar" -> TarOptionsDialogFragment.newInstance(validFilePaths)
+                "ZIP" -> ZipOptionDialogFragment.newInstance(validFilePaths)
+                "7Z" -> SevenZOptionDialogFragment.newInstance(validFilePaths)
+                "TAR" -> TarOptionsDialogFragment.newInstance(validFilePaths)
                 else -> null
             }
 
