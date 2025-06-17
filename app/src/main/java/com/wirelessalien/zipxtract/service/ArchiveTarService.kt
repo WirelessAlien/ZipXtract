@@ -28,6 +28,7 @@ import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.preference.PreferenceManager
+import com.github.luben.zstd.ZstdOutputStream
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_COMPLETE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_ERROR
@@ -54,7 +55,6 @@ import org.apache.commons.compress.compressors.bzip2.BZip2CompressorOutputStream
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream
 import org.apache.commons.compress.compressors.lzma.LZMACompressorOutputStream
 import org.apache.commons.compress.compressors.xz.XZCompressorOutputStream
-import org.apache.commons.compress.compressors.zstandard.ZstdCompressorOutputStream
 import java.io.BufferedOutputStream
 import java.io.File
 import java.io.IOException
@@ -132,9 +132,15 @@ class ArchiveTarService : Service() {
             stopForegroundService()
             return
         }
+
+        // Get ZSTD compression level from SharedPreferences
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
+        val compressionLevelString = sharedPreferences.getString("zstd_compression_level", "3")
+        val compressionLevel = compressionLevelString?.toIntOrNull() ?: 3
+        val safeLevel = compressionLevel.coerceIn(0, 22)
+
         try {
             val baseDirectory = File(filesToArchive.first()).parentFile?.absolutePath ?: ""
-            val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
             val archivePath = sharedPreferences.getString(PREFERENCE_ARCHIVE_DIR_PATH, null)
             val parentDir: File
 
@@ -192,7 +198,7 @@ class ArchiveTarService : Service() {
                                 CompressorStreamFactory.LZMA -> LZMACompressorOutputStream(bos)
                                 CompressorStreamFactory.BZIP2 -> BZip2CompressorOutputStream(bos)
                                 CompressorStreamFactory.XZ -> XZCompressorOutputStream(bos)
-                                CompressorStreamFactory.ZSTANDARD -> ZstdCompressorOutputStream(bos)
+                                CompressorStreamFactory.ZSTANDARD -> ZstdOutputStream(bos).apply { setLevel(safeLevel) }
                                 CompressorStreamFactory.GZIP -> GzipCompressorOutputStream(bos)
                                 else -> bos
                             }
