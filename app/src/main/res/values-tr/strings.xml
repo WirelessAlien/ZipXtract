@@ -2,9 +2,9 @@
 <resources>
     <string name="compression_method">Sıkıştırma Methodu</string>
     <string name="copied_to_clipboard">Panoya kopyalandı.</string>
-    <string name="settings_info_text">Standart şifreleme yöntemi, yüksek düzeyde güvenlik sunan AES'dir. AES şifrelemenin özellikle düşük performanslı cihazlarda zaman alıcı olabileceğini lütfen unutmayın.
+    <string name="settings_info_text">Standart şifreleme yöntemi, yüksek düzeyde güvenlik sunan AES\'dir. AES şifrelemenin özellikle düşük performanslı cihazlarda zaman alıcı olabileceğini lütfen unutmayın.
 \n
-\nDüşük performanslı cihazlara sahip kullanıcılar için ZIP_STANDARD alternatif olarak kullanılabilir. AES'in daha yüksek bir güvenlik seviyesi sağladığını lütfen unutmayın.
+\nDüşük performanslı cihazlara sahip kullanıcılar için ZIP_STANDARD alternatif olarak kullanılabilir. AES\'in daha yüksek bir güvenlik seviyesi sağladığını lütfen unutmayın.
 \n
 \nEğer temel endişeniz güvenlik ise, daha uzun işlem süresine rağmen AES kullanımını şiddetle tavsiye ediyoruz.</string>
     <string name="folder">Klasör</string>
