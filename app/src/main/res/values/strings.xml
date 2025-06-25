@@ -81,13 +81,13 @@
     <string name="name">Name</string>
     <string name="size">Size</string>
     <string name="time_of_creation">Modified</string>
-    <string name="extension">Extension</string>
+    <string name="extension">File extension</string>
     <string name="close">Close</string>
     <!-- Settings -->
     <string name="extract_path">Extracted files folder</string>
     <string name="archive_path">Archived files folder</string>
-    <string name="archive_path_summary">Modify the default extract folder. \nDefault is \"parent folder\"</string>
-    <string name="extract_path_summary">Modify the default extract folder. \nDefault is \"parent folder\" or Internal Storage/ZipXtract (for \"Open With\" menu extracted archive)</string>
+    <string name="archive_path_summary">Modify the default folder for archived files.\nDefault is the current folder.</string>
+    <string name="extract_path_summary">Modify the default folder for extracted files.\nDefault is the current folder or \"/Internal Storage/ZipXtract\" (if extracted via the \"Open With\"-menu)</string>
     <!-- ZIP archive options -->
     <string name="create_zip">Archive ZIP</string>
     <string name="encryption_method">Encryption Method</string>
