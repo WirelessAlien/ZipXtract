@@ -100,12 +100,12 @@
     <string name="name">Назва</string>
     <string name="size">Розмір</string>
     <string name="time_of_creation">Змінено</string>
-    <string name="extension">Розширення</string>
+    <string name="extension">Розширення файлу</string>
     <string name="close">Закрити</string>
     <string name="extract_path">Тека видобутих файлів</string>
     <string name="archive_path">Тека з архівними файлами</string>
-    <string name="archive_path_summary">Змініть стандартну теку вилучення. \nТиповою є «батьківська тека»</string>
-    <string name="extract_path_summary">Змініть стандартну теку вилучення. \nТипова — «батьківська тека» або внутрішнє сховище / ZipXtract (для витягнутого архіву меню «Відкрити за допомогою»)</string>
+    <string name="archive_path_summary">Змініть папку за замовчуванням для архівних файлів.\nЗа замовчуванням використовується поточна папка.</string>
+    <string name="extract_path_summary">Змініть папку за замовчуванням для розпакованих файлів.\nЗа замовчуванням використовується поточна папка або \"/Internal Storage/ZipXtract\" (якщо розпаковано через меню \"Відкрити за допомогою\")</string>
     <string name="compress_tar">Архівувати в TAR</string>
     <string name="compression_success">Успішно стиснуто</string>
     <string name="archive_success">Файл успішно заархівовано</string>
