@@ -80,10 +80,10 @@
     <string name="name">Име</string>
     <string name="size">Размер</string>
     <string name="time_of_creation">Променен</string>
-    <string name="extension">Разширение</string>
+    <string name="extension">Файлово разширение</string>
     <string name="extract_path">Папка с извлечени файлове</string>
     <string name="archive_path">Папка с архивирани файлове</string>
-    <string name="archive_path_summary">Променете папката за извличане по подразбиране \nПо подразбиране е \"основна папка\"</string>
+    <string name="archive_path_summary">Променете папката по подразбиране за архивирани файлове.\nПо подразбиране е текущата папка.</string>
     <string name="compress_tar">TAR архив</string>
     <string name="archive_success">Файлът е архивиран успешно</string>
     <string name="tar_creation_success">TAR файлът е архивиран успешно</string>
@@ -94,7 +94,7 @@
     <string name="unsupported_compression_format">Този формат на компресия не се поддържа.</string>
     <string name="access_denied">Отказан достъп</string>
     <string name="no_files_to_archive">Няма избрани файлове за архивиране</string>
-    <string name="sd_card_not_available">SD картата или външното хранилище не са открити</string>
+    <string name="sd_card_not_available">SD карта или външно хранилище не са открити</string>
     <string name="copying_files">Копиране…</string>
     <string name="extraction_ongoing">Извличане…</string>
     <string name="archive_ongoing">Архивиране…</string>
@@ -103,7 +103,7 @@
     <string name="deleting_files">Изтриване на файлове: %1$d/%2$d</string>
     <string name="extracting_progress">Извличане… %1$d %%</string>
     <string name="compressing_progress">Архивиране… %1$d %%</string>
-    <string name="extract_path_summary">Променете папката за извличане по подразбиране. \nПо подразбиране е „основна папка“ или Вътрешно Хранилище/ZipXtract (за извлечения архив от менюто „Отвори с“)</string>
+    <string name="extract_path_summary">Променете папката по подразбиране за извлечените файлове.\nПо подразбиране е текущата папка или \"/Вътрешно Хранилище/ZipXtract\" (ако е извлечено чрез менюто „Отваряне с“)</string>
     <string name="multi_part_extract">Извлечение от няколко части:</string>
     <string name="info_tip">Полезен съвет</string>
     <string name="last_modified">Последна промяна</string>
