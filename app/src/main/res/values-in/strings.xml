@@ -113,7 +113,7 @@
     <string name="time_of_creation">Dirubah</string>
     <string name="extension">Ekstensi berkas</string>
     <string name="close">Tutup</string>
-    <string name="extract_path">Folder yang diekstrak</string>
+    <string name="extract_path">Folder Terkesktrak</string>
     <string name="archive_path">Folder Terarsip</string>
     <string name="archive_path_summary">Modifikasi folder ekstrak default.\nDefault adalah \" folder induk\"</string>
     <string name="confirm_password">Konfirmasi Password</string>
