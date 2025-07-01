@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="create_zip">ZIP Kompresi</string>
+    <string name="create_zip">ZIP Arsip</string>
     <string name="folder">Folder</string>
     <string name="donate">Donasi</string>
     <string name="liberapay">Liberapay</string>
     <string name="solid_compression">Kompresi Padat</string>
     <string name="max_available_thread">0 dari maks thread tersedia</string>
-    <string name="compress_sevenz">7z Kompresi</string>
+    <string name="compress_sevenz">7z Arsip</string>
     <string name="extract">Ekstrak</string>
     <string name="enter_name_of_archive_optional">Nama Arsip</string>
     <string name="no_file_selected">Tidak ada berkas yg dipilih</string>
@@ -23,7 +23,7 @@
     <string name="ok">Oke</string>
     <string name="enter_password">Masukkan Kata Sandi</string>
     <string name="open_folder">Buka Folder</string>
-    <string name="zip_creation_success">Berhasil membuat berkas Zip</string>
+    <string name="zip_creation_success">Berhasil membuat berkas ZIP</string>
     <string name="copied_to_clipboard">Salin ke Papan Klip</string>
     <string name="permission_denied">Akses Ditolak</string>
     <string name="cancel">Batal</string>
@@ -42,14 +42,14 @@
     <string name="storage">Penyimpanan</string>
     <string name="archive">Arsip</string>
     <string name="home">Beranda</string>
-    <string name="extract_path_summary">Modifikasi folder ekstrak default.\nDefault adalah \" folder induk\" atau Internal Storage/ZipXtract (untuk \"Open With\" menu diekstrak arsip)</string>
+    <string name="extract_path_summary">Modifikasi folder standar untuk berkas terekstrak.\nStandarnya adalah folder ini atau \"/Internal Storage/ZipXtract\" (jika diekstrak via menu \"Buka Dengan\")</string>
     <string name="source_code">Kode Sumber</string>
     <string name="license">Lisensi</string>
     <string name="privacy_policy">Kebijakan Privasi</string>
-    <string name="compress_tar">Arsip TAR</string>
-    <string name="compression_success">Kompresi sukses</string>
-    <string name="archive_success">File diarsipkan berhasil</string>
-    <string name="tar_creation_success">TAR file diarsipkan berhasil</string>
+    <string name="compress_tar">TAR Arsip</string>
+    <string name="compression_success">Kompresi Berhasil</string>
+    <string name="archive_success">File berhasil diarsipkan</string>
+    <string name="tar_creation_success">Berkas TAR berhasil diarsipkan</string>
     <string name="file_deleted">Sitemap</string>
     <string name="operation_cancelled">Operasi dibatalkan</string>
     <string name="tar_creation_failed">API documentation</string>
@@ -115,7 +115,7 @@
     <string name="close">Tutup</string>
     <string name="extract_path">Folder Terekstrak</string>
     <string name="archive_path">Folder Terarsip</string>
-    <string name="archive_path_summary">Modifikasi folder standar untuk berkas terarsip.\nStandarnya adalah folder ini</string>
+    <string name="archive_path_summary">Modifikasi folder standar untuk berkas terarsip.\nStandarnya adalah folder ini.</string>
     <string name="confirm_password">Konfirmasi Password</string>
     <string name="passwords_do_not_match">Kata Sandi tidak cocok</string>
     <string name="wrong_password">Salah Kata Sandi</string>
