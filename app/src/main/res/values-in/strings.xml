@@ -10,7 +10,7 @@
     <string name="extract">Ekstrak</string>
     <string name="enter_name_of_archive_optional">Nama Arsip</string>
     <string name="no_file_selected">Tidak ada berkas yg dipilih</string>
-    <string name="zip_creation_failed">Gagal membuat berkas zip</string>
+    <string name="zip_creation_failed">Gagal membuat berkas ZIP</string>
     <string name="_ten">Bawaan di 64kb</string>
     <string name="encryption_method">Metode Enkripsi</string>
     <string name="compression_level">Level Kompresi</string>
@@ -23,7 +23,7 @@
     <string name="ok">Oke</string>
     <string name="enter_password">Masukkan Kata Sandi</string>
     <string name="open_folder">Buka Folder</string>
-    <string name="zip_creation_success">Berkas ZIP berhasil diarsipkan</string>
+    <string name="zip_creation_success">Berhasil membuat berkas ZIP</string>
     <string name="copied_to_clipboard">Salin ke Papan Klip</string>
     <string name="permission_denied">Akses Ditolak</string>
     <string name="cancel">Batal</string>
@@ -32,7 +32,7 @@
     <string name="share">Berbagi Link Aplikasi</string>
     <string name="sevenz_creation_failed">Gagal membuat berkas 7z</string>
     <string name="extraction_success">Berhasil mengekstrak berkas</string>
-    <string name="sevenz_creation_success">Berkas 7z berhasil diarsipkan</string>
+    <string name="sevenz_creation_success">Berhasil membuat berkas 7z</string>
     <string name="thread_count">Jumlah Thread</string>
     <string name="encryption_strength">Kekuatan Enkripsi</string>
     <string name="split_size_mb">Ukuran Split</string>
@@ -54,7 +54,7 @@
     <string name="operation_cancelled">Operasi dibatalkan</string>
     <string name="tar_creation_failed">Gagal membuat berkas TAR</string>
     <string name="compression_failed">Gagal mengompresi</string>
-    <string name="general_error_msg">Kesalahan yang tidak terduga terjadi</string>
+    <string name="general_error_msg">Terjadi kesalahan yg tidak terduga</string>
     <string name="unsupported_compression_format">Format kompresi ini tidak didukung</string>
     <string name="access_denied">Akses ditolak</string>
     <string name="no_files_to_archive">Tidak ada file yang dipilih untuk melengkung</string>
