@@ -72,8 +72,8 @@
     <string name="compression_ongoing">Mengompres…</string>
     <string name="delete_files_notification_name">Hapus Berkas</string>
     <string name="copy_move_files_notification_name">Salin/Pindahkan Berkas</string>
-    <string name="extract_archive_notification_name">Ekstraksi arsip</string>
-    <string name="compress_archive_notification_name">Kompresi arsip</string>
+    <string name="extract_archive_notification_name">Ekstraksi Arsip</string>
+    <string name="compress_archive_notification_name">Kompresi Arsip</string>
     <string name="info_tip_description">● File dan folder yang menekan panjang atau klik ikon file /folder untuk memilih mereka untuk lengkungan.\n\n● Klik file untuk menampilkan menu ekstraksi untuk memilih opsi ekstraksi.\n\n● File yang diekstrak menggunakan menu \"Open With\" dari OS disimpan dalam Penyimpanan Internal/ZipXtract secara default. Modifikasi ini dalam pengaturan aplikasi.\n\nSitemap Lokasi default untuk arsip atau mengekstrak arsip (dalam aplikasi) adalah direktori induk dari file masing-masing). Ini dapat diubah dalam pengaturan aplikasi.</string>
     <string name="crash_log">Galat Log</string>
     <string name="report_an_issue">Laporkan Masalah</string>
