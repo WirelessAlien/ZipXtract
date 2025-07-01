@@ -75,7 +75,7 @@
     <string name="extract_archive_notification_name">Database</string>
     <string name="compress_archive_notification_name">Arsip Kompres</string>
     <string name="info_tip_description">● File dan folder yang menekan panjang atau klik ikon file /folder untuk memilih mereka untuk lengkungan.\n\n● Klik file untuk menampilkan menu ekstraksi untuk memilih opsi ekstraksi.\n\n● File yang diekstrak menggunakan menu \"Open With\" dari OS disimpan dalam Penyimpanan Internal/ZipXtract secara default. Modifikasi ini dalam pengaturan aplikasi.\n\nSitemap Lokasi default untuk arsip atau mengekstrak arsip (dalam aplikasi) adalah direktori induk dari file masing-masing). Ini dapat diubah dalam pengaturan aplikasi.</string>
-    <string name="crash_log">Login</string>
+    <string name="crash_log">Galat Log</string>
     <string name="report_an_issue">Laporkan Masalah</string>
     <string name="about">Tentang</string>
     <string name="grant_access">Kasih Akses</string>
@@ -89,15 +89,15 @@
     <string name="background">Latar belakang</string>
     <string name="open_with">Buka Dengan</string>
     <string name="compress_with">Kompres dengan:</string>
-    <string name="confirm_delete">Hapus Konfirmasi</string>
-    <string name="confirm_delete_message">Apakah Anda yakin Anda ingin menghapus item ini?</string>
-    <string name="delete">Login</string>
-    <string name="file_path">Login</string>
-    <string name="file_size">Login</string>
-    <string name="last_modified">Sitemap</string>
-    <string name="file_info">Database</string>
+    <string name="confirm_delete">Konfirmasi Hapus</string>
+    <string name="confirm_delete_message">Yakin untuk menghapusnya?</string>
+    <string name="delete">Hapus</string>
+    <string name="file_path">Jalur</string>
+    <string name="file_size">Ukuran</string>
+    <string name="last_modified">Modifikasi Terakhir</string>
+    <string name="file_info">Info Berkas</string>
     <string name="multi_part_extract">Ekstrak Multi Bagian:</string>
-    <string name="copy_text">Login</string>
+    <string name="copy_text">Salin</string>
     <string name="info_tip">Tip Berguna</string>
     <string name="move">Login</string>
     <string name="copy_to">Fotokopi</string>
@@ -118,6 +118,6 @@
     <string name="archive_path_summary">Modifikasi folder ekstrak default.\nDefault adalah \" folder induk\"</string>
     <string name="confirm_password">Konfirmasi Password</string>
     <string name="passwords_do_not_match">Sandi tidak cocok</string>
-    <string name="wrong_password">Login</string>
+    <string name="wrong_password">Salah Kata Sandi</string>
     <string name="file_already_exists">File sudah ada</string>
 </resources>
