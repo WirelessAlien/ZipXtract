@@ -64,8 +64,8 @@
     <string name="close">닫기</string>
     <string name="extract_path">압축 해제된 파일 폴더</string>
     <string name="archive_path">압축된 파일 폴더</string>
-    <string name="archive_path_summary">기본 압축 해제 폴더를 수정합니다.\n기본값은 \"상위 폴더\"입니다</string>
-    <string name="extract_path_summary">기본 압축 해제 폴더를 수정합니다.\n기본값은 \"상위 폴더\" 또는 내부 저장소/ZipXtract(\"기본 프로그램\" 메뉴로 압축해제된 파일인 경우)입니다</string>
+    <string name="archive_path_summary">압축 파일의 기본 폴더를 수정합니다.\n기본값은 현재 폴더입니다.</string>
+    <string name="extract_path_summary">압축 파일의 기본 폴더를 수정합니다.\n기본값은 현재 폴더 또는 \"/내부 저장소/ZipXtract\" (\"기본 프로그램\" 메뉴로 압축해제된 파일인 경우)입니다</string>
     <string name="create_zip">ZIP 압축</string>
     <string name="encryption_method">암호화 방법</string>
     <string name="compression_level">압축 수준</string>
