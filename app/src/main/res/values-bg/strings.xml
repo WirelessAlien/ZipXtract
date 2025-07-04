@@ -79,7 +79,7 @@
     <string name="sort_by">Сортиране по</string>
     <string name="name">Име</string>
     <string name="size">Размер</string>
-    <string name="time_of_creation">Променен</string>
+    <string name="time_of_creation">Промяна</string>
     <string name="extension">Файлово разширение</string>
     <string name="extract_path">Папка с извлечени файлове</string>
     <string name="archive_path">Папка с архивирани файлове</string>
