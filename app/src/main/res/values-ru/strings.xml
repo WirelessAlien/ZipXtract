@@ -107,7 +107,7 @@
     <string name="extract_path">Папка извлеченных файлов</string>
     <string name="archive_path">Папка с архивными файлами</string>
     <string name="archive_path_summary">Изменить папку по умолчанию для архивных файлов.\n(По умолчанию используется текущая папка).</string>
-    <string name="extract_path_summary">Измените папку по умолчанию для извлеченных файлов.\nПо умолчанию - текущая папка или \"/Internal Storage/ZipXtract\" (если файлы были извлечены через меню \"Открыть в\").</string>
+    <string name="extract_path_summary">Измените папку по умолчанию для извлеченных файлов.\nПо умолчанию - текущая папка или \"/Internal Storage/ZipXtract\" (если файлы были извлечены через меню \"Открыть в\")</string>
     <string name="compress_tar">Сжать в TAR-архив</string>
     <string name="compression_success">Сжатие успешно</string>
     <string name="archive_success">Архив успешно создан</string>
