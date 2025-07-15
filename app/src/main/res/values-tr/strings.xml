@@ -34,9 +34,9 @@
     <string name="split_zip">Bölünmüş Zip</string>
     <string name="encryption_strength">Parolama Gücü</string>
     <string name="home">Ana Sayfa</string>
-    <string name="confirm_delete">Delete Onaylama</string>
+    <string name="confirm_delete">Silme Onayı</string>
     <string name="confirm_delete_message">Bu öğeyi silmek istediğinizden emin misiniz?</string>
-    <string name="delete">Delete</string>
+    <string name="delete">Sil</string>
     <string name="delete_files_notification_name">Delete File</string>
     <string name="copy_move_files_notification_name">Kopya /Move Files</string>
     <string name="privacy_policy">Gizlilik Politikası</string>
@@ -56,11 +56,11 @@
     <string name="storage">Depolama</string>
     <string name="archive">Arşiv</string>
     <string name="show_hide_selected_files">Seçili Dosyaları Göster/Gizle</string>
-    <string name="background">Arka Plan</string>
-    <string name="compress_with">With:</string>
-    <string name="file_path">Yol Yolu</string>
-    <string name="file_size">Boyut Boyutu</string>
-    <string name="last_modified">Son Modified</string>
+    <string name="background">Arka plan</string>
+    <string name="compress_with">Şununla Sıkıştır:</string>
+    <string name="file_path">Dosya Yolu</string>
+    <string name="file_size">Boyut</string>
+    <string name="last_modified">Son Düzenlenme</string>
     <string name="file_info">Dosya Bilgileri</string>
     <string name="multi_part_extract">Multi Part Extract:</string>
     <string name="copy_text">Kopya kopya</string>
@@ -115,4 +115,5 @@
     <string name="passwords_do_not_match">Şifre eşleşmeyin</string>
     <string name="wrong_password">Yanlış şifre</string>
     <string name="file_already_exists">Dosya zaten var</string>
+    <string name="open_with">Birlikte Aç</string>
 </resources>
