@@ -1,1 +1,1 @@
-Hata Düzeltme: Büyük 7z arşivlerini açarken BellekBittiHatası
+Hata Düzeltmesi: Büyük 7z arşivlerinde OutOfMemoryError sorunu giderildi

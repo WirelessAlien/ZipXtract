@@ -27,6 +27,7 @@
 <li>Şifreleme seçenekleriyle ZIP ve 7z arşivleri oluşturur.</li> 
 <li>Bölünmüş ZIP arşivleri oluşturur.</li> 
 </ul> 
+
 <blockquote> 
 <p><strong>NOT:</strong><br /> 
 F-Droid sürümünde lisans kısıtlamaları nedeniyle RAR çıkarma ve 7z sıkıştırma özellikleri bulunmamaktadır. Tüm özelliklere sahip sürüm için GitHub veya IzzyOnDroid dağıtımlarını kullanın.</p> 
