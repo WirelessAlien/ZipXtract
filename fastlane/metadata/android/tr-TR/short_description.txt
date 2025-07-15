@@ -1,1 +1,1 @@
-ZipXtract arşiv çıkarabilir ve oluşturabilir
+ZIP, RAR, 7z ve daha fazlası gibi çeşitli arşiv formatlarını çıkarmak ve oluşturmak için açık kaynak Android uygulaması
