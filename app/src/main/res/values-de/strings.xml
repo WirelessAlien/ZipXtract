@@ -34,7 +34,7 @@
     <string name="split_zip">ZIP aufteilen</string>
     <string name="encryption_strength">Verschlüsselungsstärke</string>
     <string name="storage">Speicher</string>
-    <string name="home">Start</string>
+    <string name="home">Startseite</string>
     <string name="file_size">Größe</string>
     <string name="last_modified">Zuletzt geändert</string>
     <string name="file_info">Dateiinfo</string>
@@ -53,7 +53,7 @@
     <string name="confirm_delete_message">Sicher, dass dieses Element gelöscht werden soll?</string>
     <string name="delete">Löschen</string>
     <string name="file_path">Pfad</string>
-    <string name="multi_part_extract">Multi Part Extract:</string>
+    <string name="multi_part_extract">Mehrteiliges Auspacken:</string>
     <string name="copy_text">Kopieren</string>
     <string name="info_tip">Nützlicher Tipp</string>
     <string name="deleting_files">Dateien werden gelöscht: %1$d/%2$d</string>
@@ -76,7 +76,7 @@
     <string name="move">Verschieben nach</string>
     <string name="copy_to">Kopieren nach</string>
     <string name="action_settings">Einstellungen</string>
-    <string name="storage_access_permission_text">Diese App benötigt Zugriff auf den Speicher des Geräts, um ordnungsgemäß zu funktionieren. Bitte erteile die erforderlichen Berechtigungen.</string>
+    <string name="storage_access_permission_text">Diese App benötigt Zugriff auf den Speicher deines Geräts, um richtig zu funktionieren. Bitte erteile die erforderlichen Berechtigungen.</string>
     <string name="sd_card">SD-Karte</string>
     <string name="root_access">Root-Zugang</string>
     <string name="root_access_summary">Root-Verzeichnis-Zugang aktivieren</string>
@@ -94,7 +94,7 @@
     <string name="close">Schließen</string>
     <string name="extract_path">Ordner für entpackte Dateien</string>
     <string name="archive_path">Ordner für archivierte Dateien</string>
-    <string name="archive_path_summary">Standardordner für archivierte Dateien ändern.\nStandard ist der übergeordnete Ordner</string>
+    <string name="archive_path_summary">Standardordner für archivierte Dateien ändern.\nStandard ist der übergeordnete Ordner.</string>
     <string name="extract_path_summary">Standardordner für entpackte Dateien ändern.\nStandard ist der übergeordnete Ordner oder \"/Interner Speicher/ZipXtract\" (falls das Archiv per \"Öffnen mit\" entpackt wurde)</string>
     <string name="compress_tar">TAR-Archiv erstellen</string>
     <string name="compression_success">Komprimierung erfolgreich</string>
