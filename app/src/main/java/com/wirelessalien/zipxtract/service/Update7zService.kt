@@ -56,11 +56,16 @@ class Update7zService : Service() {
     }
 
     private var updateJob: Job? = null
+    private lateinit var notificationManager: NotificationManager
+    private lateinit var notificationBuilder: NotificationCompat.Builder
+    private var totalSize: Long = 0
+    private var lastProgress = -1
 
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onCreate() {
         super.onCreate()
+        notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         createNotificationChannel()
     }
 
@@ -70,7 +75,8 @@ class Update7zService : Service() {
         val itemsToAddNames = intent.getStringArrayListExtra(EXTRA_ITEMS_TO_ADD_NAMES)
         val itemsToRemovePaths = intent.getStringArrayListExtra(EXTRA_ITEMS_TO_REMOVE_PATHS)
 
-        startForeground(NOTIFICATION_ID, createNotification(0))
+        notificationBuilder = createNotificationBuilder()
+        startForeground(NOTIFICATION_ID, notificationBuilder.build())
 
         updateJob = CoroutineScope(Dispatchers.IO).launch {
             update7zFile(archivePath, itemsToAddPaths, itemsToAddNames, itemsToRemovePaths)
@@ -112,8 +118,18 @@ class Update7zService : Service() {
 
             outArchive.updateItems(outStream, newCount, object : IOutCreateCallback<IOutItemAllFormats> {
                 override fun setOperationResult(p0: Boolean) {}
-                override fun setTotal(p0: Long) {}
-                override fun setCompleted(p0: Long) {}
+                override fun setTotal(size: Long) {
+                    totalSize = size
+                }
+
+                override fun setCompleted(completed: Long) {
+                    val progress = if (totalSize == 0L) 0 else (completed * 100 / totalSize).toInt()
+                    if (progress > lastProgress) {
+                        lastProgress = progress
+                        updateNotification(progress)
+                        sendProgressBroadcast(progress)
+                    }
+                }
 
                 override fun getItemInformation(
                     index: Int,
@@ -194,19 +210,29 @@ class Update7zService : Service() {
                 "Update Archive Service",
                 NotificationManager.IMPORTANCE_LOW
             )
-            val notificationManager = getSystemService(NotificationManager::class.java)
             notificationManager.createNotificationChannel(channel)
         }
     }
 
-    private fun createNotification(progress: Int): Notification {
-        val builder = NotificationCompat.Builder(this, BroadcastConstants.ARCHIVE_NOTIFICATION_CHANNEL_ID)
+    private fun createNotificationBuilder(): NotificationCompat.Builder {
+        return NotificationCompat.Builder(this, BroadcastConstants.ARCHIVE_NOTIFICATION_CHANNEL_ID)
             .setContentTitle("Updating archive...")
             .setSmallIcon(R.drawable.ic_notification_icon)
-            .setProgress(100, progress, progress == 0)
+            .setProgress(100, 0, true)
             .setOngoing(true)
+    }
 
-        return builder.build()
+    private fun updateNotification(progress: Int) {
+        notificationBuilder.setProgress(100, progress, false)
+            .setContentText("$progress%")
+        notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build())
+    }
+
+    private fun sendProgressBroadcast(progress: Int) {
+        val intent = Intent(BroadcastConstants.ACTION_ARCHIVE_PROGRESS).apply {
+            putExtra(BroadcastConstants.EXTRA_PROGRESS, progress)
+        }
+        sendLocalBroadcast(intent)
     }
 
     private fun sendLocalBroadcast(intent: Intent) {
@@ -215,7 +241,6 @@ class Update7zService : Service() {
 
     private fun stopForegroundService() {
         stopForeground(STOP_FOREGROUND_REMOVE)
-        val notificationManager = getSystemService(NotificationManager::class.java)
         notificationManager.cancel(NOTIFICATION_ID)
     }
 }

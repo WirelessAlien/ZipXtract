@@ -66,7 +66,12 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
     private val updateReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             when (intent?.action) {
+                BroadcastConstants.ACTION_ARCHIVE_PROGRESS -> {
+                    val progress = intent.getIntExtra(BroadcastConstants.EXTRA_PROGRESS, 0)
+                    binding.progressBar.progress = progress
+                }
                 BroadcastConstants.ACTION_ARCHIVE_COMPLETE -> {
+                    binding.progressBar.visibility = View.GONE
                     Toast.makeText(requireContext(), "Archive updated successfully", Toast.LENGTH_SHORT).show()
                     try {
                         inArchive?.close()
@@ -78,6 +83,7 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
                     }
                 }
                 BroadcastConstants.ACTION_ARCHIVE_ERROR -> {
+                    binding.progressBar.visibility = View.GONE
                     Toast.makeText(requireContext(), "Error updating archive", Toast.LENGTH_SHORT).show()
                 }
             }
@@ -132,6 +138,7 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
         val filter = IntentFilter().apply {
             addAction(BroadcastConstants.ACTION_ARCHIVE_COMPLETE)
             addAction(BroadcastConstants.ACTION_ARCHIVE_ERROR)
+            addAction(BroadcastConstants.ACTION_ARCHIVE_PROGRESS)
         }
         LocalBroadcastManager.getInstance(requireContext()).registerReceiver(updateReceiver, filter)
 
@@ -257,6 +264,7 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
         override fun onActionItemClicked(mode: ActionMode?, item: MenuItem?): Boolean {
             return when (item?.itemId) {
                 R.id.menu_action_delete -> {
+                    binding.progressBar.visibility = View.VISIBLE
                     val selectedItems = adapter.getSelectedItems()
                     val pathsToRemove = selectedItems.map { it.path }
                     val intent = Intent(requireContext(), Update7zService::class.java).apply {
@@ -278,6 +286,7 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
     }
 
     override fun onFilesSelected(files: List<File>) {
+        binding.progressBar.visibility = View.VISIBLE
         val filePaths = files.map { it.absolutePath }
         val fileNames = files.map { if (currentPath.isEmpty()) it.name else "$currentPath/${it.name}" }
 

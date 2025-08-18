@@ -25,6 +25,8 @@ import android.view.ViewGroup
 import androidx.appcompat.view.ActionMode
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.chip.Chip
 import com.wirelessalien.zipxtract.R
@@ -57,6 +59,17 @@ class FilePickerFragment : BottomSheetDialogFragment(), FilePickerAdapter.OnItem
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        dialog?.setOnShowListener {
+            val bottomSheetDialog = it as BottomSheetDialog
+            val bottomSheet = bottomSheetDialog.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
+            bottomSheet?.let { sheet ->
+                val behavior = BottomSheetBehavior.from(sheet)
+                sheet.layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
+                behavior.state = BottomSheetBehavior.STATE_EXPANDED
+                behavior.isDraggable = false
+            }
+        }
+
         adapter = FilePickerAdapter(requireContext(), ArrayList())
         adapter.setOnItemClickListener(this)
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
@@ -76,20 +89,31 @@ class FilePickerFragment : BottomSheetDialogFragment(), FilePickerAdapter.OnItem
             dismiss()
         }
         binding.fabSelectAll.setOnClickListener {
-            if (adapter.getSelectedItems().size == adapter.itemCount) {
+            if (adapter.getSelectedItems().isNotEmpty()) {
                 adapter.deselectAll()
             } else {
                 adapter.selectAll()
             }
             updateFabIcon()
+            updateSelectedCount()
         }
 
         loadFiles(currentPath)
         updateCurrentPathChip()
+        updateSelectedCount()
+    }
+
+    private fun updateSelectedCount() {
+        val selectedCount = adapter.getSelectedItems().size
+        if (selectedCount > 0) {
+            binding.btnSelect.text = getString(R.string.select_files, selectedCount)
+        } else {
+            binding.btnSelect.text = getString(R.string.add)
+        }
     }
 
     private fun updateFabIcon() {
-        if (adapter.getSelectedItems().size == adapter.itemCount) {
+        if (adapter.getSelectedItems().isNotEmpty()) {
             binding.fabSelectAll.setImageDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.ic_close))
         } else {
             binding.fabSelectAll.setImageDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.ic_select_all))
@@ -139,6 +163,11 @@ class FilePickerFragment : BottomSheetDialogFragment(), FilePickerAdapter.OnItem
     private fun loadFiles(path: String) {
         currentPath = path
         updateCurrentPathChip()
+        if (path == Environment.getExternalStorageDirectory().absolutePath) {
+            binding.fabSelectAll.visibility = View.GONE
+        } else {
+            binding.fabSelectAll.visibility = View.VISIBLE
+        }
         val file = File(path)
         val files = file.listFiles()?.toList() ?: emptyList()
         adapter.updateFilesAndFilter(ArrayList(files.sortedBy { it.name }))
@@ -157,12 +186,8 @@ class FilePickerFragment : BottomSheetDialogFragment(), FilePickerAdapter.OnItem
     }
 
     override fun toggleSelection(position: Int) {
-        if (adapter.getSelectedItems().size >= 2) {
-            binding.fabSelectAll.visibility = View.VISIBLE
-        } else {
-            binding.fabSelectAll.visibility = View.GONE
-        }
         updateFabIcon()
+        updateSelectedCount()
     }
 
     override fun getSelectedItemCount(): Int {

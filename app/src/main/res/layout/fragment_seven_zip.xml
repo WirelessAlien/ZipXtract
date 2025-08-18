@@ -40,10 +40,20 @@
         android:orientation="vertical"
         app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
 
+        <com.google.android.material.progressindicator.LinearProgressIndicator
+            android:id="@+id/progressBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:visibility="gone"
+            android:max="100"
+            android:layout_marginEnd="16dp"/>
+
         <HorizontalScrollView
             android:id="@+id/horizontalScrollView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_below="@id/progressBar"
             android:scrollIndicators="none"
             android:scrollbars="none">
 
@@ -51,7 +61,7 @@
                 android:id="@+id/chipGroupPath"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
+                android:layout_marginStart="11dp"
                 android:layout_marginEnd="16dp"
                 android:orientation="horizontal"
                 app:singleLine="true" />
@@ -86,12 +96,4 @@
         android:layout_margin="16dp"
         android:src="@drawable/ic_add"
         app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Medium" />
-
-    <com.google.android.material.progressindicator.CircularProgressIndicator
-        android:id="@+id/progressBar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        android:indeterminate="true"
-        android:layout_gravity="center"/>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
