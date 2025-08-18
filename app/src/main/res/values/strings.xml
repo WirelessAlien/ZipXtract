@@ -181,4 +181,7 @@
     <string name="author_wirelessalien" translatable="false">Author: WirelessAlien</string>
     <string name="zstd" translatable="false">ZSTD</string>
     <string name="no_compression">No Compression</string>
+    <string name="remove">Remove</string>
+    <string name="preview_archive">Preview Archive</string>
+    <string name="add">Add</string>
 </resources>

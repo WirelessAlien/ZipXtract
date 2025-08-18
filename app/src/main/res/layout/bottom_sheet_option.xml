@@ -89,6 +89,18 @@
             android:layout_marginEnd="16dp"/>
 
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnPreviewArchive"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="16dp"
+            android:text="@string/preview_archive"
+            android:visibility="gone"
+            app:cornerRadius="5dp" />
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnOpenWith"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

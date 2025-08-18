@@ -1,0 +1,221 @@
+/*
+ *  Copyright (C) 2023  WirelessAlien <https://github.com/WirelessAlien>
+ *
+ *     This program is free software: you can redistribute it and/or modify
+ *     it under the terms of the GNU General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     any later version.
+ *
+ *     This program is distributed in the hope that it will be useful,
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *     GNU General Public License for more details.
+ *
+ *     You should have received a copy of the GNU General Public License
+ *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+package com.wirelessalien.zipxtract.service
+
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.Service
+import android.content.Intent
+import android.os.Build
+import android.os.IBinder
+import androidx.core.app.NotificationCompat
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.wirelessalien.zipxtract.R
+import com.wirelessalien.zipxtract.constant.BroadcastConstants
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import net.sf.sevenzipjbinding.IOutCreateCallback
+import net.sf.sevenzipjbinding.IOutItemAllFormats
+import net.sf.sevenzipjbinding.ISequentialInStream
+import net.sf.sevenzipjbinding.PropID
+import net.sf.sevenzipjbinding.SevenZip
+import net.sf.sevenzipjbinding.impl.OutItemFactory
+import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream
+import net.sf.sevenzipjbinding.impl.RandomAccessFileOutStream
+import net.sf.sevenzipjbinding.util.ByteArrayStream
+import java.io.Closeable
+import java.io.File
+import java.io.RandomAccessFile
+
+class Update7zService : Service() {
+
+    companion object {
+        const val NOTIFICATION_ID = 14
+        const val EXTRA_ARCHIVE_PATH = "archivePath"
+        const val EXTRA_ITEMS_TO_ADD_PATHS = "itemsToAddPaths"
+        const val EXTRA_ITEMS_TO_ADD_NAMES = "itemsToAddNames"
+        const val EXTRA_ITEMS_TO_REMOVE_PATHS = "itemsToRemovePaths"
+    }
+
+    private var updateJob: Job? = null
+
+    override fun onBind(intent: Intent?): IBinder? = null
+
+    override fun onCreate() {
+        super.onCreate()
+        createNotificationChannel()
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        val archivePath = intent?.getStringExtra(EXTRA_ARCHIVE_PATH) ?: return START_NOT_STICKY
+        val itemsToAddPaths = intent.getStringArrayListExtra(EXTRA_ITEMS_TO_ADD_PATHS)
+        val itemsToAddNames = intent.getStringArrayListExtra(EXTRA_ITEMS_TO_ADD_NAMES)
+        val itemsToRemovePaths = intent.getStringArrayListExtra(EXTRA_ITEMS_TO_REMOVE_PATHS)
+
+        startForeground(NOTIFICATION_ID, createNotification(0))
+
+        updateJob = CoroutineScope(Dispatchers.IO).launch {
+            update7zFile(archivePath, itemsToAddPaths, itemsToAddNames, itemsToRemovePaths)
+        }
+        return START_STICKY
+    }
+
+    private fun update7zFile(
+        archivePath: String,
+        itemsToAddPaths: List<String>?,
+        itemsToAddNames: List<String>?,
+        itemsToRemovePaths: List<String>?
+    ) {
+        val closeables = ArrayList<Closeable>()
+        var success = false
+        try {
+            val inArchive = SevenZip.openInArchive(null, RandomAccessFileInStream(RandomAccessFile(archivePath, "r")))
+            closeables.add(inArchive)
+
+            val outArchive = inArchive.connectedOutArchive
+            val tmpFile = File.createTempFile("7z-update", ".tmp")
+            val outStream = RandomAccessFileOutStream(RandomAccessFile(tmpFile, "rw"))
+            closeables.add(outStream)
+
+            val itemsToRemoveIndices = mutableListOf<Int>()
+            if (itemsToRemovePaths != null) {
+                for (i in 0 until inArchive.numberOfItems) {
+                    if (itemsToRemovePaths.contains(inArchive.getProperty(i, PropID.PATH) as String)) {
+                        itemsToRemoveIndices.add(i)
+                    }
+                }
+            }
+            itemsToRemoveIndices.sort()
+
+            val itemsToAddContents = itemsToAddPaths?.map { File(it).readBytes() }
+
+            val numToAdd = itemsToAddPaths?.size ?: 0
+            val newCount = inArchive.numberOfItems - itemsToRemoveIndices.size + numToAdd
+
+            outArchive.updateItems(outStream, newCount, object : IOutCreateCallback<IOutItemAllFormats> {
+                override fun setOperationResult(p0: Boolean) {}
+                override fun setTotal(p0: Long) {}
+                override fun setCompleted(p0: Long) {}
+
+                override fun getItemInformation(
+                    index: Int,
+                    outItemFactory: OutItemFactory<IOutItemAllFormats>
+                ): IOutItemAllFormats {
+                    if (index >= inArchive.numberOfItems - itemsToRemoveIndices.size) {
+                        // This is a new item
+                        val addItemIndex = index - (inArchive.numberOfItems - itemsToRemoveIndices.size)
+                        val outItem = outItemFactory.createOutItem()
+                        outItem.propertyPath = itemsToAddNames?.get(addItemIndex)
+                        outItem.dataSize = itemsToAddContents?.get(addItemIndex)?.size?.toLong()
+                        return outItem
+                    }
+
+                    var oldIndex = index
+                    var removedCount = 0
+                    for (removedIndex in itemsToRemoveIndices) {
+                        if (oldIndex + removedCount >= removedIndex) {
+                            removedCount++
+                        }
+                    }
+                    oldIndex += removedCount
+
+                    return outItemFactory.createOutItem(oldIndex)
+                }
+
+                override fun getStream(index: Int): ISequentialInStream? {
+                    if (index >= inArchive.numberOfItems - itemsToRemoveIndices.size) {
+                        val addItemIndex = index - (inArchive.numberOfItems - itemsToRemoveIndices.size)
+                        return ByteArrayStream(itemsToAddContents?.get(addItemIndex), true)
+                    }
+                    return null
+                }
+            })
+
+            inArchive.close()
+            closeables.remove(inArchive)
+            outStream.close()
+            closeables.remove(outStream)
+
+            val originalFile = File(archivePath)
+            tmpFile.copyTo(originalFile, overwrite = true)
+            tmpFile.delete()
+
+            success = true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            sendLocalBroadcast(Intent(BroadcastConstants.ACTION_ARCHIVE_ERROR).apply {
+                putExtra(BroadcastConstants.EXTRA_ERROR_MESSAGE, e.message)
+            })
+        } finally {
+            for (i in closeables.indices.reversed()) {
+                try {
+                    closeables[i].close()
+                } catch (e: Exception) {
+                    success = false
+                }
+            }
+        }
+
+        if (success) {
+            sendLocalBroadcast(Intent(BroadcastConstants.ACTION_ARCHIVE_COMPLETE))
+        } else {
+            sendLocalBroadcast(Intent(BroadcastConstants.ACTION_ARCHIVE_ERROR))
+        }
+        stopForegroundService()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        updateJob?.cancel()
+    }
+
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                BroadcastConstants.ARCHIVE_NOTIFICATION_CHANNEL_ID,
+                "Update Archive Service",
+                NotificationManager.IMPORTANCE_LOW
+            )
+            val notificationManager = getSystemService(NotificationManager::class.java)
+            notificationManager.createNotificationChannel(channel)
+        }
+    }
+
+    private fun createNotification(progress: Int): Notification {
+        val builder = NotificationCompat.Builder(this, BroadcastConstants.ARCHIVE_NOTIFICATION_CHANNEL_ID)
+            .setContentTitle("Updating archive...")
+            .setSmallIcon(R.drawable.ic_notification_icon)
+            .setProgress(100, progress, progress == 0)
+            .setOngoing(true)
+
+        return builder.build()
+    }
+
+    private fun sendLocalBroadcast(intent: Intent) {
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
+    }
+
+    private fun stopForegroundService() {
+        stopForeground(STOP_FOREGROUND_REMOVE)
+        val notificationManager = getSystemService(NotificationManager::class.java)
+        notificationManager.cancel(NOTIFICATION_ID)
+    }
+}

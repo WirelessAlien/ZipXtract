@@ -1268,6 +1268,18 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             bottomSheetDialog.dismiss()
         }
 
+        if (file.extension.equals("7z", ignoreCase = true)) {
+            binding.btnPreviewArchive.visibility = View.VISIBLE
+            binding.btnPreviewArchive.setOnClickListener {
+                val fragment = SevenZipFragment.newInstance(file.absolutePath)
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.container, fragment)
+                    .addToBackStack(null)
+                    .commit()
+                bottomSheetDialog.dismiss()
+            }
+        }
+
         binding.btnMultiExtract.setOnClickListener {
             showPasswordInputMultiRarDialog(file.absolutePath)
             bottomSheetDialog.dismiss()

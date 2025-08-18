@@ -23,6 +23,7 @@ import android.content.ClipboardManager
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.WindowCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -45,6 +46,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
 
         val fileName = "Crash_Log.txt"
         val crashLogFile = File(cacheDir, fileName)
