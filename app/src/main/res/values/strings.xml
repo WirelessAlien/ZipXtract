@@ -184,4 +184,6 @@
     <string name="remove">Remove</string>
     <string name="preview_archive">Preview Archive</string>
     <string name="add">Add</string>
+    <string name="directory_selection_disabled">Folder cannot be selected, select the files inside it.</string>
+    <string name="select_file">Select File…</string>
 </resources>

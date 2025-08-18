@@ -33,6 +33,7 @@ import androidx.appcompat.view.ActionMode
 import androidx.fragment.app.Fragment
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.chip.Chip
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.adapter.ArchiveItemAdapter
 import com.wirelessalien.zipxtract.constant.BroadcastConstants
@@ -139,11 +140,36 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
             filePicker.setFilePickerListener(this)
             filePicker.show(parentFragmentManager, "file_picker")
         }
+        updateCurrentPathChip()
+    }
+
+    private fun updateCurrentPathChip() {
+        binding.chipGroupPath.removeAllViews()
+        val pathParts = currentPath.split("/").filter { it.isNotEmpty() }
+        var cumulativePath = ""
+
+        // root chip
+        val rootChip = LayoutInflater.from(requireContext()).inflate(R.layout.custom_chip, binding.chipGroupPath, false) as Chip
+        rootChip.text = "/"
+        rootChip.setOnClickListener {
+            loadArchiveItems("")
+        }
+        binding.chipGroupPath.addView(rootChip)
+
+        for (part in pathParts) {
+            cumulativePath += if (cumulativePath.isEmpty()) part else "/$part"
+            val chip = LayoutInflater.from(requireContext()).inflate(R.layout.custom_chip, binding.chipGroupPath, false) as Chip
+            chip.text = part
+            chip.setOnClickListener {
+                loadArchiveItems(cumulativePath)
+            }
+            binding.chipGroupPath.addView(chip)
+        }
     }
 
     private fun loadArchiveItems(path: String) {
         currentPath = path
-        binding.currentPath.text = currentPath.ifEmpty { "/" }
+        updateCurrentPathChip()
 
         val children = mutableMapOf<String, ArchiveItem>()
 

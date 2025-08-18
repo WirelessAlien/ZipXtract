@@ -23,8 +23,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.view.ActionMode
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.google.android.material.chip.Chip
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.adapter.FilePickerAdapter
 import com.wirelessalien.zipxtract.databinding.DialogFilePickerBinding
@@ -55,15 +57,12 @@ class FilePickerFragment : BottomSheetDialogFragment(), FilePickerAdapter.OnItem
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapter = FilePickerAdapter(requireContext(), this, ArrayList(), selectionMode = FilePickerAdapter.SelectionMode.MULTIPLE)
+        adapter = FilePickerAdapter(requireContext(), ArrayList())
         adapter.setOnItemClickListener(this)
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerView.adapter = adapter
 
-        binding.backBtn.setOnClickListener {
-            handleBackNavigation()
-        }
-        binding.backFab.setOnClickListener {
+        binding.backChip.setOnClickListener {
             handleBackNavigation()
         }
         binding.btnCancel.setOnClickListener {
@@ -76,12 +75,59 @@ class FilePickerFragment : BottomSheetDialogFragment(), FilePickerAdapter.OnItem
             }
             dismiss()
         }
+        binding.fabSelectAll.setOnClickListener {
+            if (adapter.getSelectedItems().size == adapter.itemCount) {
+                adapter.deselectAll()
+            } else {
+                adapter.selectAll()
+            }
+            updateFabIcon()
+        }
 
         loadFiles(currentPath)
+        updateCurrentPathChip()
+    }
+
+    private fun updateFabIcon() {
+        if (adapter.getSelectedItems().size == adapter.itemCount) {
+            binding.fabSelectAll.setImageDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.ic_close))
+        } else {
+            binding.fabSelectAll.setImageDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.ic_select_all))
+        }
+    }
+
+    private fun updateCurrentPathChip() {
+        binding.chipGroupPath.removeAllViews()
+        val pathParts = currentPath.split("/").filter { it.isNotEmpty() }
+        var cumulativePath = ""
+
+        val rootFile = Environment.getExternalStorageDirectory()
+        // root chip
+        val rootChip = LayoutInflater.from(requireContext()).inflate(R.layout.custom_chip, binding.chipGroupPath, false) as Chip
+        rootChip.text = getString(R.string.internal_storage)
+        rootChip.setOnClickListener {
+            loadFiles(rootFile.absolutePath)
+        }
+        binding.chipGroupPath.addView(rootChip)
+
+        for (part in pathParts) {
+            if (part == rootFile.name) continue
+            cumulativePath += "/$part"
+            val chip = LayoutInflater.from(requireContext()).inflate(R.layout.custom_chip, binding.chipGroupPath, false) as Chip
+            chip.text = part
+            chip.setOnClickListener {
+                loadFiles(rootFile.absolutePath + cumulativePath)
+            }
+            binding.chipGroupPath.addView(chip)
+        }
     }
 
     private fun handleBackNavigation() {
         val file = File(currentPath)
+        if (file.absolutePath == Environment.getExternalStorageDirectory().absolutePath) {
+            dismiss()
+            return
+        }
         val parent = file.parentFile
         if (parent != null && parent.canRead()) {
             loadFiles(parent.absolutePath)
@@ -92,64 +138,35 @@ class FilePickerFragment : BottomSheetDialogFragment(), FilePickerAdapter.OnItem
 
     private fun loadFiles(path: String) {
         currentPath = path
-        binding.currentPath.text = currentPath
+        updateCurrentPathChip()
         val file = File(path)
         val files = file.listFiles()?.toList() ?: emptyList()
         adapter.updateFilesAndFilter(ArrayList(files.sortedBy { it.name }))
     }
 
     override fun onItemClick(file: File, filePath: String) {
-        if (actionMode != null) {
-            val position = adapter.files.indexOf(file)
-            if (position != -1) {
-                toggleSelection(position)
-            }
+        if (file.isDirectory) {
+            loadFiles(file.absolutePath)
         } else {
-            if (file.isDirectory) {
-                loadFiles(file.absolutePath)
-            }
+            toggleSelection(adapter.files.indexOf(file))
         }
     }
 
     override fun startActionMode(position: Int) {
-        if (actionMode == null) {
-            actionMode = (activity as? androidx.appcompat.app.AppCompatActivity)?.startSupportActionMode(actionModeCallback)
-        }
-        toggleSelection(position)
+        // Not needed
     }
 
     override fun toggleSelection(position: Int) {
-        adapter.toggleSelection(position)
-        val count = getSelectedItemCount()
-        if (count == 0) {
-            actionMode?.finish()
+        if (adapter.getSelectedItems().size >= 2) {
+            binding.fabSelectAll.visibility = View.VISIBLE
         } else {
-            actionMode?.title = "$count selected"
+            binding.fabSelectAll.visibility = View.GONE
         }
+        updateFabIcon()
     }
 
     override fun getSelectedItemCount(): Int {
         return adapter.getSelectedItems().size
-    }
-
-    private val actionModeCallback = object : ActionMode.Callback {
-        override fun onCreateActionMode(mode: ActionMode?, menu: android.view.Menu?): Boolean {
-            mode?.menuInflater?.inflate(R.menu.menu_archive_action, menu)
-            return true
-        }
-
-        override fun onPrepareActionMode(mode: ActionMode?, menu: android.view.Menu?): Boolean {
-            return false
-        }
-
-        override fun onActionItemClicked(mode: ActionMode?, item: android.view.MenuItem?): Boolean {
-            return false
-        }
-
-        override fun onDestroyActionMode(mode: ActionMode?) {
-            actionMode = null
-            adapter.clearSelection()
-        }
     }
 
 

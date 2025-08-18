@@ -41,16 +41,10 @@ import java.util.Locale
 
 class FilePickerAdapter(
     private val context: Context,
-    private val actionModeProvider: ActionModeProvider?,
     val files: ArrayList<File>,
-    private var filteredFiles: List<File> = emptyList(),
-    private val selectionMode: SelectionMode = SelectionMode.MULTIPLE
+    private var filteredFiles: List<File> = emptyList()
 ) :
     RecyclerView.Adapter<FilePickerAdapter.ViewHolder>() {
-
-    enum class SelectionMode {
-        SINGLE, MULTIPLE
-    }
 
     interface ActionModeProvider {
         fun startActionMode(position: Int)
@@ -64,83 +58,51 @@ class FilePickerAdapter(
     }
 
     private var onItemClickListener: OnItemClickListener? = null
-    var selectedItemPosition = -1
+    private var selectedItemPosition = -1
 
     private val selectedItems = SparseBooleanArray()
 
     fun toggleSelection(position: Int) {
-        val file = filteredFiles[position]
-
-        if (file.isDirectory) {
-            toggleDirectorySelection(position)
-        } else {
-            if (selectedItems.get(position, false)) {
-                selectedItems.delete(position)
-            } else {
-                selectedItems.put(position, true)
-            }
-        }
-        notifyItemChanged(position)
-    }
-
-    private fun toggleDirectorySelection(position: Int) {
-        val directory = filteredFiles[position]
-
         if (selectedItems.get(position, false)) {
             selectedItems.delete(position)
         } else {
             selectedItems.put(position, true)
         }
-
-        for (file in directory.listFiles() ?: emptyArray()) {
-            val index = filteredFiles.indexOf(file)
-            if (index != -1) {
-                toggleSelection(index)
-            }
-        }
+        notifyItemChanged(position)
     }
 
-    inner class ViewHolder(val binding: ItemFileBinding) : RecyclerView.ViewHolder(binding.root), View.OnLongClickListener, View.OnClickListener {
+    fun selectAll() {
+        for (i in filteredFiles.indices) {
+            if (!filteredFiles[i].isDirectory) {
+                selectedItems.put(i, true)
+            }
+        }
+        notifyDataSetChanged()
+    }
+
+    fun deselectAll() {
+        selectedItems.clear()
+        notifyDataSetChanged()
+    }
+
+    inner class ViewHolder(val binding: ItemFileBinding) : RecyclerView.ViewHolder(binding.root), View.OnClickListener {
         init {
             itemView.isClickable = true
             itemView.isFocusable = true
             itemView.setOnClickListener(this)
-            itemView.setOnLongClickListener(this)
-            binding.cardView.setOnClickListener(this)
         }
 
         override fun onClick(v: View?) {
-            if (v?.id == R.id.card_view) {
-                onLongClick(v)
-                return
-            }
+            val position = adapterPosition
+            if (position == RecyclerView.NO_POSITION) return
 
-            if (selectionMode == SelectionMode.SINGLE) {
-                val previousItem = selectedItemPosition
-                selectedItemPosition = adapterPosition
-                notifyItemChanged(previousItem)
-                notifyItemChanged(selectedItemPosition)
-                onItemClickListener?.onItemClick(filteredFiles[adapterPosition])
-                return
-            }
-
-            // MULTIPLE selection mode
-            if (actionModeProvider?.actionMode != null) {
-                actionModeProvider.toggleSelection(adapterPosition)
-                if (actionModeProvider.getSelectedItemCount() == 0) {
-                    actionModeProvider.actionMode?.finish()
-                }
+            val file = filteredFiles[position]
+            if (file.isDirectory) {
+                onItemClickListener?.onItemClick(file)
             } else {
-                onItemClickListener?.onItemClick(filteredFiles[adapterPosition])
+                toggleSelection(position)
+                (context as? ActionModeProvider)?.toggleSelection(position)
             }
-        }
-
-
-        override fun onLongClick(v: View?): Boolean {
-            if (selectionMode == SelectionMode.MULTIPLE) {
-                actionModeProvider?.startActionMode(adapterPosition)
-            }
-            return true
         }
     }
 
@@ -215,12 +177,6 @@ class FilePickerAdapter(
             binding.checkIcon.visibility = View.GONE
             binding.linearLayout.setBackgroundColor(context.getColor(R.color.md_theme_surface))
         }
-    }
-
-    @SuppressLint("NotifyDataSetChanged")
-    fun clearSelection() {
-        selectedItems.clear()
-        notifyDataSetChanged()
     }
 
     fun getSelectedItems(): List<File> {
