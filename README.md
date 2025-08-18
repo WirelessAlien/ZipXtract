@@ -9,77 +9,67 @@
 
 Read this in other languages: [Bulgarian](https://github.com/WirelessAlien/ZipXtract/blob/master/docs/README.bg.md), [Russian](https://github.com/WirelessAlien/ZipXtract/blob/master/docs/README.ru.md), [Ukrainian](https://github.com/WirelessAlien/ZipXtract/blob/master/docs/README.uk.md)
 
-ZipXtract is a fully open-source Android application designed to handle a wide range of archive formats, including:
+ZipXtract is a fully open-source Android application designed for comprehensive archive management. It allows you to effortlessly extract and create a wide variety of archive files directly on your device.
 
-* RAR (with RAR5 and multi-volume support)
-* ZIP (including password-protected and split archives)
-* TAR
-* BZ2
-* GZ
-* 7z (with password protection and multi-volume support)
-* XZ
-* JAR
-* ...
+## Key Features
 
-## Features
+### Comprehensive Extraction Capabilities
+*   **Wide Format Support:** RAR (including RAR5 and multi-volume), ZIP (password-protected and split), TAR, BZ2, GZ, ZST, 7z (password-protected and multi-volume), XZ, JAR, and more.
+*   **Encrypted Archives:** Handles password-protected ZIP and 7z files.
+*   **Multi-Volume Archives:** Seamlessly extracts multi-volume RAR and 7z archives.
+*   **Split Archives:** Support for extracting split ZIP files.
 
-### Extraction:
-
-* Supports various formats: RAR, ZIP, TAR, BZ2, GZ, 7z, XZ, JAR etc.
-* Handles encrypted ZIP and 7z files.
-* Extracts multi-volume RAR archives.
-* Extracts multi-volume  archives.
-* Extracts split ZIP files.
-
-### Creation:
-
-* Create ZIP and 7z archives, with options for encryption.
-* Create split ZIP archives.
+### Flexible Archive Creation
+*   **Popular Formats:** Create ZIP, 7z and TAR archives (with multiple type of compression support).
+*   **Encryption Options:** Secure your archives with password protection for ZIP and 7z formats.
+*   **Split Archives:** Create split ZIP archives for easier sharing of large files.
 
 ## Installation
 
-You can download and install ZipXtract from the following sources:
+Get ZipXtract from your preferred source:
 
-[<img src="https://github.com/WirelessAlien/ZipXtract/assets/121420261/3857dcf6-8560-4b1a-bfcd-0e12afa18b95"
-    alt="Get it on GitHub"
-    height="80">](https://github.com/WirelessAlien/ZipXtract/releases)
-[<img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png"
-     alt="Get it on IzzyOnDroid"
-     height="80">](https://apt.izzysoft.de/fdroid/index/apk/com.wirelessalien.zipxtract/)
-[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
-    alt="Get it on F-Droid"
-    height="80">](https://f-droid.org/en/packages/com.wirelessalien.zipxtract/)
+| Source                                                                                                                               | Notes (Features)                                     |
+| :----------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------- |
+| [<img src="https://github.com/WirelessAlien/ZipXtract/assets/121420261/3857dcf6-8560-4b1a-bfcd-0e12afa18b95" alt="Get it on GitHub" height="60">](https://github.com/WirelessAlien/ZipXtract/releases) | **Full Version:** Includes all features (RAR, 7z). |
+| [<img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png" alt="Get it on IzzyOnDroid" height="60">](https://apt.izzysoft.de/fdroid/index/apk/com.wirelessalien.zipxtract/) | **Full Version:** Includes all features (RAR, 7z). |
+| [<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png" alt="Get it on F-Droid" height="60">](https://f-droid.org/en/packages/com.wirelessalien.zipxtract/) | **Limited Version:** RAR extraction and 7z compression are not available due to licensing. |
 
-> [!NOTE]
->The F-Droid version does not include RAR extraction and 7z compression features due to licensing restrictions. For the complete version, please use the GitHub or IzzyOnDroid releases. 
+> [!IMPORTANT]
+> For the complete feature set, including RAR extraction and 7z compression, please download ZipXtract from **GitHub Releases** or **IzzyOnDroid**. The F-Droid version has these features removed due to licensing restrictions.
 
-## Usage tip
+## How to Use
 
-General tips for archive extraction and archive creation:
+Here are some general tips for managing archives with ZipXtract:
 
-* Long-press files and folders or click file/folder icons to select them for archiving.
+*   **Selecting Files/Folders:** Long-press on files and folders, or tap their icons, to select them for archiving or other operations.
+*   **Extraction Options:** Click on an archive file to open the extraction menu, where you can choose your desired extraction path and settings.
+*   **"Open With" and "Share" Behavior:** Files opened with ZipXtract via the Android "Open With" and "Share" menu are, by default, extracted to `Internal Storage/ZipXtract/`. You can customize this path in the app's settings.
+*   **Default Paths:** When archiving or extracting from within the app, the default output location is the parent directory of the source file(s). This can also be changed in the app settings.
 
-* Click a file to display the extraction menu for choosing extraction options.
+## App Permissions & Privacy
 
-* Files extracted using "Open With" menu of OS are stored in Internal Storage/ZipXtract by default. Modify this in app settings.
+ZipXtract requires the following permissions:
+*   **Read and Write Storage Permission:** For Android 10 and below.
+*   **Manage External Storage Permission:** For Android 11 and above.
 
-* The default location for archiving or extracting archives (within the app) is the parent directory of the respective file(s). This can be changed in the app settings.
+The application **does not require internet permission**, ensuring your files are processed locally on your device.
 
-## App permission
-
-Read and Write Storage Permission (Android 10 and below) and Manage External Storage Permission (Android 11 and above). The app does not have internet permission. Read more - [Privacy policy](https://sites.google.com/view/privacy-policy-zipxtract/home)
+For more details, please read our [Privacy Policy](https://sites.google.com/view/privacy-policy-zipxtract/home).
 
 ## Contributing
 
-Contributions are greatly appreciated! To contribute:
+We welcome contributions to make ZipXtract even better! Here’s how you can help:
 
-1. Fork the repository.
-2. Create a new branch (`git checkout -b feature/YourFeature`).
-3. Commit your changes (`git commit -m 'Add some feature'`).
-4. Push to the branch (`git push origin feature/YourFeature`).
-5. Open a Pull Request.
+1.  **Fork the Repository.**
+2.  **Create a New Branch:** `git checkout -b feature/YourAmazingFeature`
+3.  **Commit Your Changes:** `git commit -m 'Add some AmazingFeature'`
+4.  **Push to the Branch:** `git push origin feature/YourAmazingFeature`
+5.  **Open a Pull Request.**
 
-### Translate
+### Report Bugs or Request Features
+Found a bug or have an idea for a new feature? Please open an issue on our [GitHub Issues page](https://github.com/WirelessAlien/ZipXtract/issues).
+
+### Translate ZipXtract
 
 <a href="https://hosted.weblate.org/engage/zipxtract/">
 <img src="https://hosted.weblate.org/widget/zipxtract/translate/multi-auto.svg" alt="Translation status" />
@@ -93,11 +83,11 @@ This project is licensed under the GNU General Public License v3.0. See the [LIC
 
 The app icon vector by <a href="https://www.figma.com/community/file/1166831539721848736?ref=svgrepo.com" target="_blank">Solar Icons</a> in CC Attribution License via <a href="https://www.svgrepo.com/" target="_blank">SVG Repo</a>
 
-## Contact
 
-For any inquiries or feedback, please open an issue on the [GitHub repository](https://github.com/WirelessAlien/ZipXtract/issues).
+## Donate
 
-## Donate 
+If you find ZipXtract useful, please consider supporting its development:
+
 
 <noscript><a href="https://liberapay.com/WirelessAlien/donate"><img alt="Donate using Liberapay" src="https://liberapay.com/assets/widgets/donate.svg"></a></noscript>  
 
@@ -105,3 +95,7 @@ For any inquiries or feedback, please open an issue on the [GitHub repository](h
 * [Single Donation](https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-42024772MB847863LM7CZV7I)
 * [Monthly Donation](https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-3H0022989S4788323M7CZXHY)
 * [Yearly Donation](https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-9L472332EB637292NM7CZXVA)
+
+## Contact
+
+For any inquiries or feedback, please open an issue on the [GitHub repository](https://github.com/WirelessAlien/ZipXtract/issues).

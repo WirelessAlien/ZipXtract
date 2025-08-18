@@ -1,0 +1,4 @@
+Add direct compression of tar with compression method (tar.bz2, tar.gz, tar.lzma, tar.xz, tar.zst)
+Add ability to compress file shared from other app (single/multiple file supported, folder is not supported) #59
+Fix time stamp modification issue #50
+A few small fix
