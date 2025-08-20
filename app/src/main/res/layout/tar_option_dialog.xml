@@ -52,7 +52,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            app:cornerRadius="5dp"
+            app:cornerRadius="10dp"
             style="@style/Widget.Material3.Button.TonalButton"
             android:text="@string/show_hide_selected_files" />
 
@@ -98,7 +98,7 @@
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:chipCornerRadius="5dp"
+                app:chipCornerRadius="8dp"
                 android:text="@string/no_compression"
                 android:checked="true"/>
 
@@ -107,7 +107,7 @@
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:chipCornerRadius="5dp"
+                app:chipCornerRadius="8dp"
                 android:text="tar.bz2"/>
 
             <com.google.android.material.chip.Chip
@@ -115,7 +115,7 @@
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:chipCornerRadius="5dp"
+                app:chipCornerRadius="8dp"
                 android:text="tar.gz"/>
 
             <com.google.android.material.chip.Chip
@@ -123,7 +123,7 @@
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:chipCornerRadius="5dp"
+                app:chipCornerRadius="8dp"
                 android:text="tar.lzma"/>
 
             <com.google.android.material.chip.Chip
@@ -131,7 +131,7 @@
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:chipCornerRadius="5dp"
+                app:chipCornerRadius="8dp"
                 android:text="tar.xz"/>
 
             <com.google.android.material.chip.Chip
@@ -139,14 +139,14 @@
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:chipCornerRadius="5dp"
+                app:chipCornerRadius="8dp"
                 android:text="tar.zst"/>
         </com.google.android.material.chip.ChipGroup>
         <com.google.android.material.button.MaterialButton
             android:id="@+id/okButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cornerRadius="5dp"
+            app:cornerRadius="10dp"
             android:layout_marginStart="5dp"
             android:layout_marginEnd="5dp"
             android:layout_marginTop="16dp"
@@ -157,7 +157,7 @@
             android:id="@+id/cancelButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cornerRadius="5dp"
+            app:cornerRadius="10dp"
             android:layout_marginStart="5dp"
             android:layout_marginEnd="5dp"
             android:layout_marginTop="10dp"

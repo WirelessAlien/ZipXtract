@@ -23,12 +23,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.view.ActionMode
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.chip.Chip
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.adapter.FilePickerAdapter
 import com.wirelessalien.zipxtract.databinding.DialogFilePickerBinding
@@ -78,6 +78,9 @@ class FilePickerFragment : BottomSheetDialogFragment(), FilePickerAdapter.OnItem
         binding.backChip.setOnClickListener {
             handleBackNavigation()
         }
+        binding.fabBack.setOnClickListener {
+            handleBackNavigation()
+        }
         binding.btnCancel.setOnClickListener {
             dismiss()
         }
@@ -88,16 +91,20 @@ class FilePickerFragment : BottomSheetDialogFragment(), FilePickerAdapter.OnItem
             }
             dismiss()
         }
-        binding.fabSelectAll.setOnClickListener {
-            if (adapter.getSelectedItems().isNotEmpty()) {
-                adapter.deselectAll()
-            } else {
-                adapter.selectAll()
-            }
-            updateFabIcon()
-            updateSelectedCount()
+        binding.btnAddFolder.setOnClickListener {
+            val folder = File(currentPath)
+            MaterialAlertDialogBuilder(requireContext())
+                .setTitle(getString(R.string.add_folder_confirmation_title))
+                .setMessage(getString(R.string.add_folder_confirmation_message, folder.name))
+                .setNegativeButton(resources.getString(R.string.cancel)) { dialog, _ ->
+                    dialog.dismiss()
+                }
+                .setPositiveButton(resources.getString(R.string.add)) { _, _ ->
+                    listener?.onFilesSelected(listOf(folder))
+                    dismiss()
+                }
+                .show()
         }
-
         loadFiles(currentPath)
         updateCurrentPathChip()
         updateSelectedCount()
@@ -109,14 +116,6 @@ class FilePickerFragment : BottomSheetDialogFragment(), FilePickerAdapter.OnItem
             binding.btnSelect.text = getString(R.string.select_files, selectedCount)
         } else {
             binding.btnSelect.text = getString(R.string.add)
-        }
-    }
-
-    private fun updateFabIcon() {
-        if (adapter.getSelectedItems().isNotEmpty()) {
-            binding.fabSelectAll.setImageDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.ic_close))
-        } else {
-            binding.fabSelectAll.setImageDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.ic_select_all))
         }
     }
 
@@ -164,9 +163,9 @@ class FilePickerFragment : BottomSheetDialogFragment(), FilePickerAdapter.OnItem
         currentPath = path
         updateCurrentPathChip()
         if (path == Environment.getExternalStorageDirectory().absolutePath) {
-            binding.fabSelectAll.visibility = View.GONE
+            binding.btnAddFolder.visibility = View.GONE
         } else {
-            binding.fabSelectAll.visibility = View.VISIBLE
+            binding.btnAddFolder.visibility = View.VISIBLE
         }
         val file = File(path)
         val files = file.listFiles()?.toList() ?: emptyList()
@@ -186,7 +185,6 @@ class FilePickerFragment : BottomSheetDialogFragment(), FilePickerAdapter.OnItem
     }
 
     override fun toggleSelection(position: Int) {
-        updateFabIcon()
         updateSelectedCount()
     }
 

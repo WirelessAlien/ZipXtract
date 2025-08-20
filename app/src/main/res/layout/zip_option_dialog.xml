@@ -53,7 +53,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            app:cornerRadius="5dp"
+            app:cornerRadius="10dp"
             style="@style/Widget.Material3.Button.TonalButton"
             android:text="@string/show_hide_selected_files" />
 
@@ -89,7 +89,7 @@
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardCornerRadius="5dp"
+            app:cardCornerRadius="10dp"
             android:layout_margin="5dp">
 
             <Spinner
@@ -111,7 +111,7 @@
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardCornerRadius="5dp"
+            app:cardCornerRadius="10dp"
             android:layout_margin="5dp">
 
             <Spinner
@@ -141,7 +141,7 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentStart="true"
                 android:layout_toStartOf="@+id/encInfo"
-                app:cardCornerRadius="5dp"
+                app:cardCornerRadius="10dp"
                 android:layout_margin="5dp">
 
                 <Spinner
@@ -159,7 +159,7 @@
                 android:layout_centerVertical="true"
                 style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
                 app:icon="@drawable/ic_info"
-                app:cornerRadius="5dp"/>
+                app:cornerRadius="10dp"/>
         </RelativeLayout>
 
         <TextView
@@ -174,7 +174,7 @@
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardCornerRadius="5dp"
+            app:cardCornerRadius="10dp"
             android:layout_margin="5dp">
 
             <Spinner
@@ -227,7 +227,7 @@
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
-            app:cardCornerRadius="5dp"
+            app:cardCornerRadius="10dp"
             android:layout_margin="5dp"
             style="@style/Widget.Material3.CardView.Outlined"
             android:layout_height="wrap_content">
@@ -290,7 +290,7 @@
                 android:layout_margin="5dp"
                 android:layout_gravity="center_vertical"
                 android:layout_weight="1"
-                app:cardCornerRadius="5dp">
+                app:cardCornerRadius="10dp">
 
                 <Spinner
                     android:id="@+id/splitSizeUnitSpinner"
@@ -306,7 +306,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             style="@style/Widget.Material3.Button.TonalButton"
-            app:cornerRadius="5dp"
+            app:cornerRadius="10dp"
             android:text="@string/ok" />
 
         <com.google.android.material.button.MaterialButton
@@ -316,7 +316,7 @@
             android:layout_marginTop="10dp"
             android:layout_marginBottom="30dp"
             style="@style/Widget.Material3.Button.TonalButton"
-            app:cornerRadius="5dp"
+            app:cornerRadius="10dp"
             android:text="@string/cancel" />
     </LinearLayout>
 </ScrollView>

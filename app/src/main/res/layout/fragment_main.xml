@@ -71,7 +71,7 @@
                     android:checkable="false"
                     app:chipIconVisible="true"
                     app:chipIcon="@drawable/ic_change"
-                    app:chipCornerRadius="4dp"
+                    app:chipCornerRadius="8dp"
                     android:text="@string/storage"/>
 
                 <com.google.android.material.chip.Chip
@@ -81,7 +81,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/internal_storage"
                     android:layout_marginStart="5dp"
-                    app:chipCornerRadius="4dp"
+                    app:chipCornerRadius="8dp"
                     android:visibility="gone" />
 
                 <com.google.android.material.chip.Chip
@@ -91,7 +91,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/sd_card"
                     android:layout_marginStart="3dp"
-                    app:chipCornerRadius="4dp"
+                    app:chipCornerRadius="8dp"
                     android:visibility="gone" />
 
                 <com.google.android.material.chip.Chip
@@ -100,7 +100,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/root"
-                    app:chipCornerRadius="4dp"
+                    app:chipCornerRadius="8dp"
                     android:layout_marginStart="3dp"
                     android:visibility="gone" />
 

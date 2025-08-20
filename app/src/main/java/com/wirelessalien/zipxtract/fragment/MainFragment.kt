@@ -1268,7 +1268,9 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             bottomSheetDialog.dismiss()
         }
 
-        if (file.extension.equals("7z", ignoreCase = true)) {
+        val previewExtensions = listOf("rar", "7z", "zip", "tar")
+
+        if (file.extension.lowercase() in previewExtensions) {
             binding.btnPreviewArchive.visibility = View.VISIBLE
             binding.btnPreviewArchive.setOnClickListener {
                 val fragment = SevenZipFragment.newInstance(file.absolutePath)

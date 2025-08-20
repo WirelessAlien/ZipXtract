@@ -23,4 +23,4 @@
     android:elevation="4dp"
     android:clickable="true"
     android:checkable="false"
-    app:chipCornerRadius="4dp" />
+    app:chipCornerRadius="8dp" />

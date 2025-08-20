@@ -17,7 +17,6 @@
 
 package com.wirelessalien.zipxtract.service
 
-import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
@@ -103,17 +102,26 @@ class Update7zService : Service() {
 
             val itemsToRemoveIndices = mutableListOf<Int>()
             if (itemsToRemovePaths != null) {
+                val normalizedItemsToRemovePaths = itemsToRemovePaths.map { it.replace("\\", "/") }
                 for (i in 0 until inArchive.numberOfItems) {
-                    if (itemsToRemovePaths.contains(inArchive.getProperty(i, PropID.PATH) as String)) {
-                        itemsToRemoveIndices.add(i)
+                    val itemPath = (inArchive.getProperty(i, PropID.PATH) as String).replace("\\", "/")
+                    for (pathToRemove in normalizedItemsToRemovePaths) {
+                        if (itemPath == pathToRemove || itemPath.startsWith("$pathToRemove/")) {
+                            itemsToRemoveIndices.add(i)
+                            break
+                        }
                     }
                 }
             }
             itemsToRemoveIndices.sort()
 
-            val itemsToAddContents = itemsToAddPaths?.map { File(it).readBytes() }
+            val filesToAdd = if (itemsToAddPaths != null && itemsToAddNames != null) {
+                getFilesToAdd(itemsToAddPaths, itemsToAddNames)
+            } else {
+                emptyList()
+            }
 
-            val numToAdd = itemsToAddPaths?.size ?: 0
+            val numToAdd = filesToAdd.size
             val newCount = inArchive.numberOfItems - itemsToRemoveIndices.size + numToAdd
 
             outArchive.updateItems(outStream, newCount, object : IOutCreateCallback<IOutItemAllFormats> {
@@ -138,9 +146,10 @@ class Update7zService : Service() {
                     if (index >= inArchive.numberOfItems - itemsToRemoveIndices.size) {
                         // This is a new item
                         val addItemIndex = index - (inArchive.numberOfItems - itemsToRemoveIndices.size)
+                        val (file, pathInArchive) = filesToAdd[addItemIndex]
                         val outItem = outItemFactory.createOutItem()
-                        outItem.propertyPath = itemsToAddNames?.get(addItemIndex)
-                        outItem.dataSize = itemsToAddContents?.get(addItemIndex)?.size?.toLong()
+                        outItem.propertyPath = pathInArchive
+                        outItem.dataSize = file.length()
                         return outItem
                     }
 
@@ -159,7 +168,8 @@ class Update7zService : Service() {
                 override fun getStream(index: Int): ISequentialInStream? {
                     if (index >= inArchive.numberOfItems - itemsToRemoveIndices.size) {
                         val addItemIndex = index - (inArchive.numberOfItems - itemsToRemoveIndices.size)
-                        return ByteArrayStream(itemsToAddContents?.get(addItemIndex), true)
+                        val (file, _) = filesToAdd[addItemIndex]
+                        return ByteArrayStream(file.readBytes(), true)
                     }
                     return null
                 }
@@ -196,6 +206,28 @@ class Update7zService : Service() {
             sendLocalBroadcast(Intent(BroadcastConstants.ACTION_ARCHIVE_ERROR))
         }
         stopForegroundService()
+    }
+
+    private fun getFilesToAdd(
+        itemsToAddPaths: List<String>,
+        itemsToAddNames: List<String>
+    ): List<Pair<File, String>> {
+        val fileList = mutableListOf<Pair<File, String>>()
+        for (i in itemsToAddPaths.indices) {
+            val file = File(itemsToAddPaths[i])
+            val name = itemsToAddNames[i]
+            if (file.isDirectory) {
+                file.walkTopDown().forEach {
+                    if (it.isFile) {
+                        val relativePath = it.absolutePath.substring(file.absolutePath.length).removePrefix("/")
+                        fileList.add(Pair(it, "$name/$relativePath"))
+                    }
+                }
+            } else {
+                fileList.add(Pair(file, name))
+            }
+        }
+        return fileList
     }
 
     override fun onDestroy() {

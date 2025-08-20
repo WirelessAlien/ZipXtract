@@ -187,4 +187,6 @@
     <string name="directory_selection_disabled">Folder cannot be selected, select the files inside it.</string>
     <string name="select_file">Select File…</string>
     <string name="select_files">Add (%d)</string>
+    <string name="add_folder_confirmation_title">Add current folder?</string>
+    <string name="add_folder_confirmation_message">Do you want to add the folder \'%1$s\' to the archive?</string>
 </resources>

@@ -52,7 +52,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            app:cornerRadius="5dp"
+            app:cornerRadius="10dp"
             style="@style/Widget.Material3.Button.TonalButton"
             android:text="@string/show_hide_selected_files" />
 
@@ -127,7 +127,7 @@
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
-            app:cardCornerRadius="5dp"
+            app:cardCornerRadius="10dp"
             android:layout_margin="5dp"
             style="@style/Widget.Material3.CardView.Outlined"
             android:layout_height="wrap_content">
@@ -143,7 +143,7 @@
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
-            app:cardCornerRadius="5dp"
+            app:cardCornerRadius="10dp"
             android:layout_margin="5dp"
             style="@style/Widget.Material3.CardView.Outlined"
             android:layout_height="wrap_content">
@@ -181,7 +181,7 @@
             android:id="@+id/okButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cornerRadius="5dp"
+            app:cornerRadius="10dp"
             android:layout_marginStart="5dp"
             android:layout_marginEnd="5dp"
             android:layout_marginTop="16dp"
@@ -192,7 +192,7 @@
             android:id="@+id/noPasswordButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cornerRadius="5dp"
+            app:cornerRadius="10dp"
             android:layout_marginStart="5dp"
             android:layout_marginEnd="5dp"
             android:layout_marginTop="10dp"

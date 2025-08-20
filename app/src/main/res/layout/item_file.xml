@@ -56,7 +56,7 @@
             android:layout_height="48dp"
             style="@style/Widget.Material3.CardView.Filled"
             android:elevation="0dp"
-            app:cardCornerRadius="5dp"
+            app:cardCornerRadius="10dp"
             android:layout_margin="5dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"

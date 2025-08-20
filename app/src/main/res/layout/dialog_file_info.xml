@@ -98,7 +98,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        app:cornerRadius="5dp"
+        app:cornerRadius="10dp"
         style="@style/Widget.Material3.Button.TonalButton"
         android:text="@string/ok" />
 </LinearLayout>

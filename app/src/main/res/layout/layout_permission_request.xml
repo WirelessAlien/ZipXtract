@@ -37,7 +37,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:text="@string/grant_access"
-        app:cornerRadius="5dp"
+        app:cornerRadius="10dp"
         style="@style/Widget.Material3.Button.TonalButton"
         android:layout_margin="16dp"/>
 

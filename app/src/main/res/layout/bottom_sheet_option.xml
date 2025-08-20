@@ -51,7 +51,7 @@
                 android:layout_height="48dp"
                 style="@style/Widget.Material3.CardView.Filled"
                 android:elevation="0dp"
-                app:cardCornerRadius="5dp"
+                app:cardCornerRadius="10dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
@@ -98,7 +98,7 @@
             android:layout_marginEnd="16dp"
             android:text="@string/preview_archive"
             android:visibility="gone"
-            app:cornerRadius="5dp" />
+            app:cornerRadius="10dp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnOpenWith"
@@ -109,7 +109,7 @@
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
             android:layout_marginTop="20dp"
-            app:cornerRadius="5dp"/>
+            app:cornerRadius="10dp"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnExtract"
@@ -119,7 +119,7 @@
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
             android:layout_marginTop="20dp"
-            app:cornerRadius="5dp"
+            app:cornerRadius="10dp"
             android:text="@string/extract" />
 
         <TextView
@@ -145,7 +145,7 @@
                 android:layout_height="wrap_content"
                 style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_weight="1"
-                app:cornerRadius="5dp"
+                app:cornerRadius="10dp"
                 android:text="@string/rar" />
 
             <com.google.android.material.button.MaterialButton
@@ -156,7 +156,7 @@
                 android:layout_weight="1"
                 android:layout_marginStart="10dp"
                 android:layout_marginEnd="5dp"
-                app:cornerRadius="5dp"
+                app:cornerRadius="10dp"
                 android:text="@string/_7z" />
 
             <com.google.android.material.button.MaterialButton
@@ -166,7 +166,7 @@
                 android:layout_weight="1"
                 style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_marginStart="10dp"
-                app:cornerRadius="5dp"
+                app:cornerRadius="10dp"
                 android:text="@string/zip" />
         </LinearLayout>
 
@@ -174,7 +174,7 @@
             android:id="@+id/btnFileInfo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cornerRadius="5dp"
+            app:cornerRadius="10dp"
             style="@style/Widget.Material3.Button.TonalButton"
             android:layout_marginStart="16dp"
             android:layout_marginTop="20dp"
@@ -185,7 +185,7 @@
             android:id="@+id/btnDelete"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cornerRadius="5dp"
+            app:cornerRadius="10dp"
             android:layout_marginStart="16dp"
             android:layout_marginTop="20dp"
             android:layout_marginEnd="16dp"

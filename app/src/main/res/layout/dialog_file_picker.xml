@@ -27,15 +27,30 @@
         android:layout_marginTop="16dp"
         android:orientation="vertical">
 
-        <TextView
-            android:layout_width="wrap_content"
+        <RelativeLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="11dp"
-            android:layout_marginTop="10dp"
-            android:text="@string/select_file"
-            android:textAppearance="@style/TextAppearance.Material3.TitleLarge"/>
+            android:layout_marginTop="10dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/select_file"
+                android:layout_centerVertical="true"
+                android:textAppearance="@style/TextAppearance.Material3.TitleLarge"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnAddFolder"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                app:icon="@drawable/ic_add"
+                app:cornerRadius="10dp"
+                style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"/>
+        </RelativeLayout>
 
         <HorizontalScrollView
             android:id="@+id/horizontalScrollView"
@@ -58,7 +73,7 @@
                     android:layout_height="wrap_content"
                     android:clickable="true"
                     android:elevation="4dp"
-                    app:chipCornerRadius="4dp"
+                    app:chipCornerRadius="8dp"
                     app:chipIcon="@drawable/ic_arrow_back" />
 
                 <com.google.android.material.chip.ChipGroup
@@ -71,14 +86,29 @@
             </LinearLayout>
         </HorizontalScrollView>
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerView"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:layout_marginTop="5dp"
-            android:layout_marginStart="5dp"
-            android:layout_marginEnd="5dp" />
+        <FrameLayout
+         android:layout_width="match_parent"
+         android:layout_height="0dp"
+         android:layout_weight="1">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="5dp"
+                android:layout_marginStart="5dp"
+                android:layout_marginEnd="5dp" />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fabBack"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end|bottom"
+                android:layout_margin="16dp"
+                style="?attr/floatingActionButtonSmallStyle"
+                app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Medium"
+                android:src="@drawable/ic_arrow_back"/>
+         </FrameLayout>
 
         <LinearLayout
             android:id="@+id/buttonPanel"
@@ -106,16 +136,4 @@
                 app:cornerRadius="10dp" />
         </LinearLayout>
     </LinearLayout>
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab_select_all"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="80dp"
-        android:src="@drawable/ic_select_all"
-        android:visibility="gone"
-        app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Medium" />
-
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

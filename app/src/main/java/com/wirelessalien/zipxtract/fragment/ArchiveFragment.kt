@@ -420,6 +420,26 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
         val filePath = file.absolutePath
         binding.fileName.text = file.name
 
+        binding.fileExtension.text = if (file.extension.isNotEmpty()) {
+            if (file.extension.length > 4) {
+                "FILE"
+            } else {
+                if (file.extension.length == 4) {
+                    binding.fileExtension.textSize = 16f
+                } else {
+                    binding.fileExtension.textSize = 18f
+                }
+                file.extension.uppercase(Locale.getDefault())
+            }
+        } else {
+            "..."
+        }
+
+        binding.fileSize.text = bytesToString(file.length())
+
+        val dateFormat = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT, Locale.getDefault())
+        binding.fileDate.text = dateFormat.format(Date(file.lastModified()))
+
         binding.btnExtract.setOnClickListener {
             val fileExtension = file.name.split('.').takeLast(2).joinToString(".").lowercase()
             val supportedExtensions = listOf("tar.bz2", "tar.gz", "tar.lz4", "tar.lzma", "tar.sz", "tar.xz")
@@ -434,6 +454,20 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
                 }
             }
             bottomSheetDialog.dismiss()
+        }
+
+        val previewExtensions = listOf("rar", "7z", "zip", "tar")
+
+        if (file.extension.lowercase() in previewExtensions) {
+            binding.btnPreviewArchive.visibility = View.VISIBLE
+            binding.btnPreviewArchive.setOnClickListener {
+                val fragment = SevenZipFragment.newInstance(file.absolutePath)
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.container, fragment)
+                    .addToBackStack(null)
+                    .commit()
+                bottomSheetDialog.dismiss()
+            }
         }
 
         binding.btnMultiExtract.setOnClickListener {
