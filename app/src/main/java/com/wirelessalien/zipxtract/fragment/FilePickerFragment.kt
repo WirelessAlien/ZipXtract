@@ -17,12 +17,15 @@
 
 package com.wirelessalien.zipxtract.fragment
 
+import android.content.SharedPreferences
+import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.view.ActionMode
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -33,10 +36,20 @@ import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.adapter.FilePickerAdapter
 import com.wirelessalien.zipxtract.databinding.DialogFilePickerBinding
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.attribute.BasicFileAttributes
 
 class FilePickerFragment : BottomSheetDialogFragment(), FilePickerAdapter.OnItemClickListener, FilePickerAdapter.ActionModeProvider {
 
     override var actionMode: ActionMode? = null
+
+    enum class SortBy {
+        SORT_BY_NAME, SORT_BY_SIZE, SORT_BY_MODIFIED, SORT_BY_EXTENSION
+    }
+
+    private lateinit var sharedPreferences: SharedPreferences
+    private var sortBy: SortBy = SortBy.SORT_BY_NAME
+    private var sortAscending: Boolean = true
 
     interface FilePickerListener {
         fun onFilesSelected(files: List<File>)
@@ -59,6 +72,10 @@ class FilePickerFragment : BottomSheetDialogFragment(), FilePickerAdapter.OnItem
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
+        sortBy = SortBy.valueOf(sharedPreferences.getString("sortBy", SortBy.SORT_BY_NAME.name) ?: SortBy.SORT_BY_NAME.name)
+        sortAscending = sharedPreferences.getBoolean("sortAscending", true)
+
         dialog?.setOnShowListener {
             val bottomSheetDialog = it as BottomSheetDialog
             val bottomSheet = bottomSheetDialog.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
@@ -75,9 +92,6 @@ class FilePickerFragment : BottomSheetDialogFragment(), FilePickerAdapter.OnItem
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerView.adapter = adapter
 
-        binding.backChip.setOnClickListener {
-            handleBackNavigation()
-        }
         binding.fabBack.setOnClickListener {
             handleBackNavigation()
         }
@@ -121,25 +135,27 @@ class FilePickerFragment : BottomSheetDialogFragment(), FilePickerAdapter.OnItem
 
     private fun updateCurrentPathChip() {
         binding.chipGroupPath.removeAllViews()
-        val pathParts = currentPath.split("/").filter { it.isNotEmpty() }
-        var cumulativePath = ""
+        val rootPath = Environment.getExternalStorageDirectory().absolutePath
 
-        val rootFile = Environment.getExternalStorageDirectory()
         // root chip
         val rootChip = LayoutInflater.from(requireContext()).inflate(R.layout.custom_chip, binding.chipGroupPath, false) as Chip
         rootChip.text = getString(R.string.internal_storage)
         rootChip.setOnClickListener {
-            loadFiles(rootFile.absolutePath)
+            loadFiles(rootPath)
         }
         binding.chipGroupPath.addView(rootChip)
 
+        val relativePath = currentPath.removePrefix(rootPath)
+        val pathParts = relativePath.split("/").filter { it.isNotEmpty() }
+        var cumulativePath = rootPath
+
         for (part in pathParts) {
-            if (part == rootFile.name) continue
             cumulativePath += "/$part"
             val chip = LayoutInflater.from(requireContext()).inflate(R.layout.custom_chip, binding.chipGroupPath, false) as Chip
             chip.text = part
+            val pathToLoad = cumulativePath
             chip.setOnClickListener {
-                loadFiles(rootFile.absolutePath + cumulativePath)
+                loadFiles(pathToLoad)
             }
             binding.chipGroupPath.addView(chip)
         }
@@ -159,6 +175,19 @@ class FilePickerFragment : BottomSheetDialogFragment(), FilePickerAdapter.OnItem
         }
     }
 
+    private fun getFileTimeOfCreation(file: File): Long {
+        return if (file.exists()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val attr = Files.readAttributes(file.toPath(), BasicFileAttributes::class.java)
+                attr.lastModifiedTime().toMillis()
+            } else {
+                file.lastModified()
+            }
+        } else {
+            0L
+        }
+    }
+
     private fun loadFiles(path: String) {
         currentPath = path
         updateCurrentPathChip()
@@ -168,8 +197,49 @@ class FilePickerFragment : BottomSheetDialogFragment(), FilePickerAdapter.OnItem
             binding.btnAddFolder.visibility = View.VISIBLE
         }
         val file = File(path)
-        val files = file.listFiles()?.toList() ?: emptyList()
-        adapter.updateFilesAndFilter(ArrayList(files.sortedBy { it.name }))
+        val fileList = file.listFiles()?.toList() ?: emptyList()
+
+        val files = ArrayList<File>()
+        val directories = ArrayList<File>()
+
+        fileList.forEach { f ->
+            if (f.isDirectory) {
+                directories.add(f)
+            } else {
+                files.add(f)
+            }
+        }
+
+        // Sort files based on current criteria
+        when (sortBy) {
+            SortBy.SORT_BY_NAME -> {
+                directories.sortBy { it.name }
+                files.sortBy { it.name }
+            }
+            SortBy.SORT_BY_SIZE -> {
+                directories.sortBy { it.length() }
+                files.sortBy { it.length() }
+            }
+            SortBy.SORT_BY_MODIFIED -> {
+                directories.sortBy { getFileTimeOfCreation(it) }
+                files.sortBy { getFileTimeOfCreation(it) }
+            }
+            SortBy.SORT_BY_EXTENSION -> {
+                directories.sortBy { it.extension }
+                files.sortBy { it.extension }
+            }
+        }
+
+        if (!sortAscending) {
+            directories.reverse()
+            files.reverse()
+        }
+
+        val combinedList = ArrayList<File>()
+        combinedList.addAll(directories)
+        combinedList.addAll(files)
+
+        adapter.updateFilesAndFilter(combinedList)
     }
 
     override fun onItemClick(file: File, filePath: String) {

@@ -66,21 +66,10 @@
                 android:paddingEnd="16dp"
                 android:orientation="horizontal">
 
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/backChip"
-                    style="@style/Widget.Material3.Chip.Assist.Elevated"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:clickable="true"
-                    android:elevation="4dp"
-                    app:chipCornerRadius="8dp"
-                    app:chipIcon="@drawable/ic_arrow_back" />
-
                 <com.google.android.material.chip.ChipGroup
                     android:id="@+id/chipGroupPath"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
                     android:orientation="horizontal"
                     app:singleLine="true" />
             </LinearLayout>

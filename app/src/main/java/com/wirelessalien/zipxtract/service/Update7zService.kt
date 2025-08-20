@@ -149,7 +149,12 @@ class Update7zService : Service() {
                         val (file, pathInArchive) = filesToAdd[addItemIndex]
                         val outItem = outItemFactory.createOutItem()
                         outItem.propertyPath = pathInArchive
-                        outItem.dataSize = file.length()
+                        outItem.propertyLastModificationTime = java.util.Date(file.lastModified())
+                        if (file.isDirectory) {
+                            outItem.propertyIsDir = true
+                        } else {
+                            outItem.dataSize = file.length()
+                        }
                         return outItem
                     }
 
@@ -169,7 +174,9 @@ class Update7zService : Service() {
                     if (index >= inArchive.numberOfItems - itemsToRemoveIndices.size) {
                         val addItemIndex = index - (inArchive.numberOfItems - itemsToRemoveIndices.size)
                         val (file, _) = filesToAdd[addItemIndex]
-                        return ByteArrayStream(file.readBytes(), true)
+                        if (file.isFile) {
+                            return ByteArrayStream(file.readBytes(), true)
+                        }
                     }
                     return null
                 }
@@ -218,10 +225,14 @@ class Update7zService : Service() {
             val name = itemsToAddNames[i]
             if (file.isDirectory) {
                 file.walkTopDown().forEach {
-                    if (it.isFile) {
-                        val relativePath = it.absolutePath.substring(file.absolutePath.length).removePrefix("/")
-                        fileList.add(Pair(it, "$name/$relativePath"))
+                    val relativePath = it.absolutePath.substring(file.absolutePath.length)
+                        .removePrefix("/")
+                    val archivePath = if (relativePath.isEmpty()) {
+                        name
+                    } else {
+                        "$name/$relativePath"
                     }
+                    fileList.add(Pair(it, archivePath))
                 }
             } else {
                 fileList.add(Pair(file, name))

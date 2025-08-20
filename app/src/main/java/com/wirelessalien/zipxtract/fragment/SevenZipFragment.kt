@@ -167,8 +167,9 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
             cumulativePath += if (cumulativePath.isEmpty()) part else "/$part"
             val chip = LayoutInflater.from(requireContext()).inflate(R.layout.custom_chip, binding.chipGroupPath, false) as Chip
             chip.text = part
+            val pathToLoad = cumulativePath
             chip.setOnClickListener {
-                loadArchiveItems(cumulativePath)
+                loadArchiveItems(pathToLoad)
             }
             binding.chipGroupPath.addView(chip)
         }
