@@ -201,21 +201,8 @@ class ExtractRarService : Service() {
                 val inArchive: IInArchive = SevenZip.openInArchive(archiveFormat, inStream, archiveOpenVolumeCallback)
 
                 try {
-                    val itemCount = inArchive.numberOfItems
-                    for (i in 0 until itemCount) {
-                        inArchive.getProperty(i, PropID.PATH) as String
-                        destinationDir.mkdir()
-
-                        try {
-                            inArchive.extract(null, false, ExtractCallback(inArchive, destinationDir))
-                        } catch (e: SevenZipException) {
-                            e.printStackTrace()
-                            showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-                            sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(
-                                EXTRA_ERROR_MESSAGE, e.message ?: getString(R.string.general_error_msg)))
-                            return
-                        }
-                    }
+                    destinationDir.mkdir()
+                    inArchive.extract(null, false, ExtractCallback(inArchive, destinationDir))
                     showCompletionNotification()
                     sendLocalBroadcast(Intent(ACTION_EXTRACTION_COMPLETE).putExtra(EXTRA_DIR_PATH, destinationDir.path))
                 } catch (e: SevenZipException) {
