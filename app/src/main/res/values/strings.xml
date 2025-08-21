@@ -191,4 +191,5 @@
     <string name="liberapay" translatable="false">Liberapay</string>
     <string name="author_wirelessalien" translatable="false">Author: WirelessAlien</string>
     <string name="zstd" translatable="false">ZSTD</string>
+    <string name="donate_desc">If you find ZipXtract useful, please consider supporting its development:</string>
 </resources>

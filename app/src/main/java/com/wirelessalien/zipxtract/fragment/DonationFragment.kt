@@ -44,6 +44,18 @@ class DonationFragment : DialogFragment() {
             startActivity(intent)
         }
 
+        binding.paypalBtn.setOnClickListener {
+            val url = "https://paypal.me/WirelessAlien"
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            startActivity(intent)
+        }
+
+        binding.kofiBtn.setOnClickListener {
+            val url = "https://ko-fi.com/wirelessalien"
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            startActivity(intent)
+        }
+
         return MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
             .setView(dView)
             .create()

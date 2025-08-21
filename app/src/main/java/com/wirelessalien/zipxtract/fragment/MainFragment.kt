@@ -467,6 +467,8 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             hideExtendedFabs()
         }
 
+        checkAndShowDonationFragment()
+
         updateCurrentPathChip()
 
         handleOpenWithIntent()
@@ -972,6 +974,23 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 // Permission denied
                 Toast.makeText(requireContext(), getString(R.string.permission_denied), Toast.LENGTH_SHORT).show()
                 requireActivity().finish()
+            }
+        }
+    }
+
+    private fun checkAndShowDonationFragment() {
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
+        val currentVersionPreference = 1
+        val savedVersionPreference = sharedPreferences.getInt("donation_dialog_version", 0)
+
+        if (checkStoragePermissions() && savedVersionPreference < currentVersionPreference) {
+            val donationFragment = DonationFragment()
+            donationFragment.show(parentFragmentManager, "donationFragment")
+
+            donationFragment.dialog?.setOnDismissListener {
+                sharedPreferences.edit()
+                    .putInt("donation_dialog_version", currentVersionPreference)
+                    .apply()
             }
         }
     }

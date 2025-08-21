@@ -28,10 +28,9 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="10dp"
-        android:text="@string/donate"/>
+        android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
+        android:layout_marginBottom="16dp"
+        android:text="@string/donate_desc"/>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/libPayBtn"
@@ -51,4 +50,24 @@
         style="@style/Widget.Material3.Button.TonalButton"
         app:cornerRadius="10dp"
         android:text="Github Sponsor" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/paypalBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        app:icon="@drawable/paypal_icon"
+        style="@style/Widget.Material3.Button.TonalButton"
+        app:cornerRadius="10dp"
+        android:text="PayPal" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/kofiBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        app:icon="@drawable/kofi_icon"
+        style="@style/Widget.Material3.Button.TonalButton"
+        app:cornerRadius="10dp"
+        android:text="Ko-fi" />
 </LinearLayout>

@@ -43,7 +43,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import net.sf.sevenzipjbinding.ICryptoGetTextPassword
 import net.sf.sevenzipjbinding.IOutCreateCallback
-import net.sf.sevenzipjbinding.IOutFeatureSetEncryptHeader
 import net.sf.sevenzipjbinding.IOutItem7z
 import net.sf.sevenzipjbinding.ISequentialInStream
 import net.sf.sevenzipjbinding.SevenZip
@@ -164,14 +163,11 @@ class Archive7zService : Service() {
             RandomAccessFile(sevenZFile, "rw").use { raf ->
                 val outArchive = SevenZip.openOutArchive7z()
 
+                outArchive.setHeaderEncryption(true)
                 outArchive.setLevel(compressionLevel)
                 outArchive.setSolid(solid)
                 outArchive.setSolidSize(8192)
                 outArchive.setThreadCount(threadCount)
-
-                if (!password.isNullOrEmpty() && outArchive is IOutFeatureSetEncryptHeader) {
-                    outArchive.setHeaderEncryption(true)
-                }
 
                 outArchive.createArchive(
                     RandomAccessFileOutStream(raf), filesToArchive.size,
