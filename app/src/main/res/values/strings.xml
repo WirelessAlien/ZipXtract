@@ -76,6 +76,7 @@
     <string name="confirm_password">Confirm Password</string>
     <string name="passwords_do_not_match">Password do not match</string>
     <string name="wrong_password">Wrong password</string>
+    <string name="error_too_many_parts">The cutting would generate %1$d parts (maximum allowed: %2$d)</string>
     <string name="file_already_exists">File already exists</string>
     <string name="select_archive_type_title">Select archive type</string>
 

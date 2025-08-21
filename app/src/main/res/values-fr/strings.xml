@@ -120,4 +120,5 @@
     <string name="confirm_password">Confirmer mot de passe</string>
     <string name="passwords_do_not_match">Mot de passe ne correspond pas</string>
     <string name="wrong_password">Mot de passe faux</string>
+    <string name="error_too_many_parts">Le découpage générerait %1$d parties (maximum autorisé : %2$d)</string>
 </resources>

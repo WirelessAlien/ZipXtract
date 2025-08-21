@@ -1542,13 +1542,23 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         ContextCompat.startForegroundService(requireContext(), intent)
     }
 
-    fun convertToBytes(size: Long?, unit: String): Long? {
-        return size?.times(when (unit) {
+    fun convertToBytes(size: Long, unit: String): Long {
+        return size.times(when (unit) {
             "KB" -> 1024L
             "MB" -> 1024L * 1024
             "GB" -> 1024L * 1024 * 1024
             else -> 1024L
         })
+    }
+
+    /** Returns the number of parts (rounded up) */
+    fun getMultiZipPartsCount(selectedFilesSize: Long, splitZipSize: Long): Long {
+        if (splitZipSize <= 0) {
+            return Long.MAX_VALUE
+        }
+        val division = selectedFilesSize / splitZipSize
+        val remainder = selectedFilesSize % splitZipSize
+        return if (remainder > 0) division + 1 else division
     }
 
     fun startSevenZService(password: String?, archiveName: String, compressionLevel: Int, solid: Boolean, threadCount: Int, filesToArchive: List<String>) {

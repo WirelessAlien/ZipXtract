@@ -29,6 +29,7 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.wirelessalien.zipxtract.adapter.FileAdapter
@@ -204,6 +205,7 @@ class ZipOptionDialogFragment : DialogFragment() {
         encryptionStrengthSpinner.adapter = encryptionStrengthAdapter
 
         val mainFragment = parentFragmentManager.findFragmentById(com.wirelessalien.zipxtract.R.id.container) as? MainFragment
+            ?: return
 
         binding.okButton.setOnClickListener {
             val archiveName = zipNameEditText.text.toString().ifBlank { defaultName }
@@ -228,20 +230,55 @@ class ZipOptionDialogFragment : DialogFragment() {
                 null
             }
 
-            val splitSizeText = splitSizeInput.text.toString()
+            val isSplitZip = splitZipCheckbox.isChecked
+            val splitSizeText = splitSizeInput.text.toString().toLongOrNull() ?: 64L
             val splitSizeUnit = splitSizeUnits[splitSizeUnitSpinner.selectedItemPosition]
-            val splitZipSize = if (splitZipCheckbox.isChecked) {
-                mainFragment?.convertToBytes(splitSizeText.toLongOrNull() ?: 64, splitSizeUnit)
-            } else {
-                null
+            val splitZipSize = mainFragment.convertToBytes(splitSizeText, splitSizeUnit)
+
+            if (!isSplitZip) {
+                mainFragment.startZipService(
+                    archiveName,
+                    password,
+                    selectedCompressionMethod,
+                    selectedCompressionLevel,
+                    isEncryptionEnabled,
+                    selectedEncryptionMethod,
+                    selectedEncryptionStrength,
+                    selectedFilePaths
+                )
+                dismiss()
+                return@setOnClickListener
             }
 
-            if (splitZipCheckbox.isChecked) {
-                mainFragment?.startSplitZipService(archiveName, password, selectedCompressionMethod, selectedCompressionLevel, isEncryptionEnabled, selectedEncryptionMethod, selectedEncryptionStrength, selectedFilePaths, splitZipSize)
-            } else {
-                mainFragment?.startZipService(archiveName, password, selectedCompressionMethod, selectedCompressionLevel, isEncryptionEnabled, selectedEncryptionMethod, selectedEncryptionStrength, selectedFilePaths)
+            viewLifecycleOwner.lifecycleScope.launch {
+                val selectedFilesSize = withContext(Dispatchers.IO) {
+                    selectedFilePaths.sumOf { File(it).length() }
+                }
+                val partsCount = mainFragment.getMultiZipPartsCount(selectedFilesSize, splitZipSize)
+                if (partsCount > MAX_MULTI_ZIP_PARTS) {
+                    splitSizeInput.error = getString(
+                        com.wirelessalien.zipxtract.R.string.error_too_many_parts,
+                        partsCount,
+                        MAX_MULTI_ZIP_PARTS
+                    )
+                    return@launch
+                } else {
+                    splitSizeInput.error = null
+                }
+
+                mainFragment.startSplitZipService(
+                    archiveName,
+                    password,
+                    selectedCompressionMethod,
+                    selectedCompressionLevel,
+                    isEncryptionEnabled,
+                    selectedEncryptionMethod,
+                    selectedEncryptionStrength,
+                    selectedFilePaths,
+                    splitZipSize
+                )
+                dismiss()
             }
-            dismiss()
         }
 
         binding.cancelButton.setOnClickListener {
@@ -264,6 +301,7 @@ class ZipOptionDialogFragment : DialogFragment() {
 
     companion object {
         private const val ARG_FILE_PATHS = "arg_file_paths"
+        private const val MAX_MULTI_ZIP_PARTS = 100L
 
         fun newInstance(adapter: FileAdapter): ZipOptionDialogFragment {
             val fragment = ZipOptionDialogFragment()
