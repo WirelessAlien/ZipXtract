@@ -41,6 +41,16 @@
     <string name="invalid_value">Invalid input</string>
     <string name="please_enter_value_between_0_and_22">Enter a value between 0 and 22</string>
     <string name="archiving_started_in_background">Archiving started in background</string>
+    <string name="no_compression">No Compression</string>
+    <string name="remove">Remove</string>
+    <string name="preview_archive">Preview Archive</string>
+    <string name="add">Add</string>
+    <string name="directory_selection_disabled">Folder cannot be selected, select the files inside it.</string>
+    <string name="select_file">Select File…</string>
+    <string name="select_files">Add (%d)</string>
+    <string name="add_folder_confirmation_title">Add current folder?</string>
+    <string name="add_folder_confirmation_message">Do you want to add the folder \'%1$s\' to the archive?</string>
+    <string name="split_parts_number_req">Allow more than 100 split parts</string>
 
     <!-- Bottom navigation -->
     <string name="archive">Archive</string>
@@ -76,7 +86,7 @@
     <string name="confirm_password">Confirm Password</string>
     <string name="passwords_do_not_match">Password do not match</string>
     <string name="wrong_password">Wrong password</string>
-    <string name="error_too_many_parts">The cutting would generate %1$d parts (maximum allowed: %2$d)</string>
+    <string name="error_too_many_parts">This would generate %1$d parts</string>
     <string name="file_already_exists">File already exists</string>
     <string name="select_archive_type_title">Select archive type</string>
 
@@ -181,13 +191,4 @@
     <string name="liberapay" translatable="false">Liberapay</string>
     <string name="author_wirelessalien" translatable="false">Author: WirelessAlien</string>
     <string name="zstd" translatable="false">ZSTD</string>
-    <string name="no_compression">No Compression</string>
-    <string name="remove">Remove</string>
-    <string name="preview_archive">Preview Archive</string>
-    <string name="add">Add</string>
-    <string name="directory_selection_disabled">Folder cannot be selected, select the files inside it.</string>
-    <string name="select_file">Select File…</string>
-    <string name="select_files">Add (%d)</string>
-    <string name="add_folder_confirmation_title">Add current folder?</string>
-    <string name="add_folder_confirmation_message">Do you want to add the folder \'%1$s\' to the archive?</string>
 </resources>

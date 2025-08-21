@@ -258,12 +258,15 @@ class ZipOptionDialogFragment : DialogFragment() {
                 if (partsCount > MAX_MULTI_ZIP_PARTS) {
                     splitSizeInput.error = getString(
                         com.wirelessalien.zipxtract.R.string.error_too_many_parts,
-                        partsCount,
-                        MAX_MULTI_ZIP_PARTS
+                        partsCount
                     )
-                    return@launch
+                    binding.overrideLimitCheckbox.visibility = View.VISIBLE
+                    if (!binding.overrideLimitCheckbox.isChecked) {
+                        return@launch
+                    }
                 } else {
                     splitSizeInput.error = null
+                    binding.overrideLimitCheckbox.visibility = View.GONE
                 }
 
                 mainFragment.startSplitZipService(
