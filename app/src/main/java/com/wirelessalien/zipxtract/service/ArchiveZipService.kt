@@ -175,6 +175,7 @@ class ArchiveZipService : Service() {
                 this.encryptionMethod = if (isEncrypted) encryptionMethod else null
                 this.isEncryptFiles = isEncrypted
                 this.aesKeyStrength = if (isEncrypted) aesStrength else null
+                this.isIncludeRootFolder = false
             }
 
             val baseDirectory = File(selectedFiles.first()).parentFile
