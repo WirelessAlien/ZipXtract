@@ -609,8 +609,12 @@ class ExtractArchiveService : Service() {
                 ExtractOperationResult.OK -> {
                     try {
                         uos?.close()
-                        if (this.currentUnpackedFile != null && this.currentUnpackedFile!!.isFile) {
-                            val modTime = inArchive.getProperty(this.currentFileIndex, PropID.LAST_MODIFICATION_TIME) as? Date
+                        if (this.currentUnpackedFile != null) {
+                            val modTime =
+                                inArchive.getProperty(
+                                    this.currentFileIndex,
+                                    PropID.LAST_MODIFICATION_TIME
+                                ) as? Date
                             if (modTime != null) {
                                 this.currentUnpackedFile!!.setLastModified(modTime.time)
                             }
@@ -647,10 +651,6 @@ class ExtractArchiveService : Service() {
 
             if (isDir) {
                 this.currentUnpackedFile!!.mkdir()
-                val modTime = inArchive.getProperty(this.currentFileIndex, PropID.LAST_MODIFICATION_TIME) as? Date
-                if (modTime != null) {
-                    this.currentUnpackedFile!!.setLastModified(modTime.time)
-                }
             } else {
                 try {
                     val dir = this.currentUnpackedFile!!.parent?.let { File(it) }

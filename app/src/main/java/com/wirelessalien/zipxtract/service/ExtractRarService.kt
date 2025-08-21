@@ -271,8 +271,11 @@ class ExtractRarService : Service() {
                 ExtractOperationResult.OK -> {
                     try {
                         uos?.close()
-                        if (this.currentUnpackedFile != null && this.currentUnpackedFile!!.isFile) {
-                            val modTime = inArchive.getProperty(this.currentFileIndex, PropID.LAST_MODIFICATION_TIME) as? Date
+                        if (this.currentUnpackedFile != null) {
+                            val modTime = inArchive.getProperty(
+                                this.currentFileIndex,
+                                PropID.LAST_MODIFICATION_TIME
+                            ) as? Date
                             if (modTime != null) {
                                 this.currentUnpackedFile!!.setLastModified(modTime.time)
                             }
@@ -309,10 +312,6 @@ class ExtractRarService : Service() {
 
             if (isDir) {
                 this.currentUnpackedFile!!.mkdirs()
-                val modTime = inArchive.getProperty(this.currentFileIndex, PropID.LAST_MODIFICATION_TIME) as? Date
-                if (modTime != null) {
-                    this.currentUnpackedFile!!.setLastModified(modTime.time)
-                }
             } else {
                 try {
                     val parentDir = this.currentUnpackedFile!!.parentFile

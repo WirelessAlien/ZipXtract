@@ -1268,7 +1268,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             bottomSheetDialog.dismiss()
         }
 
-        val previewExtensions = listOf("rar", "7z", "zip", "tar")
+        val previewExtensions = listOf("7z", "zip")
 
         if (file.extension.lowercase() in previewExtensions) {
             binding.btnPreviewArchive.visibility = View.VISIBLE
