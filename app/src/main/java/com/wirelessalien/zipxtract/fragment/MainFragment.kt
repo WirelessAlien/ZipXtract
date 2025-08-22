@@ -980,16 +980,16 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
     private fun checkAndShowDonationFragment() {
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
-        val currentVersionPreference = 1
-        val savedVersionPreference = sharedPreferences.getInt("donation_dialog_version", 0)
+        val newVersionPreference = 2
+        val savedVersionPreference = sharedPreferences.getInt("donation_dialog_version", 1)
 
-        if (checkStoragePermissions() && savedVersionPreference < currentVersionPreference) {
+        if (checkStoragePermissions() && savedVersionPreference == 1) {
             val donationFragment = DonationFragment()
             donationFragment.show(parentFragmentManager, "donationFragment")
 
             donationFragment.dialog?.setOnDismissListener {
                 sharedPreferences.edit()
-                    .putInt("donation_dialog_version", currentVersionPreference)
+                    .putInt("donation_dialog_version", newVersionPreference)
                     .apply()
             }
         }
