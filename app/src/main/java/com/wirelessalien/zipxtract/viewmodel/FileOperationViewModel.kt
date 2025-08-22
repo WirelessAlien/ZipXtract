@@ -18,9 +18,18 @@
 package com.wirelessalien.zipxtract.viewmodel
 
 import androidx.lifecycle.ViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import java.io.File
 
 class FileOperationViewModel : ViewModel() {
-    var isCopyAction: Boolean = false
-    var filesToCopyMove: List<File> = emptyList()
+    private val _filesToCopyMove = MutableStateFlow<List<File>>(emptyList())
+    val filesToCopyMove: StateFlow<List<File>> = _filesToCopyMove.asStateFlow()
+
+    var isCopyAction: Boolean = true
+
+    fun setFilesToCopyMove(files: List<File>) {
+        _filesToCopyMove.value = files
+    }
 }

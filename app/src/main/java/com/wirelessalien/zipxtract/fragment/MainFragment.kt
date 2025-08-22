@@ -70,6 +70,7 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -402,10 +403,14 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         currentPath = arguments?.getString("path")
         searchHandler = Handler(Looper.getMainLooper())
 
-        if (fileOperationViewModel.filesToCopyMove.isNotEmpty()) {
-            showPasteFab()
-        } else {
-            binding.pasteFab.visibility = View.GONE
+        lifecycleScope.launch {
+            fileOperationViewModel.filesToCopyMove.collect { files ->
+                if (files.isNotEmpty()) {
+                    showPasteFab()
+                } else {
+                    binding.pasteFab.visibility = View.GONE
+                }
+            }
         }
 
         if (!checkStoragePermissions()) {
@@ -843,8 +848,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
     private fun startCopyMoveAction(isCopy: Boolean) {
         fileOperationViewModel.isCopyAction = isCopy
-        fileOperationViewModel.filesToCopyMove = selectedFiles.toList()
-        showPasteFab()
+        fileOperationViewModel.setFilesToCopyMove(selectedFiles.toList())
         actionMode?.finish()
     }
 
@@ -857,7 +861,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
     private fun pasteFiles() {
         val destinationPath = currentPath ?: return
-        val filesToCopyMove = fileOperationViewModel.filesToCopyMove.map { it.absolutePath }
+        val filesToCopyMove = fileOperationViewModel.filesToCopyMove.value.map { it.absolutePath }
         val isCopyAction = fileOperationViewModel.isCopyAction
 
         val intent = Intent(requireContext(), CopyMoveService::class.java).apply {
@@ -866,8 +870,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             putExtra(CopyMoveService.EXTRA_IS_COPY_ACTION, isCopyAction)
         }
         ContextCompat.startForegroundService(requireContext(), intent)
-        fileOperationViewModel.filesToCopyMove = emptyList()
-        binding.pasteFab.visibility = View.GONE
+        fileOperationViewModel.setFilesToCopyMove(emptyList())
     }
 
     private fun deleteSelectedFiles() {
