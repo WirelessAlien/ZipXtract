@@ -18,19 +18,25 @@
 package com.wirelessalien.zipxtract.fragment
 
 import android.app.Dialog
+import android.content.DialogInterface
 import android.content.Intent
+import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
 import androidx.fragment.app.DialogFragment
+import androidx.preference.PreferenceManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.databinding.FragmentDonationBinding
 
 class DonationFragment : DialogFragment() {
 
+   private lateinit var preference: SharedPreferences
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val binding = FragmentDonationBinding.inflate(layoutInflater)
         val dView = binding.root
+
+        preference = PreferenceManager.getDefaultSharedPreferences(requireContext())
 
         binding.libPayBtn.setOnClickListener {
             val url = "https://liberapay.com/WirelessAlien/donate"
@@ -59,5 +65,12 @@ class DonationFragment : DialogFragment() {
         return MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
             .setView(dView)
             .create()
+    }
+
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
+        preference.edit()
+            .putInt("donation_dialog_version", 2)
+            .apply()
     }
 }
