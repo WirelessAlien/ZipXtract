@@ -91,10 +91,11 @@ If you find ZipXtract useful, please consider supporting its development:
 
 <noscript><a href="https://liberapay.com/WirelessAlien/donate"><img alt="Donate using Liberapay" src="https://liberapay.com/assets/widgets/donate.svg"></a></noscript>  
 
-#### Paypal
-* [Single Donation](https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-42024772MB847863LM7CZV7I)
-* [Monthly Donation](https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-3H0022989S4788323M7CZXHY)
-* [Yearly Donation](https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-9L472332EB637292NM7CZXVA)
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/I2I01JN1GG)
+
+<a href="https://www.paypal.me/WirelessAlien">
+  <img src="https://github.com/user-attachments/assets/d2b47113-80e3-40f7-aeb1-a4e07c56c2ef" alt="paypal" width="100" />
+</a>
 
 ## Contact
 

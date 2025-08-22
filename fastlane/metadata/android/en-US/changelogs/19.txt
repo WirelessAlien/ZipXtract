@@ -1,4 +1,5 @@
-Add direct compression of tar with compression method (tar.bz2, tar.gz, tar.lzma, tar.xz, tar.zst)
-Add ability to compress file shared from other app (single/multiple file supported, folder is not supported) #59
-Fix time stamp modification issue #50
+Fix RAR extraction issue
+Add ability to update zip and 7z archive
+Prevent unexpected number of multio zip parts by @loewy78
+Update zip compression structure
 A few small fix
