@@ -27,12 +27,10 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.icu.text.DateFormat
-import android.os.Build
 import android.os.Bundle
-import android.os.Environment
 import android.os.Handler
 import android.os.Looper
-import android.os.storage.StorageManager
+import android.provider.MediaStore
 import android.text.Editable
 import android.view.LayoutInflater
 import android.view.Menu
@@ -78,13 +76,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -255,20 +250,27 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
     }
 
     private fun loadArchiveFiles() {
-        binding.progressBar.visibility = View.VISIBLE
+        binding.shimmerViewContainer.startShimmer()
+        binding.shimmerViewContainer.visibility = View.VISIBLE
+        binding.recyclerView.visibility = View.GONE
 
         CoroutineScope(Dispatchers.IO).launch {
             val archiveFiles = getArchiveFiles()
             withContext(Dispatchers.Main) {
                 adapter.updateFilesAndFilter(archiveFiles)
-                binding.progressBar.visibility = View.GONE
+                binding.shimmerViewContainer.stopShimmer()
+                binding.shimmerViewContainer.visibility = View.GONE
+                binding.recyclerView.visibility = View.VISIBLE
             }
         }
     }
 
     private fun searchFiles(query: String?) {
         isSearchActive = !query.isNullOrEmpty()
-        binding.progressBar.visibility = View.VISIBLE
+
+        binding.shimmerViewContainer.startShimmer()
+        binding.shimmerViewContainer.visibility = View.VISIBLE
+        binding.recyclerView.visibility = View.GONE
 
         adapter.updateFilesAndFilter(ArrayList())
 
@@ -279,105 +281,107 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
                 .flowOn(Dispatchers.IO)
                 .catch { e ->
                     withContext(Dispatchers.Main) {
-                        binding.progressBar.visibility = View.GONE
+                        binding.shimmerViewContainer.stopShimmer()
+                        binding.shimmerViewContainer.visibility = View.GONE
                         Toast.makeText(requireContext(), e.message, Toast.LENGTH_SHORT).show()
                     }
                 }
                 .collect { files ->
                     withContext(Dispatchers.Main) {
                         adapter.updateFilesAndFilter(ArrayList(files))
-                        binding.progressBar.visibility = View.GONE
+                        binding.shimmerViewContainer.stopShimmer()
+                        binding.shimmerViewContainer.visibility = View.GONE
+                        binding.recyclerView.visibility = View.VISIBLE
                     }
                 }
         }
     }
 
     private fun searchAllFiles(query: String?): Flow<List<File>> = flow {
-        val results = mutableListOf<File>()
-        val archiveFiles = getArchiveFiles()
+        val results = getArchiveFiles(query)
+        emit(results)
+    }
 
-        for (file in archiveFiles) {
-            if (!currentCoroutineContext().isActive) return@flow
-
-            if (query.isNullOrEmpty() || file.name.contains(query, true)) {
-                results.add(file)
-                emit(results.toList())
-            }
-        }
-    }.distinctUntilChanged { old, new -> old.size == new.size }
-
-    private fun getArchiveFiles(): ArrayList<File> {
+    private fun getArchiveFiles(query: String? = null): ArrayList<File> {
         val archiveFiles = ArrayList<File>()
-        val internalStorageDirectory = File(Environment.getExternalStorageDirectory().absolutePath)
-        val sdCardPath = getSdCardPath()
-        val directories = listOfNotNull(internalStorageDirectory, sdCardPath?.let { File(it) })
+        val uri = MediaStore.Files.getContentUri("external")
+        val projection = arrayOf(
+            MediaStore.Files.FileColumns.DATA,
+        )
 
-        for (directory in directories) {
-            val files = directory.listFiles() ?: continue
+        val extensionSelection = archiveExtensions.joinToString(" OR ") {
+            "${MediaStore.Files.FileColumns.DATA} LIKE ?"
+        }
+        val extensionSelectionArgs = archiveExtensions.map { "%.$it" }
 
-            for (file in files) {
-                if (file.isDirectory) {
-                    archiveFiles.addAll(getArchiveFilesFromDirectory(file))
-                } else if (archiveExtensions.contains(file.extension.lowercase())) {
-                    archiveFiles.add(file)
+        val finalSelection: String
+        val finalSelectionArgs: Array<String>
+
+        if (!query.isNullOrBlank()) {
+            finalSelection = "($extensionSelection) AND ${MediaStore.Files.FileColumns.DISPLAY_NAME} LIKE ?"
+            val queryArg = "%$query%"
+            finalSelectionArgs = (extensionSelectionArgs + queryArg).toTypedArray()
+        } else {
+            finalSelection = extensionSelection
+            finalSelectionArgs = extensionSelectionArgs.toTypedArray()
+        }
+
+        val sortOrderColumn = when (sortBy) {
+            SortBy.SORT_BY_NAME -> MediaStore.Files.FileColumns.DISPLAY_NAME
+            SortBy.SORT_BY_SIZE -> MediaStore.Files.FileColumns.SIZE
+            SortBy.SORT_BY_MODIFIED -> MediaStore.Files.FileColumns.DATE_MODIFIED
+            SortBy.SORT_BY_EXTENSION -> MediaStore.Files.FileColumns.DISPLAY_NAME // Fallback for extension sort
+        }
+        val sortDirection = if (sortAscending) "ASC" else "DESC"
+        val sortOrder = "$sortOrderColumn $sortDirection"
+
+        try {
+            requireContext().contentResolver.query(
+                uri,
+                projection,
+                finalSelection,
+                finalSelectionArgs,
+                sortOrder
+            )?.use { cursor ->
+                val dataColumn = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DATA)
+                while (cursor.moveToNext()) {
+                    val path = cursor.getString(dataColumn)
+                    if (path != null) {
+                        val file = File(path)
+                        if (archiveExtensions.contains(file.extension.lowercase())) {
+                            archiveFiles.add(file)
+                        }
+                    }
                 }
             }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
 
-        when (sortBy) {
-            SortBy.SORT_BY_NAME -> archiveFiles.sortBy { it.name }
-            SortBy.SORT_BY_SIZE -> archiveFiles.sortBy { it.length() }
-            SortBy.SORT_BY_MODIFIED -> archiveFiles.sortBy { it.lastModified() }
-            SortBy.SORT_BY_EXTENSION -> archiveFiles.sortBy { it.extension }
-        }
-
-        if (!sortAscending) {
-            archiveFiles.reverse()
+        if (sortBy == SortBy.SORT_BY_EXTENSION) {
+            if (sortAscending) {
+                archiveFiles.sortBy { it.extension }
+            } else {
+                archiveFiles.sortByDescending { it.extension }
+            }
         }
 
         return archiveFiles
-    }
-
-    private fun getArchiveFilesFromDirectory(directory: File): ArrayList<File> {
-        val archiveFiles = ArrayList<File>()
-        val files = directory.listFiles() ?: return archiveFiles
-
-        for (file in files) {
-            if (file.isDirectory) {
-                archiveFiles.addAll(getArchiveFilesFromDirectory(file))
-            } else if (archiveExtensions.contains(file.extension.lowercase())) {
-                archiveFiles.add(file)
-            }
-        }
-        return archiveFiles
-    }
-
-    private fun getSdCardPath(): String? {
-        val storageManager = requireContext().getSystemService(Context.STORAGE_SERVICE) as StorageManager
-        val storageVolumes = storageManager.storageVolumes
-        for (storageVolume in storageVolumes) {
-            if (storageVolume.isRemovable) {
-                val storageVolumePath = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    storageVolume.directory?.absolutePath
-                } else {
-                    Environment.getExternalStorageDirectory().absolutePath
-                }
-                if (storageVolumePath != null && storageVolumePath != Environment.getExternalStorageDirectory().absolutePath) {
-                    return storageVolumePath
-                }
-            }
-        }
-        return null
     }
 
     private fun updateAdapterWithFullList() {
-        binding.progressBar.visibility = View.VISIBLE
         if (!isSearchActive) {
+            binding.shimmerViewContainer.startShimmer()
+            binding.shimmerViewContainer.visibility = View.VISIBLE
+            binding.recyclerView.visibility = View.GONE
+
             CoroutineScope(Dispatchers.IO).launch {
                 val archiveFiles = getArchiveFiles()
                 withContext(Dispatchers.Main) {
                     adapter.updateFilesAndFilter(archiveFiles)
-                    binding.progressBar.visibility = View.GONE
+                    binding.shimmerViewContainer.stopShimmer()
+                    binding.shimmerViewContainer.visibility = View.GONE
+                    binding.recyclerView.visibility = View.VISIBLE
                 }
             }
         }

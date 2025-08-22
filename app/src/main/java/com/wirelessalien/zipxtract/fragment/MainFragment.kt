@@ -1722,6 +1722,10 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             return
         }
 
+        binding.shimmerViewContainer.startShimmer()
+        binding.shimmerViewContainer.visibility = View.VISIBLE
+        binding.recyclerView.visibility = View.GONE
+
         adapter.updateFilesAndFilter(ArrayList())
 
         val fastSearchEnabled = sharedPreferences.getBoolean("fast_search", false)
