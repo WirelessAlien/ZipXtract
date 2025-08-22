@@ -48,9 +48,7 @@
     <string name="directory_selection_disabled">Folder cannot be selected, select the files inside it.</string>
     <string name="select_file">Select File…</string>
     <string name="select_files">Add (%d)</string>
-    <string name="add_folder_confirmation_title">Add current folder?</string>
-    <string name="add_folder_confirmation_message">Do you want to add the folder \'%1$s\' to the archive?</string>
-    <string name="split_parts_number_req">Allow more than 100 split parts</string>
+    <string name="donate_desc">If you find ZipXtract useful, please consider supporting its development:</string>
 
     <!-- Bottom navigation -->
     <string name="archive">Archive</string>
@@ -89,7 +87,9 @@
     <string name="error_too_many_parts">This would generate %1$d parts</string>
     <string name="file_already_exists">File already exists</string>
     <string name="select_archive_type_title">Select archive type</string>
-
+    <string name="add_folder_confirmation_title">Add current folder?</string>
+    <string name="add_folder_confirmation_message">Do you want to add the folder \'%1$s\' to the archive?</string>
+    <string name="split_parts_number_req">Allow more than 100 split parts</string>
 
     <!-- Menu items -->
     <string name="move">Move to</string>
@@ -112,6 +112,8 @@
     <string name="archive_path">Archived files folder</string>
     <string name="archive_path_summary">Modify the default extract folder. \nDefault is \"parent folder\"</string>
     <string name="extract_path_summary">Modify the default extract folder. \nDefault is \"parent folder\" or Internal Storage/ZipXtract (for \"Open With\" menu extracted archive)</string>
+    <string name="fast_search">Fast Search</string>
+    <string name="fast_search_summary">Use Android\'s media index for faster search</string>
 
     <!-- ZIP archive options -->
     <string name="create_zip">Archive ZIP</string>
@@ -191,5 +193,4 @@
     <string name="liberapay" translatable="false">Liberapay</string>
     <string name="author_wirelessalien" translatable="false">Author: WirelessAlien</string>
     <string name="zstd" translatable="false">ZSTD</string>
-    <string name="donate_desc">If you find ZipXtract useful, please consider supporting its development:</string>
 </resources>

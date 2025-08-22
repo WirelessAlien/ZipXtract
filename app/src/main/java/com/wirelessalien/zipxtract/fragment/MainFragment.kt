@@ -43,6 +43,7 @@ import android.os.FileObserver.MOVE_SELF
 import android.os.Handler
 import android.os.Looper
 import android.os.storage.StorageManager
+import android.provider.MediaStore
 import android.provider.Settings
 import android.text.Editable
 import android.util.Log
@@ -602,7 +603,6 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
     private fun navigateToPath(path: String) {
         fileLoadingJob?.cancel()
-        binding.circularProgressBar.visibility = View.VISIBLE
         currentPath = path
         updateCurrentPathChip()
         updateAdapterWithFullList()
@@ -1598,6 +1598,8 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             withContext(Dispatchers.Main) {
                 binding.statusTextView.text = getString(R.string.access_denied)
                 binding.statusTextView.visibility = View.VISIBLE
+                binding.recyclerView.visibility = View.GONE
+                binding.emptyFolderLayout.visibility = View.GONE
             }
             return@withContext files
         }
@@ -1606,8 +1608,9 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
         if (fileList == null || fileList.isEmpty()) {
             withContext(Dispatchers.Main) {
-                binding.statusTextView.text = getString(R.string.directory_empty)
-                binding.statusTextView.visibility = View.VISIBLE
+                binding.emptyFolderLayout.visibility = View.VISIBLE
+                binding.recyclerView.visibility = View.GONE
+                binding.statusTextView.visibility = View.GONE
             }
             return@withContext files
         }
@@ -1651,7 +1654,8 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
         withContext(Dispatchers.Main) {
             binding.statusTextView.visibility = View.GONE
-            binding.circularProgressBar.progress = 100
+            binding.recyclerView.visibility = View.VISIBLE
+            binding.emptyFolderLayout.visibility = View.GONE
         }
 
         combinedList
@@ -1672,33 +1676,34 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
     private fun updateAdapterWithFullList() {
         if (!isSearchActive) {
-
             adapter.updateFilesAndFilter(ArrayList())
-
             fileLoadingJob?.cancel()
 
-            CoroutineScope(Dispatchers.Main).launch {
-                binding.circularProgressBar.visibility = View.VISIBLE
-                binding.statusTextView.visibility = View.GONE
-            }
+            binding.shimmerViewContainer.startShimmer()
+            binding.shimmerViewContainer.visibility = View.VISIBLE
+            binding.recyclerView.visibility = View.GONE
+            binding.emptyFolderLayout.visibility = View.GONE
+            binding.statusTextView.visibility = View.GONE
 
             fileLoadingJob = coroutineScope.launch(Dispatchers.IO) {
                 try {
                     val fullFileList = getFiles()
 
                     withContext(Dispatchers.Main) {
-                        binding.circularProgressBar.visibility = View.GONE
+                        binding.shimmerViewContainer.stopShimmer()
+                        binding.shimmerViewContainer.visibility = View.GONE
                         if (fullFileList.isEmpty()) {
-                            binding.statusTextView.visibility = View.VISIBLE
+                            binding.emptyFolderLayout.visibility = View.VISIBLE
                         } else {
-                            binding.statusTextView.visibility = View.GONE
+                            binding.recyclerView.visibility = View.VISIBLE
                         }
                         adapter.updateFilesAndFilter(fullFileList)
                     }
                 } catch (e: Exception) {
                     if (e is CancellationException) throw e
                     withContext(Dispatchers.Main) {
-                        binding.circularProgressBar.visibility = View.GONE
+                        binding.shimmerViewContainer.stopShimmer()
+                        binding.shimmerViewContainer.visibility = View.GONE
                         binding.statusTextView.apply {
                             text = getString(R.string.general_error_msg)
                             visibility = View.VISIBLE
@@ -1711,33 +1716,39 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
     private fun searchFiles(query: String?) {
         isSearchActive = !query.isNullOrEmpty()
-        binding.circularProgressBar.visibility = View.VISIBLE
 
         if (query.isNullOrEmpty()) {
             updateAdapterWithFullList()
-            binding.circularProgressBar.visibility = View.GONE
             return
         }
 
         adapter.updateFilesAndFilter(ArrayList())
 
-        val basePath = Environment.getExternalStorageDirectory().absolutePath
-        val sdCardPath = getSdCardPath()
-        val searchPath = if (currentPath?.startsWith(sdCardPath ?: "") == true) {
-            sdCardPath ?: basePath
-        } else {
-            basePath
-        }
+        val fastSearchEnabled = sharedPreferences.getBoolean("fast_search", false)
 
         // Cancel previous search if any
         searchJob?.cancel()
 
         searchJob = coroutineScope.launch {
-            searchAllFiles(File(searchPath), query)
+            val searchFlow = if (fastSearchEnabled) {
+                searchFilesWithMediaStore(query)
+            } else {
+                val basePath = Environment.getExternalStorageDirectory().absolutePath
+                val sdCardPath = getSdCardPath()
+                val searchPath = if (currentPath?.startsWith(sdCardPath ?: "") == true) {
+                    sdCardPath ?: basePath
+                } else {
+                    basePath
+                }
+                searchAllFiles(File(searchPath), query)
+            }
+
+            searchFlow
                 .flowOn(Dispatchers.IO)
                 .catch { e ->
                     withContext(Dispatchers.Main) {
-                        binding.circularProgressBar.visibility = View.GONE
+                        binding.shimmerViewContainer.stopShimmer()
+                        binding.shimmerViewContainer.visibility = View.GONE
                         binding.statusTextView.apply {
                             text = e.message ?: getString(R.string.general_error_msg)
                             visibility = View.VISIBLE
@@ -1747,7 +1758,9 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 .collect { files ->
                     withContext(Dispatchers.Main) {
                         adapter.updateFilesAndFilter(ArrayList(files))
-                        binding.circularProgressBar.visibility = View.GONE
+                        binding.shimmerViewContainer.stopShimmer()
+                        binding.shimmerViewContainer.visibility = View.GONE
+                        binding.recyclerView.visibility = View.VISIBLE
                     }
                 }
         }
@@ -1772,6 +1785,42 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         }
 
         searchRecursively(directory)
+        emit(results)
+    }.distinctUntilChanged { old, new -> old.size == new.size }
+
+    private fun searchFilesWithMediaStore(query: String): Flow<List<File>> = flow {
+        val results = mutableListOf<File>()
+        val projection = arrayOf(
+            MediaStore.Files.FileColumns.DATA,
+            MediaStore.Files.FileColumns.DISPLAY_NAME
+        )
+        val selection = "${MediaStore.Files.FileColumns.DISPLAY_NAME} LIKE ?"
+        val selectionArgs = arrayOf("%$query%")
+        val sortOrder = "${MediaStore.Files.FileColumns.DISPLAY_NAME} ASC"
+
+        val queryUri = MediaStore.Files.getContentUri("external")
+
+        try {
+            requireActivity().contentResolver.query(
+                queryUri,
+                projection,
+                selection,
+                selectionArgs,
+                sortOrder
+            )?.use { cursor ->
+                val dataColumn = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DATA)
+                while (cursor.moveToNext()) {
+                    val filePath = cursor.getString(dataColumn)
+                    val file = File(filePath)
+                    if (file.exists()) {
+                        results.add(file)
+                        emit(results.toList())
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            // exceptions
+        }
         emit(results)
     }.distinctUntilChanged { old, new -> old.size == new.size }
 

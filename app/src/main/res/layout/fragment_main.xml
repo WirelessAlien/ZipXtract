@@ -133,6 +133,64 @@
             android:layout_centerInParent="true"
             android:textSize="16sp"/>
 
+        <com.facebook.shimmer.ShimmerFrameLayout
+            android:id="@+id/shimmer_view_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@id/horizontalScrollView"
+            android:layout_marginTop="5dp"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+                <include layout="@layout/shimmer_placeholder_item" />
+                <include layout="@layout/shimmer_placeholder_item" />
+                <include layout="@layout/shimmer_placeholder_item" />
+                <include layout="@layout/shimmer_placeholder_item" />
+                <include layout="@layout/shimmer_placeholder_item" />
+                <include layout="@layout/shimmer_placeholder_item" />
+                <include layout="@layout/shimmer_placeholder_item" />
+                <include layout="@layout/shimmer_placeholder_item" />
+                <include layout="@layout/shimmer_placeholder_item" />
+                <include layout="@layout/shimmer_placeholder_item" />
+                <include layout="@layout/shimmer_placeholder_item" />
+                <include layout="@layout/shimmer_placeholder_item" />
+                <include layout="@layout/shimmer_placeholder_item" />
+                <include layout="@layout/shimmer_placeholder_item" />
+                <include layout="@layout/shimmer_placeholder_item" />
+                <include layout="@layout/shimmer_placeholder_item" />
+                <include layout="@layout/shimmer_placeholder_item" />
+                <include layout="@layout/shimmer_placeholder_item" />
+            </LinearLayout>
+        </com.facebook.shimmer.ShimmerFrameLayout>
+
+        <LinearLayout
+            android:id="@+id/empty_folder_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:src="@drawable/ic_folder_info"
+                app:tint="?attr/colorControlNormal"
+                android:importantForAccessibility="no" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/directory_empty"
+                android:textSize="18sp"
+                android:layout_marginTop="16dp" />
+        </LinearLayout>
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerView"
             android:layout_width="match_parent"

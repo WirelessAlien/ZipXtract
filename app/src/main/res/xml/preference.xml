@@ -40,6 +40,13 @@
         android:inputType="number"
         android:icon="@drawable/ic_compress"/>
 
+    <SwitchPreferenceCompat
+        android:key="fast_search"
+        android:title="@string/fast_search"
+        android:summary="@string/fast_search_summary"
+        android:defaultValue="false"
+        android:icon="@drawable/ic_search"/>
+
     <PreferenceCategory>
 
         <Preference
