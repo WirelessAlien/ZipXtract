@@ -860,7 +860,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     }
 
     private fun pasteFiles() {
-        val destinationPath = currentPath ?: return
+        val destinationPath = currentPath ?: Environment.getExternalStorageDirectory().absolutePath
         val filesToCopyMove = fileOperationViewModel.filesToCopyMove.value.map { it.absolutePath }
         val isCopyAction = fileOperationViewModel.isCopyAction
 
