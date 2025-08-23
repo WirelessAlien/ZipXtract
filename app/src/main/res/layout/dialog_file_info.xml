@@ -49,6 +49,7 @@
         app:boxCornerRadiusTopEnd="10dp"
         app:boxCornerRadiusBottomStart="10dp"
         app:boxCornerRadiusBottomEnd="10dp"
+        app:boxCornerRadiusTopStart="10dp"
         android:layout_marginTop="16dp"
         android:hint="@string/file_path">
 
@@ -70,6 +71,7 @@
         app:boxCornerRadiusTopEnd="10dp"
         app:boxCornerRadiusBottomStart="10dp"
         app:boxCornerRadiusBottomEnd="10dp"
+        app:boxCornerRadiusTopStart="10dp"
         android:layout_marginTop="16dp"
         android:hint="@string/file_size">
 
@@ -91,6 +93,7 @@
         app:boxCornerRadiusTopEnd="10dp"
         app:boxCornerRadiusBottomStart="10dp"
         app:boxCornerRadiusBottomEnd="10dp"
+        app:boxCornerRadiusTopStart="10dp"
         android:layout_marginTop="16dp"
         android:hint="@string/last_modified">
 
