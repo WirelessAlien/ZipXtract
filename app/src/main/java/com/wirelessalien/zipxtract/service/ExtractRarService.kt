@@ -105,13 +105,36 @@ class ExtractRarService : Service() {
     private fun getModifiedFilePath(filePath: String): String {
         val file = File(filePath)
         val fileName = file.name
-        val modifiedFileName = when {
-            fileName.matches(Regex(".*\\.part\\d+\\.rar")) -> fileName.replace(Regex("\\.part\\d+\\.rar"), ".part1.rar")
-            fileName.matches(Regex(".*\\.r\\d{2}")) -> fileName.replace(Regex("\\.r\\d{2}"), ".r00")
-            fileName.matches(Regex(".*\\.\\d{3}")) -> fileName.replace(Regex("\\.\\d{3}"), ".001")
-            else -> fileName
+
+        val rarPartRegex = Regex("^(.*)\\.part\\d+\\.rar$")
+        val rPartRegex = Regex("^(.*)\\.r\\d{2}$")
+        val numPartRegex = Regex("^(.*)\\.\\d{3}$")
+
+        return when {
+            fileName.matches(rarPartRegex) -> {
+                val baseName = rarPartRegex.find(fileName)!!.groupValues[1]
+                val part001File = File(file.parent, "$baseName.part001.rar")
+                if (part001File.exists()) {
+                    part001File.path
+                } else {
+                    val part01File = File(file.parent, "$baseName.part01.rar")
+                    if (part01File.exists()) {
+                        part01File.path
+                    } else {
+                        File(file.parent, "$baseName.part1.rar").path
+                    }
+                }
+            }
+            fileName.matches(rPartRegex) -> {
+                val baseName = rPartRegex.find(fileName)!!.groupValues[1]
+                File(file.parent, "$baseName.r00").path
+            }
+            fileName.matches(numPartRegex) -> {
+                val baseName = numPartRegex.find(fileName)!!.groupValues[1]
+                File(file.parent, "$baseName.001").path
+            }
+            else -> filePath
         }
-        return File(file.parent, modifiedFileName).path
     }
 
     override fun onDestroy() {
