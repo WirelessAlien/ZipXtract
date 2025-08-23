@@ -1,5 +1,6 @@
 Fix RAR extraction issue
+Fix tar compression issue
 Add ability to update zip and 7z archive
-Prevent unexpected number of multio zip parts by @loewy78
+Prevent unexpected number of multi zip parts by @loewy78
 Update zip compression structure
-A few small fix
+A few small fix and improvement
