@@ -39,7 +39,6 @@ import net.sf.sevenzipjbinding.SevenZip
 import net.sf.sevenzipjbinding.impl.OutItemFactory
 import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream
 import net.sf.sevenzipjbinding.impl.RandomAccessFileOutStream
-import net.sf.sevenzipjbinding.util.ByteArrayStream
 import java.io.Closeable
 import java.io.File
 import java.io.RandomAccessFile
@@ -74,6 +73,7 @@ class Update7zService : Service() {
         val itemsToAddNames = intent.getStringArrayListExtra(EXTRA_ITEMS_TO_ADD_NAMES)
         val itemsToRemovePaths = intent.getStringArrayListExtra(EXTRA_ITEMS_TO_REMOVE_PATHS)
 
+        lastProgress = -1
         notificationBuilder = createNotificationBuilder()
         startForeground(NOTIFICATION_ID, notificationBuilder.build())
 
@@ -90,13 +90,15 @@ class Update7zService : Service() {
         itemsToRemovePaths: List<String>?
     ) {
         val closeables = ArrayList<Closeable>()
+        var tmpFile: File? = null
         var success = false
         try {
-            val inArchive = SevenZip.openInArchive(null, RandomAccessFileInStream(RandomAccessFile(archivePath, "r")))
+            val inStream = RandomAccessFileInStream(RandomAccessFile(archivePath, "r"))
+            val inArchive = SevenZip.openInArchive(null, inStream)
             closeables.add(inArchive)
 
             val outArchive = inArchive.connectedOutArchive
-            val tmpFile = File.createTempFile("7z-update", ".tmp")
+            tmpFile = File.createTempFile("7z-update", ".tmp")
             val outStream = RandomAccessFileOutStream(RandomAccessFile(tmpFile, "rw"))
             closeables.add(outStream)
 
@@ -175,7 +177,9 @@ class Update7zService : Service() {
                         val addItemIndex = index - (inArchive.numberOfItems - itemsToRemoveIndices.size)
                         val (file, _) = filesToAdd[addItemIndex]
                         if (file.isFile) {
-                            return ByteArrayStream(file.readBytes(), true)
+                            val stream = RandomAccessFileInStream(RandomAccessFile(file, "r"))
+                            closeables.add(stream)
+                            return stream
                         }
                     }
                     return null
@@ -189,7 +193,6 @@ class Update7zService : Service() {
 
             val originalFile = File(archivePath)
             tmpFile.copyTo(originalFile, overwrite = true)
-            tmpFile.delete()
 
             success = true
         } catch (e: Exception) {
@@ -205,6 +208,7 @@ class Update7zService : Service() {
                     success = false
                 }
             }
+            tmpFile?.delete()
         }
 
         if (success) {
