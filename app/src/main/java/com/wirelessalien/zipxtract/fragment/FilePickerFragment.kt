@@ -35,6 +35,13 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.adapter.FilePickerAdapter
 import com.wirelessalien.zipxtract.databinding.DialogFilePickerBinding
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.attribute.BasicFileAttributes
@@ -50,6 +57,9 @@ class FilePickerFragment : BottomSheetDialogFragment(), FilePickerAdapter.OnItem
     private lateinit var sharedPreferences: SharedPreferences
     private var sortBy: SortBy = SortBy.SORT_BY_NAME
     private var sortAscending: Boolean = true
+    private var fileLoadingJob: Job? = null
+    private val coroutineScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+
 
     interface FilePickerListener {
         fun onFilesSelected(files: List<File>)
@@ -189,57 +199,80 @@ class FilePickerFragment : BottomSheetDialogFragment(), FilePickerAdapter.OnItem
     }
 
     private fun loadFiles(path: String) {
+        fileLoadingJob?.cancel()
+
         currentPath = path
         updateCurrentPathChip()
-        if (path == Environment.getExternalStorageDirectory().absolutePath) {
-            binding.btnAddFolder.visibility = View.GONE
-        } else {
-            binding.btnAddFolder.visibility = View.VISIBLE
-        }
-        val file = File(path)
-        val fileList = file.listFiles()?.toList() ?: emptyList()
 
-        val files = ArrayList<File>()
-        val directories = ArrayList<File>()
+        binding.shimmerViewContainer.startShimmer()
+        binding.shimmerViewContainer.visibility = View.VISIBLE
+        binding.recyclerView.visibility = View.GONE
 
-        fileList.forEach { f ->
-            if (f.isDirectory) {
-                directories.add(f)
+        fileLoadingJob = coroutineScope.launch {
+            val combinedList = withContext(Dispatchers.IO) {
+                val file = File(path)
+                val fileList = file.listFiles()?.toList() ?: emptyList()
+
+                val files = ArrayList<File>()
+                val directories = ArrayList<File>()
+
+                fileList.forEach { f ->
+                    if (f.isDirectory) {
+                        directories.add(f)
+                    } else {
+                        files.add(f)
+                    }
+                }
+
+                // Sort files based on current criteria
+                when (sortBy) {
+                    SortBy.SORT_BY_NAME -> {
+                        directories.sortBy { it.name }
+                        files.sortBy { it.name }
+                    }
+                    SortBy.SORT_BY_SIZE -> {
+                        directories.sortBy { it.length() }
+                        files.sortBy { it.length() }
+                    }
+                    SortBy.SORT_BY_MODIFIED -> {
+                        directories.sortBy { getFileTimeOfCreation(it) }
+                        files.sortBy { getFileTimeOfCreation(it) }
+                    }
+                    SortBy.SORT_BY_EXTENSION -> {
+                        directories.sortBy { it.extension }
+                        files.sortBy { it.extension }
+                    }
+                }
+
+                if (!sortAscending) {
+                    directories.reverse()
+                    files.reverse()
+                }
+
+                val resultList = ArrayList<File>()
+                resultList.addAll(directories)
+                resultList.addAll(files)
+                resultList
+            }
+
+            if (path == Environment.getExternalStorageDirectory().absolutePath) {
+                binding.btnAddFolder.visibility = View.GONE
             } else {
-                files.add(f)
+                binding.btnAddFolder.visibility = View.VISIBLE
             }
+
+            adapter.updateFilesAndFilter(combinedList)
+
+            binding.shimmerViewContainer.stopShimmer()
+            binding.shimmerViewContainer.visibility = View.GONE
+            binding.recyclerView.visibility = View.VISIBLE
         }
+    }
 
-        // Sort files based on current criteria
-        when (sortBy) {
-            SortBy.SORT_BY_NAME -> {
-                directories.sortBy { it.name }
-                files.sortBy { it.name }
-            }
-            SortBy.SORT_BY_SIZE -> {
-                directories.sortBy { it.length() }
-                files.sortBy { it.length() }
-            }
-            SortBy.SORT_BY_MODIFIED -> {
-                directories.sortBy { getFileTimeOfCreation(it) }
-                files.sortBy { getFileTimeOfCreation(it) }
-            }
-            SortBy.SORT_BY_EXTENSION -> {
-                directories.sortBy { it.extension }
-                files.sortBy { it.extension }
-            }
-        }
-
-        if (!sortAscending) {
-            directories.reverse()
-            files.reverse()
-        }
-
-        val combinedList = ArrayList<File>()
-        combinedList.addAll(directories)
-        combinedList.addAll(files)
-
-        adapter.updateFilesAndFilter(combinedList)
+    override fun onDestroy() {
+        super.onDestroy()
+        fileLoadingJob?.cancel()
+        coroutineScope.cancel()
     }
 
     override fun onItemClick(file: File, filePath: String) {

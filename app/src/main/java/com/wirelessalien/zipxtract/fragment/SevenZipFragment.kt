@@ -34,6 +34,7 @@ import androidx.fragment.app.Fragment
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.chip.Chip
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.adapter.ArchiveItemAdapter
 import com.wirelessalien.zipxtract.constant.BroadcastConstants
@@ -265,15 +266,24 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
         override fun onActionItemClicked(mode: ActionMode?, item: MenuItem?): Boolean {
             return when (item?.itemId) {
                 R.id.menu_action_delete -> {
-                    binding.progressBar.visibility = View.VISIBLE
-                    val selectedItems = adapter.getSelectedItems()
-                    val pathsToRemove = selectedItems.map { it.path }
-                    val intent = Intent(requireContext(), Update7zService::class.java).apply {
-                        putExtra(Update7zService.EXTRA_ARCHIVE_PATH, archivePath)
-                        putStringArrayListExtra(Update7zService.EXTRA_ITEMS_TO_REMOVE_PATHS, ArrayList(pathsToRemove))
-                    }
-                    requireContext().startService(intent)
-                    mode?.finish()
+                    MaterialAlertDialogBuilder(requireContext())
+                        .setTitle(getString(R.string.confirm_delete))
+                        .setMessage(getString(R.string.confirm_delete_message))
+                        .setNegativeButton(resources.getString(R.string.cancel)) { dialog, _ ->
+                            dialog.dismiss()
+                        }
+                        .setPositiveButton(resources.getString(R.string.delete)) { _, _ ->
+                            binding.progressBar.visibility = View.VISIBLE
+                            val selectedItems = adapter.getSelectedItems()
+                            val pathsToRemove = selectedItems.map { it.path }
+                            val intent = Intent(requireContext(), Update7zService::class.java).apply {
+                                putExtra(Update7zService.EXTRA_ARCHIVE_PATH, archivePath)
+                                putStringArrayListExtra(Update7zService.EXTRA_ITEMS_TO_REMOVE_PATHS, ArrayList(pathsToRemove))
+                            }
+                            requireContext().startService(intent)
+                            mode?.finish()
+                        }
+                        .show()
                     true
                 }
                 else -> false
