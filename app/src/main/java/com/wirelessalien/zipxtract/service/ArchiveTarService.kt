@@ -169,14 +169,15 @@ class ArchiveTarService : Service() {
             val finalTarFile = tarFile
             var tempTarFile: File? = null
 
+            val compressionActive = compressionFormat != "TAR_ONLY"
             try {
-                if (compressionFormat == "TAR_ONLY") {
+                if (!compressionActive) {
                     // Direct TAR creation (no intermediate compression)
                     RandomAccessFile(finalTarFile, "rw").use { raf ->
                         val outArchive = SevenZip.openOutArchiveTar()
                         outArchive.createArchive(
                             RandomAccessFileOutStream(raf), filesToArchive.size,
-                            createArchiveCallback(filesToArchive, baseDirectory)
+                            createArchiveCallback(filesToArchive, baseDirectory, compressionActive)
                         )
                         outArchive.close()
                     }
@@ -187,7 +188,7 @@ class ArchiveTarService : Service() {
                         val outArchive = SevenZip.openOutArchiveTar()
                         outArchive.createArchive(
                             RandomAccessFileOutStream(tempRaf), filesToArchive.size,
-                            createArchiveCallback(filesToArchive, baseDirectory)
+                            createArchiveCallback(filesToArchive, baseDirectory, compressionActive)
                         )
                         outArchive.close()
                     }
@@ -203,7 +204,19 @@ class ArchiveTarService : Service() {
                                 else -> bos
                             }
                             compressorOutputStream.use { cos ->
-                                fis.copyTo(cos)
+                                val tempTarSize = tempTarFile.length()
+                                if (tempTarSize > 0) {
+                                    var bytesCopied = 0L
+                                    val buffer = ByteArray(DEFAULT_BUFFER_SIZE) // 8KB buffer
+                                    var bytes = fis.read(buffer)
+                                    while (bytes >= 0) {
+                                        cos.write(buffer, 0, bytes)
+                                        bytesCopied += bytes
+                                        val compressionProgress = ((bytesCopied.toDouble() / tempTarSize) * 50).toInt()
+                                        updateProgress(50 + compressionProgress)
+                                        bytes = fis.read(buffer)
+                                    }
+                                }
                             }
                         }
                     }
@@ -235,7 +248,7 @@ class ArchiveTarService : Service() {
         }
     }
 
-    private fun createArchiveCallback(filesToArchive: List<String>, baseDirectory: String): IOutCreateCallback<IOutItemTar> {
+    private fun createArchiveCallback(filesToArchive: List<String>, baseDirectory: String, compressionActive: Boolean): IOutCreateCallback<IOutItemTar> {
         return object : IOutCreateCallback<IOutItemTar> {
             override fun setOperationResult(operationResultOk: Boolean) {}
 
@@ -243,7 +256,10 @@ class ArchiveTarService : Service() {
 
             override fun setCompleted(complete: Long) {
                 val totalSize = filesToArchive.sumOf { File(it).length() }
-                val progress = ((complete.toDouble() / totalSize) * 100).toInt()
+                var progress = if (totalSize > 0) ((complete.toDouble() / totalSize) * 100).toInt() else 0
+                if (compressionActive) {
+                    progress /= 2 // Scale to 0-50
+                }
                 startForeground(NOTIFICATION_ID, createNotification(progress))
                 updateProgress(progress)
             }
