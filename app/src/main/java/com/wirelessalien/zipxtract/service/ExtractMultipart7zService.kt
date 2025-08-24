@@ -22,6 +22,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
+import android.media.MediaScannerConnection
 import android.os.Build
 import android.os.Environment
 import android.os.IBinder
@@ -203,6 +204,7 @@ class ExtractMultipart7zService : Service() {
                     }
                 }
                 showCompletionNotification()
+                scanForNewFiles(destinationDir)
                 sendLocalBroadcast(Intent(ACTION_EXTRACTION_COMPLETE).putExtra(EXTRA_DIR_PATH, destinationDir.path))
             } catch (e: SevenZipException) {
                 e.printStackTrace()
@@ -386,5 +388,13 @@ class ExtractMultipart7zService : Service() {
         stopForeground(STOP_FOREGROUND_REMOVE)
         val notificationManager = getSystemService(NotificationManager::class.java)
         notificationManager.cancel(NOTIFICATION_ID)
+    }
+
+    private fun scanForNewFiles(directory: File) {
+        val files = directory.listFiles()
+        if (files != null) {
+            val paths = files.map { it.absolutePath }.toTypedArray()
+            MediaScannerConnection.scanFile(this, paths, null, null)
+        }
     }
 }

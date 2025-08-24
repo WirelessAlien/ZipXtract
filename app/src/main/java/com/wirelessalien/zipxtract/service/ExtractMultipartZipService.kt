@@ -22,6 +22,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
+import android.media.MediaScannerConnection
 import android.os.Build
 import android.os.Environment
 import android.os.IBinder
@@ -190,6 +191,7 @@ class ExtractMultipartZipService : Service() {
             }
 
             showCompletionNotification()
+            scanForNewFiles(extractDir)
             sendLocalBroadcast(Intent(ACTION_EXTRACTION_COMPLETE).putExtra(EXTRA_DIR_PATH, extractDir.absolutePath))
 
         } catch (e: ZipException) {
@@ -236,5 +238,13 @@ class ExtractMultipartZipService : Service() {
         stopForeground(STOP_FOREGROUND_REMOVE)
         val notificationManager = getSystemService(NotificationManager::class.java)
         notificationManager.cancel(NOTIFICATION_ID)
+    }
+
+    private fun scanForNewFiles(directory: File) {
+        val files = directory.listFiles()
+        if (files != null) {
+            val paths = files.map { it.absolutePath }.toTypedArray()
+            MediaScannerConnection.scanFile(this, paths, null, null)
+        }
     }
 }

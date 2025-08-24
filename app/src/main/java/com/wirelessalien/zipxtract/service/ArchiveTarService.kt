@@ -22,6 +22,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
+import android.media.MediaScannerConnection
 import android.os.Build
 import android.os.Environment
 import android.os.IBinder
@@ -223,6 +224,7 @@ class ArchiveTarService : Service() {
                 }
                 stopForegroundService()
                 showCompletionNotification()
+                scanForNewFile(finalTarFile)
                 sendLocalBroadcast(Intent(ACTION_ARCHIVE_COMPLETE).putExtra(EXTRA_DIR_PATH, finalTarFile.parent))
 
             } catch (e: SevenZipException) {
@@ -332,5 +334,9 @@ class ArchiveTarService : Service() {
         stopForeground(STOP_FOREGROUND_REMOVE)
         val notificationManager = getSystemService(NotificationManager::class.java)
         notificationManager.cancel(NOTIFICATION_ID)
+    }
+
+    private fun scanForNewFile(file: File) {
+        MediaScannerConnection.scanFile(this, arrayOf(file.absolutePath), null, null)
     }
 }

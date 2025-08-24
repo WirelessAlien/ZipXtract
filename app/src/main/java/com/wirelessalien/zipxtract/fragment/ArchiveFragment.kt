@@ -27,7 +27,9 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.icu.text.DateFormat
+import android.media.MediaScannerConnection
 import android.os.Bundle
+import android.os.Environment
 import android.os.Handler
 import android.os.Looper
 import android.provider.MediaStore
@@ -53,6 +55,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.chip.Chip
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.google.android.material.snackbar.Snackbar
@@ -253,16 +256,47 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
         LocalBroadcastManager.getInstance(requireContext()).registerReceiver(extractionReceiver, filter)
 
         extractProgressDialog()
-        loadArchiveFiles()
+        setupFilterChips()
+        scanStorageAndLoadFiles()
     }
 
-    private fun loadArchiveFiles() {
+    private fun setupFilterChips() {
+        val extensions = listOf("All", "zip", "rar", "7z", "tar", "gz", "bz2", "xz")
+        val chipGroup = binding.chipGroupFilter
+        chipGroup.isSingleSelection = true
+        extensions.forEach { extension ->
+            val chip = Chip(requireContext())
+            chip.text = extension
+            chip.isCheckable = true
+            chip.isCheckedIconVisible = false
+            chipGroup.addView(chip)
+
+            if (extension == "All") {
+                chip.isChecked = true
+            }
+        }
+
+        chipGroup.setOnCheckedStateChangeListener { group, checkedIds ->
+            if (checkedIds.isNotEmpty()) {
+                val checkedChipId = checkedIds[0]
+                val checkedChip = group.findViewById<Chip>(checkedChipId)
+                val selectedExtension = if (checkedChip.text.toString() == "All") {
+                    null
+                } else {
+                    checkedChip.text.toString()
+                }
+                loadArchiveFiles(selectedExtension)
+            }
+        }
+    }
+
+    private fun loadArchiveFiles(extension: String?) {
         binding.shimmerViewContainer.startShimmer()
         binding.shimmerViewContainer.visibility = View.VISIBLE
         binding.recyclerView.visibility = View.GONE
 
         CoroutineScope(Dispatchers.IO).launch {
-            val archiveFiles = getArchiveFiles()
+            val archiveFiles = getArchiveFiles(null, extension)
             withContext(Dispatchers.Main) {
                 adapter.updateFilesAndFilter(archiveFiles)
                 binding.shimmerViewContainer.stopShimmer()
@@ -305,33 +339,38 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
     }
 
     private fun searchAllFiles(query: String?): Flow<List<File>> = flow {
-        val results = getArchiveFiles(query)
+        val results = getArchiveFiles(query, null)
         emit(results)
     }
 
-    private fun getArchiveFiles(query: String? = null): ArrayList<File> {
+    private fun getArchiveFiles(query: String? = null, extension: String? = null): ArrayList<File> {
         val archiveFiles = ArrayList<File>()
         val uri = MediaStore.Files.getContentUri("external")
         val projection = arrayOf(
             MediaStore.Files.FileColumns.DATA,
         )
 
-        val extensionSelection = archiveExtensions.joinToString(" OR ") {
-            "${MediaStore.Files.FileColumns.DATA} LIKE ?"
-        }
-        val extensionSelectionArgs = archiveExtensions.map { "%.$it" }
+        val selectionParts = mutableListOf<String>()
+        val selectionArgs = mutableListOf<String>()
 
-        val finalSelection: String
-        val finalSelectionArgs: Array<String>
+        if (extension != null) {
+            selectionParts.add("${MediaStore.Files.FileColumns.DATA} LIKE ?")
+            selectionArgs.add("%.$extension")
+        } else {
+            val extensionSelection = archiveExtensions.joinToString(" OR ") {
+                "${MediaStore.Files.FileColumns.DATA} LIKE ?"
+            }
+            selectionParts.add("($extensionSelection)")
+            selectionArgs.addAll(archiveExtensions.map { "%.$it" })
+        }
 
         if (!query.isNullOrBlank()) {
-            finalSelection = "($extensionSelection) AND ${MediaStore.Files.FileColumns.DISPLAY_NAME} LIKE ?"
-            val queryArg = "%$query%"
-            finalSelectionArgs = (extensionSelectionArgs + queryArg).toTypedArray()
-        } else {
-            finalSelection = extensionSelection
-            finalSelectionArgs = extensionSelectionArgs.toTypedArray()
+            selectionParts.add("${MediaStore.Files.FileColumns.DISPLAY_NAME} LIKE ?")
+            selectionArgs.add("%$query%")
         }
+
+        val finalSelection = selectionParts.joinToString(" AND ")
+        val finalSelectionArgs = selectionArgs.toTypedArray()
 
         val sortOrderColumn = when (sortBy) {
             SortBy.SORT_BY_NAME -> MediaStore.Files.FileColumns.DISPLAY_NAME
@@ -376,6 +415,18 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
         return archiveFiles
     }
 
+    private fun scanStorageAndLoadFiles() {
+        binding.shimmerViewContainer.startShimmer()
+        binding.shimmerViewContainer.visibility = View.VISIBLE
+        binding.recyclerView.visibility = View.GONE
+        val externalStoragePath = Environment.getExternalStorageDirectory().absolutePath
+        MediaScannerConnection.scanFile(requireContext(), arrayOf(externalStoragePath), null) { _, _ ->
+            activity?.runOnUiThread {
+                loadArchiveFiles(null)
+            }
+        }
+    }
+
     private fun updateAdapterWithFullList() {
         if (!isSearchActive) {
             binding.shimmerViewContainer.startShimmer()
@@ -383,7 +434,7 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
             binding.recyclerView.visibility = View.GONE
 
             CoroutineScope(Dispatchers.IO).launch {
-                val archiveFiles = getArchiveFiles()
+                val archiveFiles = getArchiveFiles(null, null)
                 withContext(Dispatchers.Main) {
                     adapter.updateFilesAndFilter(archiveFiles)
                     binding.shimmerViewContainer.stopShimmer()

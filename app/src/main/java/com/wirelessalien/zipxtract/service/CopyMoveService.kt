@@ -22,6 +22,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
+import android.media.MediaScannerConnection
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
@@ -76,13 +77,16 @@ class CopyMoveService : Service() {
 
         fun copyMoveFile(file: File, destination: File) {
             if (file.isDirectory) {
+                destination.mkdirs()
                 file.listFiles()?.forEach { copyMoveFile(it, File(destination, it.name)) }
             } else {
                 if (isCopyAction) {
                     file.copyTo(destination, overwrite = true)
                 } else {
+                    MediaScannerConnection.scanFile(this, arrayOf(file.absolutePath), null, null)
                     file.moveTo(destination, overwrite = true)
                 }
+                MediaScannerConnection.scanFile(this, arrayOf(destination.absolutePath), null, null)
                 processedFilesCount++
                 updateNotification(processedFilesCount, totalFilesCount, isCopyAction)
             }

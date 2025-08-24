@@ -22,6 +22,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
+import android.media.MediaScannerConnection
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
@@ -57,8 +58,10 @@ class DeleteFilesService : Service() {
     private fun deleteFiles(files: List<File>) {
         val totalFilesCount = countTotalFiles(files)
         var deletedFilesCount = 0
+        val parentDirs = mutableSetOf<String>()
 
         fun deleteFile(file: File) {
+            file.parentFile?.absolutePath?.let { parentDirs.add(it) }
             if (file.isDirectory) {
                 file.listFiles()?.forEach { deleteFile(it) }
             }
@@ -69,6 +72,10 @@ class DeleteFilesService : Service() {
 
         for (file in files) {
             deleteFile(file)
+        }
+
+        if (parentDirs.isNotEmpty()) {
+            MediaScannerConnection.scanFile(this, parentDirs.toTypedArray(), null, null)
         }
 
         stopForegroundService()
