@@ -120,4 +120,22 @@
     <string name="passwords_do_not_match">Пароль не совпадает</string>
     <string name="wrong_password">Неверный пароль</string>
     <string name="file_already_exists">Файл уже существует</string>
+    <string name="invalid_value">Инвалидный ввод</string>
+    <string name="please_enter_value_between_0_and_22">Введите значение от 0 до 22</string>
+    <string name="archiving_started_in_background">Архивирование началось на заднем плане</string>
+    <string name="no_compression">Нет сжатия</string>
+    <string name="remove">Удалить</string>
+    <string name="preview_archive">Архив предварительного просмотра</string>
+    <string name="add">Добавить</string>
+    <string name="directory_selection_disabled">Папка не может быть выбрана, выберите файлы внутри нее.</string>
+    <string name="select_file">Выберите файл..</string>
+    <string name="select_files">Добавить (%d</string>
+    <string name="donate_desc">Если вы считаете ZipXtract полезным, пожалуйста, подумайте о поддержке его разработки:</string>
+    <string name="error_too_many_parts">Это будет генерировать %1$d части</string>
+    <string name="select_archive_type_title">Тип архива</string>
+    <string name="add_folder_confirmation_title">Добавить текущую папку?</string>
+    <string name="add_folder_confirmation_message">Вы хотите добавить папку \"%1$s\" в архив?</string>
+    <string name="split_parts_number_req">Разрешить более 100 частей</string>
+    <string name="fast_search">Быстрый поиск</string>
+    <string name="fast_search_summary">Используйте медиа-индекс Android для более быстрого поиска</string>
 </resources>
