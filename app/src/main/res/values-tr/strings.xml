@@ -116,4 +116,22 @@
     <string name="wrong_password">Yanlış şifre</string>
     <string name="file_already_exists">Dosya zaten var</string>
     <string name="open_with">Birlikte Aç</string>
+    <string name="invalid_value">Invalid girişi</string>
+    <string name="please_enter_value_between_0_and_22">0 ile 22 arasında bir değer girin</string>
+    <string name="archiving_started_in_background">Archiving arka planda başladı</string>
+    <string name="no_compression">Hiçbir Promosyon Yok</string>
+    <string name="remove">Kaldırın</string>
+    <string name="preview_archive">Preview Archive</string>
+    <string name="add">Add</string>
+    <string name="directory_selection_disabled">Folder seçilebilir, içindeki dosyaları seçin.</string>
+    <string name="select_file">Dosyayı seçin..</string>
+    <string name="select_files">Add ([X5X)</string>
+    <string name="donate_desc">ZipXtract faydalı bulursanız, lütfen gelişimini desteklemeyi düşünün:</string>
+    <string name="error_too_many_parts">Bu %1$d parçaları üretecektir</string>
+    <string name="select_archive_type_title">Arşiv türü seçin</string>
+    <string name="add_folder_confirmation_title">Mevcut klasörü ekleyin?</string>
+    <string name="add_folder_confirmation_message">Dosyaya ‘%1$s eklemek ister misiniz?</string>
+    <string name="split_parts_number_req">100\'den fazla bölünmüş parçaya izin verin</string>
+    <string name="fast_search">Hızlı Arama Hızlı Arama</string>
+    <string name="fast_search_summary">Android\'in medya indeksini daha hızlı arama için kullanın</string>
 </resources>
