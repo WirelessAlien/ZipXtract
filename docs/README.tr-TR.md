@@ -1,0 +1,64 @@
+# ZipXtract
+
+[![GitHub release](https://img.shields.io/github/v/release/WirelessAlien/ZipXtract)](https://github.com/WirelessAlien/ZipXtract/releases/latest)
+[![GitHub license](https://img.shields.io/github/license/WirelessAlien/ZipXtract)](https://github.com/WirelessAlien/ZipXtract/blob/master/License)
+[![GitHub Repo stars](https://img.shields.io/github/stars/WirelessAlien/ZipXtract)](https://img.shields.io/github/stars/WirelessAlien/ZipXtract)
+[![GitHub all releases](https://img.shields.io/github/downloads/WirelessAlien/ZipXtract/total)](https://img.shields.io/github/downloads/WirelessAlien/ZipXtract/total)
+![IzzyOnDroid](https://img.shields.io/endpoint?url=https://apt.izzysoft.de/fdroid/api/v1/shield/com.wirelessalien.zipxtract)
+[![F-Droid](https://img.shields.io/f-droid/v/com.wirelessalien.zipxtract?logo=F-Droid)](https://f-droid.org/packages/com.wirelessalien.zipxtract)
+
+<p style="text-align: left;">ZipXtract, çok çeşitli arşiv formatlarını işleyebilen tamamen açık kaynaklı bir Android uygulamasıdır. Desteklenen formatlar şunlardır:</p> 
+<ul>
+ <li>RAR (RAR5 ve çok ciltli destek ile)</li> 
+<li>ZIP (şifre korumalı ve bölünmüş arşivler dahil)</li> 
+<li>TAR</li> 
+<li>BZ2</li>
+ <li>GZ</li> 
+<li>7z (şifre koruması ve çok ciltli destek ile)</li> <li>XZ</li> 
+<li>JAR</li>
+ <li>...</li> 
+</ul> 
+
+<h2>Özellikler</h2>
+
+<h3>Çıkarma:</h3> 
+<ul> 
+<li>RAR, ZIP, TAR, BZ2, GZ, 7z, XZ, JAR vb. formatları destekler.</li>
+ <li>Şifreli ZIP ve 7z dosyalarını işler.</li>
+ <li>Çok ciltli RAR arşivlerini çıkarır.</li>
+ <li>Çok ciltli arşivleri çıkarır.</li> 
+<li>Bölünmüş ZIP dosyalarını çıkarır.</li>
+ </ul>
+
+<h3>Oluşturma:</h3> 
+
+<ul> 
+<li>Şifreleme seçenekleriyle ZIP ve 7z arşivleri oluşturur.</li> 
+<li>Bölünmüş ZIP arşivleri oluşturur.</li> 
+</ul> 
+
+<blockquote> 
+<p><strong>NOT:</strong><br /> 
+F-Droid sürümünde lisans kısıtlamaları nedeniyle RAR çıkarma ve 7z sıkıştırma özellikleri bulunmamaktadır. Tüm özelliklere sahip sürüm için GitHub veya IzzyOnDroid dağıtımlarını kullanın.</p> 
+</blockquote> 
+
+<h2>Kullanım İpucu</h2> 
+<p>Arşiv çıkarma ve oluşturma için genel ipuçları:</p> 
+<ul> 
+<li>Dosya ve klasörleri arşivlemek için üzerine uzun basın veya simgelerine tıklayarak seçin.</li> 
+<li>Bir dosyaya tıklayarak çıkarma seçeneklerini içeren menüyü görüntüleyin.</li> 
+<li>İşletim sisteminin “Birlikte Aç” menüsüyle çıkarılan dosyalar varsayılan olarak <strong>Dahili Depolama/ZipXtract</strong> klasörüne kaydedilir. Bunu uygulama ayarlarından değiştirebilirsiniz.</li> 
+<li>Uygulama içinden yapılan arşivleme ve çıkarma işlemlerinin varsayılan konumu, dosyanın bulunduğu üst dizindir. Bu ayar da değiştirilebilir.</li> 
+</ul> 
+
+<h2>Uygulama İzinleri</h2> 
+<p>Depolama Okuma/Yazma İzni (Android 10 ve öncesi) ve Harici Depolamayı Yönetme İzni (Android 11 ve sonrası) gerektirir. Uygulamanın internet izni yoktur. Daha fazla bilgi için: <a href="https://sites.google.com/view/privacy-policy-zipxtract/home">Gizlilik politikası</a></p> 
+
+<h2>Çeviri</h2> 
+<p> Uygulamayı yerelleştirmeye yardımcı olmak için&nbsp;<a href="https://hosted.weblate.org/engage/zipxtract/">Weblate</a>'e katılın. </p> 
+
+<h2>Lisans</h2> 
+<p>Bu proje GNU Genel Kamu Lisansı v3.0 ile lisanslanmıştır. Detaylar için <a href="https://github.com/WirelessAlien/ZipXtract/blob/master/LICENSE">LİSANS</a> dosyasına bakın.</p> 
+
+<h2>İletişim</h2> 
+<p>Herhangi bir soru veya geri bildirim için lütfen <a href="https://github.com/WirelessAlien/ZipXtract/issues">GitHub deposunda</a> bir konu (issue) açın.</p>

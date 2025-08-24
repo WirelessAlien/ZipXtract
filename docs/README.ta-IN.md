@@ -1,0 +1,67 @@
+# ZipXtract
+
+[![GitHub release](https://img.shields.io/github/v/release/WirelessAlien/ZipXtract)](https://github.com/WirelessAlien/ZipXtract/releases/latest)
+[![GitHub license](https://img.shields.io/github/license/WirelessAlien/ZipXtract)](https://github.com/WirelessAlien/ZipXtract/blob/master/License)
+[![GitHub Repo stars](https://img.shields.io/github/stars/WirelessAlien/ZipXtract)](https://img.shields.io/github/stars/WirelessAlien/ZipXtract)
+[![GitHub all releases](https://img.shields.io/github/downloads/WirelessAlien/ZipXtract/total)](https://img.shields.io/github/downloads/WirelessAlien/ZipXtract/total)
+![IzzyOnDroid](https://img.shields.io/endpoint?url=https://apt.izzysoft.de/fdroid/api/v1/shield/com.wirelessalien.zipxtract)
+[![F-Droid](https://img.shields.io/f-droid/v/com.wirelessalien.zipxtract?logo=F-Droid)](https://f-droid.org/packages/com.wirelessalien.zipxtract)
+
+<p style="text-align: left;">ZipXtract என்பது பரந்த அளவிலான காப்பக வடிவங்களைக் கையாள வடிவமைக்கப்பட்ட முழுமையான திறந்த மூல Android பயன்பாடாகும், இதில் அடங்கும்:</p>
+<ul>
+<li>ரார் (ரார்5 மற்றும் பல-தொகுதி ஆதரவுடன்)</li>
+<li>சுருக்கு (கடவுச்சொல் பாதுகாக்கப்பட்ட மற்றும் பிரிக்கப்பட்ட காப்பகங்கள் உட்பட)</li>
+<li>தார்</li>
+<li>பிஇசட்2</li>
+<li>சிஇசட்</li>
+<li>7ஃ (கடவுச்சொல் பாதுகாப்பு மற்றும் பல-தொகுதி ஆதரவுடன்)</li>
+<li>எக்ச்இசட்</li>
+<li>சாடி</li>
+<li>...</li>
+</ul>
+
+<h2>நற்பண்புகள்</h2>
+
+<h3>பிரித்தெடுத்தல்:</h3>
+<ul>
+<li>பல்வேறு வடிவங்களை ஆதரிக்கிறது: RAR, ZIP, TAR, BZ2, GZ, 7z, XZ, JAR போன்றவை.</li>
+<li>மறைகுறியாக்கப்பட்ட ZIP மற்றும் 7z கோப்புகளைக் கையாளுகிறது.</li>
+<li>பல தொகுதி RAR காப்பகங்களைப் பிரித்தெடுக்கிறது.</li>
+<li>பல தொகுதி காப்பகங்களைப் பிரித்தெடுக்கிறது.</li>
+<li>பிரிக்கப்பட்ட ZIP கோப்புகளைப் பிரித்தெடுக்கிறது.</li>
+</ul>
+
+<h3>படைப்பு:</h3>
+<ul>
+<li>குறியாக்க விருப்பங்களுடன் ZIP மற்றும் 7z காப்பகங்களை உருவாக்கவும்.</li>
+<li>பிரிக்கப்பட்ட ZIP காப்பகங்களை உருவாக்கவும்.</li>
+</ul>
+
+<blockquote>
+<p><strong>குறிப்பு:</strong><br/>
+உரிமக் கட்டுப்பாடுகள் காரணமாக F-Droid பதிப்பில் RAR பிரித்தெடுத்தல் மற்றும் 7z சுருக்க அம்சங்கள் இல்லை. முழுமையான பதிப்பிற்கு, தயவுசெய்து GitHub அல்லது IzzyOnDroid வெளியீடுகளைப் பயன்படுத்தவும்.</p>
+</blockquote>
+
+<h2>பயன்பாட்டு உதவிக்குறிப்பு</h2>
+<p>காப்பகப் பிரித்தெடுத்தல் மற்றும் காப்பக உருவாக்கத்திற்கான பொதுவான குறிப்புகள்:</p>
+<ul>
+<li>காப்பகப்படுத்துவதற்காகக் கோப்புகள் மற்றும் கோப்புறைகளைத் தேர்ந்தெடுக்க அவற்றை நீண்ட நேரம் அழுத்தவும் அல்லது கோப்பு/கோப்புறை ஐகான்களைக் கிளிக் செய்யவும்.</li>
+<li>பிரித்தெடுக்கும் விருப்பங்களைத் தேர்ந்தெடுப்பதற்கான பிரித்தெடுக்கும் மெனுவைக் காட்ட ஒரு கோப்பைக் கிளிக் செய்யவும்.</li>
+<li>OS இன் "உடன் திற" மெனுவைப் பயன்படுத்தி பிரித்தெடுக்கப்பட்ட கோப்புகள் இயல்புநிலையாக <strong>உள் சேமிப்பிடம்/சுருக்குபிரி</strong> இல் சேமிக்கப்படும். இதைப் பயன்பாட்டு அமைப்புகளில் மாற்றவும்.</li>
+<li>பயன்பாட்டிற்குள் காப்பகப்படுத்த அல்லது காப்பகங்களைப் பிரித்தெடுப்பதற்கான இயல்புநிலை இடம் அந்தந்த கோப்புகளின் பெற்றோர் கோப்பகமாகும். இதைப் பயன்பாட்டு அமைப்புகளில் மாற்றலாம்.</li>
+</ul>
+
+<h2>பயன்பாட்டு அனுமதி</h2>
+<p>படிக்க மற்றும் எழுதச் சேமிப்பக அனுமதி (Android 10 மற்றும் அதற்குக் கீழே) மற்றும் வெளிப்புற சேமிப்பக அனுமதியை நிர்வகித்தல் (Android 11 மற்றும் அதற்கு மேல்). பயன்பாட்டிற்கு இணைய அனுமதி இல்லை. மேலும் படிக்க - <a href="https://sites.google.com/view/privacy-policy-zipxtract/home">தனியுரிமைக் கொள்கை</a></p>
+
+<h2>மொழிபெயர்</h2>
+<p>
+<a href="https://hosted.weblate.org/engage/zipxtract/">Weblate மூலம் பயன்பாட்டை உள்ளூர்மயமாக்க உதவுங்கள்.
+</a>
+</p>
+
+<h2>உரிமம்</h2>
+<p>இந்தத் திட்டம் GNU பொது பொதுமக்கள் உரிமம் v3.0 இன் கீழ் உரிமம் பெற்றது. விவரங்களுக்கு <a href="https://github.com/WirelessAlien/ZipXtract/blob/master/LICENSE">LICENSE</a> கோப்பைப் பார்க்கவும்.</p>
+
+<h2>தொடர்பு</h2>
+<p>ஏதேனும் விசாரணைகள் அல்லது கருத்துகளுக்கு, தயவுசெய்து <a href="https://github.com/WirelessAlien/ZipXtract/issues">GitHub களஞ்சியத்தில்</a> ஒரு சிக்கலைத் திறக்கவும்.</p>

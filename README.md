@@ -7,7 +7,8 @@
 ![IzzyOnDroid](https://img.shields.io/endpoint?url=https://apt.izzysoft.de/fdroid/api/v1/shield/com.wirelessalien.zipxtract)
 [![F-Droid](https://img.shields.io/f-droid/v/com.wirelessalien.zipxtract?logo=F-Droid)](https://f-droid.org/packages/com.wirelessalien.zipxtract)
 
-Read this in other languages: [Bulgarian](https://github.com/WirelessAlien/ZipXtract/blob/master/docs/README.bg.md), [Russian](https://github.com/WirelessAlien/ZipXtract/blob/master/docs/README.ru.md), [Ukrainian](https://github.com/WirelessAlien/ZipXtract/blob/master/docs/README.uk.md)
+Read this in other languages: [Български](https://github.com/WirelessAlien/ZipXtract/blob/master/docs/README.bg.md), [Русский](https://github.com/WirelessAlien/ZipXtract/blob/master/docs/README.ru.md), [Українська](https://github.com/WirelessAlien/ZipXtract/blob/master/docs/README.uk.md), [한국어](https://github.com/WirelessAlien/ZipXtract/blob/master/docs/README.ko-KR.md), [Türkçe](https://github.com/WirelessAlien/ZipXtract/blob/master/docs/README.tr-TR.md), [தமிழ்](https://github.com/WirelessAlien/ZipXtract/blob/master/docs/README.ta-IN.md)
+
 
 ZipXtract is a fully open-source Android application designed for comprehensive archive management. It allows you to effortlessly extract and create a wide variety of archive files directly on your device.
 
