@@ -116,4 +116,22 @@
     <string name="passwords_do_not_match">Hasło nie pasuje</string>
     <string name="wrong_password">Wrong password</string>
     <string name="file_already_exists">Archiwum już istnieje</string>
+    <string name="invalid_value">Invalid wejściowy</string>
+    <string name="please_enter_value_between_0_and_22">Wejście do wartości pomiędzy 0 a 22</string>
+    <string name="archiving_started_in_background">Archiving rozpoczął się w tłu</string>
+    <string name="no_compression">No Compression</string>
+    <string name="remove">Remove</string>
+    <string name="preview_archive">Preview Archive</string>
+    <string name="add">Addd</string>
+    <string name="directory_selection_disabled">Folder nie może być wybrany, wybierając pliki wewnątrz.</string>
+    <string name="select_file">Wybór Archiwum.</string>
+    <string name="select_files">(X5X) (ang.)</string>
+    <string name="donate_desc">Jeśli znajdziesz ZipXtracta użyteczność, rozważasz podtrzymywanie jego rozwoju</string>
+    <string name="error_too_many_parts">Wykorzystywały się w nim części X20X</string>
+    <string name="select_archive_type_title">Strona internetowa</string>
+    <string name="add_folder_confirmation_title">Czy aktualny folder?</string>
+    <string name="add_folder_confirmation_message">Czy chcesz dodać foldera \"X31X\" do archiwum?</string>
+    <string name="split_parts_number_req">Ponad 100 fragmentów</string>
+    <string name="fast_search">Fast Search</string>
+    <string name="fast_search_summary">Użycie wskaźnika mediów Androida do szybszego wyszukiwania</string>
 </resources>
