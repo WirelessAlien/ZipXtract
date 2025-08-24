@@ -120,4 +120,22 @@
     <string name="passwords_do_not_match">La contraseña no empareja</string>
     <string name="wrong_password">Contraseña incorrecta</string>
     <string name="file_already_exists">La lima ya existe</string>
+    <string name="invalid_value">Entrada inválida</string>
+    <string name="please_enter_value_between_0_and_22">Introduzca un valor entre 0 y 22</string>
+    <string name="archiving_started_in_background">Archiving comenzó en segundo plano</string>
+    <string name="no_compression">No Compresión</string>
+    <string name="remove">Retirar</string>
+    <string name="preview_archive">Archivo de vista previa</string>
+    <string name="add">Añadir</string>
+    <string name="directory_selection_disabled">La carpeta no se puede seleccionar, seleccione los archivos dentro de ella.</string>
+    <string name="select_file">Seleccione Archivo..</string>
+    <string name="select_files">Add (%d)</string>
+    <string name="donate_desc">Si encuentra útil ZipXtract, por favor considere apoyar su desarrollo:</string>
+    <string name="error_too_many_parts">Esto generaría %1$d partes</string>
+    <string name="select_archive_type_title">Seleccione el tipo de archivo</string>
+    <string name="add_folder_confirmation_title">¿Añada la carpeta actual?</string>
+    <string name="add_folder_confirmation_message">¿Quieres añadir la carpeta \'%1$s\' al archivo?</string>
+    <string name="split_parts_number_req">Permitir más de 100 piezas divididas</string>
+    <string name="fast_search">Búsqueda rápida</string>
+    <string name="fast_search_summary">Utilice el índice multimedia de Android para una búsqueda más rápida</string>
 </resources>
