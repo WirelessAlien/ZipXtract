@@ -80,10 +80,10 @@
     <string name="name">Име</string>
     <string name="size">Размер</string>
     <string name="time_of_creation">Промяна</string>
-    <string name="extension">Файлово разширение</string>
+    <string name="extension">Разширение</string>
     <string name="extract_path">Папка с извлечени файлове</string>
     <string name="archive_path">Папка с архивирани файлове</string>
-    <string name="archive_path_summary">Променете папката по подразбиране за архивирани файлове.\nПо подразбиране е текущата папка.</string>
+    <string name="archive_path_summary">Променете папката за извличане по подразбиране. \nПо подразбиране е \"текущата папка\"</string>
     <string name="compress_tar">TAR архив</string>
     <string name="archive_success">Файлът е архивиран успешно</string>
     <string name="tar_creation_success">TAR файлът е архивиран успешно</string>
@@ -116,4 +116,20 @@
     <string name="wrong_password">Грешна парола</string>
     <string name="confirm_password">Потвърдете паролата</string>
     <string name="file_already_exists">Файлът вече съществува</string>
+    <string name="invalid_value">Невалиден вход</string>
+    <string name="please_enter_value_between_0_and_22">Въведете стойност между 0 и 22</string>
+    <string name="archiving_started_in_background">Архивирането започна във фонов режим</string>
+    <string name="no_compression">Без компресия</string>
+    <string name="remove">Премахване</string>
+    <string name="preview_archive">Преглед на архива</string>
+    <string name="add">Добавяне</string>
+    <string name="directory_selection_disabled">Папката не може да бъде избрана, изберете файловете в нея.</string>
+    <string name="select_file">Изберете файл…</string>
+    <string name="select_files">Добавяне (%d)</string>
+    <string name="donate_desc">Ако намирате ZipXtract за полезен, моля, обмислете да подкрепите неговото развитие:</string>
+    <string name="error_too_many_parts">Това би генерирало %1$d части</string>
+    <string name="select_archive_type_title">Изберете тип архив</string>
+    <string name="add_folder_confirmation_title">Добавяне на текущата папка?</string>
+    <string name="add_folder_confirmation_message">Искате ли да добавите папката \'%1$s\' към архива?</string>
+    <string name="split_parts_number_req">Разрешете повече от 100 разделени части</string>
 </resources>
