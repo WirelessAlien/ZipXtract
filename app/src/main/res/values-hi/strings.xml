@@ -120,4 +120,22 @@
     <string name="passwords_do_not_match">पासवर्ड से मेल नहीं खाता</string>
     <string name="wrong_password">गलत पासवर्ड</string>
     <string name="file_already_exists">पहले से ही मौजूद है</string>
+    <string name="invalid_value">अवैध इनपुट</string>
+    <string name="please_enter_value_between_0_and_22">0 से 22 के बीच मूल्य दर्ज करें</string>
+    <string name="archiving_started_in_background">आर्काइव पृष्ठभूमि में शुरू हुआ</string>
+    <string name="no_compression">कोई संपीड़न</string>
+    <string name="remove">निकालें</string>
+    <string name="preview_archive">पूर्वावलोकन पुरालेख</string>
+    <string name="add">जोड़ें</string>
+    <string name="directory_selection_disabled">फ़ोल्डर का चयन नहीं किया जा सकता है, इसके अंदर फ़ाइलों का चयन करें।।</string>
+    <string name="select_file">फ़ाइल चुनें..</string>
+    <string name="select_files">जोड़ें (%d)</string>
+    <string name="donate_desc">यदि आप ZipXtract उपयोगी पाते हैं, तो कृपया अपने विकास का समर्थन करने पर विचार करें:</string>
+    <string name="error_too_many_parts">यह %1$d भागों उत्पन्न करेगा</string>
+    <string name="select_archive_type_title">संग्रह प्रकार का चयन करें</string>
+    <string name="add_folder_confirmation_title">वर्तमान फ़ोल्डर जोड़ें?</string>
+    <string name="add_folder_confirmation_message">क्या आप संग्रह में फ़ोल्डर \'%1$s\' जोड़ना चाहते हैं?</string>
+    <string name="split_parts_number_req">100 से अधिक विभाजित भागों की अनुमति दें</string>
+    <string name="fast_search">फास्ट सर्च</string>
+    <string name="fast_search_summary">तेजी से खोज के लिए एंड्रॉइड के मीडिया सूचकांक का उपयोग करें</string>
 </resources>
