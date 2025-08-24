@@ -104,7 +104,7 @@
     <string name="close">Закрити</string>
     <string name="extract_path">Тека видобутих файлів</string>
     <string name="archive_path">Тека з архівними файлами</string>
-    <string name="archive_path_summary">Змінення папки за замовчуванням для архівованих файлів.\nЗа замовчуванням є поточною папкою.</string>
+    <string name="archive_path_summary">Змінення папки за замовчуванням для архівованих файлів.\nЗа замовчуванням є поточною папкою</string>
     <string name="extract_path_summary">Змінення папки за замовчуванням для вилучених файлів.\nЗа замовчуванням є поточною папкою або \"/Internal Storage/ZipXtract\" (якщо витягується через \"Open With\"-menu)</string>
     <string name="compress_tar">Архівувати в TAR</string>
     <string name="compression_success">Успішно стиснуто</string>
@@ -128,7 +128,7 @@
     <string name="preview_archive">Архів новин</string>
     <string name="add">Додати</string>
     <string name="directory_selection_disabled">Складання не можна вибрати, вибрати файли всередині нього.</string>
-    <string name="select_file">Виберіть файл</string>
+    <string name="select_file">Виберіть файл…</string>
     <string name="select_files">(%d)</string>
     <string name="donate_desc">Якщо ви знайдете ZipXtract корисно, будь ласка, врахуйте підтримку його розвитку:</string>
     <string name="error_too_many_parts">%1$d частини</string>
