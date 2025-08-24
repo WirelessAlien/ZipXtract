@@ -120,4 +120,22 @@
     <string name="confirm_password">Confirmer mot de passe</string>
     <string name="passwords_do_not_match">Mot de passe ne correspond pas</string>
     <string name="wrong_password">Mot de passe faux</string>
+    <string name="invalid_value">Entrée non valide</string>
+    <string name="please_enter_value_between_0_and_22">Entrez une valeur entre 0 et 22</string>
+    <string name="archiving_started_in_background">Archivage a commencé en arrière-plan</string>
+    <string name="no_compression">Pas de compression</string>
+    <string name="remove">Supprimer</string>
+    <string name="preview_archive">Précédent Archive</string>
+    <string name="add">Add</string>
+    <string name="directory_selection_disabled">Le dossier ne peut pas être sélectionné, sélectionnez les fichiers à l\'intérieur.</string>
+    <string name="select_file">Sélectionnez Fichier..</string>
+    <string name="select_files">Ajouter (%d)</string>
+    <string name="donate_desc">Si vous trouvez ZipXtract utile, veuillez envisager de soutenir son développement:</string>
+    <string name="error_too_many_parts">Cela générerait des pièces %1$d</string>
+    <string name="select_archive_type_title">Sélectionnez le type d\'archive</string>
+    <string name="add_folder_confirmation_title">Ajouter le dossier actuel ?</string>
+    <string name="add_folder_confirmation_message">Voulez-vous ajouter le dossier \'%1$s\' à l\'archive?</string>
+    <string name="split_parts_number_req">Permettre plus de 100 pièces détachées</string>
+    <string name="fast_search">Recherche rapide</string>
+    <string name="fast_search_summary">Utilisez l\'index média d\'Android pour une recherche plus rapide</string>
 </resources>
