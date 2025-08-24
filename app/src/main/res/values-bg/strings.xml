@@ -25,7 +25,7 @@
     <string name="zip_creation_success">ZIP файлът е архивиран успешно</string>
     <string name="compression_level">Ниво на компресиране</string>
     <string name="zip_creation_failed">Грешка при архивиране на ZIP файл</string>
-    <string name="open_folder">Отвори папка</string>
+    <string name="open_folder">Отваряне на папка</string>
     <string name="copied_to_clipboard">Копирано в клипборда</string>
     <string name="no_password">Няма парола</string>
     <string name="extraction_success">Файлът е извлечен успешно</string>
@@ -103,7 +103,7 @@
     <string name="deleting_files">Изтриване на файлове: %1$d/%2$d</string>
     <string name="extracting_progress">Извличане… %1$d %%</string>
     <string name="compressing_progress">Архивиране… %1$d %%</string>
-    <string name="extract_path_summary">Променете папката за извличане по подразбиране.. \nПо подразбиране е „основна папка“ или вътрешно хранилище/ZipXtract (за извлечения архив от менюто „Отвори с“)</string>
+    <string name="extract_path_summary">Променете папката за извличане по подразбиране. \nПо подразбиране е „основна папка“ или Вътрешно Хранилище/ZipXtract (за извлечения архив от менюто „Отвори с“)</string>
     <string name="multi_part_extract">Извлечение от няколко части:</string>
     <string name="info_tip">Полезен съвет</string>
     <string name="last_modified">Последна промяна</string>
@@ -132,4 +132,6 @@
     <string name="add_folder_confirmation_title">Добавяне на текущата папка?</string>
     <string name="add_folder_confirmation_message">Искате ли да добавите папката \'%1$s\' към архива?</string>
     <string name="split_parts_number_req">Разрешете повече от 100 разделени части</string>
+    <string name="fast_search">Бързо търсене</string>
+    <string name="fast_search_summary">Използвайте медийния индекс на Android за по-бързо търсене</string>
 </resources>
