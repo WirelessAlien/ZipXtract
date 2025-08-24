@@ -120,4 +120,22 @@
     <string name="passwords_do_not_match">Kata Sandi tidak cocok</string>
     <string name="wrong_password">Salah Kata Sandi</string>
     <string name="file_already_exists">Berkas sudah ada</string>
+    <string name="invalid_value">Masukan tidak valid</string>
+    <string name="please_enter_value_between_0_and_22">Masukkan nilai antara 0 dan 22</string>
+    <string name="archiving_started_in_background">Archiving dimulai di latar belakang</string>
+    <string name="no_compression">Tidak ada kompresi</string>
+    <string name="remove">Login</string>
+    <string name="preview_archive">Login</string>
+    <string name="add">Login</string>
+    <string name="directory_selection_disabled">Folder tidak dapat dipilih, pilih file di dalamnya.</string>
+    <string name="select_file">Pilih File..</string>
+    <string name="select_files">%d</string>
+    <string name="donate_desc">Jika Anda menemukan ZipXtract berguna, harap mempertimbangkan mendukung perkembangannya:</string>
+    <string name="error_too_many_parts">Ini akan menghasilkan bagian %1$d</string>
+    <string name="select_archive_type_title">Pilih jenis arsip</string>
+    <string name="add_folder_confirmation_title">Tambahkan folder saat ini?</string>
+    <string name="add_folder_confirmation_message">Apakah Anda ingin menambahkan folder \'%1$s\' ke arsip?</string>
+    <string name="split_parts_number_req">Memungkinkan lebih dari 100 bagian split</string>
+    <string name="fast_search">Pencarian Cepat</string>
+    <string name="fast_search_summary">Gunakan indeks media Android untuk pencarian yang lebih cepat</string>
 </resources>
