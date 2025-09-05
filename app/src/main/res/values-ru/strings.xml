@@ -120,10 +120,10 @@
     <string name="passwords_do_not_match">Пароль не совпадает</string>
     <string name="wrong_password">Неверный пароль</string>
     <string name="file_already_exists">Файл уже существует</string>
-    <string name="invalid_value">Инвалидный ввод</string>
+    <string name="invalid_value">Неправильный ввод</string>
     <string name="please_enter_value_between_0_and_22">Введите значение от 0 до 22</string>
-    <string name="archiving_started_in_background">Архивирование началось на заднем плане</string>
-    <string name="no_compression">Нет сжатия</string>
+    <string name="archiving_started_in_background">Архивирование началось в фоне</string>
+    <string name="no_compression">Без сжатия</string>
     <string name="remove">Удалить</string>
     <string name="preview_archive">Архив предварительного просмотра</string>
     <string name="add">Добавить</string>
