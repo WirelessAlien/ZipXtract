@@ -120,4 +120,22 @@
     <string name="passwords_do_not_match">密码不匹配</string>
     <string name="wrong_password">左边</string>
     <string name="file_already_exists">已经存在档案</string>
+    <string name="invalid_value">无效投入</string>
+    <string name="please_enter_value_between_0_and_22">1. 数值0至22</string>
+    <string name="archiving_started_in_background">档案开始于背景</string>
+    <string name="no_compression">No Compression</string>
+    <string name="remove">驱逐</string>
+    <string name="preview_archive">档案</string>
+    <string name="add">增 编</string>
+    <string name="directory_selection_disabled">不能选定Folder,选择其中的档案.</string>
+    <string name="select_file">选择性文件</string>
+    <string name="select_files">增(%d)</string>
+    <string name="donate_desc">如果您认为ZipXtract很有用,请考虑支持其发展:</string>
+    <string name="error_too_many_parts">这将产生%1$d部分</string>
+    <string name="select_archive_type_title">选择性档案类型</string>
+    <string name="add_folder_confirmation_title">添加目前的文字?</string>
+    <string name="add_folder_confirmation_message">你们是否想在档案中添加“%1$s”的夹子?</string>
+    <string name="split_parts_number_req">允许100多个分部分</string>
+    <string name="fast_search">快速搜索</string>
+    <string name="fast_search_summary">加快搜索的灯塔媒体指数</string>
 </resources>
