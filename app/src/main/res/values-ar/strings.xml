@@ -115,4 +115,22 @@
     <string name="wrong_password">كلمة سر خاطئة</string>
     <string name="passwords_do_not_match">كلمة السر لا تتطابق</string>
     <string name="file_already_exists">الملف موجود بالفعل</string>
+    <string name="invalid_value">Invalid input</string>
+    <string name="please_enter_value_between_0_and_22">إدخال قيمة تتراوح بين صفر و22</string>
+    <string name="archiving_started_in_background">بدأت المحفوظات في الخلفية</string>
+    <string name="no_compression">لا ضغط</string>
+    <string name="remove">إزالة الألغام</string>
+    <string name="preview_archive">المحفوظات</string>
+    <string name="add">مضافا إليها</string>
+    <string name="directory_selection_disabled">لا يمكن اختيار الفولدر، اختيار الملفات داخله.</string>
+    <string name="select_file">بيع ملف..</string>
+    <string name="select_files">Add (%d)</string>
+    <string name="donate_desc">إذا وجدتم أن زيبكرو مفيد، يرجى النظر في دعم تطويره:</string>
+    <string name="error_too_many_parts">This would generate %1$d parts</string>
+    <string name="select_archive_type_title">نوع المحفوظات المختارة</string>
+    <string name="add_folder_confirmation_title">أضف الملف الحالي؟?</string>
+    <string name="add_folder_confirmation_message">هل تريد إضافة الملف إلى المحفوظات؟?</string>
+    <string name="split_parts_number_req">السماح بأكثر من 100 جزء مقسم</string>
+    <string name="fast_search">البحث السريع</string>
+    <string name="fast_search_summary">استخدام الرقم القياسي لوسائط الإعلام أندرويد للبحث السريع</string>
 </resources>

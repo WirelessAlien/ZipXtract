@@ -64,8 +64,8 @@
     <string name="close">닫기</string>
     <string name="extract_path">압축 해제된 파일 폴더</string>
     <string name="archive_path">압축된 파일 폴더</string>
-    <string name="archive_path_summary">기본 압축 해제 폴더를 수정합니다.\n기본값은 \"상위 폴더\"입니다</string>
-    <string name="extract_path_summary">기본 압축 해제 폴더를 수정합니다.\n기본값은 \"상위 폴더\" 또는 내부 저장소/ZipXtract(\"기본 프로그램\" 메뉴로 압축해제된 파일인 경우)입니다</string>
+    <string name="archive_path_summary">압축 파일의 기본 폴더를 수정합니다.\n기본값은 현재 폴더입니다.</string>
+    <string name="extract_path_summary">압축 파일의 기본 폴더를 수정합니다.\n기본값은 현재 폴더 또는 \"/내부 저장소/ZipXtract\" (\"기본 프로그램\" 메뉴로 압축해제된 파일인 경우)입니다</string>
     <string name="create_zip">ZIP 압축</string>
     <string name="encryption_method">암호화 방법</string>
     <string name="compression_level">압축 수준</string>
@@ -115,4 +115,20 @@
     <string name="copy_move_files_notification_name">파일 복사/이동</string>
     <string name="extract_archive_notification_name">파일 추출</string>
     <string name="compress_archive_notification_name">파일 압축</string>
+    <string name="invalid_value">잘못된 입력</string>
+    <string name="please_enter_value_between_0_and_22">0과 22 사이의 값을 입력하십시오</string>
+    <string name="archiving_started_in_background">배경에서 시작</string>
+    <string name="no_compression">압축 없음</string>
+    <string name="preview_archive">미리보기</string>
+    <string name="directory_selection_disabled">폴더는 선택 할 수 없으며, 내부의 파일을 선택하십시오.</string>
+    <string name="select_file">파일 선택 ..</string>
+    <string name="select_files">추가 (%d)</string>
+    <string name="donate_desc">ZipXtract가 유용하다면 개발 지원을 고려하십시오</string>
+    <string name="error_too_many_parts">이것은 %1$d 부속을 생성할 것입니다</string>
+    <string name="select_archive_type_title">선택 아카이브 유형</string>
+    <string name="add_folder_confirmation_title">현재 폴더 추가?</string>
+    <string name="add_folder_confirmation_message">아카이브에 폴더 \'%1$s\'을 추가하시겠습니까?</string>
+    <string name="split_parts_number_req">100 개 이상의 분할 부품을 허용</string>
+    <string name="fast_search">빠른 검색</string>
+    <string name="fast_search_summary">Android의 미디어 인덱스를 사용하여 빠른 검색</string>
 </resources>

@@ -25,7 +25,7 @@
     <string name="zip_creation_success">ZIP файлът е архивиран успешно</string>
     <string name="compression_level">Ниво на компресиране</string>
     <string name="zip_creation_failed">Грешка при архивиране на ZIP файл</string>
-    <string name="open_folder">Отвори папка</string>
+    <string name="open_folder">Отваряне на папка</string>
     <string name="copied_to_clipboard">Копирано в клипборда</string>
     <string name="no_password">Няма парола</string>
     <string name="extraction_success">Файлът е извлечен успешно</string>
@@ -43,7 +43,7 @@
     <string name="license">Лиценз</string>
     <string name="about">Относно</string>
     <string name="grant_access">Предоставяне на достъп</string>
-    <string name="storage_access_permission_text">Това приложение изисква достъп до хранилището на вашето устройство за правилна функционалност. Моля, дайте необходимите разрешения.</string>
+    <string name="storage_access_permission_text">Това приложение изисква достъп до паметта на вашето устройство за правилно функциониране. Моля, предоставете необходимите разрешения.</string>
     <string name="root_access_summary">Разрешете достъп до основната директория</string>
     <string name="root_access">Основен достъп</string>
     <string name="internal_storage">Вътрешно Хранилище</string>
@@ -79,7 +79,7 @@
     <string name="sort_by">Сортиране по</string>
     <string name="name">Име</string>
     <string name="size">Размер</string>
-    <string name="time_of_creation">Променен</string>
+    <string name="time_of_creation">Промяна</string>
     <string name="extension">Разширение</string>
     <string name="extract_path">Папка с извлечени файлове</string>
     <string name="archive_path">Папка с архивирани файлове</string>
@@ -94,7 +94,7 @@
     <string name="unsupported_compression_format">Този формат на компресия не се поддържа.</string>
     <string name="access_denied">Отказан достъп</string>
     <string name="no_files_to_archive">Няма избрани файлове за архивиране</string>
-    <string name="sd_card_not_available">SD картата или външното хранилище не са открити</string>
+    <string name="sd_card_not_available">SD карта или външно хранилище не са открити</string>
     <string name="copying_files">Копиране…</string>
     <string name="extraction_ongoing">Извличане…</string>
     <string name="archive_ongoing">Архивиране…</string>
@@ -112,8 +112,26 @@
     <string name="copy_text">Копирай</string>
     <string name="delete_files_notification_name">Изтриване на файл</string>
     <string name="info_tip_description">● Натиснете продължително файлове и папки или щракнете върху иконите на файлове/папки, за да ги изберете за архивиране.\n\n● Щракнете върху файл, за да се покаже менюто за извличане за избор на опции за извличане.\n\n● Файловете, извлечени с помощта на менюто „Отваряне с“ на ОС, се съхраняват във Вътрешно Хранилище/ZipXtract по подразбиране. Променете това в настройките на приложението.\n\n● Местоположението по подразбиране за архивиране или извличане на архиви (в рамките на приложението) е главната директория на съответния файл(ове). Това може да се промени в настройките на приложението.</string>
-    <string name="passwords_do_not_match">Паролите не съвпадат</string>
+    <string name="passwords_do_not_match">Паролата не съвпада</string>
     <string name="wrong_password">Грешна парола</string>
     <string name="confirm_password">Потвърдете паролата</string>
     <string name="file_already_exists">Файлът вече съществува</string>
+    <string name="invalid_value">Невалиден вход</string>
+    <string name="please_enter_value_between_0_and_22">Въведете стойност между 0 и 22</string>
+    <string name="archiving_started_in_background">Архивирането започна във фонов режим</string>
+    <string name="no_compression">Без компресия</string>
+    <string name="remove">Премахване</string>
+    <string name="preview_archive">Преглед на архива</string>
+    <string name="add">Добавяне</string>
+    <string name="directory_selection_disabled">Папката не може да бъде избрана, изберете файловете в нея.</string>
+    <string name="select_file">Изберете файл…</string>
+    <string name="select_files">Добавяне (%d)</string>
+    <string name="donate_desc">Ако намирате ZipXtract за полезен, моля, обмислете да подкрепите неговото развитие:</string>
+    <string name="error_too_many_parts">Това би генерирало %1$d части</string>
+    <string name="select_archive_type_title">Изберете тип архив</string>
+    <string name="add_folder_confirmation_title">Добавяне на текущата папка?</string>
+    <string name="add_folder_confirmation_message">Искате ли да добавите папката \'%1$s\' към архива?</string>
+    <string name="split_parts_number_req">Разрешете повече от 100 разделени части</string>
+    <string name="fast_search">Бързо търсене</string>
+    <string name="fast_search_summary">Използвайте медийния индекс на Android за по-бързо търсене</string>
 </resources>
