@@ -1,3 +1,0 @@
-No new feature
-Removed a unnecessary permission
-Minor change
