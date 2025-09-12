@@ -1,1 +1,0 @@
-Correção de bug: OutOfMemoryError ao descompactar arquivos 7z grandes

@@ -1,3 +1,0 @@
-Adicionada a capacidade de extrair arquivos 7z e zip criptografados
-Suporte estendido para jar, z
-Adicionado monitor de progresso para zip, 7z
