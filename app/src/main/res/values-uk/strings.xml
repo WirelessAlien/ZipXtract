@@ -89,7 +89,6 @@
     <string name="root_access">Root доступ</string>
     <string name="root_access_summary">Увімкнути доступ до root каталогів</string>
     <string name="internal_storage">Внутрішнє сховище</string>
-    <string name="root">Root</string>
     <string name="directory_empty">Тека пуста</string>
     <string name="paste">Вставити</string>
     <string name="storage">Сховище</string>

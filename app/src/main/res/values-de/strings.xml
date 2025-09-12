@@ -8,7 +8,6 @@
     <string name="compression_level">Kompressionslevel</string>
     <string name="liberapay">Liberapay</string>
     <string name="no_password">Kein Passwort</string>
-    <string name="ok">OK</string>
     <string name="create_zip">ZIP-Archiv erstellen</string>
     <string name="encryption_method">Verschlüsselungsmethode</string>
     <string name="cancel">Abbrechen</string>
@@ -41,7 +40,6 @@
     <string name="copying_files_progress">Dateien werden kopiert: %1$d/%2$d</string>
     <string name="moving_files_progress">Dateien werden verschoben: %1$d/%2$d</string>
     <string name="internal_storage">Interner Speicher</string>
-    <string name="root">Root</string>
     <string name="directory_empty">Verzeichnis ist leer</string>
     <string name="paste">Einfügen</string>
     <string name="archive">Archiv</string>
@@ -87,7 +85,6 @@
     <string name="ascending">Aufsteigend</string>
     <string name="descending">Absteigend</string>
     <string name="sort_by">Sortieren nach</string>
-    <string name="name">Name</string>
     <string name="size">Größe</string>
     <string name="time_of_creation">Geändert</string>
     <string name="extension">Dateiendung</string>

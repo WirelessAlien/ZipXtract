@@ -41,7 +41,6 @@
     <string name="no_password">Không có mật mã</string>
     <string name="open_folder">Mở thư mục</string>
     <string name="open_with">Mở bằng</string>
-    <string name="home">Home</string>
     <string name="background">Nền</string>
     <string name="compress_with">Nén bằng:</string>
     <string name="confirm_delete">Xác nhận xóa</string>
@@ -68,7 +67,6 @@
     <string name="select_all">Chọn tất cả</string>
     <string name="copy_to">Chép đến</string>
     <string name="extract_path_summary">Chỉnh sửa thư mục giải nén mặc định.\nMặc định là \"thư mục chính\" hoặc bộ nhớ trong/ZipXtract (cho lưu trữ được giải nén sử dụng menu \"Mở bằng\")</string>
-    <string name="ok">OK</string>
     <string name="share">Chia sẻ Link của App</string>
     <string name="solid_compression">Nén rắn</string>
     <string name="privacy_policy">Chính sách bảo mật</string>
@@ -82,7 +80,6 @@
     <string name="root_access">Truy cập quyền root</string>
     <string name="root_access_summary">Cho phép truy cập thư mục root</string>
     <string name="internal_storage">Bộ nhớ trong</string>
-    <string name="root">Root</string>
     <string name="directory_empty">Thư mục này trống</string>
     <string name="paste">Dán</string>
     <string name="storage">Bộ nhớ</string>

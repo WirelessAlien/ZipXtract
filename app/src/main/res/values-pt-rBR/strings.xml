@@ -13,7 +13,6 @@
     <string name="compression_level">Nível de Compressão</string>
     <string name="liberapay">Liberapay</string>
     <string name="no_password">Sem Senha</string>
-    <string name="ok">OK</string>
     <string name="create_zip">Arquivar o arquivo</string>
     <string name="encryption_method">Método de Encriptação</string>
     <string name="cancel">Cancelar</string>
@@ -55,7 +54,6 @@
     <string name="paste">Colar</string>
     <string name="storage">Armazenamento</string>
     <string name="archive">Arquivo</string>
-    <string name="home">Home</string>
     <string name="background">Segundo plano</string>
     <string name="open_with">Abrir com</string>
     <string name="compress_with">Comprimir com:</string>
