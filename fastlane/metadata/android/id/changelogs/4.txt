@@ -1,1 +1,0 @@
-Tambahan kemampuan untuk mengakses berkas dari file manager #4 #6
