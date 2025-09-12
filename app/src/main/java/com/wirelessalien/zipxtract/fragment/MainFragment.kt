@@ -602,6 +602,9 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     }
 
     private fun navigateToPath(path: String) {
+        if (isAdded) {
+            unselectAllFiles()
+        }
         fileLoadingJob?.cancel()
         currentPath = path
         updateCurrentPathChip()
