@@ -1,3 +1,0 @@
-Zip oluşturma özelliği eklendi (şifreli ve şifresiz) #9
-Bağış diyaloğu eklendi #11
-Önbellek temizleme yöntemi eklendi #8

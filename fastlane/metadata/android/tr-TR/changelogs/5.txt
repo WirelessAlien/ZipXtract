@@ -1,3 +1,0 @@
-Şifreli 7z ve zip dosyalarını çıkarma özelliği eklendi
-jar, z formatları için destek genişletildi
-zip, 7z için ilerleme göstergesi eklendi
