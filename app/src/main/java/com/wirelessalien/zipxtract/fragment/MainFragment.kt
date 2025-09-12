@@ -570,32 +570,26 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             currentPath.startsWith(basePath) -> currentPath.replace(basePath, internalStorage)
             sdCardPath != null && currentPath.startsWith(sdCardPath) -> currentPath.replace(sdCardPath, getString(R.string.sd_card))
             else -> currentPath
-        }.split("/")
+        }.split("/").filter { it.isNotEmpty() }
 
         binding.chipGroupPath.removeAllViews()
 
-        var cumulativePath = when {
-            currentPath.startsWith(basePath) -> basePath
-            sdCardPath != null && currentPath.startsWith(sdCardPath) -> sdCardPath
-            else -> ""
-        }
+        var pathAccumulator = ""
 
         for (part in displayPath) {
             val chip = LayoutInflater.from(requireContext()).inflate(R.layout.custom_chip, binding.chipGroupPath, false) as Chip
             chip.text = part
+
+            pathAccumulator = when (part) {
+                internalStorage -> basePath
+                getString(R.string.sd_card) -> sdCardPath!!
+                else -> if (pathAccumulator.endsWith("/")) "$pathAccumulator$part" else "$pathAccumulator/$part"
+            }
+
+            val finalPathForChip = pathAccumulator
+
             chip.setOnClickListener {
-                cumulativePath = when (part) {
-                    internalStorage -> {
-                        basePath
-                    }
-                    getString(R.string.sd_card) -> {
-                        sdCardPath ?: ""
-                    }
-                    else -> {
-                        "$cumulativePath/$part"
-                    }
-                }
-                navigateToPath(cumulativePath)
+                navigateToPath(finalPathForChip)
             }
             binding.chipGroupPath.addView(chip)
         }
