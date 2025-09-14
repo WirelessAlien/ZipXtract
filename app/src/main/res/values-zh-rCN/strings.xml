@@ -138,4 +138,13 @@
     <string name="split_parts_number_req">允许100多个分部分</string>
     <string name="fast_search">快速搜索</string>
     <string name="fast_search_summary">加快搜索的灯塔媒体指数</string>
+    <string name="file_list_is_fixed_for_this_operation">为这一行动确定了档案清单.</string>
+    <string name="archive_updated_successfully">成功更新的档案</string>
+    <string name="error_no_file_information_provided">错误:没有提供档案资料.</string>
+    <string name="error_updating_archive">错误更新档案</string>
+    <string name="error_opening_archive">外部启用档案:%1$s</string>
+    <string name="no_valid_files_found_to_archive">没有有效的档案.</string>
+    <string name="invalid_archive_type">无效档案类型</string>
+    <string name="updating_archive">更新档案..…</string>
+    <string name="update_archive_service">更新档案</string>
 </resources>
