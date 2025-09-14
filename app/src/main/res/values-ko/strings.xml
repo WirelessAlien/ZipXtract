@@ -133,4 +133,13 @@
     <string name="split_parts_number_req">100 개 이상의 분할 부품을 허용</string>
     <string name="fast_search">빠른 검색</string>
     <string name="fast_search_summary">Android의 미디어 인덱스를 사용하여 빠른 검색</string>
+    <string name="file_list_is_fixed_for_this_operation">파일 목록은 이 가동을 위해 조정됩니다.</string>
+    <string name="archive_updated_successfully">Archive 업데이트</string>
+    <string name="error_no_file_information_provided">오류: 제공된 파일 정보 없음.</string>
+    <string name="error_updating_archive">오류 업데이트 아카이브</string>
+    <string name="error_opening_archive">오류 오프닝 아카이브: %1$s</string>
+    <string name="no_valid_files_found_to_archive">아카이브에 있는 유효한 파일이 없습니다.</string>
+    <string name="invalid_archive_type">잘못된 아카이브 유형</string>
+    <string name="updating_archive">업데이트 ..</string>
+    <string name="update_archive_service">공지사항</string>
 </resources>
