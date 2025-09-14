@@ -134,4 +134,13 @@
     <string name="split_parts_number_req">Erlauben Sie mehr als 100 geteilte Teile</string>
     <string name="fast_search">Schnelle Suche</string>
     <string name="fast_search_summary">Verwenden Sie Android-Medienindex für schnellere Suche</string>
+    <string name="file_list_is_fixed_for_this_operation">Die Dateiliste ist für diesen Vorgang festgelegt.</string>
+    <string name="archive_updated_successfully">Archiv erfolgreich aktualisiert</string>
+    <string name="error_no_file_information_provided">Fehler: Keine Dateiinformationen vorhanden.</string>
+    <string name="error_updating_archive">Aktualisieren von Archiven</string>
+    <string name="error_opening_archive">Fehler beim Öffnen des Archivs: %1$s</string>
+    <string name="no_valid_files_found_to_archive">Keine gültigen Dateien zum Archiven gefunden.</string>
+    <string name="invalid_archive_type">Ungültiger Archivtyp</string>
+    <string name="updating_archive">Aktualisierendes Archiv..</string>
+    <string name="update_archive_service">Archiv der Kategorie</string>
 </resources>
