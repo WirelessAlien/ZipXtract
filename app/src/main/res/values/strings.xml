@@ -14,9 +14,12 @@
   ~
   ~     You should have received a copy of the GNU General Public License
   ~     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-  --><resources>
+  -->
+
+<resources>
     <!-- App name -->
     <string name="app_name" translatable="false">ZipXtract</string>
+
     <!-- General strings -->
     <string name="folder">Folder</string>
     <string name="share">Share App Link</string>
@@ -46,11 +49,15 @@
     <string name="select_file">Select File…</string>
     <string name="select_files">Add (%d)</string>
     <string name="donate_desc">If you find ZipXtract useful, please consider supporting its development:</string>
+    <string name="file_list_is_fixed_for_this_operation">File list is fixed for this operation.</string>
+
     <!-- Bottom navigation -->
     <string name="archive">Archive</string>
     <string name="home">Home</string>
+
     <!-- Snackbar actions -->
     <string name="open_folder">Open Folder</string>
+
     <!-- Dialog strings (General dialogs and common strings of different dialog) -->
     <string name="enter_name_of_archive_optional">Archive Name</string>
     <string name="show_hide_selected_files">Show/Hide Selected Files</string>
@@ -84,6 +91,7 @@
     <string name="add_folder_confirmation_title">Add current folder?</string>
     <string name="add_folder_confirmation_message">Do you want to add the folder \'%1$s\' to the archive?</string>
     <string name="split_parts_number_req">Allow more than 100 split parts</string>
+
     <!-- Menu items -->
     <string name="move">Move to</string>
     <string name="copy_to">Copy to</string>
@@ -99,6 +107,7 @@
     <string name="time_of_creation">Modified</string>
     <string name="extension">Extension</string>
     <string name="close">Close</string>
+
     <!-- Settings -->
     <string name="extract_path">Extracted files folder</string>
     <string name="archive_path">Archived files folder</string>
@@ -106,6 +115,7 @@
     <string name="extract_path_summary">Modify the default extract folder. \nDefault is \"parent folder\" or Internal Storage/ZipXtract (for \"Open With\" menu extracted archive)</string>
     <string name="fast_search">Fast Search</string>
     <string name="fast_search_summary">Use Android\'s media index for faster search</string>
+
     <!-- ZIP archive options -->
     <string name="create_zip">Archive ZIP</string>
     <string name="encryption_method">Encryption Method</string>
@@ -116,13 +126,16 @@
     <string name="split_zip">Split ZIP</string>
     <string name="_ten">Default is 64kb</string>
     <string name="settings_info_text">The default encryption method for files is AES, which provides a high level of security. However, please be aware that AES encryption can be time-consuming, particularly on lower-end devices.\n\nFor users with less powerful devices, an alternative like ZIP_STANDARD can be use. However, please note that this method does not offer the same level of security as AES.\n\nIf security is your primary concern, we strongly recommend using AES despite its longer processing time.</string>
+
     <!-- TAR archive options -->
     <string name="compress_tar">Archive TAR</string>
+
     <!-- 7z archive options -->
     <string name="compress_sevenz">Archive 7z</string>
     <string name="solid_compression">Solid Compression</string>
     <string name="thread_count">Thread Count</string>
     <string name="max_available_thread">0 for maximum available threads</string>
+
     <!-- Success toast messages -->
     <string name="compression_success">Compression successful</string>
     <string name="extraction_success">File extracted successfully</string>
@@ -133,6 +146,8 @@
     <string name="file_deleted">Deleted</string>
     <string name="copied_to_clipboard">Copied to clipboard</string>
     <string name="operation_cancelled">Operation cancelled</string>
+    <string name="archive_updated_successfully">Archive updated successfully</string>
+
     <!-- Error toast messages -->
     <string name="tar_creation_failed">Error archiving TAR file</string>
     <string name="compression_failed">Compression failed</string>
@@ -146,12 +161,20 @@
     <string name="permission_denied">Permission Denied</string>
     <string name="no_file_selected">No File Selected</string>
     <string name="sd_card_not_available">SD card or external storage not detected</string>
+    <string name="error_no_file_information_provided">Error: No file information provided.</string>
+    <string name="error_updating_archive">Error updating archive</string>
+    <string name="error_opening_archive">Error opening archive: %1$s</string>
+    <string name="no_valid_files_found_to_archive">No valid files found to archive.</string>
+    <string name="invalid_archive_type">Invalid archive type</string>
+
     <!-- Notification title-->
     <string name="copying_files">Copying…</string>
     <string name="moving_files">Moving…</string>
     <string name="delete_ongoing">Deleting…</string>
     <string name="extraction_ongoing">Extracting…</string>
     <string name="archive_ongoing">Archiving…</string>
+    <string name="updating_archive">Updating archive…</string>
+
     <!-- Notification content-->
     <string name="copying_files_progress">Copying files: %1$d/%2$d</string>
     <string name="moving_files_progress">Moving files: %1$d/%2$d</string>
@@ -159,11 +182,14 @@
     <string name="extracting_progress">Extracting… %1$d %%</string>
     <string name="compressing_progress">Archiving… %1$d %%</string>
     <string name="compression_ongoing">Compressing…</string>
+
     <!-- Notification channel name-->
     <string name="delete_files_notification_name">Delete File</string>
     <string name="copy_move_files_notification_name">Copy/Move Files</string>
     <string name="extract_archive_notification_name">Extract Archive</string>
     <string name="compress_archive_notification_name">Compress Archive</string>
+    <string name="update_archive_service">Update Archive</string>
+
     <!-- non-translatable strings -->
     <string name="zip" translatable="false">ZIP</string>
     <string name="_7z" translatable="false">7z</string>
