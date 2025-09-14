@@ -138,4 +138,13 @@
     <string name="split_parts_number_req">100 से अधिक विभाजित भागों की अनुमति दें</string>
     <string name="fast_search">फास्ट सर्च</string>
     <string name="fast_search_summary">तेजी से खोज के लिए एंड्रॉइड के मीडिया सूचकांक का उपयोग करें</string>
+    <string name="file_list_is_fixed_for_this_operation">इस प्रक्रिया के लिए फ़ाइल सूची तय की गई है।।</string>
+    <string name="archive_updated_successfully">सफलतापूर्वक अद्यतन</string>
+    <string name="error_no_file_information_provided">त्रुटि: कोई फ़ाइल जानकारी प्रदान नहीं की गई है।।</string>
+    <string name="error_updating_archive">संग्रह अद्यतन करने में त्रुटि</string>
+    <string name="error_opening_archive">त्रुटि उद्घाटन संग्रह: %1$s</string>
+    <string name="no_valid_files_found_to_archive">संग्रहीत करने के लिए कोई मान्य फ़ाइल नहीं है।।</string>
+    <string name="invalid_archive_type">अवैध संग्रह प्रकार</string>
+    <string name="updating_archive">अद्यतन पुरालेख..</string>
+    <string name="update_archive_service">अद्यतन पुरालेख</string>
 </resources>
