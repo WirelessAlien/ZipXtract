@@ -133,4 +133,13 @@
     <string name="split_parts_number_req">السماح بأكثر من 100 جزء مقسم</string>
     <string name="fast_search">البحث السريع</string>
     <string name="fast_search_summary">استخدام الرقم القياسي لوسائط الإعلام أندرويد للبحث السريع</string>
+    <string name="file_list_is_fixed_for_this_operation">قائمة الملفات ثابتة لهذه العملية.</string>
+    <string name="archive_updated_successfully">تحديث المحفوظات بنجاح</string>
+    <string name="error_no_file_information_provided">لم تقدم أي معلومات عن الملفات.</string>
+    <string name="error_updating_archive">تحديث السجلات</string>
+    <string name="error_opening_archive">Error opening archive: %1$s</string>
+    <string name="no_valid_files_found_to_archive">لم يعثر على ملفات صالحة للمحفوظات.</string>
+    <string name="invalid_archive_type">محفوظات غير صالحة</string>
+    <string name="updating_archive">محفوظات متطورة..</string>
+    <string name="update_archive_service">تحديث المحفوظات</string>
 </resources>
