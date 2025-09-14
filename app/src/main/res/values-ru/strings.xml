@@ -138,4 +138,13 @@
     <string name="split_parts_number_req">Разрешить более 100 частей</string>
     <string name="fast_search">Быстрый поиск</string>
     <string name="fast_search_summary">Используйте медиа-индекс Android для более быстрого поиска</string>
+    <string name="file_list_is_fixed_for_this_operation">Список файлов фиксируется для этой операции.</string>
+    <string name="archive_updated_successfully">Обновление архива</string>
+    <string name="error_no_file_information_provided">Ошибка: информация о файле не представлена.</string>
+    <string name="error_updating_archive">Ошибка обновления</string>
+    <string name="error_opening_archive">%1$s</string>
+    <string name="no_valid_files_found_to_archive">Никаких действительных файлов, найденных для архивирования.</string>
+    <string name="invalid_archive_type">Тип архива</string>
+    <string name="updating_archive">Обновление архива..</string>
+    <string name="update_archive_service">Архив обновления</string>
 </resources>
