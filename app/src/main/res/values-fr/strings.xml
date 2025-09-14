@@ -138,4 +138,13 @@
     <string name="split_parts_number_req">Permettre plus de 100 pièces détachées</string>
     <string name="fast_search">Recherche rapide</string>
     <string name="fast_search_summary">Utilisez l\'index média d\'Android pour une recherche plus rapide</string>
+    <string name="file_list_is_fixed_for_this_operation">La liste des fichiers est fixée pour cette opération.</string>
+    <string name="archive_updated_successfully">Archive mise à jour avec succès</string>
+    <string name="error_no_file_information_provided">Erreur: Aucune information de fichier n\'a été fournie.</string>
+    <string name="error_updating_archive">Mise à jour des erreurs d\'archive</string>
+    <string name="error_opening_archive">Archive d\'ouverture d\'erreur : %1$s</string>
+    <string name="no_valid_files_found_to_archive">Aucun fichier valide trouvé dans l\'archive.</string>
+    <string name="invalid_archive_type">Type d\'archive invalide</string>
+    <string name="updating_archive">Mise à jour des archives..</string>
+    <string name="update_archive_service">Update Archive</string>
 </resources>
