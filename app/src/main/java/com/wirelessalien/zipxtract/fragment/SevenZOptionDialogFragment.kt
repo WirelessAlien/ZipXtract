@@ -80,7 +80,7 @@ class SevenZOptionDialogFragment : DialogFragment() {
                     }
                 } else {
                     binding.progressIndicator.visibility = View.GONE
-                    Toast.makeText(context, "Error: No file information provided.", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, getString(R.string.error_no_file_information_provided), Toast.LENGTH_LONG).show()
                     dismiss()
                     return@launch
                 }
@@ -112,7 +112,7 @@ class SevenZOptionDialogFragment : DialogFragment() {
                     }
                 }
             } else {
-                Toast.makeText(requireContext(), "File list is fixed for this operation.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), getString(R.string.file_list_is_fixed_for_this_operation), Toast.LENGTH_SHORT).show()
             }
         }
 

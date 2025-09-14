@@ -489,7 +489,8 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             val validFilePaths = filePathsStringList.filter { File(it).exists() }
 
             if (validFilePaths.isEmpty()) {
-                Toast.makeText(requireContext(), "No valid files found to archive.", Toast.LENGTH_LONG).show()
+                Toast.makeText(requireContext(),
+                    getString(R.string.no_valid_files_found_to_archive), Toast.LENGTH_LONG).show()
                 // Clear arguments even if no valid files, to prevent re-processing
                 arguments?.remove(ARG_FILE_PATHS_FOR_ARCHIVE)
                 arguments?.remove(ARG_ARCHIVE_TYPE)
@@ -511,7 +512,8 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             newFragment?.let {
                 transaction.add(android.R.id.content, it).addToBackStack(null)
                 transaction.commit()
-            } ?: Toast.makeText(requireContext(), "Invalid archive type", Toast.LENGTH_SHORT).show()
+            } ?: Toast.makeText(requireContext(),
+                getString(R.string.invalid_archive_type), Toast.LENGTH_SHORT).show()
 
             arguments?.remove(ARG_FILE_PATHS_FOR_ARCHIVE)
             arguments?.remove(ARG_ARCHIVE_TYPE)

@@ -89,7 +89,7 @@ class ZipOptionDialogFragment : DialogFragment() {
                     }
                 } else {
                     binding.progressIndicator.visibility = View.GONE
-                    Toast.makeText(context, "Error: No file information provided.", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, getString(com.wirelessalien.zipxtract.R.string.error_no_file_information_provided), Toast.LENGTH_LONG).show()
                     dismiss()
                     return@launch
                 }
@@ -121,7 +121,7 @@ class ZipOptionDialogFragment : DialogFragment() {
                     }
                 }
             } else {
-                Toast.makeText(requireContext(), "File list is fixed for this operation.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), getString(com.wirelessalien.zipxtract.R.string.file_list_is_fixed_for_this_operation), Toast.LENGTH_SHORT).show()
             }
         }
 

@@ -73,7 +73,8 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
                 }
                 BroadcastConstants.ACTION_ARCHIVE_COMPLETE -> {
                     binding.progressBar.visibility = View.GONE
-                    Toast.makeText(requireContext(), "Archive updated successfully", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(),
+                        getString(R.string.archive_updated_successfully), Toast.LENGTH_SHORT).show()
                     try {
                         inArchive?.close()
                         val randomAccessFile = RandomAccessFile(archivePath, "r")
@@ -85,7 +86,8 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
                 }
                 BroadcastConstants.ACTION_ARCHIVE_ERROR -> {
                     binding.progressBar.visibility = View.GONE
-                    Toast.makeText(requireContext(), "Error updating archive", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(),
+                        getString(R.string.error_updating_archive), Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -133,7 +135,8 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
             loadArchiveItems(currentPath)
         } catch (e: Exception) {
             e.printStackTrace()
-            Toast.makeText(requireContext(), "Error opening archive: ${e.message}", Toast.LENGTH_LONG).show()
+            Toast.makeText(requireContext(),
+                getString(R.string.error_opening_archive, e.message), Toast.LENGTH_LONG).show()
         }
 
         val filter = IntentFilter().apply {

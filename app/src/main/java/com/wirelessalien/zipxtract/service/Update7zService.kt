@@ -254,7 +254,7 @@ class Update7zService : Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 BroadcastConstants.ARCHIVE_NOTIFICATION_CHANNEL_ID,
-                "Update Archive Service",
+                getString(R.string.update_archive_service),
                 NotificationManager.IMPORTANCE_LOW
             )
             notificationManager.createNotificationChannel(channel)
@@ -263,7 +263,7 @@ class Update7zService : Service() {
 
     private fun createNotificationBuilder(): NotificationCompat.Builder {
         return NotificationCompat.Builder(this, BroadcastConstants.ARCHIVE_NOTIFICATION_CHANNEL_ID)
-            .setContentTitle("Updating archive...")
+            .setContentTitle(getString(R.string.updating_archive))
             .setSmallIcon(R.drawable.ic_notification_icon)
             .setProgress(100, 0, true)
             .setOngoing(true)
