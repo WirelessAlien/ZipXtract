@@ -1,2 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <string name="folder">Akaram</string>
+    <string name="about">Ɣef</string>
+    <string name="root">Aẓar</string>
+    <string name="paste">Senteḍ</string>
+    <string name="archive">Aɣbar</string>
+    <string name="home">Amager</string>
+    <string name="background">Agilal</string>
+    <string name="delete">Kkes</string>
+    <string name="file_path">Abrid</string>
+    <string name="file_size">Tiddi</string>
+    <string name="cancel">Semmet</string>
+    <string name="donate">Mudd tawsa</string>
+    <string name="ok">Ih</string>
+    <string name="extract">Ssef</string>
+    <string name="copy_text">Nɣel</string>
+    <string name="action_settings">Iɣewwaren</string>
+    <string name="search">Nadi</string>
+    <string name="order">Smizzwer</string>
+    <string name="name">Isem</string>
+    <string name="size">Tiddi</string>
+    <string name="extension">Asiɣzef</string>
+    <string name="close">Mdel</string>
+    <string name="file_deleted">Yettwakkes</string>
+    <string name="delete_ongoing">Tukksa…</string>
+    <string name="compression_ongoing">Tussda…</string>
+    <string name="remove">Kkes</string>
+    <string name="add">Rnu</string>
+    <string name="privacy_policy">Tasertit n tbaḍnit</string>
+    <string name="source_code">Tangalt taɣbalut</string>
+</resources>
