@@ -40,7 +40,7 @@
     <string name="root">Root</string>
     <string name="directory_empty">Le dossier est vide</string>
     <string name="paste">Coller</string>
-    <string name="home">Home</string>
+    <string name="home">Accueil</string>
     <string name="action_settings">Réglages</string>
     <string name="select_all">Tout Sélectionner</string>
     <string name="search">Recherche</string>
@@ -61,13 +61,13 @@
     <string name="grant_access">Accès aux subventions</string>
     <string name="storage_access_permission_text">Cette application nécessite l\'accès au stockage de votre appareil pour son fonctionnent. Veuillez lui accorder les autorisations nécessaires.</string>
     <string name="sd_card">Carte SD</string>
-    <string name="root_access">Accès aux racines</string>
+    <string name="root_access">Accès root</string>
     <string name="root_access_summary">Activer l\'accès au répertoire racine</string>
     <string name="internal_storage">Stockage interne</string>
     <string name="storage">Stockage</string>
     <string name="archive">Archive</string>
     <string name="show_hide_selected_files">Afficher/Masquer la sélection de fichiers</string>
-    <string name="background">Historique</string>
+    <string name="background">Arrière-plan</string>
     <string name="open_with">Ouvrir avec</string>
     <string name="compress_with">Compresser avec :</string>
     <string name="confirm_delete">Confirmer la suppression</string>
