@@ -125,12 +125,12 @@
     <string name="archiving_started_in_background">Archivage a commencé en arrière-plan</string>
     <string name="no_compression">Pas de compression</string>
     <string name="remove">Supprimer</string>
-    <string name="preview_archive">Précédent Archive</string>
-    <string name="add">Add</string>
+    <string name="preview_archive">Prévisualiser l\'archive</string>
+    <string name="add">Ajouter</string>
     <string name="directory_selection_disabled">Le dossier ne peut pas être sélectionné, sélectionnez les fichiers à l\'intérieur.</string>
-    <string name="select_file">Sélectionnez Fichier..</string>
+    <string name="select_file">Sélectionnez Fichier…</string>
     <string name="select_files">Ajouter (%d)</string>
-    <string name="donate_desc">Si vous trouvez ZipXtract utile, veuillez envisager de soutenir son développement:</string>
+    <string name="donate_desc">Si vous trouvez ZipXtract utile, veuillez envisager de soutenir son développement :</string>
     <string name="error_too_many_parts">Cela générerait des pièces %1$d</string>
     <string name="select_archive_type_title">Sélectionnez le type d\'archive</string>
     <string name="add_folder_confirmation_title">Ajouter le dossier actuel ?</string>
