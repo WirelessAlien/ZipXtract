@@ -198,6 +198,9 @@ class OpenWithActivity : AppCompatActivity() {
                 isCheckable = true
             }
             chipGroup.addView(chip)
+            if (type == "ZIP") {
+                chip.isChecked = true
+            }
         }
 
         MaterialAlertDialogBuilder(this, R.style.MaterialDialog)
