@@ -91,6 +91,7 @@
     <string name="add_folder_confirmation_title">Add current folder?</string>
     <string name="add_folder_confirmation_message">Do you want to add the folder \'%1$s\' to the archive?</string>
     <string name="split_parts_number_req">Allow more than 100 split parts</string>
+    <string name="compare">Compare</string>
 
     <!-- Menu items -->
     <string name="move">Move to</string>
@@ -201,4 +202,7 @@
     <string name="liberapay" translatable="false">Liberapay</string>
     <string name="author_wirelessalien" translatable="false">Author: WirelessAlien</string>
     <string name="zstd" translatable="false">ZSTD</string>
+    <string name="md5" translatable="false">MD5</string>
+    <string name="sha1" translatable="false">SHA-1</string>
+    <string name="sha256" translatable="false">SHA-256</string>
 </resources>

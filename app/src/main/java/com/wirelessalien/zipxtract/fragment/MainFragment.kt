@@ -102,6 +102,7 @@ import com.wirelessalien.zipxtract.databinding.LayoutPermissionRequestBinding
 import com.wirelessalien.zipxtract.databinding.PasswordInputDialogBinding
 import com.wirelessalien.zipxtract.databinding.ProgressDialogArchiveBinding
 import com.wirelessalien.zipxtract.databinding.ProgressDialogExtractBinding
+import com.wirelessalien.zipxtract.helper.ChecksumUtils
 import com.wirelessalien.zipxtract.service.Archive7zService
 import com.wirelessalien.zipxtract.service.ArchiveSplitZipService
 import com.wirelessalien.zipxtract.service.ArchiveTarService
@@ -136,8 +137,10 @@ import net.lingala.zip4j.model.enums.CompressionMethod
 import net.lingala.zip4j.model.enums.EncryptionMethod
 import org.apache.commons.compress.compressors.CompressorStreamFactory
 import java.io.File
+import java.io.FileInputStream
 import java.nio.file.Files
 import java.nio.file.attribute.BasicFileAttributes
+import java.security.MessageDigest
 import java.util.Date
 import java.util.Locale
 import kotlin.coroutines.cancellation.CancellationException
@@ -1497,6 +1500,8 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         binding.okButton.setOnClickListener {
             dialog.dismiss()
         }
+
+        ChecksumUtils.calculateChecksums(file, binding, lifecycleScope, requireContext())
 
         dialog.show()
     }
