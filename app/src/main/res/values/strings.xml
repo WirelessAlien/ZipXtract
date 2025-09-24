@@ -50,6 +50,7 @@
     <string name="select_files">Add (%d)</string>
     <string name="donate_desc">If you find ZipXtract useful, please consider supporting its development:</string>
     <string name="file_list_is_fixed_for_this_operation">File list is fixed for this operation.</string>
+    <string name="no_match">No match</string>
 
     <!-- Bottom navigation -->
     <string name="archive">Archive</string>
@@ -167,6 +168,7 @@
     <string name="error_opening_archive">Error opening archive: %1$s</string>
     <string name="no_valid_files_found_to_archive">No valid files found to archive.</string>
     <string name="invalid_archive_type">Invalid archive type</string>
+
 
     <!-- Notification title-->
     <string name="copying_files">Copying…</string>

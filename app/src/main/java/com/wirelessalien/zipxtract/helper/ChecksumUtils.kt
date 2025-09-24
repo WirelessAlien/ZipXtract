@@ -64,28 +64,31 @@ object ChecksumUtils {
 
         binding.compareChecksum.doOnTextChanged { text, _, _, _ ->
             val checksumToCompare = text.toString().trim()
-            if (checksumToCompare.isNotEmpty()) {
-                val md5 = binding.md5Checksum.text.toString()
-                val sha1 = binding.sha1Checksum.text.toString()
-                val sha256 = binding.sha256Checksum.text.toString()
+            val md5 = binding.md5Checksum.text.toString()
+            val sha1 = binding.sha1Checksum.text.toString()
+            val sha256 = binding.sha256Checksum.text.toString()
 
-                if (checksumToCompare.equals(md5, ignoreCase = true) ||
-                    checksumToCompare.equals(sha1, ignoreCase = true) ||
-                    checksumToCompare.equals(sha256, ignoreCase = true)
-                ) {
+            if (checksumToCompare.isNotEmpty()) {
+                val isMatch = checksumToCompare.equals(md5, ignoreCase = true) ||
+                        checksumToCompare.equals(sha1, ignoreCase = true) ||
+                        checksumToCompare.equals(sha256, ignoreCase = true)
+
+                if (isMatch) {
                     binding.compareResult.visibility = View.VISIBLE
+                    binding.compareChecksumLayout.error = null
                     binding.compareResult.text =
                         when {
                             checksumToCompare.equals(md5, ignoreCase = true) -> context.getString(R.string.md5)
                             checksumToCompare.equals(sha1, ignoreCase = true) -> context.getString(R.string.sha1)
-                            checksumToCompare.equals(sha256, ignoreCase = true) -> context.getString(R.string.sha256)
-                            else -> ""
+                            else -> context.getString(R.string.sha256)
                         }
                 } else {
                     binding.compareResult.visibility = View.GONE
+                    binding.compareChecksumLayout.error = context.getString(R.string.no_match)
                 }
             } else {
                 binding.compareResult.visibility = View.GONE
+                binding.compareChecksumLayout.error = null
             }
         }
     }
