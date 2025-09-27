@@ -58,6 +58,10 @@ object ChecksumUtils {
                             binding.sha1Checksum.text = Editable.Factory.getInstance().newEditable(result.sha1)
                             binding.sha256Checksum.text = Editable.Factory.getInstance().newEditable(result.sha256)
                         }
+
+                        else -> {
+                            //do nothing
+                        }
                     }
                 }
         }

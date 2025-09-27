@@ -1477,6 +1477,10 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         val dateFormat = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT, Locale.getDefault())
         binding.lastModified.text = Editable.Factory.getInstance().newEditable(dateFormat.format(Date(file.lastModified())))
 
+        binding.md5Checksum.keyListener = null
+        binding.sha1Checksum.keyListener = null
+        binding.sha256Checksum.keyListener = null
+
         val clipboardManager = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         binding.fileName.setOnLongClickListener {
             val clip = ClipData.newPlainText("File Name", file.name)
@@ -1487,6 +1491,27 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
         binding.filePath.setOnLongClickListener {
             val clip = ClipData.newPlainText("File Path", file.absolutePath)
+            clipboardManager.setPrimaryClip(clip)
+            Toast.makeText(requireContext(), getString(R.string.copied_to_clipboard), Toast.LENGTH_SHORT).show()
+            true
+        }
+
+        binding.md5Checksum.setOnLongClickListener {
+            val clip = ClipData.newPlainText("MD5", binding.md5Checksum.text)
+            clipboardManager.setPrimaryClip(clip)
+            Toast.makeText(requireContext(), getString(R.string.copied_to_clipboard), Toast.LENGTH_SHORT).show()
+            true
+        }
+
+        binding.sha1Checksum.setOnLongClickListener {
+            val clip = ClipData.newPlainText("SHA1", binding.sha1Checksum.text)
+            clipboardManager.setPrimaryClip(clip)
+            Toast.makeText(requireContext(), getString(R.string.copied_to_clipboard), Toast.LENGTH_SHORT).show()
+            true
+        }
+
+        binding.sha256Checksum.setOnLongClickListener {
+            val clip = ClipData.newPlainText("SHA256", binding.sha256Checksum.text)
             clipboardManager.setPrimaryClip(clip)
             Toast.makeText(requireContext(), getString(R.string.copied_to_clipboard), Toast.LENGTH_SHORT).show()
             true
