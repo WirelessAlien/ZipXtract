@@ -159,7 +159,7 @@
     <string name="unsupported_compression_format">Format kompresi ini tidak didukung.</string>
     <string name="extraction_failed">Gagal Mengekstrak</string>
     <string name="access_denied">Akses ditolak</string>
-    <string name="no_files_to_archive">Pilih dulu filenya buat diarsip</string>
+    <string name="no_files_to_archive">Tidak ada file yang dipilih untuk diarsipkan.</string>
     <string name="permission_denied">Izin Ditolak</string>
     <string name="no_file_selected">Tidak Ada File yang Dipilih</string>
     <string name="sd_card_not_available">Kartu SD atau memori eksternal tidak terdeteksi.</string>
