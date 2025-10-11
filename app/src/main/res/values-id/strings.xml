@@ -155,7 +155,7 @@
     <string name="compression_failed">Gagal mengompres</string>
     <string name="sevenz_creation_failed">Gagal membuat arsip 7z</string>
     <string name="zip_creation_failed">Gagal membuat arsip ZIP</string>
-    <string name="general_error_msg">Waduh, ada error nih.</string>
+    <string name="general_error_msg">Terjadi error yang tidak terduga.</string>
     <string name="unsupported_compression_format">Format kompresi ini tidak didukung.</string>
     <string name="extraction_failed">Gagal Mengekstrak</string>
     <string name="access_denied">Akses ditolak</string>
