@@ -184,7 +184,7 @@
     <string name="deleting_files">Menghapus file: %1$d dari %2$d</string>
     <string name="extracting_progress">Proses ekstrak... %1$d%%</string>
     <string name="compressing_progress">Proses arsip... %1$d%%</string>
-    <string name="compression_ongoing">Lagi ngompres…</string>
+    <string name="compression_ongoing">Sedang mengompres…</string>
 
     <!-- Notification channel name-->
     <string name="delete_files_notification_name">Proses Hapus File</string>
