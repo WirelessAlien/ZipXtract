@@ -171,12 +171,12 @@
 
 
     <!-- Notification title-->
-    <string name="copying_files">Lagi nyalin file…</string>
-    <string name="moving_files">Lagi mindahin file…</string>
-    <string name="delete_ongoing">Lagi hapus file…</string>
-    <string name="extraction_ongoing">Lagi ekstrak file…</string>
-    <string name="archive_ongoing">Lagi arsipin file…</string>
-    <string name="updating_archive">Lagi update arsip…</string>
+    <string name="copying_files">Sedang menyalin file…</string>
+    <string name="moving_files">Sedang memindahkan file…</string>
+    <string name="delete_ongoing">Sedang menghapus file…</string>
+    <string name="extraction_ongoing">Sedang mengekstrak file…</string>
+    <string name="archive_ongoing">Sedang mengarsipkan file…</string>
+    <string name="updating_archive">Sedang memperbarui arsip…</string>
 
     <!-- Notification content-->
     <string name="copying_files_progress">Menyalin file: %1$d dari %2$d</string>
