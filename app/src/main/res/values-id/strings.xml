@@ -127,7 +127,7 @@
     <string name="split_size_mb">Ukuran per Bagian</string>
     <string name="split_zip">Bagi Arsip ZIP</string>
     <string name="_ten">Defaultnya 64kb</string>
-    <string name="settings_info_text">Enkripsi default pakai AES, ini aman banget. Tapi, proses enkripsi AES bisa jadi lama, apalagi di HP dengan spek pas-pasan.\n\nKalau HP-mu kurang kencang, bisa pakai ZIP_STANDARD. Tapi ingat, tingkat keamanannya nggak sebagus AES.\n\nKalau keamanan itu yang paling penting buatmu, kami tetap sarankan pakai AES walau prosesnya lebih lama.</string>
+    <string name="settings_info_text">Metode enkripsi default untuk file adalah AES, yang menyediakan tingkat keamanan tinggi. Namun, perlu diketahui bahwa enkripsi AES dapat memakan waktu, terutama pada perangkat dengan spesifikasi lebih rendah.\n\nUntuk pengguna dengan perangkat yang kurang bertenaga, alternatif seperti ZIP_STANDARD dapat digunakan. Namun, perlu diingat bahwa metode ini tidak menawarkan tingkat keamanan yang sama dengan AES.\n\nJika keamanan adalah prioritas utama Anda, kami sangat menyarankan penggunaan AES meskipun waktu prosesnya lebih lama.</string>
 
     <!-- TAR archive options -->
     <string name="compress_tar">Buat Arsip TAR</string>
