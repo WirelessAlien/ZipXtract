@@ -28,6 +28,8 @@ import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.COPY_MOVE_NOTIFICATION_CHANNEL_ID
+import com.wirelessalien.zipxtract.constant.ServiceConstants
+import com.wirelessalien.zipxtract.helper.FileOperationsDao
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -35,25 +37,33 @@ import java.io.File
 
 class CopyMoveService : Service() {
 
+    private lateinit var fileOperationsDao: FileOperationsDao
+
     companion object {
-        const val EXTRA_FILES_TO_COPY_MOVE = "extra_files_to_copy_move"
-        const val EXTRA_DESTINATION_PATH = "extra_destination_path"
-        const val EXTRA_IS_COPY_ACTION = "extra_is_copy_action"
         const val NOTIFICATION_ID = 2
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val filesToCopyMove = intent?.getStringArrayListExtra(EXTRA_FILES_TO_COPY_MOVE)?.map { File(it) } ?: return START_NOT_STICKY
-        val destinationPath = intent.getStringExtra(EXTRA_DESTINATION_PATH) ?: return START_NOT_STICKY
-        val isCopyAction = intent.getBooleanExtra(EXTRA_IS_COPY_ACTION, true)
+        fileOperationsDao = FileOperationsDao(this)
+        val jobId = intent?.getStringExtra(ServiceConstants.EXTRA_JOB_ID)
+        val destinationPath = intent?.getStringExtra(ServiceConstants.EXTRA_DESTINATION_PATH)
+        val isCopyAction = intent?.getBooleanExtra(ServiceConstants.EXTRA_IS_COPY_ACTION, true)
+
+        if (jobId == null || destinationPath == null || isCopyAction == null) {
+            stopSelf()
+            return START_NOT_STICKY
+        }
+
+        val filesToCopyMove = fileOperationsDao.getFilesForJob(jobId).map { File(it) }
 
         createNotificationChannel()
         startForeground(NOTIFICATION_ID, createNotification(0, filesToCopyMove.size, isCopyAction))
 
         CoroutineScope(Dispatchers.IO).launch {
             copyMoveFiles(filesToCopyMove, destinationPath, isCopyAction)
+            fileOperationsDao.deleteFilesForJob(jobId)
         }
 
         return START_STICKY

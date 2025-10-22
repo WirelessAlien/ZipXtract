@@ -38,6 +38,8 @@ import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_DIR_PATH
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_ERROR_MESSAGE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_PROGRESS
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.PREFERENCE_ARCHIVE_DIR_PATH
+import com.wirelessalien.zipxtract.constant.ServiceConstants
+import com.wirelessalien.zipxtract.helper.FileOperationsDao
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -56,17 +58,10 @@ import java.nio.file.StandardCopyOption
 
 class ArchiveSplitZipService : Service() {
 
+    private lateinit var fileOperationsDao: FileOperationsDao
+
     companion object {
         const val NOTIFICATION_ID = 14
-        const val EXTRA_ARCHIVE_NAME = "archiveName"
-        const val EXTRA_PASSWORD = "password"
-        const val EXTRA_COMPRESSION_METHOD = "compressionMethod"
-        const val EXTRA_COMPRESSION_LEVEL = "compressionLevel"
-        const val EXTRA_IS_ENCRYPTED = "isEncrypted"
-        const val EXTRA_ENCRYPTION_METHOD = "encryptionMethod"
-        const val EXTRA_AES_STRENGTH = "aesStrength"
-        const val EXTRA_FILES_TO_ARCHIVE = "filesToArchive"
-        const val EXTRA_SPLIT_SIZE = "splitSize"
     }
 
     private var archiveJob: Job? = null
@@ -75,49 +70,56 @@ class ArchiveSplitZipService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        fileOperationsDao = FileOperationsDao(this)
         createNotificationChannel()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val archiveName = intent?.getStringExtra(EXTRA_ARCHIVE_NAME) ?: return START_NOT_STICKY
-        val password = intent.getStringExtra(EXTRA_PASSWORD)
+        val archiveName = intent?.getStringExtra(ServiceConstants.EXTRA_ARCHIVE_NAME) ?: return START_NOT_STICKY
+        val password = intent.getStringExtra(ServiceConstants.EXTRA_PASSWORD)
         val compressionMethod = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            intent.getSerializableExtra(EXTRA_COMPRESSION_METHOD, CompressionMethod::class.java)
+            intent.getSerializableExtra(ServiceConstants.EXTRA_COMPRESSION_METHOD, CompressionMethod::class.java)
         } else {
             @Suppress("DEPRECATION")
-            intent.getSerializableExtra(EXTRA_COMPRESSION_METHOD) as? CompressionMethod
+            intent.getSerializableExtra(ServiceConstants.EXTRA_COMPRESSION_METHOD) as? CompressionMethod
         } ?: CompressionMethod.STORE
 
         val compressionLevel = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            intent.getSerializableExtra(EXTRA_COMPRESSION_LEVEL, CompressionLevel::class.java)
+            intent.getSerializableExtra(ServiceConstants.EXTRA_COMPRESSION_LEVEL, CompressionLevel::class.java)
         } else {
             @Suppress("DEPRECATION")
-            intent.getSerializableExtra(EXTRA_COMPRESSION_LEVEL) as? CompressionLevel
+            intent.getSerializableExtra(ServiceConstants.EXTRA_COMPRESSION_LEVEL) as? CompressionLevel
         } ?: CompressionLevel.NO_COMPRESSION
 
-        val isEncrypted = intent.getBooleanExtra(EXTRA_IS_ENCRYPTED, false)
+        val isEncrypted = intent.getBooleanExtra(ServiceConstants.EXTRA_IS_ENCRYPTED, false)
 
         val encryptionMethod = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            intent.getSerializableExtra(EXTRA_ENCRYPTION_METHOD, EncryptionMethod::class.java)
+            intent.getSerializableExtra(ServiceConstants.EXTRA_ENCRYPTION_METHOD, EncryptionMethod::class.java)
         } else {
             @Suppress("DEPRECATION")
-            intent.getSerializableExtra(EXTRA_ENCRYPTION_METHOD) as? EncryptionMethod
+            intent.getSerializableExtra(ServiceConstants.EXTRA_ENCRYPTION_METHOD) as? EncryptionMethod
         }
 
         val aesStrength = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            intent.getSerializableExtra(EXTRA_AES_STRENGTH, AesKeyStrength::class.java)
+            intent.getSerializableExtra(ServiceConstants.EXTRA_AES_STRENGTH, AesKeyStrength::class.java)
         } else {
             @Suppress("DEPRECATION")
-            intent.getSerializableExtra(EXTRA_AES_STRENGTH) as? AesKeyStrength
+            intent.getSerializableExtra(ServiceConstants.EXTRA_AES_STRENGTH) as? AesKeyStrength
         }
-        val filesToArchive = intent.getStringArrayListExtra(EXTRA_FILES_TO_ARCHIVE) ?: return START_NOT_STICKY
+        val jobId = intent.getStringExtra(ServiceConstants.EXTRA_JOB_ID)
+        if (jobId == null) {
+            sendErrorBroadcast(getString(R.string.general_error_msg))
+            return START_NOT_STICKY
+        }
+        val filesToArchive = fileOperationsDao.getFilesForJob(jobId)
 
-        val splitSize = intent.getLongExtra(EXTRA_SPLIT_SIZE, 64)
+        val splitSize = intent.getLongExtra(ServiceConstants.EXTRA_SPLIT_SIZE, 64)
 
         startForeground(NOTIFICATION_ID, createNotification(0))
 
         archiveJob = CoroutineScope(Dispatchers.IO).launch {
             createSplitZipFile(archiveName, password, compressionMethod, compressionLevel, isEncrypted, encryptionMethod, aesStrength, filesToArchive, splitSize)
+            fileOperationsDao.deleteFilesForJob(jobId)
         }
         return START_STICKY
     }
@@ -151,6 +153,10 @@ class ArchiveSplitZipService : Service() {
 
     private fun sendLocalBroadcast(intent: Intent) {
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
+    }
+
+    private fun sendErrorBroadcast(errorMessage: String) {
+        sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, errorMessage))
     }
 
     private fun createSplitZipFile(

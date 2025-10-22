@@ -26,6 +26,7 @@ import android.util.SparseBooleanArray
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.util.size
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DecodeFormat
@@ -93,7 +94,7 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
     suspend fun getSelectedFilesPaths(): List<String> = withContext(Dispatchers.IO) {
         val selectedPaths = mutableListOf<String>()
 
-        for (i in 0 until selectedItems.size()) {
+        for (i in 0 until selectedItems.size) {
             val file = filteredFiles[selectedItems.keyAt(i)]
             selectedPaths.add(file.absolutePath)
 
@@ -256,7 +257,7 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
             } else {
                 System.currentTimeMillis()
             }
-        } catch (e: NoSuchFileException) {
+        } catch (_: NoSuchFileException) {
             0L
         }
     }

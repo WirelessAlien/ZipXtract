@@ -41,6 +41,8 @@ import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_DIR_PATH
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_ERROR_MESSAGE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_PROGRESS
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.PREFERENCE_EXTRACT_DIR_PATH
+import com.wirelessalien.zipxtract.constant.ServiceConstants
+import com.wirelessalien.zipxtract.helper.FileOperationsDao
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -80,11 +82,10 @@ import java.util.Date
 
 class ExtractArchiveService : Service() {
 
+    private lateinit var fileOperationsDao: FileOperationsDao
+
     companion object {
         const val NOTIFICATION_ID = 18
-        const val EXTRA_FILE_PATH = "file_path"
-        const val EXTRA_PASSWORD = "password"
-        const val EXTRA_USE_APP_NAME_DIR = "useAppNameDir"
     }
 
     private var archiveFormat: ArchiveFormat? = null
@@ -94,23 +95,36 @@ class ExtractArchiveService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        fileOperationsDao = FileOperationsDao(this)
         createNotificationChannel()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val filePath = intent?.getStringExtra(EXTRA_FILE_PATH)
-        val password = intent?.getStringExtra(EXTRA_PASSWORD)
-        val useAppNameDir = intent?.getBooleanExtra(EXTRA_USE_APP_NAME_DIR, false) ?: false
+        val jobId = intent?.getStringExtra(ServiceConstants.EXTRA_JOB_ID)
+        val password = intent?.getStringExtra(ServiceConstants.EXTRA_PASSWORD)
+        val useAppNameDir = intent?.getBooleanExtra(ServiceConstants.EXTRA_USE_APP_NAME_DIR, false) ?: false
 
-        if (filePath == null) {
+        if (jobId == null) {
             stopSelf()
             return START_NOT_STICKY
         }
+        val filesToExtract = fileOperationsDao.getFilesForJob(jobId)
+        if (filesToExtract.isEmpty()) {
+            fileOperationsDao.deleteFilesForJob(jobId)
+            stopSelf()
+            return START_NOT_STICKY
+        }
+        if (filesToExtract.size > 1) {
+            Log.w("ExtractArchiveService", "This service only supports single file extraction. Only the first file will be extracted.")
+        }
+        val filePath = filesToExtract[0]
+
 
         startForeground(NOTIFICATION_ID, createNotification(0))
 
         extractionJob = CoroutineScope(Dispatchers.IO).launch {
             extractArchive(filePath, password, useAppNameDir)
+            fileOperationsDao.deleteFilesForJob(jobId)
         }
 
         return START_NOT_STICKY

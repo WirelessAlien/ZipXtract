@@ -39,6 +39,8 @@ import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_DIR_PATH
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_ERROR_MESSAGE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_PROGRESS
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.PREFERENCE_ARCHIVE_DIR_PATH
+import com.wirelessalien.zipxtract.constant.ServiceConstants
+import com.wirelessalien.zipxtract.helper.FileOperationsDao
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -64,11 +66,10 @@ import java.util.Date
 
 class ArchiveTarService : Service() {
 
+    private lateinit var fileOperationsDao: FileOperationsDao
+
     companion object {
         const val NOTIFICATION_ID = 15
-        const val EXTRA_ARCHIVE_NAME = "archiveName"
-        const val EXTRA_FILES_TO_ARCHIVE = "filesToArchive"
-        const val EXTRA_COMPRESSION_FORMAT = "compressionFormat"
     }
 
     private var archiveJob: Job? = null
@@ -77,18 +78,25 @@ class ArchiveTarService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        fileOperationsDao = FileOperationsDao(this)
         createNotificationChannel()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val archiveName = intent?.getStringExtra(EXTRA_ARCHIVE_NAME) ?: return START_NOT_STICKY
-        val filesToArchive = intent.getStringArrayListExtra(EXTRA_FILES_TO_ARCHIVE) ?: return START_NOT_STICKY
-        val compressionFormat = intent.getStringExtra(EXTRA_COMPRESSION_FORMAT) ?: "TAR_ONLY"
+        val archiveName = intent?.getStringExtra(ServiceConstants.EXTRA_ARCHIVE_NAME) ?: return START_NOT_STICKY
+        val jobId = intent.getStringExtra(ServiceConstants.EXTRA_JOB_ID)
+        if (jobId == null) {
+            sendErrorBroadcast(getString(R.string.general_error_msg))
+            return START_NOT_STICKY
+        }
+        val filesToArchive = fileOperationsDao.getFilesForJob(jobId)
+        val compressionFormat = intent.getStringExtra(ServiceConstants.EXTRA_COMPRESSION_FORMAT) ?: "TAR_ONLY"
 
         startForeground(NOTIFICATION_ID, createNotification(0))
 
         archiveJob = CoroutineScope(Dispatchers.IO).launch {
             createTarFile(archiveName, filesToArchive, compressionFormat)
+            fileOperationsDao.deleteFilesForJob(jobId)
         }
         return START_STICKY
     }
@@ -122,6 +130,10 @@ class ArchiveTarService : Service() {
 
     private fun sendLocalBroadcast(intent: Intent) {
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
+    }
+
+    private fun sendErrorBroadcast(errorMessage: String) {
+        sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, errorMessage))
     }
 
     private fun createTarFile(archiveName: String, filesToArchive: List<String>, compressionFormat: String) {

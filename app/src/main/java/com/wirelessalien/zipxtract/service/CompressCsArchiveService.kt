@@ -26,6 +26,7 @@ import android.media.MediaScannerConnection
 import android.os.Build
 import android.os.Environment
 import android.os.IBinder
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.preference.PreferenceManager
@@ -39,6 +40,8 @@ import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_DIR_PATH
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_ERROR_MESSAGE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_PROGRESS
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.PREFERENCE_ARCHIVE_DIR_PATH
+import com.wirelessalien.zipxtract.constant.ServiceConstants
+import com.wirelessalien.zipxtract.helper.FileOperationsDao
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -57,10 +60,10 @@ import java.nio.file.Files
 
 class CompressCsArchiveService : Service() {
 
+    private lateinit var fileOperationsDao: FileOperationsDao
+
     companion object {
         const val NOTIFICATION_ID = 17
-        const val EXTRA_FILE_PATH = "file_path"
-        const val EXTRA_COMPRESSION_FORMAT = "compression_format"
         const val ZSTD_FORMAT = "zstd"
     }
 
@@ -70,18 +73,31 @@ class CompressCsArchiveService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        fileOperationsDao = FileOperationsDao(this)
         createNotificationChannel()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val filePath = intent?.getStringExtra(EXTRA_FILE_PATH)
-        val compressionFormat = intent?.getStringExtra(EXTRA_COMPRESSION_FORMAT)
+        val jobId = intent?.getStringExtra(ServiceConstants.EXTRA_JOB_ID)
+        val compressionFormat = intent?.getStringExtra(ServiceConstants.EXTRA_COMPRESSION_FORMAT)
 
 
-        if (filePath == null || compressionFormat == null) {
+        if (jobId == null || compressionFormat == null) {
             stopSelf()
             return START_NOT_STICKY
         }
+
+        val filesToCompress = fileOperationsDao.getFilesForJob(jobId)
+        if (filesToCompress.isEmpty()) {
+            fileOperationsDao.deleteFilesForJob(jobId)
+            stopSelf()
+            return START_NOT_STICKY
+        }
+        if (filesToCompress.size > 1) {
+            Log.w("CompressCsArchiveService", "This service only supports single file compression. Only the first file will be compressed.")
+        }
+        val filePath = filesToCompress[0]
+
 
         startForeground(NOTIFICATION_ID, createNotification(0))
 
@@ -91,6 +107,7 @@ class CompressCsArchiveService : Service() {
             } else {
                 compressArchive(filePath, compressionFormat)
             }
+            fileOperationsDao.deleteFilesForJob(jobId)
         }
 
 

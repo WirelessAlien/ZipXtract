@@ -48,10 +48,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import androidx.core.content.edit
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -65,12 +67,15 @@ import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.activity.SettingsActivity
 import com.wirelessalien.zipxtract.adapter.FileAdapter
 import com.wirelessalien.zipxtract.constant.BroadcastConstants
+import com.wirelessalien.zipxtract.constant.ServiceConstants.EXTRA_JOB_ID
+import com.wirelessalien.zipxtract.constant.ServiceConstants.EXTRA_PASSWORD
 import com.wirelessalien.zipxtract.databinding.BottomSheetOptionBinding
 import com.wirelessalien.zipxtract.databinding.DialogFileInfoBinding
 import com.wirelessalien.zipxtract.databinding.FragmentArchiveBinding
 import com.wirelessalien.zipxtract.databinding.PasswordInputDialogBinding
 import com.wirelessalien.zipxtract.databinding.ProgressDialogExtractBinding
 import com.wirelessalien.zipxtract.helper.ChecksumUtils
+import com.wirelessalien.zipxtract.helper.FileOperationsDao
 import com.wirelessalien.zipxtract.service.DeleteFilesService
 import com.wirelessalien.zipxtract.service.ExtractArchiveService
 import com.wirelessalien.zipxtract.service.ExtractCsArchiveService
@@ -88,11 +93,8 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.io.FileInputStream
-import java.security.MessageDigest
 import java.util.Date
 import java.util.Locale
-import androidx.lifecycle.lifecycleScope
 
 class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
 
@@ -108,6 +110,7 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
         SORT_BY_NAME, SORT_BY_SIZE, SORT_BY_MODIFIED, SORT_BY_EXTENSION
     }
     private var isSearchActive: Boolean = false
+    private lateinit var fileOperationsDao: FileOperationsDao
 
     private var sortBy: SortBy = SortBy.SORT_BY_NAME
     private var sortAscending: Boolean = true
@@ -177,6 +180,7 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
         super.onViewCreated(view, savedInstanceState)
 
         (activity as AppCompatActivity).setSupportActionBar(binding.toolbar)
+        fileOperationsDao = FileOperationsDao(requireContext())
         sharedPreferences = requireActivity().getPreferences(Context.MODE_PRIVATE)
         sortBy = SortBy.valueOf(sharedPreferences.getString("sortBy", SortBy.SORT_BY_NAME.name) ?: SortBy.SORT_BY_NAME.name)
         sortAscending = sharedPreferences.getBoolean("sortAscending", true)
@@ -215,38 +219,44 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                val editor = sharedPreferences.edit()
-                when (menuItem.itemId) {
-                    R.id.menu_sort_by_name -> {
-                        sortBy = SortBy.SORT_BY_NAME
-                        editor.putString("sortBy", sortBy.name)
-                    }
-                    R.id.menu_sort_by_size -> {
-                        sortBy = SortBy.SORT_BY_SIZE
-                        editor.putString("sortBy", sortBy.name)
-                    }
-                    R.id.menu_sort_by_time_of_creation -> {
-                        sortBy = SortBy.SORT_BY_MODIFIED
-                        editor.putString("sortBy", sortBy.name)
-                    }
-                    R.id.menu_sort_by_extension -> {
-                        sortBy = SortBy.SORT_BY_EXTENSION
-                        editor.putString("sortBy", sortBy.name)
-                    }
-                    R.id.menu_sort_ascending -> {
-                        sortAscending = true
-                        editor.putBoolean("sortAscending", sortAscending)
-                    }
-                    R.id.menu_sort_descending -> {
-                        sortAscending = false
-                        editor.putBoolean("sortAscending", sortAscending)
-                    }
-                    R.id.menu_settings -> {
-                        val intent = Intent(requireContext(), SettingsActivity::class.java)
-                        startActivity(intent)
+                sharedPreferences.edit {
+                    when (menuItem.itemId) {
+                        R.id.menu_sort_by_name -> {
+                            sortBy = SortBy.SORT_BY_NAME
+                            putString("sortBy", sortBy.name)
+                        }
+
+                        R.id.menu_sort_by_size -> {
+                            sortBy = SortBy.SORT_BY_SIZE
+                            putString("sortBy", sortBy.name)
+                        }
+
+                        R.id.menu_sort_by_time_of_creation -> {
+                            sortBy = SortBy.SORT_BY_MODIFIED
+                            putString("sortBy", sortBy.name)
+                        }
+
+                        R.id.menu_sort_by_extension -> {
+                            sortBy = SortBy.SORT_BY_EXTENSION
+                            putString("sortBy", sortBy.name)
+                        }
+
+                        R.id.menu_sort_ascending -> {
+                            sortAscending = true
+                            putBoolean("sortAscending", sortAscending)
+                        }
+
+                        R.id.menu_sort_descending -> {
+                            sortAscending = false
+                            putBoolean("sortAscending", sortAscending)
+                        }
+
+                        R.id.menu_settings -> {
+                            val intent = Intent(requireContext(), SettingsActivity::class.java)
+                            startActivity(intent)
+                        }
                     }
                 }
-                editor.apply()
                 updateAdapterWithFullList()
                 return true
             }
@@ -575,8 +585,9 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
                 .setMessage(getString(R.string.confirm_delete_message))
                 .setPositiveButton(getString(R.string.delete)) { _, _ ->
                     val filesToDelete = arrayListOf(file.absolutePath)
+                    val jobId = fileOperationsDao.addFilesForJob(filesToDelete)
                     val intent = Intent(requireContext(), DeleteFilesService::class.java).apply {
-                        putStringArrayListExtra(DeleteFilesService.EXTRA_FILES_TO_DELETE, filesToDelete)
+                        putExtra(EXTRA_JOB_ID, jobId)
                     }
                     ContextCompat.startForegroundService(requireContext(), intent)
 
@@ -667,44 +678,49 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
 
     private fun startExtractionService(file: String, password: String?) {
         eProgressDialog.show()
+        val jobId = fileOperationsDao.addFilesForJob(listOf(file))
         val intent = Intent(requireContext(), ExtractArchiveService::class.java).apply {
-            putExtra(ExtractArchiveService.EXTRA_FILE_PATH, file)
-            putExtra(ExtractArchiveService.EXTRA_PASSWORD, password)
+            putExtra(EXTRA_JOB_ID, jobId)
+            putExtra(EXTRA_PASSWORD, password)
         }
         ContextCompat.startForegroundService(requireContext(), intent)
     }
 
     private fun startExtractionCsService(file: String) {
         eProgressDialog.show()
+        val jobId = fileOperationsDao.addFilesForJob(listOf(file))
         val intent = Intent(requireContext(), ExtractCsArchiveService::class.java).apply {
-            putExtra(ExtractCsArchiveService.EXTRA_FILE_PATH, file)
+            putExtra(EXTRA_JOB_ID, jobId)
         }
         ContextCompat.startForegroundService(requireContext(), intent)
     }
 
     private fun startRarExtractionService(file: String, password: String?) {
         eProgressDialog.show()
+        val jobId = fileOperationsDao.addFilesForJob(listOf(file))
         val intent = Intent(requireContext(), ExtractRarService::class.java).apply {
-            putExtra(ExtractRarService.EXTRA_FILE_PATH, file)
-            putExtra(ExtractRarService.EXTRA_PASSWORD, password)
+            putExtra(EXTRA_JOB_ID, jobId)
+            putExtra(EXTRA_PASSWORD, password)
         }
         ContextCompat.startForegroundService(requireContext(), intent)
     }
 
     private fun startMulti7zExtractionService(file: String, password: String?) {
         eProgressDialog.show()
+        val jobId = fileOperationsDao.addFilesForJob(listOf(file))
         val intent = Intent(requireContext(), ExtractMultipart7zService::class.java).apply {
-            putExtra(ExtractMultipart7zService.EXTRA_FILE_PATH, file)
-            putExtra(ExtractMultipart7zService.EXTRA_PASSWORD, password)
+            putExtra(EXTRA_JOB_ID, jobId)
+            putExtra(EXTRA_PASSWORD, password)
         }
         ContextCompat.startForegroundService(requireContext(), intent)
     }
 
     private fun startMultiZipExtractionService(file: String, password: String?) {
         eProgressDialog.show()
+        val jobId = fileOperationsDao.addFilesForJob(listOf(file))
         val intent = Intent(requireContext(), ExtractMultipartZipService::class.java).apply {
-            putExtra(ExtractMultipartZipService.EXTRA_FILE_PATH, file)
-            putExtra(ExtractMultipartZipService.EXTRA_PASSWORD, password)
+            putExtra(EXTRA_JOB_ID, jobId)
+            putExtra(EXTRA_PASSWORD, password)
         }
         ContextCompat.startForegroundService(requireContext(), intent)
     }
@@ -780,9 +796,9 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
 
         return when {
             bytes < kilobyte -> "$bytes B"
-            bytes < megabyte -> String.format("%.2f KB", bytes.toFloat() / kilobyte)
-            bytes < gigabyte -> String.format("%.2f MB", bytes.toFloat() / megabyte)
-            else -> String.format("%.2f GB", bytes.toFloat() / gigabyte)
+            bytes < megabyte -> String.format(Locale.US, "%.2f KB", bytes.toFloat() / kilobyte)
+            bytes < gigabyte -> String.format(Locale.US, "%.2f MB", bytes.toFloat() / megabyte)
+            else -> String.format(Locale.US, "%.2f GB", bytes.toFloat() / gigabyte)
         }
     }
 }

@@ -33,9 +33,11 @@ import androidx.core.content.ContextCompat
 import com.google.android.material.chip.Chip
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.wirelessalien.zipxtract.R
+import com.wirelessalien.zipxtract.constant.ServiceConstants
 import com.wirelessalien.zipxtract.databinding.DialogArchiveTypeBinding
 import com.wirelessalien.zipxtract.databinding.DialogCrashLogBinding
 import com.wirelessalien.zipxtract.databinding.PasswordInputOpenWithBinding
+import com.wirelessalien.zipxtract.helper.FileOperationsDao
 import com.wirelessalien.zipxtract.service.ExtractArchiveService
 import com.wirelessalien.zipxtract.service.ExtractCsArchiveService
 import com.wirelessalien.zipxtract.service.ExtractRarService
@@ -52,8 +54,11 @@ import java.io.InputStream
 
 class OpenWithActivity : AppCompatActivity() {
 
+    private lateinit var fileOperationsDao: FileOperationsDao
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        fileOperationsDao = FileOperationsDao(this)
 
         handleCrashLog()
 
@@ -211,9 +216,10 @@ class OpenWithActivity : AppCompatActivity() {
                 if (selectedChipId != View.NO_ID) {
                     val selectedChip = chipGroup.findViewById<Chip>(selectedChipId)
                     val selectedType = selectedChip.text.toString()
+                    val jobId = fileOperationsDao.addFilesForJob(filePaths)
                     val mainActivityIntent = Intent(this, MainActivity::class.java).apply {
                         action = MainActivity.ACTION_CREATE_ARCHIVE
-                        putStringArrayListExtra(MainActivity.EXTRA_FILE_PATHS, ArrayList(filePaths))
+                        putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
                         putExtra(MainActivity.EXTRA_ARCHIVE_TYPE, selectedType)
                     }
                     startActivity(mainActivityIntent)
@@ -357,27 +363,30 @@ class OpenWithActivity : AppCompatActivity() {
     }
 
     private fun startExtractionService(file: String, password: String?) {
+        val jobId = fileOperationsDao.addFilesForJob(listOf(file))
         val intent = Intent(this, ExtractArchiveService::class.java).apply {
-            putExtra(ExtractArchiveService.EXTRA_FILE_PATH, file)
-            putExtra(ExtractArchiveService.EXTRA_PASSWORD, password)
-            putExtra(ExtractArchiveService.EXTRA_USE_APP_NAME_DIR, true)
+            putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
+            putExtra(ServiceConstants.EXTRA_PASSWORD, password)
+            putExtra(ServiceConstants.EXTRA_USE_APP_NAME_DIR, true)
         }
         ContextCompat.startForegroundService(this, intent)
     }
 
     private fun startExtractionCsService(file: String) {
+        val jobId = fileOperationsDao.addFilesForJob(listOf(file))
         val intent = Intent(this, ExtractCsArchiveService::class.java).apply {
-            putExtra(ExtractCsArchiveService.EXTRA_FILE_PATH, file)
-            putExtra(ExtractCsArchiveService.EXTRA_USE_APP_NAME_DIR, true)
+            putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
+            putExtra(ServiceConstants.EXTRA_USE_APP_NAME_DIR, true)
         }
         ContextCompat.startForegroundService(this, intent)
     }
 
     private fun startRarExtractionService(file: String, password: String?) {
+        val jobId = fileOperationsDao.addFilesForJob(listOf(file))
         val intent = Intent(this, ExtractRarService::class.java).apply {
-            putExtra(ExtractRarService.EXTRA_FILE_PATH, file)
-            putExtra(ExtractRarService.EXTRA_PASSWORD, password)
-            putExtra(ExtractRarService.EXTRA_USE_APP_NAME_DIR, true)
+            putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
+            putExtra(ServiceConstants.EXTRA_PASSWORD, password)
+            putExtra(ServiceConstants.EXTRA_USE_APP_NAME_DIR, true)
         }
         ContextCompat.startForegroundService(this, intent)
     }

@@ -38,6 +38,8 @@ import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_DIR_PATH
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_ERROR_MESSAGE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_PROGRESS
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.PREFERENCE_ARCHIVE_DIR_PATH
+import com.wirelessalien.zipxtract.constant.ServiceConstants
+import com.wirelessalien.zipxtract.helper.FileOperationsDao
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -58,14 +60,9 @@ import java.util.Date
 
 class Archive7zService : Service() {
 
+    private lateinit var fileOperationsDao: FileOperationsDao
     companion object {
         const val NOTIFICATION_ID = 13
-        const val EXTRA_ARCHIVE_NAME = "archiveName"
-        const val EXTRA_PASSWORD = "password"
-        const val EXTRA_COMPRESSION_LEVEL = "compressionLevel"
-        const val EXTRA_SOLID = "solid"
-        const val EXTRA_THREAD_COUNT = "threadCount"
-        const val EXTRA_FILES_TO_ARCHIVE = "filesToArchive"
     }
 
     private var archiveJob: Job? = null
@@ -74,21 +71,28 @@ class Archive7zService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        fileOperationsDao = FileOperationsDao(this)
         createNotificationChannel()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val archiveName = intent?.getStringExtra(EXTRA_ARCHIVE_NAME) ?: return START_NOT_STICKY
-        val password = intent.getStringExtra(EXTRA_PASSWORD)
-        val compressionLevel = intent.getIntExtra(EXTRA_COMPRESSION_LEVEL, 1)
-        val solid = intent.getBooleanExtra(EXTRA_SOLID, false)
-        val threadCount = intent.getIntExtra(EXTRA_THREAD_COUNT, -1)
-        val filesToArchive = intent.getStringArrayListExtra(EXTRA_FILES_TO_ARCHIVE) ?: return START_NOT_STICKY
+        val archiveName = intent?.getStringExtra(ServiceConstants.EXTRA_ARCHIVE_NAME) ?: return START_NOT_STICKY
+        val password = intent.getStringExtra(ServiceConstants.EXTRA_PASSWORD)
+        val compressionLevel = intent.getIntExtra(ServiceConstants.EXTRA_COMPRESSION_LEVEL, 1)
+        val solid = intent.getBooleanExtra(ServiceConstants.EXTRA_SOLID, false)
+        val threadCount = intent.getIntExtra(ServiceConstants.EXTRA_THREAD_COUNT, -1)
+        val jobId = intent.getStringExtra(ServiceConstants.EXTRA_JOB_ID)
+        if (jobId == null) {
+            sendErrorBroadcast(getString(R.string.general_error_msg))
+            return START_NOT_STICKY
+        }
+        val filesToArchive = fileOperationsDao.getFilesForJob(jobId)
 
         startForeground(NOTIFICATION_ID, createNotification(0))
 
         archiveJob = CoroutineScope(Dispatchers.IO).launch {
             create7zFile(archiveName, password, compressionLevel, solid, threadCount, filesToArchive)
+            fileOperationsDao.deleteFilesForJob(jobId)
         }
         return START_STICKY
     }
@@ -241,6 +245,10 @@ class Archive7zService : Service() {
 
         sendLocalBroadcast(Intent(ACTION_ARCHIVE_PROGRESS).putExtra(
             EXTRA_PROGRESS, progress))
+    }
+
+    private fun sendErrorBroadcast(errorMessage: String) {
+        sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, errorMessage))
     }
 
     private fun showCompletionNotification() {

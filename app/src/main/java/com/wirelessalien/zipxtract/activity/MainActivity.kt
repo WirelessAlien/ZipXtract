@@ -28,6 +28,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.wirelessalien.zipxtract.R
+import com.wirelessalien.zipxtract.constant.ServiceConstants
 import com.wirelessalien.zipxtract.databinding.ActivityMainBinding
 import com.wirelessalien.zipxtract.databinding.DialogCrashLogBinding
 import com.wirelessalien.zipxtract.fragment.ArchiveFragment
@@ -104,13 +105,13 @@ class MainActivity : AppCompatActivity() {
 
     private fun handleIntent() {
         if (intent.action == ACTION_CREATE_ARCHIVE) {
-            val filePaths = intent.getStringArrayListExtra(EXTRA_FILE_PATHS)
+            val jobId = intent.getStringExtra(ServiceConstants.EXTRA_JOB_ID)
             val archiveType = intent.getStringExtra(EXTRA_ARCHIVE_TYPE)
-            if (!filePaths.isNullOrEmpty() && archiveType != null) {
+            if (jobId != null && archiveType != null) {
                 // Navigate to MainFragment and pass data for archive creation
                 val mainFragment = MainFragment().apply {
                     arguments = Bundle().apply {
-                        putStringArrayList(MainFragment.ARG_FILE_PATHS_FOR_ARCHIVE, ArrayList(filePaths))
+                        putString(MainFragment.ARG_JOB_ID, jobId)
                         putString(MainFragment.ARG_ARCHIVE_TYPE, archiveType)
                     }
                 }
@@ -128,7 +129,6 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         const val ACTION_CREATE_ARCHIVE = "com.wirelessalien.zipxtract.ACTION_CREATE_ARCHIVE"
-        const val EXTRA_FILE_PATHS = "com.wirelessalien.zipxtract.EXTRA_FILE_PATHS"
         const val EXTRA_ARCHIVE_TYPE = "com.wirelessalien.zipxtract.EXTRA_ARCHIVE_TYPE"
     }
 }

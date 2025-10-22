@@ -24,12 +24,14 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import android.widget.Toast
+import androidx.core.view.isGone
 import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.adapter.FileAdapter
 import com.wirelessalien.zipxtract.adapter.FilePathAdapter
 import com.wirelessalien.zipxtract.databinding.TarOptionDialogBinding
+import com.wirelessalien.zipxtract.helper.FileOperationsDao
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -44,12 +46,18 @@ class TarOptionsDialogFragment : DialogFragment() {
     private lateinit var filePathAdapter: FilePathAdapter
     private var launchedWithFilePaths = false
     private var selectedCompressionFormat: String = "TAR_ONLY"
+    private var jobId: String? = null
+    private lateinit var fileOperationsDao: FileOperationsDao
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.getStringArrayList(ARG_FILE_PATHS)?.let {
-            selectedFilePaths = it.toMutableList()
-            launchedWithFilePaths = true
+        fileOperationsDao = FileOperationsDao(requireContext())
+        arguments?.let {
+            jobId = it.getString(ARG_JOB_ID)
+            if (jobId != null) {
+                selectedFilePaths = fileOperationsDao.getFilesForJob(jobId!!).toMutableList()
+                launchedWithFilePaths = true
+            }
         }
     }
 
@@ -125,7 +133,7 @@ class TarOptionsDialogFragment : DialogFragment() {
         }
 
         binding.toggleFileViewBtn.setOnClickListener {
-            if (binding.filePathsRv.visibility == View.GONE) {
+            if (binding.filePathsRv.isGone) {
                 binding.filePathsRv.visibility = View.VISIBLE
             } else {
                 binding.filePathsRv.visibility = View.GONE
@@ -164,7 +172,7 @@ class TarOptionsDialogFragment : DialogFragment() {
     }
 
     companion object {
-        private const val ARG_FILE_PATHS = "arg_file_paths"
+        private const val ARG_JOB_ID = "arg_job_id"
 
         fun newInstance(adapter: FileAdapter): TarOptionsDialogFragment {
             val fragment = TarOptionsDialogFragment()
@@ -173,10 +181,10 @@ class TarOptionsDialogFragment : DialogFragment() {
             return fragment
         }
 
-        fun newInstance(filePaths: List<String>): TarOptionsDialogFragment {
+        fun newInstance(jobId: String): TarOptionsDialogFragment {
             val fragment = TarOptionsDialogFragment()
             val args = Bundle()
-            args.putStringArrayList(ARG_FILE_PATHS, ArrayList(filePaths))
+            args.putString(ARG_JOB_ID, jobId)
             fragment.arguments = args
             return fragment
         }

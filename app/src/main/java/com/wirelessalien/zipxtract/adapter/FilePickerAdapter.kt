@@ -26,6 +26,7 @@ import android.util.SparseBooleanArray
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.util.size
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DecodeFormat
@@ -181,7 +182,7 @@ class FilePickerAdapter(
 
     fun getSelectedItems(): List<File> {
         val items = mutableListOf<File>()
-        for (i in 0 until selectedItems.size()) {
+        for (i in 0 until selectedItems.size) {
             items.add(filteredFiles[selectedItems.keyAt(i)])
         }
         return items
@@ -212,7 +213,7 @@ class FilePickerAdapter(
             } else {
                 System.currentTimeMillis()
             }
-        } catch (e: NoSuchFileException) {
+        } catch (_: NoSuchFileException) {
             0L
         }
     }

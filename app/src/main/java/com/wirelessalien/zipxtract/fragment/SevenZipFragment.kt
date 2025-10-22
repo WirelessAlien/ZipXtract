@@ -38,7 +38,9 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.adapter.ArchiveItemAdapter
 import com.wirelessalien.zipxtract.constant.BroadcastConstants
+import com.wirelessalien.zipxtract.constant.ServiceConstants
 import com.wirelessalien.zipxtract.databinding.FragmentSevenZipBinding
+import com.wirelessalien.zipxtract.helper.FileOperationsDao
 import com.wirelessalien.zipxtract.service.Update7zService
 import net.sf.sevenzipjbinding.IInArchive
 import net.sf.sevenzipjbinding.PropID
@@ -60,6 +62,7 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
     )
 
     private lateinit var binding: FragmentSevenZipBinding
+    private lateinit var fileOperationsDao: FileOperationsDao
     private var archivePath: String? = null
     private lateinit var adapter: ArchiveItemAdapter
     private var inArchive: IInArchive? = null
@@ -111,6 +114,7 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        fileOperationsDao = FileOperationsDao(requireContext())
         (activity as AppCompatActivity).setSupportActionBar(binding.toolbar)
         (activity as AppCompatActivity).supportActionBar?.setDisplayHomeAsUpEnabled(true)
         binding.toolbar.setNavigationOnClickListener {
@@ -279,9 +283,10 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
                             binding.progressBar.visibility = View.VISIBLE
                             val selectedItems = adapter.getSelectedItems()
                             val pathsToRemove = selectedItems.map { it.path }
+                            val jobId = fileOperationsDao.addFilesForJob(pathsToRemove)
                             val intent = Intent(requireContext(), Update7zService::class.java).apply {
-                                putExtra(Update7zService.EXTRA_ARCHIVE_PATH, archivePath)
-                                putStringArrayListExtra(Update7zService.EXTRA_ITEMS_TO_REMOVE_PATHS, ArrayList(pathsToRemove))
+                                putExtra(ServiceConstants.EXTRA_ARCHIVE_PATH, archivePath)
+                                putExtra(ServiceConstants.EXTRA_ITEMS_TO_REMOVE_JOB_ID, jobId)
                             }
                             requireContext().startService(intent)
                             mode?.finish()
@@ -301,13 +306,12 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
 
     override fun onFilesSelected(files: List<File>) {
         binding.progressBar.visibility = View.VISIBLE
-        val filePaths = files.map { it.absolutePath }
-        val fileNames = files.map { if (currentPath.isEmpty()) it.name else "$currentPath/${it.name}" }
+        val filePairs = files.map { it.absolutePath to (if (currentPath.isEmpty()) it.name else "$currentPath/${it.name}") }
+        val jobId = fileOperationsDao.addFilePairsForJob(filePairs)
 
         val intent = Intent(requireContext(), Update7zService::class.java).apply {
-            putExtra(Update7zService.EXTRA_ARCHIVE_PATH, archivePath)
-            putStringArrayListExtra(Update7zService.EXTRA_ITEMS_TO_ADD_PATHS, ArrayList(filePaths))
-            putStringArrayListExtra(Update7zService.EXTRA_ITEMS_TO_ADD_NAMES, ArrayList(fileNames))
+            putExtra(ServiceConstants.EXTRA_ARCHIVE_PATH, archivePath)
+            putExtra(ServiceConstants.EXTRA_ITEMS_TO_ADD_JOB_ID, jobId)
         }
         requireContext().startService(intent)
     }

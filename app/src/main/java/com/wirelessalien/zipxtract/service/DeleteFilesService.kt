@@ -28,6 +28,8 @@ import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.DELETE_NOTIFICATION_CHANNEL_ID
+import com.wirelessalien.zipxtract.constant.ServiceConstants
+import com.wirelessalien.zipxtract.helper.FileOperationsDao
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -35,21 +37,29 @@ import java.io.File
 
 class DeleteFilesService : Service() {
 
+    private lateinit var fileOperationsDao: FileOperationsDao
+
     companion object {
-        const val EXTRA_FILES_TO_DELETE = "extra_files_to_delete"
         const val NOTIFICATION_ID = 23
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val filesToDelete = intent?.getStringArrayListExtra(EXTRA_FILES_TO_DELETE)?.map { File(it) } ?: return START_NOT_STICKY
+        fileOperationsDao = FileOperationsDao(this)
+        val jobId = intent?.getStringExtra(ServiceConstants.EXTRA_JOB_ID)
+        if (jobId == null) {
+            stopSelf()
+            return START_NOT_STICKY
+        }
+        val filesToDelete = fileOperationsDao.getFilesForJob(jobId).map { File(it) }
 
         createNotificationChannel()
         startForeground(NOTIFICATION_ID, createNotification(0, filesToDelete.size))
 
         CoroutineScope(Dispatchers.IO).launch {
             deleteFiles(filesToDelete)
+            fileOperationsDao.deleteFilesForJob(jobId)
         }
 
         return START_STICKY

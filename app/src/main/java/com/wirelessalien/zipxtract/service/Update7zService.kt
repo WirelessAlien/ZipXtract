@@ -27,6 +27,8 @@ import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.constant.BroadcastConstants
+import com.wirelessalien.zipxtract.constant.ServiceConstants
+import com.wirelessalien.zipxtract.helper.FileOperationsDao
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -45,12 +47,10 @@ import java.io.RandomAccessFile
 
 class Update7zService : Service() {
 
+    private lateinit var fileOperationsDao: FileOperationsDao
+
     companion object {
         const val NOTIFICATION_ID = 14
-        const val EXTRA_ARCHIVE_PATH = "archivePath"
-        const val EXTRA_ITEMS_TO_ADD_PATHS = "itemsToAddPaths"
-        const val EXTRA_ITEMS_TO_ADD_NAMES = "itemsToAddNames"
-        const val EXTRA_ITEMS_TO_REMOVE_PATHS = "itemsToRemovePaths"
     }
 
     private var updateJob: Job? = null
@@ -63,30 +63,35 @@ class Update7zService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        fileOperationsDao = FileOperationsDao(this)
         notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         createNotificationChannel()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val archivePath = intent?.getStringExtra(EXTRA_ARCHIVE_PATH) ?: return START_NOT_STICKY
-        val itemsToAddPaths = intent.getStringArrayListExtra(EXTRA_ITEMS_TO_ADD_PATHS)
-        val itemsToAddNames = intent.getStringArrayListExtra(EXTRA_ITEMS_TO_ADD_NAMES)
-        val itemsToRemovePaths = intent.getStringArrayListExtra(EXTRA_ITEMS_TO_REMOVE_PATHS)
+        val archivePath = intent?.getStringExtra(ServiceConstants.EXTRA_ARCHIVE_PATH) ?: return START_NOT_STICKY
+        val itemsToAddJobId = intent.getStringExtra(ServiceConstants.EXTRA_ITEMS_TO_ADD_JOB_ID)
+        val itemsToRemoveJobId = intent.getStringExtra(ServiceConstants.EXTRA_ITEMS_TO_REMOVE_JOB_ID)
+
+        val itemsToAdd = itemsToAddJobId?.let { fileOperationsDao.getFilePairsForJob(it) }
+        val itemsToRemovePaths = itemsToRemoveJobId?.let { fileOperationsDao.getFilesForJob(it) }
+
 
         lastProgress = -1
         notificationBuilder = createNotificationBuilder()
         startForeground(NOTIFICATION_ID, notificationBuilder.build())
 
         updateJob = CoroutineScope(Dispatchers.IO).launch {
-            update7zFile(archivePath, itemsToAddPaths, itemsToAddNames, itemsToRemovePaths)
+            update7zFile(archivePath, itemsToAdd, itemsToRemovePaths)
+            itemsToAddJobId?.let { fileOperationsDao.deleteFilesForJob(it) }
+            itemsToRemoveJobId?.let { fileOperationsDao.deleteFilesForJob(it) }
         }
         return START_STICKY
     }
 
     private fun update7zFile(
         archivePath: String,
-        itemsToAddPaths: List<String>?,
-        itemsToAddNames: List<String>?,
+        itemsToAdd: List<Pair<String, String?>>?,
         itemsToRemovePaths: List<String>?
     ) {
         val closeables = ArrayList<Closeable>()
@@ -117,8 +122,8 @@ class Update7zService : Service() {
             }
             itemsToRemoveIndices.sort()
 
-            val filesToAdd = if (itemsToAddPaths != null && itemsToAddNames != null) {
-                getFilesToAdd(itemsToAddPaths, itemsToAddNames)
+            val filesToAdd = if (itemsToAdd != null) {
+                getFilesToAdd(itemsToAdd)
             } else {
                 emptyList()
             }
@@ -220,13 +225,11 @@ class Update7zService : Service() {
     }
 
     private fun getFilesToAdd(
-        itemsToAddPaths: List<String>,
-        itemsToAddNames: List<String>
+        itemsToAdd: List<Pair<String, String?>>
     ): List<Pair<File, String>> {
         val fileList = mutableListOf<Pair<File, String>>()
-        for (i in itemsToAddPaths.indices) {
-            val file = File(itemsToAddPaths[i])
-            val name = itemsToAddNames[i]
+        for ((path, name) in itemsToAdd) {
+            val file = File(path)
             if (file.isDirectory) {
                 file.walkTopDown().forEach {
                     val relativePath = it.absolutePath.substring(file.absolutePath.length)
@@ -236,10 +239,10 @@ class Update7zService : Service() {
                     } else {
                         "$name/$relativePath"
                     }
-                    fileList.add(Pair(it, archivePath))
+                    fileList.add(Pair(it, archivePath!!))
                 }
             } else {
-                fileList.add(Pair(file, name))
+                fileList.add(Pair(file, name!!))
             }
         }
         return fileList

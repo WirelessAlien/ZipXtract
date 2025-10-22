@@ -64,6 +64,8 @@ import androidx.appcompat.widget.SearchView
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import androidx.core.content.edit
+import androidx.core.net.toUri
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
@@ -94,6 +96,7 @@ import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_DIR_PATH
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_ERROR_MESSAGE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_PROGRESS
+import com.wirelessalien.zipxtract.constant.ServiceConstants
 import com.wirelessalien.zipxtract.databinding.BottomSheetCompressorArchiveBinding
 import com.wirelessalien.zipxtract.databinding.BottomSheetOptionBinding
 import com.wirelessalien.zipxtract.databinding.DialogFileInfoBinding
@@ -103,6 +106,7 @@ import com.wirelessalien.zipxtract.databinding.PasswordInputDialogBinding
 import com.wirelessalien.zipxtract.databinding.ProgressDialogArchiveBinding
 import com.wirelessalien.zipxtract.databinding.ProgressDialogExtractBinding
 import com.wirelessalien.zipxtract.helper.ChecksumUtils
+import com.wirelessalien.zipxtract.helper.FileOperationsDao
 import com.wirelessalien.zipxtract.service.Archive7zService
 import com.wirelessalien.zipxtract.service.ArchiveSplitZipService
 import com.wirelessalien.zipxtract.service.ArchiveTarService
@@ -137,10 +141,8 @@ import net.lingala.zip4j.model.enums.CompressionMethod
 import net.lingala.zip4j.model.enums.EncryptionMethod
 import org.apache.commons.compress.compressors.CompressorStreamFactory
 import java.io.File
-import java.io.FileInputStream
 import java.nio.file.Files
 import java.nio.file.attribute.BasicFileAttributes
-import java.security.MessageDigest
 import java.util.Date
 import java.util.Locale
 import kotlin.coroutines.cancellation.CancellationException
@@ -177,6 +179,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     private var fileLoadingJob: Job? = null
     private val coroutineScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     private var searchJob: Job? = null
+    private lateinit var fileOperationsDao: FileOperationsDao
 
 
     private val updateProgressRunnable = object : Runnable {
@@ -328,6 +331,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
         (activity as AppCompatActivity).setSupportActionBar(binding.toolbar)
 
+        fileOperationsDao = FileOperationsDao(requireContext())
         adapter = FileAdapter(requireContext(), this, ArrayList())
         adapter.setOnItemClickListener(this)
         adapter.setOnFileLongClickListener(this)
@@ -362,44 +366,50 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                val editor = sharedPreferences.edit()
-                when (menuItem.itemId) {
-                    R.id.menu_sort_by_name -> {
-                        sortBy = SortBy.SORT_BY_NAME
-                        editor.putString("sortBy", sortBy.name)
-                        updateAdapterWithFullList()
-                    }
-                    R.id.menu_sort_by_size -> {
-                        sortBy = SortBy.SORT_BY_SIZE
-                        editor.putString("sortBy", sortBy.name)
-                        updateAdapterWithFullList()
-                    }
-                    R.id.menu_sort_by_time_of_creation -> {
-                        sortBy = SortBy.SORT_BY_MODIFIED
-                        editor.putString("sortBy", sortBy.name)
-                        updateAdapterWithFullList()
-                    }
-                    R.id.menu_sort_by_extension -> {
-                        sortBy = SortBy.SORT_BY_EXTENSION
-                        editor.putString("sortBy", sortBy.name)
-                        updateAdapterWithFullList()
-                    }
-                    R.id.menu_sort_ascending -> {
-                        sortAscending = true
-                        editor.putBoolean("sortAscending", sortAscending)
-                        updateAdapterWithFullList()
-                    }
-                    R.id.menu_sort_descending -> {
-                        sortAscending = false
-                        editor.putBoolean("sortAscending", sortAscending)
-                        updateAdapterWithFullList()
-                    }
-                    R.id.menu_settings -> {
-                        val intent = Intent(requireContext(), SettingsActivity::class.java)
-                        startActivity(intent)
+                sharedPreferences.edit {
+                    when (menuItem.itemId) {
+                        R.id.menu_sort_by_name -> {
+                            sortBy = SortBy.SORT_BY_NAME
+                            putString("sortBy", sortBy.name)
+                            updateAdapterWithFullList()
+                        }
+
+                        R.id.menu_sort_by_size -> {
+                            sortBy = SortBy.SORT_BY_SIZE
+                            putString("sortBy", sortBy.name)
+                            updateAdapterWithFullList()
+                        }
+
+                        R.id.menu_sort_by_time_of_creation -> {
+                            sortBy = SortBy.SORT_BY_MODIFIED
+                            putString("sortBy", sortBy.name)
+                            updateAdapterWithFullList()
+                        }
+
+                        R.id.menu_sort_by_extension -> {
+                            sortBy = SortBy.SORT_BY_EXTENSION
+                            putString("sortBy", sortBy.name)
+                            updateAdapterWithFullList()
+                        }
+
+                        R.id.menu_sort_ascending -> {
+                            sortAscending = true
+                            putBoolean("sortAscending", sortAscending)
+                            updateAdapterWithFullList()
+                        }
+
+                        R.id.menu_sort_descending -> {
+                            sortAscending = false
+                            putBoolean("sortAscending", sortAscending)
+                            updateAdapterWithFullList()
+                        }
+
+                        R.id.menu_settings -> {
+                            val intent = Intent(requireContext(), SettingsActivity::class.java)
+                            startActivity(intent)
+                        }
                     }
                 }
-                editor.apply()
                 return true
             }
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
@@ -484,10 +494,11 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     }
 
     private fun handleOpenWithIntent() {
-        val filePathsStringList = arguments?.getStringArrayList(ARG_FILE_PATHS_FOR_ARCHIVE)
+        val jobId = arguments?.getString(ARG_JOB_ID)
         val archiveType = arguments?.getString(ARG_ARCHIVE_TYPE)
 
-        if (!filePathsStringList.isNullOrEmpty() && archiveType != null) {
+        if (jobId != null && archiveType != null) {
+            val filePathsStringList = fileOperationsDao.getFilesForJob(jobId)
 
             val validFilePaths = filePathsStringList.filter { File(it).exists() }
 
@@ -495,7 +506,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 Toast.makeText(requireContext(),
                     getString(R.string.no_valid_files_found_to_archive), Toast.LENGTH_LONG).show()
                 // Clear arguments even if no valid files, to prevent re-processing
-                arguments?.remove(ARG_FILE_PATHS_FOR_ARCHIVE)
+                arguments?.remove(ARG_JOB_ID)
                 arguments?.remove(ARG_ARCHIVE_TYPE)
                 updateAdapterWithFullList()
                 return
@@ -506,9 +517,9 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
 
             val newFragment = when (archiveType) {
-                "ZIP" -> ZipOptionDialogFragment.newInstance(validFilePaths)
-                "7Z" -> SevenZOptionDialogFragment.newInstance(validFilePaths)
-                "TAR" -> TarOptionsDialogFragment.newInstance(validFilePaths)
+                "ZIP" -> ZipOptionDialogFragment.newInstance(jobId)
+                "7Z" -> SevenZOptionDialogFragment.newInstance(jobId)
+                "TAR" -> TarOptionsDialogFragment.newInstance(jobId)
                 else -> null
             }
 
@@ -518,8 +529,9 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             } ?: Toast.makeText(requireContext(),
                 getString(R.string.invalid_archive_type), Toast.LENGTH_SHORT).show()
 
-            arguments?.remove(ARG_FILE_PATHS_FOR_ARCHIVE)
+            arguments?.remove(ARG_JOB_ID)
             arguments?.remove(ARG_ARCHIVE_TYPE)
+            fileOperationsDao.deleteFilesForJob(jobId)
 
             Handler(Looper.getMainLooper()).postDelayed({
                 if (isAdded) {
@@ -561,7 +573,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         }
 
         permissionBinding.tvPrivacyPolicy.setOnClickListener {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://sites.google.com/view/privacy-policy-zipxtract/home"))
+        val intent = Intent(Intent.ACTION_VIEW, "https://sites.google.com/view/privacy-policy-zipxtract/home".toUri())
             startActivity(intent)
         }
     }
@@ -629,9 +641,8 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             .setTitle(getString(R.string.info_tip))
             .setMessage(getString(R.string.info_tip_description))
             .setPositiveButton(getString(R.string.ok)) { dialog, _ ->
-                with(sharedPreferences.edit()) {
+                sharedPreferences.edit {
                     putBoolean("isInfoDialogShown", true)
-                    apply()
                 }
                 dialog.dismiss()
             }
@@ -639,45 +650,69 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     }
 
     private fun show7zOptionsDialog() {
-        val fragmentManager = parentFragmentManager
-        val newFragment = SevenZOptionDialogFragment.newInstance(adapter)
+        lifecycleScope.launch {
+            val selectedFiles = adapter.getSelectedFilesPaths()
+            if (selectedFiles.isEmpty()) {
+                Toast.makeText(requireContext(), R.string.no_files_to_archive, Toast.LENGTH_SHORT).show()
+                return@launch
+            }
+            val jobId = fileOperationsDao.addFilesForJob(selectedFiles)
+            val fragmentManager = parentFragmentManager
+            val newFragment = SevenZOptionDialogFragment.newInstance(jobId)
 
-        // Show the fragment fullscreen.
-        val transaction = fragmentManager.beginTransaction()
-        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-        transaction.add(android.R.id.content, newFragment)
-            .addToBackStack(null)
-            .commit()
+            // Show the fragment fullscreen.
+            val transaction = fragmentManager.beginTransaction()
+            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+            transaction.add(android.R.id.content, newFragment)
+                .addToBackStack(null)
+                .commit()
 
-        actionMode?.finish() // Destroy the action mode
+            actionMode?.finish() // Destroy the action mode
+        }
     }
 
     private fun showTarOptionsDialog() {
-        val fragmentManager = parentFragmentManager
-        val newFragment = TarOptionsDialogFragment.newInstance(adapter)
+        lifecycleScope.launch {
+            val selectedFiles = adapter.getSelectedFilesPaths()
+            if (selectedFiles.isEmpty()) {
+                Toast.makeText(requireContext(), R.string.no_files_to_archive, Toast.LENGTH_SHORT).show()
+                return@launch
+            }
+            val jobId = fileOperationsDao.addFilesForJob(selectedFiles)
+            val fragmentManager = parentFragmentManager
+            val newFragment = TarOptionsDialogFragment.newInstance(jobId)
 
-        // Show the fragment fullscreen.
-        val transaction = fragmentManager.beginTransaction()
-        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-        transaction.add(android.R.id.content, newFragment)
-            .addToBackStack(null)
-            .commit()
+            // Show the fragment fullscreen.
+            val transaction = fragmentManager.beginTransaction()
+            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+            transaction.add(android.R.id.content, newFragment)
+                .addToBackStack(null)
+                .commit()
 
-        actionMode?.finish() // Destroy the action mode
+            actionMode?.finish() // Destroy the action mode
+        }
     }
 
     private fun showZipOptionsDialog() {
-        val fragmentManager = parentFragmentManager
-        val newFragment = ZipOptionDialogFragment.newInstance(adapter)
+        lifecycleScope.launch {
+            val selectedFiles = adapter.getSelectedFilesPaths()
+            if (selectedFiles.isEmpty()) {
+                Toast.makeText(requireContext(), R.string.no_files_to_archive, Toast.LENGTH_SHORT).show()
+                return@launch
+            }
+            val jobId = fileOperationsDao.addFilesForJob(selectedFiles)
+            val fragmentManager = parentFragmentManager
+            val newFragment = ZipOptionDialogFragment.newInstance(jobId)
 
-        // Show the fragment fullscreen.
-        val transaction = fragmentManager.beginTransaction()
-        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-        transaction.add(android.R.id.content, newFragment)
-            .addToBackStack(null)
-            .commit()
+            // Show the fragment fullscreen.
+            val transaction = fragmentManager.beginTransaction()
+            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+            transaction.add(android.R.id.content, newFragment)
+                .addToBackStack(null)
+                .commit()
 
-        actionMode?.finish()
+            actionMode?.finish()
+        }
     }
 
     private fun archiveProgressDialog() {
@@ -865,11 +900,12 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         val destinationPath = currentPath ?: Environment.getExternalStorageDirectory().absolutePath
         val filesToCopyMove = fileOperationViewModel.filesToCopyMove.value.map { it.absolutePath }
         val isCopyAction = fileOperationViewModel.isCopyAction
+        val jobId = fileOperationsDao.addFilesForJob(filesToCopyMove)
 
         val intent = Intent(requireContext(), CopyMoveService::class.java).apply {
-            putStringArrayListExtra(CopyMoveService.EXTRA_FILES_TO_COPY_MOVE, ArrayList(filesToCopyMove))
-            putExtra(CopyMoveService.EXTRA_DESTINATION_PATH, destinationPath)
-            putExtra(CopyMoveService.EXTRA_IS_COPY_ACTION, isCopyAction)
+            putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
+            putExtra(ServiceConstants.EXTRA_DESTINATION_PATH, destinationPath)
+            putExtra(ServiceConstants.EXTRA_IS_COPY_ACTION, isCopyAction)
         }
         ContextCompat.startForegroundService(requireContext(), intent)
         fileOperationViewModel.setFilesToCopyMove(emptyList())
@@ -881,8 +917,9 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             .setMessage(getString(R.string.confirm_delete_message))
             .setPositiveButton(getString(R.string.delete)) { _, _ ->
                 val filesToDelete = selectedFiles.map { it.absolutePath }
+                val jobId = fileOperationsDao.addFilesForJob(filesToDelete)
                 val intent = Intent(requireContext(), DeleteFilesService::class.java).apply {
-                    putStringArrayListExtra(DeleteFilesService.EXTRA_FILES_TO_DELETE, ArrayList(filesToDelete))
+                    putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
                 }
                 ContextCompat.startForegroundService(requireContext(), intent)
                 unselectAllFiles()
@@ -943,7 +980,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                     data = Uri.fromParts("package", requireContext().packageName, null)
                 }
                 storageActivityResultLauncher.launch(intent)
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 val intent = Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
                 storageActivityResultLauncher.launch(intent)
             }
@@ -1206,9 +1243,10 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 .setTitle(getString(R.string.confirm_delete))
                 .setMessage(getString(R.string.confirm_delete_message))
                 .setPositiveButton(getString(R.string.delete)) { _, _ ->
-                    val filesToDelete = arrayListOf(file.absolutePath)
+                    val filesToDelete = listOf(file.absolutePath)
+                    val jobId = fileOperationsDao.addFilesForJob(filesToDelete)
                     val intent = Intent(requireContext(), DeleteFilesService::class.java).apply {
-                        putStringArrayListExtra(DeleteFilesService.EXTRA_FILES_TO_DELETE, filesToDelete)
+                        putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
                     }
                     ContextCompat.startForegroundService(requireContext(), intent)
                     bottomSheetDialog.dismiss()
@@ -1224,19 +1262,21 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
     private fun startCompressService(file: String, compressionFormat: String) {
         aProgressDialog.show()
+        val jobId = fileOperationsDao.addFilesForJob(listOf(file))
         val intent = Intent(requireContext(), CompressCsArchiveService::class.java).apply {
-            putExtra(CompressCsArchiveService.EXTRA_FILE_PATH, file)
-            putExtra(CompressCsArchiveService.EXTRA_COMPRESSION_FORMAT, compressionFormat)
+            putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
+            putExtra(ServiceConstants.EXTRA_COMPRESSION_FORMAT, compressionFormat)
         }
         ContextCompat.startForegroundService(requireContext(), intent)
     }
 
     fun startArchiveTarService(file: List<String>, archiveName: String, compressionFormat: String) {
         aProgressDialog.show()
+        val jobId = fileOperationsDao.addFilesForJob(file)
         val intent = Intent(requireContext(), ArchiveTarService::class.java).apply {
-            putStringArrayListExtra(ArchiveTarService.EXTRA_FILES_TO_ARCHIVE, ArrayList(file))
-            putExtra(ArchiveTarService.EXTRA_ARCHIVE_NAME, archiveName)
-            putExtra(ArchiveTarService.EXTRA_COMPRESSION_FORMAT, compressionFormat)
+            putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
+            putExtra(ServiceConstants.EXTRA_ARCHIVE_NAME, archiveName)
+            putExtra(ServiceConstants.EXTRA_COMPRESSION_FORMAT, compressionFormat)
         }
         ContextCompat.startForegroundService(requireContext(), intent)
     }
@@ -1337,12 +1377,12 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 .setTitle(getString(R.string.confirm_delete))
                 .setMessage(getString(R.string.confirm_delete_message))
                 .setPositiveButton(getString(R.string.delete)) { _, _ ->
-                    if (file.delete()) {
-                        Toast.makeText(requireContext(), getString(R.string.file_deleted), Toast.LENGTH_SHORT).show()
-                        updateAdapterWithFullList()
-                    } else {
-                        Toast.makeText(requireContext(), getString(R.string.general_error_msg), Toast.LENGTH_SHORT).show()
+                    val filesToDelete = listOf(file.absolutePath)
+                    val jobId = fileOperationsDao.addFilesForJob(filesToDelete)
+                    val intent = Intent(requireContext(), DeleteFilesService::class.java).apply {
+                        putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
                     }
+                    ContextCompat.startForegroundService(requireContext(), intent)
                     bottomSheetDialog.dismiss()
                 }
                 .setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
@@ -1425,44 +1465,49 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
     private fun startExtractionService(file: String, password: String?) {
         eProgressDialog.show()
+        val jobId = fileOperationsDao.addFilesForJob(listOf(file))
         val intent = Intent(requireContext(), ExtractArchiveService::class.java).apply {
-            putExtra(ExtractArchiveService.EXTRA_FILE_PATH, file)
-            putExtra(ExtractArchiveService.EXTRA_PASSWORD, password)
+            putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
+            putExtra(ServiceConstants.EXTRA_PASSWORD, password)
         }
         ContextCompat.startForegroundService(requireContext(), intent)
     }
 
     private fun startExtractionCsService(file: String) {
         eProgressDialog.show()
+        val jobId = fileOperationsDao.addFilesForJob(listOf(file))
         val intent = Intent(requireContext(), ExtractCsArchiveService::class.java).apply {
-            putExtra(ExtractCsArchiveService.EXTRA_FILE_PATH, file)
+            putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
         }
         ContextCompat.startForegroundService(requireContext(), intent)
     }
 
     private fun startRarExtractionService(file: String, password: String?) {
         eProgressDialog.show()
+        val jobId = fileOperationsDao.addFilesForJob(listOf(file))
         val intent = Intent(requireContext(), ExtractRarService::class.java).apply {
-            putExtra(ExtractRarService.EXTRA_FILE_PATH, file)
-            putExtra(ExtractRarService.EXTRA_PASSWORD, password)
+            putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
+            putExtra(ServiceConstants.EXTRA_PASSWORD, password)
         }
         ContextCompat.startForegroundService(requireContext(), intent)
     }
 
     private fun startMulti7zExtractionService(file: String, password: String?) {
         eProgressDialog.show()
+        val jobId = fileOperationsDao.addFilesForJob(listOf(file))
         val intent = Intent(requireContext(), ExtractMultipart7zService::class.java).apply {
-            putExtra(ExtractMultipart7zService.EXTRA_FILE_PATH, file)
-            putExtra(ExtractMultipart7zService.EXTRA_PASSWORD, password)
+            putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
+            putExtra(ServiceConstants.EXTRA_PASSWORD, password)
         }
         ContextCompat.startForegroundService(requireContext(), intent)
     }
 
     private fun startMultiZipExtractionService(file: String, password: String?) {
         eProgressDialog.show()
+        val jobId = fileOperationsDao.addFilesForJob(listOf(file))
         val intent = Intent(requireContext(), ExtractMultipartZipService::class.java).apply {
-            putExtra(ExtractMultipartZipService.EXTRA_FILE_PATH, file)
-            putExtra(ExtractMultipartZipService.EXTRA_PASSWORD, password)
+            putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
+            putExtra(ServiceConstants.EXTRA_PASSWORD, password)
         }
         ContextCompat.startForegroundService(requireContext(), intent)
     }
@@ -1538,9 +1583,9 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
         return when {
             bytes < kilobyte -> "$bytes B"
-            bytes < megabyte -> String.format("%.2f KB", bytes.toFloat() / kilobyte)
-            bytes < gigabyte -> String.format("%.2f MB", bytes.toFloat() / megabyte)
-            else -> String.format("%.2f GB", bytes.toFloat() / gigabyte)
+            bytes < megabyte -> String.format(Locale.US, "%.2f KB", bytes.toFloat() / kilobyte)
+            bytes < gigabyte -> String.format(Locale.US, "%.2f MB", bytes.toFloat() / megabyte)
+            else -> String.format(Locale.US, "%.2f GB", bytes.toFloat() / gigabyte)
         }
     }
 
@@ -1556,31 +1601,33 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
     fun startZipService(archiveName: String, password: String?, compressionMethod: CompressionMethod, compressionLevel: CompressionLevel, isEncrypted: Boolean, encryptionMethod: EncryptionMethod?, aesStrength: AesKeyStrength?, filesToArchive: List<String>) {
         aProgressDialog.show()
+        val jobId = fileOperationsDao.addFilesForJob(filesToArchive)
         val intent = Intent(requireContext(), ArchiveZipService::class.java).apply {
-            putExtra(ArchiveZipService.EXTRA_ARCHIVE_NAME, archiveName)
-            putExtra(ArchiveZipService.EXTRA_PASSWORD, password)
-            putExtra(ArchiveZipService.EXTRA_COMPRESSION_METHOD, compressionMethod)
-            putExtra(ArchiveZipService.EXTRA_COMPRESSION_LEVEL, compressionLevel)
-            putExtra(ArchiveZipService.EXTRA_IS_ENCRYPTED, isEncrypted)
-            putExtra(ArchiveZipService.EXTRA_ENCRYPTION_METHOD, encryptionMethod)
-            putExtra(ArchiveZipService.EXTRA_AES_STRENGTH, aesStrength)
-            putStringArrayListExtra(ArchiveZipService.EXTRA_FILES_TO_ARCHIVE, ArrayList(filesToArchive))
+            putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
+            putExtra(ServiceConstants.EXTRA_ARCHIVE_NAME, archiveName)
+            putExtra(ServiceConstants.EXTRA_PASSWORD, password)
+            putExtra(ServiceConstants.EXTRA_COMPRESSION_METHOD, compressionMethod)
+            putExtra(ServiceConstants.EXTRA_COMPRESSION_LEVEL, compressionLevel)
+            putExtra(ServiceConstants.EXTRA_IS_ENCRYPTED, isEncrypted)
+            putExtra(ServiceConstants.EXTRA_ENCRYPTION_METHOD, encryptionMethod)
+            putExtra(ServiceConstants.EXTRA_AES_STRENGTH, aesStrength)
         }
         ContextCompat.startForegroundService(requireContext(), intent)
     }
 
     fun startSplitZipService(archiveName: String, password: String?, compressionMethod: CompressionMethod, compressionLevel: CompressionLevel, isEncrypted: Boolean, encryptionMethod: EncryptionMethod?, aesStrength: AesKeyStrength?, filesToArchive: List<String>, splitSize: Long?) {
         aProgressDialog.show()
+        val jobId = fileOperationsDao.addFilesForJob(filesToArchive)
         val intent = Intent(requireContext(), ArchiveSplitZipService::class.java).apply {
-            putExtra(ArchiveSplitZipService.EXTRA_ARCHIVE_NAME, archiveName)
-            putExtra(ArchiveSplitZipService.EXTRA_PASSWORD, password)
-            putExtra(ArchiveSplitZipService.EXTRA_COMPRESSION_METHOD, compressionMethod)
-            putExtra(ArchiveSplitZipService.EXTRA_COMPRESSION_LEVEL, compressionLevel)
-            putExtra(ArchiveSplitZipService.EXTRA_IS_ENCRYPTED, isEncrypted)
-            putExtra(ArchiveSplitZipService.EXTRA_ENCRYPTION_METHOD, encryptionMethod)
-            putExtra(ArchiveSplitZipService.EXTRA_AES_STRENGTH, aesStrength)
-            putStringArrayListExtra(ArchiveSplitZipService.EXTRA_FILES_TO_ARCHIVE, ArrayList(filesToArchive))
-            putExtra(ArchiveSplitZipService.EXTRA_SPLIT_SIZE, splitSize)
+            putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
+            putExtra(ServiceConstants.EXTRA_ARCHIVE_NAME, archiveName)
+            putExtra(ServiceConstants.EXTRA_PASSWORD, password)
+            putExtra(ServiceConstants.EXTRA_COMPRESSION_METHOD, compressionMethod)
+            putExtra(ServiceConstants.EXTRA_COMPRESSION_LEVEL, compressionLevel)
+            putExtra(ServiceConstants.EXTRA_IS_ENCRYPTED, isEncrypted)
+            putExtra(ServiceConstants.EXTRA_ENCRYPTION_METHOD, encryptionMethod)
+            putExtra(ServiceConstants.EXTRA_AES_STRENGTH, aesStrength)
+            putExtra(ServiceConstants.EXTRA_SPLIT_SIZE, splitSize)
         }
         ContextCompat.startForegroundService(requireContext(), intent)
     }
@@ -1606,13 +1653,14 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
     fun startSevenZService(password: String?, archiveName: String, compressionLevel: Int, solid: Boolean, threadCount: Int, filesToArchive: List<String>) {
         aProgressDialog.show()
+        val jobId = fileOperationsDao.addFilesForJob(filesToArchive)
         val intent = Intent(requireContext(), Archive7zService::class.java).apply {
-            putExtra(Archive7zService.EXTRA_ARCHIVE_NAME, archiveName)
-            putExtra(Archive7zService.EXTRA_PASSWORD, password)
-            putExtra(Archive7zService.EXTRA_COMPRESSION_LEVEL, compressionLevel)
-            putExtra(Archive7zService.EXTRA_SOLID, solid)
-            putExtra(Archive7zService.EXTRA_THREAD_COUNT, threadCount)
-            putStringArrayListExtra(Archive7zService.EXTRA_FILES_TO_ARCHIVE, ArrayList(filesToArchive))
+            putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
+            putExtra(ServiceConstants.EXTRA_ARCHIVE_NAME, archiveName)
+            putExtra(ServiceConstants.EXTRA_PASSWORD, password)
+            putExtra(ServiceConstants.EXTRA_COMPRESSION_LEVEL, compressionLevel)
+            putExtra(ServiceConstants.EXTRA_SOLID, solid)
+            putExtra(ServiceConstants.EXTRA_THREAD_COUNT, threadCount)
         }
         ContextCompat.startForegroundService(requireContext(), intent)
     }
@@ -1851,14 +1899,14 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                     }
                 }
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             // exceptions
         }
         emit(results)
     }.distinctUntilChanged { old, new -> old.size == new.size }
 
     companion object {
-        const val ARG_FILE_PATHS_FOR_ARCHIVE = "com.wirelessalien.zipxtract.ARG_FILE_PATHS_FOR_ARCHIVE"
+        const val ARG_JOB_ID = "com.wirelessalien.zipxtract.ARG_JOB_ID"
         const val ARG_ARCHIVE_TYPE = "com.wirelessalien.zipxtract.ARG_ARCHIVE_TYPE"
     }
 }

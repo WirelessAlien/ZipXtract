@@ -38,7 +38,9 @@ import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_DIR_PATH
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_ERROR_MESSAGE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_PROGRESS
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.PREFERENCE_EXTRACT_DIR_PATH
+import com.wirelessalien.zipxtract.constant.ServiceConstants
 import com.wirelessalien.zipxtract.helper.ArchiveOpenMultipart7zCallback
+import com.wirelessalien.zipxtract.helper.FileOperationsDao
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -62,10 +64,10 @@ import java.io.OutputStream
 
 class ExtractMultipart7zService : Service() {
 
+    private lateinit var fileOperationsDao: FileOperationsDao
+
     companion object {
         const val NOTIFICATION_ID = 20
-        const val EXTRA_FILE_PATH = "file_path"
-        const val EXTRA_PASSWORD = "password"
     }
 
     private var password: CharArray? = null
@@ -76,25 +78,33 @@ class ExtractMultipart7zService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        fileOperationsDao = FileOperationsDao(this)
         createNotificationChannel()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val filePath = intent?.getStringExtra(EXTRA_FILE_PATH)
-        val password = intent?.getStringExtra(EXTRA_PASSWORD)
+        val jobId = intent?.getStringExtra(ServiceConstants.EXTRA_JOB_ID)
+        val password = intent?.getStringExtra(ServiceConstants.EXTRA_PASSWORD)
         this.password = password?.toCharArray()
 
-        if (filePath.isNullOrEmpty()) {
+        if (jobId.isNullOrEmpty()) {
+            stopSelf()
+            return START_NOT_STICKY
+        }
+        val filesToExtract = fileOperationsDao.getFileForJob(jobId)
+        if (filesToExtract?.isEmpty() == true) {
+            fileOperationsDao.deleteFilesForJob(jobId)
             stopSelf()
             return START_NOT_STICKY
         }
 
-        val modifiedFilePath = getModifiedFilePath(filePath)
+        val modifiedFilePath = getModifiedFilePath(filesToExtract ?:"")
 
         startForeground(NOTIFICATION_ID, createNotification(0))
 
         extractionJob = CoroutineScope(Dispatchers.IO).launch {
             extractArchive(modifiedFilePath)
+            fileOperationsDao.deleteFilesForJob(jobId)
         }
 
         return START_NOT_STICKY
