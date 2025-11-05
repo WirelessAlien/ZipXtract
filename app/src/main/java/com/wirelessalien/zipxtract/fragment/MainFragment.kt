@@ -531,7 +531,6 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
             arguments?.remove(ARG_JOB_ID)
             arguments?.remove(ARG_ARCHIVE_TYPE)
-            fileOperationsDao.deleteFilesForJob(jobId)
 
             Handler(Looper.getMainLooper()).postDelayed({
                 if (isAdded) {
@@ -573,7 +572,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         }
 
         permissionBinding.tvPrivacyPolicy.setOnClickListener {
-        val intent = Intent(Intent.ACTION_VIEW, "https://sites.google.com/view/privacy-policy-zipxtract/home".toUri())
+            val intent = Intent(Intent.ACTION_VIEW, "https://sites.google.com/view/privacy-policy-zipxtract/home".toUri())
             startActivity(intent)
         }
     }

@@ -17,4 +17,6 @@
 
 <resources>
     <string name="app_name" translatable="false">ZipXtract Debug</string>
+    <string name="archive">Archive Debug</string>
+    <string name="extract">Extract Archive</string>
 </resources>
