@@ -178,21 +178,7 @@ class SevenZOptionDialogFragment : DialogFragment() {
             dismiss()
         }
 
-        binding.noPasswordButton.setOnClickListener {
-            val archiveName = binding.archiveNameEditText.text.toString().ifBlank { defaultName }
-            val compressionLevel = when (binding.compressionSpinner.selectedItemPosition) {
-                0 -> 0
-                1 -> 1
-                2 -> 3
-                3 -> 5
-                4 -> 7
-                5 -> 9
-                else -> -1
-            }
-            val solid = binding.solidCheckBox.isChecked
-            val threadCount = binding.threadCountEditText.text.toString().toIntOrNull() ?: -1
-
-            mainFragment?.startSevenZService(null, archiveName, compressionLevel, solid, threadCount, selectedFilePaths)
+        binding.cancelButton.setOnClickListener {
             dismiss()
         }
     }
