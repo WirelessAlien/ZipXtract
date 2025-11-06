@@ -486,8 +486,6 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             hideExtendedFabs()
         }
 
-        checkAndShowDonationFragment()
-
         updateCurrentPathChip()
 
         handleOpenWithIntent()
@@ -1016,15 +1014,6 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 Toast.makeText(requireContext(), getString(R.string.permission_denied), Toast.LENGTH_SHORT).show()
                 requireActivity().finish()
             }
-        }
-    }
-
-    private fun checkAndShowDonationFragment() {
-        val savedVersionPreference = sharedPreferences.getInt("donation_dialog_version", 1)
-
-        if (checkStoragePermissions() && savedVersionPreference == 1) {
-            val donationFragment = DonationFragment()
-            donationFragment.show(requireActivity().supportFragmentManager, "donationFragment")
         }
     }
 
