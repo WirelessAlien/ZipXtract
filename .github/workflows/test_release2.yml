@@ -34,10 +34,10 @@ jobs:
       - name: Sign AAB with jarsigner
         id: sign_aab
         env:
-          KEYSTORE_FILE: ${{ secrets.KEYSTORE_FILE }}
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEYSTORE_FILE: ${{ secrets.KEYSTORE_FILE_2 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD_2 }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD_2 }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS_2 }}
         run: |
           set -e
           AAB_SRC="app/build/outputs/bundle/release/app-release.aab"
@@ -49,14 +49,14 @@ jobs:
           fi
 
           # Decode the base64 keystore secret into a file
-          echo "$KEYSTORE_FILE" | base64 --decode > upload-keystore.jks
+          echo "$KEYSTORE_FILE_2" | base64 --decode > upload-keystore.jks
           chmod 600 upload-keystore.jks
 
           # Copy bundle to new file so original remains untouched
           cp "$AAB_SRC" "$AAB_DST"
 
           # Sign the AAB
-          jarsigner -verbose -keystore upload-keystore.jks -storepass "$KEYSTORE_PASSWORD" -keypass "$KEY_PASSWORD" "$AAB_DST" "$KEY_ALIAS"
+          jarsigner -verbose -keystore upload-keystore.jks -storepass "$KEYSTORE_PASSWORD_2" -keypass "$KEY_PASSWORD_2" "$AAB_DST" "$KEY_ALIAS_2"
 
           # Verify signature
           jarsigner -verify -verbose -certs "$AAB_DST"
