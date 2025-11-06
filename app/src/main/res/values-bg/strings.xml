@@ -134,4 +134,13 @@
     <string name="split_parts_number_req">Разрешете повече от 100 разделени части</string>
     <string name="fast_search">Бързо търсене</string>
     <string name="fast_search_summary">Използвайте медийния индекс на Android за по-бързо търсене</string>
+    <string name="file_list_is_fixed_for_this_operation">Списъкът с файлове е фиксиран за тази операция.</string>
+    <string name="archive_updated_successfully">Архивът е обновен успешно</string>
+    <string name="error_no_file_information_provided">Грешка: Не е предоставена информация за файла.</string>
+    <string name="error_updating_archive">Грешка при обновяване на архива</string>
+    <string name="error_opening_archive">Грешка при отваряне на архив: %1$s</string>
+    <string name="no_valid_files_found_to_archive">Не са намерени валидни файлове за архивиране.</string>
+    <string name="invalid_archive_type">Невалиден тип архив</string>
+    <string name="updating_archive">Обновяване на архива…</string>
+    <string name="update_archive_service">Обновен архив</string>
 </resources>

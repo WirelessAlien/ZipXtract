@@ -26,6 +26,7 @@
 \nPer gli utenti con dispositivi meno potenti, è possibile utilizzare un\'alternativa come ZIP_STANDARD. Tuttavia, tieni a mente che questo metodo non offre lo stesso livello di sicurezza di AES.
 \n
 \nSe la sicurezza è la priorità, consigliamo fortemente di usare AES nonostante i tempi di elaborazione più lunghi.</string>
+    <string name="ok">OK</string>
     <string name="enter_password">Inserisci password</string>
     <string name="permission_denied">Permesso negato</string>
     <string name="zip_creation_failed">Errore durante l\'archiviazione del file ZIP</string>
@@ -46,11 +47,14 @@
     <string name="root_access">Accesso Root</string>
     <string name="root_access_summary">Abilitare l\'accesso alla directory root</string>
     <string name="internal_storage">Memoria Interna</string>
+    <string name="root">Root</string>
     <string name="directory_empty">La cartella è vuota</string>
     <string name="paste">Incolla</string>
     <string name="storage">Spazio di Archiviazione</string>
     <string name="archive">Archivio</string>
+    <string name="home">Home</string>
     <string name="show_hide_selected_files">Mostra/Nascondi File selezionati</string>
+    <string name="background">Background</string>
     <string name="open_with">Apri con</string>
     <string name="compress_with">Comprimi con:</string>
     <string name="confirm_delete">Annulla Conferma</string>
@@ -73,6 +77,7 @@
     <string name="report_an_issue">Segnala un problema</string>
     <string name="about">Informazioni</string>
     <string name="privacy_policy">Informativa sulla privacy</string>
+    <string name="crash_log">Crash Log</string>
     <string name="grant_access">Consenti l\'accesso</string>
     <string name="info_tip_description">● Tieni premuto su file e cartelle o fai clic sulle icone del file/cartella per selezionarli per l\'archiviazione.\n\n● Fare clic su un file per visualizzare il menu di estrazione e scegliere le opzioni di estrazione.\n\n● I file estratti utilizzando il menu \"Apri con\" del sistema operativo vengono memorizzati in Memoria Interna/ZipXtract in maniera predefinita. Modificare questa opzione nelle impostazioni dell\'app.\n\n● La posizione predefinita per l\'archiviazione o l\'estrazione di archivi (all\'interno dell\'app) è la directory principale del/dei rispettivi file. Questa può essere modificata nelle impostazioni dell\'app.</string>
     <string name="move">Sposta in</string>
@@ -115,4 +120,31 @@
     <string name="passwords_do_not_match">La password non corrisponde</string>
     <string name="wrong_password">Password sbagliata</string>
     <string name="file_already_exists">File già esiste</string>
+    <string name="invalid_value">Input non valido</string>
+    <string name="please_enter_value_between_0_and_22">Inserisci un valore tra 0 e 22</string>
+    <string name="archiving_started_in_background">Archiviazione iniziata in background</string>
+    <string name="no_compression">Nessuna compressione</string>
+    <string name="remove">Rimuovi</string>
+    <string name="preview_archive">Archivio di anteprima</string>
+    <string name="add">Aggiungi</string>
+    <string name="directory_selection_disabled">La cartella non può essere selezionata, selezionare i file all\'interno di esso.</string>
+    <string name="select_file">Selezionare File..</string>
+    <string name="select_files">Aggiungi (%d)</string>
+    <string name="donate_desc">Se si trova ZipXtract utile, si prega di considerare di sostenere il suo sviluppo:</string>
+    <string name="error_too_many_parts">Questo genererebbe %1$d parti</string>
+    <string name="select_archive_type_title">Selezionare il tipo di archivio</string>
+    <string name="add_folder_confirmation_title">Aggiungi cartella corrente?</string>
+    <string name="add_folder_confirmation_message">Vuoi aggiungere la cartella \'%1$s\' all\'archivio?</string>
+    <string name="split_parts_number_req">Consentire più di 100 parti divise</string>
+    <string name="fast_search">Ricerca rapida</string>
+    <string name="fast_search_summary">Utilizzare l\'indice dei media di Android per una ricerca più veloce</string>
+    <string name="file_list_is_fixed_for_this_operation">L\'elenco dei file è fisso per questa operazione.</string>
+    <string name="archive_updated_successfully">Archivio aggiornato con successo</string>
+    <string name="error_no_file_information_provided">Errore: Nessuna informazione di file fornita.</string>
+    <string name="error_updating_archive">Aggiornamento degli errori</string>
+    <string name="error_opening_archive">Archivio per l\'apertura di errori: %1$s</string>
+    <string name="no_valid_files_found_to_archive">Nessun file valido trovato per l\'archivio.</string>
+    <string name="invalid_archive_type">Tipo di archivio non valido</string>
+    <string name="updating_archive">Aggiornamento archivio..</string>
+    <string name="update_archive_service">Archivio di aggiornamento</string>
 </resources>

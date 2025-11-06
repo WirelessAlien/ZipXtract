@@ -121,9 +121,11 @@
     <string name="archiving_started_in_background">Archiving arka planda başladı</string>
     <string name="no_compression">Hiçbir Promosyon Yok</string>
     <string name="remove">Kaldırın</string>
+    <string name="preview_archive">Preview Archive</string>
+    <string name="add">Add</string>
     <string name="directory_selection_disabled">Folder seçilebilir, içindeki dosyaları seçin.</string>
     <string name="select_file">Dosyayı seçin..</string>
-    <string name="select_files">Ekle (%d)</string>
+    <string name="select_files">Add ([X5X)</string>
     <string name="donate_desc">ZipXtract faydalı bulursanız, lütfen gelişimini desteklemeyi düşünün:</string>
     <string name="error_too_many_parts">Bu %1$d parçaları üretecektir</string>
     <string name="select_archive_type_title">Arşiv türü seçin</string>
@@ -132,4 +134,13 @@
     <string name="split_parts_number_req">100\'den fazla bölünmüş parçaya izin verin</string>
     <string name="fast_search">Hızlı Arama Hızlı Arama</string>
     <string name="fast_search_summary">Android\'in medya indeksini daha hızlı arama için kullanın</string>
+    <string name="file_list_is_fixed_for_this_operation">Dosya listesi bu işlem için sabitlenir.</string>
+    <string name="archive_updated_successfully">Arşivi başarıyla güncellendi</string>
+    <string name="error_no_file_information_provided">Hata: Hiçbir dosya bilgisi sunulmadı.</string>
+    <string name="error_updating_archive">Hata güncelleştirme arşivleri</string>
+    <string name="error_opening_archive">Hata Açılış arşivi: %1$s</string>
+    <string name="no_valid_files_found_to_archive">Arşiv için bulunan geçerli dosyalar yok.</string>
+    <string name="invalid_archive_type">Invalid arşiv türü</string>
+    <string name="updating_archive">Updating archive..</string>
+    <string name="update_archive_service">Update Archive</string>
 </resources>

@@ -17,61 +17,64 @@
   -->
 
 <resources>
-    <!-- General strings -->
+    <string name="compression_method">压缩方式</string>
+    <string name="copied_to_clipboard">已复制到剪贴板</string>
+    <string name="settings_info_text">文件的默认加密方法是 AES，它提供了高级别的安全性。但是，请注意，AES 加密可能非常耗时，尤其是在低端设备上。 \n \n对于设备性能较弱的用户，可以使用ZIP_STANDARD等替代方案。但是，请注意，此方法不提供与 AES 相同的安全级别。 \n \n如果安全性是您最关心的问题，我们强烈建议您使用 AES，尽管它的处理时间较长。</string>
     <string name="folder">文件夹</string>
+    <string name="no_file_selected">未选择文件</string>
+    <string name="compression_level">压缩等级</string>
+    <string name="liberapay">Liberapay</string>
+    <string name="no_password">无密码</string>
+    <string name="ok">好</string>
+    <string name="create_zip">ZIP 压缩</string>
+    <string name="encryption_method">加密方式</string>
+    <string name="cancel">取消</string>
+    <string name="permission_denied">没有权限</string>
+    <string name="zip_creation_failed">创建 zip 压缩文件出错</string>
+    <string name="extract">解压</string>
+    <string name="donate">捐赠</string>
+    <string name="open_folder">打开目录</string>
+    <string name="extraction_success">文件解压成功</string>
     <string name="share">分享应用链接</string>
-    <string name="privacy_policy">隐私政策</string>
-    <string name="source_code">源代码</string>
-    <string name="license">许可证</string>
-    <string name="report_an_issue">报告问题</string>
+    <string name="enter_password">输入密码</string>
+    <string name="extraction_failed">解压失败了</string>
+    <string name="zip_creation_success">Zip 压缩文件创建成功</string>
+    <string name="thread_count">线程数</string>
+    <string name="sevenz_creation_success">7z 压缩文件创建成功</string>
+    <string name="max_available_thread">0 代表最大可用线程</string>
+    <string name="enter_name_of_archive_optional">压缩文件名</string>
+    <string name="solid_compression">固实压缩</string>
+    <string name="sevenz_creation_failed">创建 7z 压缩文件出错</string>
+    <string name="compress_sevenz">7z 压缩</string>
+    <string name="encryption_strength">加密强度</string>
+    <string name="_ten">默认为64KB</string>
+    <string name="split_zip">Zip 分卷</string>
+    <string name="split_size_mb">分卷大小</string>
     <string name="about">关于</string>
-    <string name="grant_access">授予访问权限</string>
-    <string name="storage_access_permission_text">为了保证基本功能正常，该软件需要你授权访问内置存储。</string>
-    <string name="sd_card">SD卡</string>
-    <string name="root_access">操作根目录</string>
-    <string name="root_access_summary">允许操作根目录</string>
+    <string name="home">首页</string>
+    <string name="root_access_summary">允许访问根目录</string>
     <string name="internal_storage">内部储存</string>
     <string name="root">根目录</string>
     <string name="directory_empty">空文件夹</string>
     <string name="paste">粘贴</string>
     <string name="storage">储存</string>
-
-    <!-- Bottom navigation -->
-    <string name="archive">归档</string>
-    <string name="home">首页</string>
-
-    <!-- Snackbar actions -->
-    <string name="open_folder">打开目录</string>
-
-    <!-- Dialog strings (General dialogs and common strings of different dialog) -->
-    <string name="enter_name_of_archive_optional">归档名称</string>
+    <string name="archive">压缩</string>
     <string name="show_hide_selected_files">显示/隐藏所选文件</string>
-    <string name="background">背景</string>
-    <string name="open_with">打开</string>
-    <string name="compress_with">压缩:</string>
-    <string name="no_password">无密码</string>
-    <string name="confirm_delete">删除确认提醒</string>
-    <string name="confirm_delete_message">您是否希望删除该项?</string>
+    <string name="background">后台</string>
+    <string name="open_with">打开方式</string>
+    <string name="compress_with">压缩选项：</string>
+    <string name="confirm_delete">删除确认</string>
+    <string name="confirm_delete_message">要删除该项吗？</string>
     <string name="delete">删除</string>
     <string name="file_path">路径</string>
     <string name="file_size">大小</string>
     <string name="last_modified">上次修改</string>
-    <string name="cancel">取消</string>
-    <string name="donate">捐赠</string>
-    <string name="enter_password">输入密码</string>
-    <string name="extract">解压</string>
     <string name="file_info">文件信息</string>
-    <string name="multi_part_extract">解压多部分:</string>
+    <string name="multi_part_extract">分卷解压：</string>
     <string name="copy_text">复制</string>
     <string name="info_tip">有用的小技巧</string>
-    <string name="info_tip_description">\u25CF 长按文件和文件夹或单击文件/文件夹图标以选择它们进行存档。\n\n\u25CF 单击文件可显示用于选择提取选项的提取菜单。\n\n\u25CF 默认情况下，使用作系统的“打开方式”菜单提取的文件存储在“内部存储/ZipXtract”中。在 App 设置中修改。\n\n\u25CF 在应用程序内，存档或提取存档的默认位置是相应文件的父目录。这可以在应用程序设置中更改。</string>
-    <string name="crash_log">垃圾日志</string>
-    <string name="confirm_password">确认密码</string>
-    <string name="passwords_do_not_match">密码不匹配</string>
-    <string name="wrong_password">密码错误</string>
-    <string name="file_already_exists">文件已经存在</string>
-
-    <!-- Menu items -->
+    <string name="info_tip_description">● 长按文件和文件夹，或单击文件、文件夹图标选择它们进行压缩。\n\n● 单击文件显示选择解压选项的解压菜单。\n\n● 使用操作系统“Open With”菜单解压的文件默认存放在内部储存/ZipXtract 中。 在应用设置中可加以修改。\n\n● 应用压缩或解压文件后的默认位置是文件的上级目录。 可以在应用设置中更改位置。</string>
+    <string name="crash_log">崩溃日志</string>
     <string name="move">移动到</string>
     <string name="copy_to">复制到</string>
     <string name="action_settings">设置</string>
@@ -80,83 +83,81 @@
     <string name="order">命令</string>
     <string name="ascending">升序</string>
     <string name="descending">降序</string>
-    <string name="sort_by">按什么排序</string>
+    <string name="sort_by">排序依据</string>
     <string name="name">名称</string>
     <string name="size">大小</string>
-    <string name="time_of_creation">修改</string>
-    <string name="extension">扩展</string>
+    <string name="time_of_creation">修改时间</string>
+    <string name="extension">文件扩展名</string>
     <string name="close">关闭</string>
-
-    <!-- Settings -->
-    <string name="extract_path">解压文件夹</string>
-    <string name="archive_path">归档文件夹</string>
+    <string name="extract_path">解压文件的文件夹</string>
+    <string name="archive_path">压缩文件的文件夹</string>
     <string name="archive_path_summary">修改默认解压目录。\n默认为“上级目录”</string>
-    <string name="extract_path_summary">修改默认解压目录。\n默认为“上级目录”或内部储存/ZipXtract(“打开为”菜单提取的档案)</string>
-
-    <!-- ZIP archive options -->
-    <string name="create_zip">归档ZIP</string>
-    <string name="encryption_method">加密方式</string>
-    <string name="compression_level">压缩等级</string>
-    <string name="compression_method">压缩方式</string>
-    <string name="encryption_strength">加密强度</string>
-    <string name="split_size_mb">分卷大小</string>
-    <string name="split_zip">ZIP分卷</string>
-    <string name="_ten">默认为64KiB</string>
-    <string name="settings_info_text">文件的默认加密方法是 AES，它提供高级别的安全性。但是，请注意，AES 加密可能非常耗时，尤其是在低端设备上。\n\n对于设备功能较弱的用户，可以使用 ZIP_STANDARD 等替代方案。但是，请注意，此方法无法提供与 AES 相同级别的安全性。\n\n如果您最关心的是安全性，我们强烈建议您使用 AES，尽管它的处理时间较长。</string>
-
-    <!-- TAR archive options -->
-    <string name="compress_tar">归档为 TAR</string>
-
-    <!-- 7z archive options -->
-    <string name="compress_sevenz">归档为 7z</string>
-    <string name="solid_compression">固实压缩</string>
-    <string name="thread_count">线程数</string>
-    <string name="max_available_thread">0 代表最大可用线程</string>
-
-    <!-- Success toast messages -->
+    <string name="extract_path_summary">修改默认解压目录。\n默认为“上级目录”或内部储存/ZipXtract(对使用“Open With\"菜单解压的压缩文件)</string>
     <string name="compression_success">压缩成功</string>
-    <string name="extraction_success">文件提取成功</string>
-    <string name="archive_success">文件存档成功</string>
-    <string name="tar_creation_success">TAR 归档成功</string>
-    <string name="zip_creation_success">ZIP 归档创建成功</string>
-    <string name="sevenz_creation_success">7z 归档创建成功</string>
+    <string name="tar_creation_success">TAR 压缩文件创建成功</string>
     <string name="file_deleted">已删除</string>
-    <string name="copied_to_clipboard">已复制到剪贴板</string>
-    <string name="operation_cancelled">操作被取消</string>
-
-    <!-- Error toast messages -->
-    <string name="tar_creation_failed">创建 TAR 存档失败</string>
-    <string name="compression_failed">压缩失败</string>
-    <string name="sevenz_creation_failed">创建 7z 文件出错</string>
-    <string name="zip_creation_failed">创建 ZIP 文件出错</string>
-    <string name="general_error_msg">发生意外错误</string>
-    <string name="unsupported_compression_format">不支持该压缩格式</string>
-    <string name="extraction_failed">提取失败</string>
-    <string name="access_denied">拒绝写入</string>
-    <string name="no_files_to_archive">没有选择任何文件来归档</string>
-    <string name="permission_denied">没有权限</string>
-    <string name="no_file_selected">未选择任何文件</string>
-    <string name="sd_card_not_available">未发现SD卡或外部储存</string>
-
-
-    <!-- Notification title-->
-    <string name="copying_files">复制中…</string>
-    <string name="moving_files">移动中…</string>
-    <string name="delete_ongoing">删除中…</string>
-    <string name="extraction_ongoing">解压中…</string>
-    <string name="archive_ongoing">归档中…</string>
-
-    <!-- Notification content-->
-    <string name="copying_files_progress">正在复制文件: %1$d/%2$d</string>
-    <string name="moving_files_progress">正在移动文件: %1$d/%2$d</string>
-    <string name="deleting_files">正在删除文件: %1$d/%2$d</string>
-    <string name="extracting_progress">解压中… %1$d %%</string>
-    <string name="compressing_progress">归档中… %1$d %%</string>
+    <string name="operation_cancelled">操作取消</string>
+    <string name="tar_creation_failed">创建 tar 压缩文件出错</string>
+    <string name="compression_failed">压缩失败了</string>
+    <string name="general_error_msg">发生意外错误。</string>
+    <string name="unsupported_compression_format">此压缩格式不支持。</string>
+    <string name="access_denied">访问被拒</string>
+    <string name="no_files_to_archive">没有选中要压缩的文件</string>
+    <string name="sd_card_not_available">未检测到 SD 卡或外部储存</string>
+    <string name="copying_files">复制…</string>
+    <string name="moving_files">移动…</string>
+    <string name="delete_ongoing">删除…</string>
+    <string name="extraction_ongoing">解压…</string>
+    <string name="archive_ongoing">压缩…</string>
+    <string name="copying_files_progress">复制文件：%1$d/%2$d</string>
+    <string name="moving_files_progress">移动文件：%1$d/%2$d</string>
+    <string name="deleting_files">删除文件：%1$d/%2$d</string>
+    <string name="extracting_progress">解压... %1$d %%</string>
+    <string name="compressing_progress">压缩….%1$d %%</string>
     <string name="compression_ongoing">压缩中…</string>
-
-    <!-- Notification channel name-->
     <string name="delete_files_notification_name">删除文件</string>
     <string name="copy_move_files_notification_name">复制/移动文件</string>
-    <string name="extract_archive_notification_name">解压归档</string>
+    <string name="extract_archive_notification_name">解压压缩文件</string>
     <string name="compress_archive_notification_name">压缩归档</string>
+    <string name="compress_tar">TAR 压缩</string>
+    <string name="archive_success">文件压缩成功</string>
+    <string name="privacy_policy">隐私政策</string>
+    <string name="source_code">源码</string>
+    <string name="license">许可证</string>
+    <string name="report_an_issue">报告问题</string>
+    <string name="grant_access">授予访问权限</string>
+    <string name="storage_access_permission_text">本应用访问设备存储权限才能正确运作。请授予必需的权限。</string>
+    <string name="sd_card">SD卡</string>
+    <string name="root_access">根权限</string>
+    <string name="confirm_password">确认密码</string>
+    <string name="passwords_do_not_match">密码不匹配</string>
+    <string name="wrong_password">密码错误</string>
+    <string name="file_already_exists">文件已存在</string>
+    <string name="invalid_value">无效输入</string>
+    <string name="please_enter_value_between_0_and_22">输入数值在 0 至 22 之间</string>
+    <string name="archiving_started_in_background">压缩在后台启动</string>
+    <string name="no_compression">无压缩</string>
+    <string name="remove">删除</string>
+    <string name="preview_archive">预览压缩文件</string>
+    <string name="add">添加</string>
+    <string name="directory_selection_disabled">无法选中文件夹，选择其中的文件。</string>
+    <string name="select_file">选择文件…</string>
+    <string name="select_files">添加 (%d)</string>
+    <string name="donate_desc">如果觉得 ZipXtract 有用，请考虑支持其开发：</string>
+    <string name="error_too_many_parts">这将产生 %1$d 个分卷</string>
+    <string name="select_archive_type_title">选择压缩类型</string>
+    <string name="add_folder_confirmation_title">添加当前文件夹？</string>
+    <string name="add_folder_confirmation_message">要把文件夹“%1$s”添加到压缩文件中吗？</string>
+    <string name="split_parts_number_req">允许100多个分卷</string>
+    <string name="fast_search">快速搜索</string>
+    <string name="fast_search_summary">使用安卓的媒体索引加速搜索</string>
+    <string name="file_list_is_fixed_for_this_operation">此操作的文件列表是固定的。</string>
+    <string name="archive_updated_successfully">成功更新了压缩文件</string>
+    <string name="error_no_file_information_provided">错误：没有提供文件信息。</string>
+    <string name="error_updating_archive">更新压缩文件出错</string>
+    <string name="error_opening_archive">打开压缩文件出错：%1$s</string>
+    <string name="no_valid_files_found_to_archive">没找到进行压缩的有效文件。</string>
+    <string name="invalid_archive_type">无效压缩文件类型</string>
+    <string name="updating_archive">更新压缩文件…</string>
+    <string name="update_archive_service">更新压缩文件</string>
 </resources>

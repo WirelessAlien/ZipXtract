@@ -89,6 +89,7 @@
     <string name="root_access">Root доступ</string>
     <string name="root_access_summary">Увімкнути доступ до root каталогів</string>
     <string name="internal_storage">Внутрішнє сховище</string>
+    <string name="root">Root</string>
     <string name="directory_empty">Тека пуста</string>
     <string name="paste">Вставити</string>
     <string name="storage">Сховище</string>
@@ -137,4 +138,13 @@
     <string name="split_parts_number_req">Дозволити більше 100 розщеплених частин</string>
     <string name="fast_search">Швидкий пошук</string>
     <string name="fast_search_summary">Використовуйте медіа індекс Android для швидкого пошуку</string>
+    <string name="file_list_is_fixed_for_this_operation">Список файлів для цієї операції фіксовано.</string>
+    <string name="archive_updated_successfully">Архів успішно оновлено</string>
+    <string name="error_no_file_information_provided">Помилка: Інформація про файл не надана.</string>
+    <string name="error_updating_archive">Помилка оновлення архіву</string>
+    <string name="error_opening_archive">Помилка відкриття архіву: %1$s</string>
+    <string name="no_valid_files_found_to_archive">Не знайдено жодних дійсних файлів для архівування.</string>
+    <string name="invalid_archive_type">Недійсний тип архіву</string>
+    <string name="updating_archive">Оновлення архіву…</string>
+    <string name="update_archive_service">Архів оновлень</string>
 </resources>
