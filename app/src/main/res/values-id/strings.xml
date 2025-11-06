@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~  Copyright (C) 2023  WirelessAlien <https://github.com/WirelessAlien>
+  ~
+  ~     This program is free software: you can redistribute it and/or modify
+  ~     it under the terms of the GNU General Public License as published by
+  ~     the Free Software Foundation, either version 3 of the License, or
+  ~     any later version.
+  ~
+  ~     This program is distributed in the hope that it will be useful,
+  ~     but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~     GNU General Public License for more details.
+  ~
+  ~     You should have received a copy of the GNU General Public License
+  ~     along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
+<resources>
+    <!-- App name -->
+    <string name="app_name" translatable="false">ZipXtract</string>
+
+    <!-- General strings -->
+    <string name="folder">Folder</string>
+    <string name="share">Bagikan Link Aplikasi</string>
+    <string name="privacy_policy">Kebijakan Privasi</string>
+    <string name="source_code">Kode Sumber</string>
+    <string name="license">Lisensi</string>
+    <string name="report_an_issue">Lapor Masalah</string>
+    <string name="about">Tentang</string>
+    <string name="grant_access">Beri Akses</string>
+    <string name="storage_access_permission_text">Aplikasi ini butuh akses ke penyimpanan perangkatmu agar bisa berfungsi. Mohon berikan izin yang diperlukan.</string>
+    <string name="sd_card">Kartu SD</string>
+    <string name="root_access">Akses Root</string>
+    <string name="root_access_summary">Aktifkan akses ke direktori root.</string>
+    <string name="internal_storage">Memori Internal</string>
+    <string name="root">Root</string>
+    <string name="directory_empty">Folder ini kosong.</string>
+    <string name="paste">Tempel</string>
+    <string name="storage">Penyimpanan</string>
+    <string name="invalid_value">Input tidak valid.</string>
+    <string name="please_enter_value_between_0_and_22">Masukkan angka antara 0 dan 22.</string>
+    <string name="archiving_started_in_background">Proses arsip dimulai di latar belakang…</string>
+    <string name="no_compression">Tanpa Kompresi</string>
+    <string name="remove">Hapus</string>
+    <string name="preview_archive">Lihat Isi Arsip</string>
+    <string name="add">Tambah</string>
+    <string name="directory_selection_disabled">Folder tidak bisa dipilih, pilih file di dalamnya.</string>
+    <string name="select_file">Pilih File…</string>
+    <string name="select_files">Tambah (%d)</string>
+    <string name="donate_desc">Suka dengan ZipXtract? Dukung pengembangannya dengan donasi:</string>
+    <string name="file_list_is_fixed_for_this_operation">Daftar file tidak bisa diubah untuk proses ini.</string>
+    <string name="no_match">Tidak ditemukan.</string>
+
+    <!-- Bottom navigation -->
+    <string name="archive">Arsip</string>
+    <string name="home">Beranda</string>
+
+    <!-- Snackbar actions -->
+    <string name="open_folder">Buka Folder</string>
+
+    <!-- Dialog strings (General dialogs and common strings of different dialog) -->
+    <string name="enter_name_of_archive_optional">Nama Arsip</string>
+    <string name="show_hide_selected_files">Tampilkan/Sembunyikan File Pilihan</string>
+    <string name="background">Latar Belakang</string>
+    <string name="open_with">Buka dengan</string>
+    <string name="compress_with">Kompres pakai:</string>
+    <string name="no_password">Tanpa Password</string>
+    <string name="confirm_delete">Konfirmasi Hapus</string>
+    <string name="confirm_delete_message">Yakin mau hapus item ini?</string>
+    <string name="delete">Hapus</string>
+    <string name="file_path">Lokasi</string>
+    <string name="file_size">Ukuran</string>
+    <string name="last_modified">Terakhir diubah</string>
+    <string name="cancel">Batal</string>
+    <string name="donate">Donasi</string>
+    <string name="ok">OK</string>
+    <string name="enter_password">Masukkan Password</string>
+    <string name="extract">Ekstrak</string>
+    <string name="file_info">Info File</string>
+    <string name="multi_part_extract">Ekstrak Multi-Part:</string>
+    <string name="copy_text">Salin</string>
+    <string name="info_tip">Tips Bermanfaat</string>
+    <string name="info_tip_description">\u25CF Tekan lama file/folder atau klik ikonnya untuk memilih file yang mau diarsip.\n\n\u25CF Klik sebuah file untuk membuka pilihan ekstraksi.\n\n\u25CF File yang diekstrak lewat menu "Buka dengan" akan disimpan di "Memori Internal/ZipXtract". Lokasi ini bisa diubah di setelan.\n\n\u25CF Lokasi default untuk arsip baru atau hasil ekstrak adalah di folder tempat file itu berada. Ini juga bisa diubah di setelan.</string>
+    <string name="crash_log">Log Error</string>
+    <string name="confirm_password">Ulangi Password</string>
+    <string name="passwords_do_not_match">Password tidak cocok.</string>
+    <string name="wrong_password">Password salah.</string>
+    <string name="error_too_many_parts">Ini akan membuat %1$d bagian.</string>
+    <string name="file_already_exists">File dengan nama ini sudah ada.</string>
+    <string name="select_archive_type_title">Pilih Jenis Arsip</string>
+    <string name="add_folder_confirmation_title">Tambahkan folder ini?</string>
+    <string name="add_folder_confirmation_message">Kamu mau menambahkan folder \'%1$s\' ke dalam arsip?</string>
+    <string name="split_parts_number_req">Izinkan lebih dari 100 bagian</string>
+    <string name="compare">Bandingkan</string>
+
+    <!-- Menu items -->
+    <string name="move">Pindahkan</string>
+    <string name="copy_to">Salin ke</string>
+    <string name="action_settings">Setelan</string>
+    <string name="select_all">Pilih Semua</string>
+    <string name="search">Cari</string>
+    <string name="order">Urutan</string>
+    <string name="ascending">A-Z (Naik)</string>
+    <string name="descending">Z-A (Turun)</string>
+    <string name="sort_by">Urutkan Berdasarkan</string>
+    <string name="name">Nama</string>
+    <string name="size">Ukuran</string>
+    <string name="time_of_creation">Tanggal Diubah</string>
+    <string name="extension">Jenis File</string>
+    <string name="close">Tutup</string>
+
+    <!-- Settings -->
+    <string name="extract_path">Folder hasil ekstrak</string>
+    <string name="archive_path">Folder hasil arsip</string>
+    <string name="archive_path_summary">Ubah folder default untuk arsip.\nDefault: "folder asal file"</string>
+    <string name="extract_path_summary">Ubah folder default untuk ekstrak.\nDefault: "folder asal file" atau Memori Internal/ZipXtract (jika dari "Buka dengan")</string>
+    <string name="fast_search">Pencarian Cepat</string>
+    <string name="fast_search_summary">Gunakan indeks media Android agar pencarian lebih ngebut.</string>
+
+    <!-- ZIP archive options -->
+    <string name="create_zip">Buat Arsip ZIP</string>
+    <string name="encryption_method">Metode Enkripsi</string>
+    <string name="compression_level">Tingkat Kompresi</string>
+    <string name="compression_method">Metode Kompresi</string>
+    <string name="encryption_strength">Kekuatan Enkripsi</string>
+    <string name="split_size_mb">Ukuran per Bagian</string>
+    <string name="split_zip">Bagi Arsip ZIP</string>
+    <string name="_ten">Defaultnya 64kb.</string>
+    <string name="settings_info_text">Enkripsi default pakai AES, ini aman banget. Tapi, proses enkripsi AES bisa jadi lama, apalagi di HP dengan spek pas-pasan.\n\nKalau HP-mu kurang kencang, bisa pakai ZIP_STANDARD. Tapi ingat, tingkat keamanannya nggak sebagus AES.\n\nKalau keamanan itu yang paling penting buatmu, kami tetap sarankan pakai AES walau prosesnya lebih lama.</string>
+
+    <!-- TAR archive options -->
+    <string name="compress_tar">Buat Arsip TAR</string>
+
+    <!-- 7z archive options -->
+    <string name="compress_sevenz">Buat Arsip 7z</string>
+    <string name="solid_compression">Kompresi Solid</string>
+    <string name="thread_count">Jumlah Thread</string>
+    <string name="max_available_thread">Isi 0 untuk pakai semua thread yang ada.</string>
+
+    <!-- Success toast messages -->
+    <string name="compression_success">Berhasil dikompres.</string>
+    <string name="extraction_success">Berhasil diekstrak.</string>
+    <string name="archive_success">Berhasil diarsipkan.</string>
+    <string name="tar_creation_success">Arsip TAR berhasil dibuat.</string>
+    <string name="zip_creation_success">Arsip ZIP berhasil dibuat.</string>
+    <string name="sevenz_creation_success">Arsip 7z berhasil dibuat.</string>
+    <string name="file_deleted">File dihapus.</string>
+    <string name="copied_to_clipboard">Disalin ke clipboard.</string>
+    <string name="operation_cancelled">Proses dibatalkan.</string>
+    <string name="archive_updated_successfully">Arsip berhasil di-update.</string>
+
+    <!-- Error toast messages -->
+    <string name="tar_creation_failed">Gagal membuat arsip TAR.</string>
+    <string name="compression_failed">Gagal mengompres.</string>
+    <string name="sevenz_creation_failed">Gagal membuat arsip 7z.</string>
+    <string name="zip_creation_failed">Gagal membuat arsip ZIP.</string>
+    <string name="general_error_msg">Waduh, terjadi error tak terduga.</string>
+    <string name="unsupported_compression_format">Format kompresi ini tidak didukung.</string>
+    <string name="extraction_failed">Gagal Mengekstrak.</string>
+    <string name="access_denied">Akses ditolak.</string>
+    <string name="no_files_to_archive">Pilih dulu file untuk diarsip.</string>
+    <string name="permission_denied">Izin Ditolak.</string>
+    <string name="no_file_selected">Tidak ada file yang dipilih.</string>
+    <string name="sd_card_not_available">Kartu SD atau memori eksternal tidak terdeteksi.</string>
+    <string name="error_no_file_information_provided">Error: Info file tidak ada.</string>
+    <string name="error_updating_archive">Gagal update arsip.</string>
+    <string name="error_opening_archive">Gagal membuka arsip: %1$s.</string>
+    <string name="no_valid_files_found_to_archive">Tidak ada file valid untuk diarsipkan.</string>
+    <string name="invalid_archive_type">Jenis arsip tidak valid.</string>
+
+
+    <!-- Notification title-->
+    <string name="copying_files">Menyalin file…</string>
+    <string name="moving_files">Memindahkan file…</string>
+    <string name="delete_ongoing">Menghapus file…</string>
+    <string name="extraction_ongoing">Mengekstrak file…</string>
+    <string name="archive_ongoing">Mengarsipkan file…</string>
+    <string name="updating_archive">Memperbarui arsip…</string>
+
+    <!-- Notification content-->
+    <string name="copying_files_progress">Menyalin file: %1$d dari %2$d</string>
+    <string name="moving_files_progress">Memindahkan file: %1$d dari %2$d</string>
+    <string name="deleting_files">Menghapus file: %1$d dari %2$d</string>
+    <string name="extracting_progress">Mengekstrak… %1$d%%</string>
+    <string name="compressing_progress">Mengarsipkan… %1$d%%</string>
+    <string name="compression_ongoing">Mengompres…</string>
+
+    <!-- Notification channel name-->
+    <string name="delete_files_notification_name">Proses Hapus File</string>
+    <string name="copy_move_files_notification_name">Proses Salin/Pindah File</string>
+    <string name="extract_archive_notification_name">Proses Ekstrak Arsip</string>
+    <string name="compress_archive_notification_name">Proses Kompres Arsip</string>
+    <string name="update_archive_service">Proses Update Arsip</string>
+
+    <!-- non-translatable strings -->
+    <string name="zip" translatable="false">ZIP</string>
+    <string name="_7z" translatable="false">7z</string>
+    <string name="rar" translatable="false">RAR</string>
+    <string name="lzma" translatable="false">LZMA</string>
+    <string name="bzip2" translatable="false">BZIP2</string>
+    <string name="xz" translatable="false">XZ</string>
+    <string name="gzip" translatable="false">GZIP</string>
+    <string name="liberapay" translatable="false">Liberapay</string>
+    <string name="author_wirelessalien" translatable="false">Author: WirelessAlien</string>
+    <string name="zstd" translatable="false">ZSTD</string>
+    <string name="md5" translatable="false">MD5</string>
+    <string name="sha1" translatable="false">SHA-1</string>
+    <string name="sha256" translatable="false">SHA-256</string>
+</resources>
