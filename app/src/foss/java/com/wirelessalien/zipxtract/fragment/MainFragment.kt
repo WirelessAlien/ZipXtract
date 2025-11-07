@@ -33,13 +33,6 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.os.FileObserver
-import android.os.FileObserver.CREATE
-import android.os.FileObserver.DELETE
-import android.os.FileObserver.DELETE_SELF
-import android.os.FileObserver.MODIFY
-import android.os.FileObserver.MOVED_FROM
-import android.os.FileObserver.MOVED_TO
-import android.os.FileObserver.MOVE_SELF
 import android.os.Handler
 import android.os.Looper
 import android.os.storage.StorageManager
@@ -83,19 +76,10 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.transition.MaterialSharedAxis
-import com.wirelessalien.zipxtract.BuildConfig
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.activity.SettingsActivity
 import com.wirelessalien.zipxtract.adapter.FileAdapter
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_COMPLETE
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_ERROR
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_PROGRESS
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_COMPLETE
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_ERROR
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_PROGRESS
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_DIR_PATH
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_ERROR_MESSAGE
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_PROGRESS
+import com.wirelessalien.zipxtract.constant.BroadcastConstants
 import com.wirelessalien.zipxtract.constant.ServiceConstants
 import com.wirelessalien.zipxtract.databinding.BottomSheetCompressorArchiveBinding
 import com.wirelessalien.zipxtract.databinding.BottomSheetOptionBinding
@@ -123,7 +107,6 @@ import com.wirelessalien.zipxtract.viewmodel.FileOperationViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.Runnable
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.currentCoroutineContext
@@ -165,7 +148,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     private var searchView: SearchView? = null
     private var isObserving: Boolean = false
     private var searchHandler: Handler? = Handler(Looper.getMainLooper())
-    private var searchRunnable: Runnable? = null
+    private var searchRunnable: kotlinx.coroutines.Runnable? = null
     private lateinit var eProgressDialog: AlertDialog
     private lateinit var aProgressDialog: AlertDialog
     private lateinit var aProgressText: TextView
@@ -182,7 +165,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     private lateinit var fileOperationsDao: FileOperationsDao
 
 
-    private val updateProgressRunnable = object : Runnable {
+    private val updateProgressRunnable = object : kotlinx.coroutines.Runnable {
         override fun run() {
             if (aProgressBar.progress >= 100) {
                 aProgressBar.progress = 70
@@ -207,9 +190,9 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             if (!isAdded) return
 
             when (intent?.action) {
-                ACTION_EXTRACTION_COMPLETE -> {
+                BroadcastConstants.ACTION_EXTRACTION_COMPLETE -> {
                     handler.removeCallbacks(updateProgressRunnable)
-                    val dirPath = intent.getStringExtra(EXTRA_DIR_PATH)
+                    val dirPath = intent.getStringExtra(BroadcastConstants.EXTRA_DIR_PATH)
                     Log.d("MainFragment", "onReceive: $dirPath")
                     if (dirPath != null) {
                         Snackbar.make(binding.root, getString(R.string.open_folder), Snackbar.LENGTH_LONG)
@@ -223,15 +206,15 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                     unselectAllFiles()
                     eProgressDialog.dismiss()
                 }
-                ACTION_EXTRACTION_ERROR -> {
+                BroadcastConstants.ACTION_EXTRACTION_ERROR -> {
                     handler.removeCallbacks(updateProgressRunnable)
                     unselectAllFiles()
                     eProgressDialog.dismiss()
-                    val errorMessage = intent.getStringExtra(EXTRA_ERROR_MESSAGE)
+                    val errorMessage = intent.getStringExtra(BroadcastConstants.EXTRA_ERROR_MESSAGE)
                     Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show()
                 }
-                ACTION_EXTRACTION_PROGRESS -> {
-                    val progress = intent.getIntExtra(EXTRA_PROGRESS, 0)
+                BroadcastConstants.ACTION_EXTRACTION_PROGRESS -> {
+                    val progress = intent.getIntExtra(BroadcastConstants.EXTRA_PROGRESS, 0)
                     updateProgressBar(progress)
                     if (progress == 100) {
                         eProgressBar.progress = 80
@@ -242,9 +225,9 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                         eProgressText.text = getString(R.string.extracting_progress, progress)
                     }
                 }
-                ACTION_ARCHIVE_COMPLETE -> {
+                BroadcastConstants.ACTION_ARCHIVE_COMPLETE -> {
                     handler.removeCallbacks(updateProgressRunnable)
-                    val dirPath = intent.getStringExtra(EXTRA_DIR_PATH)
+                    val dirPath = intent.getStringExtra(BroadcastConstants.EXTRA_DIR_PATH)
                     if (dirPath != null) {
                         Snackbar.make(binding.root, getString(R.string.open_folder), Snackbar.LENGTH_LONG)
                             .setAction(getString(R.string.ok)) {
@@ -257,15 +240,15 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                     unselectAllFiles()
                     aProgressDialog.dismiss()
                 }
-                ACTION_ARCHIVE_ERROR -> {
+                BroadcastConstants.ACTION_ARCHIVE_ERROR -> {
                     handler.removeCallbacks(updateProgressRunnable)
                     unselectAllFiles()
                     aProgressDialog.dismiss()
-                    val errorMessage = intent.getStringExtra(EXTRA_ERROR_MESSAGE)
+                    val errorMessage = intent.getStringExtra(BroadcastConstants.EXTRA_ERROR_MESSAGE)
                     Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show()
                 }
-                ACTION_ARCHIVE_PROGRESS -> {
-                    val progress = intent.getIntExtra(EXTRA_PROGRESS, 0)
+                BroadcastConstants.ACTION_ARCHIVE_PROGRESS -> {
+                    val progress = intent.getIntExtra(BroadcastConstants.EXTRA_PROGRESS, 0)
                     updateProgressBar(progress)
                     if (progress == 100) {
                         aProgressBar.progress = 80
@@ -451,12 +434,12 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         startFileObserver()
 
         val filter = IntentFilter().apply {
-            addAction(ACTION_EXTRACTION_COMPLETE)
-            addAction(ACTION_EXTRACTION_ERROR)
-            addAction(ACTION_EXTRACTION_PROGRESS)
-            addAction(ACTION_ARCHIVE_COMPLETE)
-            addAction(ACTION_ARCHIVE_ERROR)
-            addAction(ACTION_ARCHIVE_PROGRESS)
+            addAction(BroadcastConstants.ACTION_EXTRACTION_COMPLETE)
+            addAction(BroadcastConstants.ACTION_EXTRACTION_ERROR)
+            addAction(BroadcastConstants.ACTION_EXTRACTION_PROGRESS)
+            addAction(BroadcastConstants.ACTION_ARCHIVE_COMPLETE)
+            addAction(BroadcastConstants.ACTION_ARCHIVE_ERROR)
+            addAction(BroadcastConstants.ACTION_ARCHIVE_PROGRESS)
         }
         LocalBroadcastManager.getInstance(requireContext()).registerReceiver(extractionReceiver, filter)
 
@@ -572,7 +555,10 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         }
 
         permissionBinding.tvPrivacyPolicy.setOnClickListener {
-            val intent = Intent(Intent.ACTION_VIEW, "https://sites.google.com/view/privacy-policy-zipxtract/home".toUri())
+            val intent = Intent(
+                Intent.ACTION_VIEW,
+                "https://sites.google.com/view/privacy-policy-zipxtract/home".toUri()
+            )
             startActivity(intent)
         }
     }
@@ -584,7 +570,8 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         val currentPath = currentPath ?: basePath
         val displayPath = when {
             currentPath.startsWith(basePath) -> currentPath.replace(basePath, internalStorage)
-            sdCardPath != null && currentPath.startsWith(sdCardPath) -> currentPath.replace(sdCardPath, getString(R.string.sd_card))
+            sdCardPath != null && currentPath.startsWith(sdCardPath) -> currentPath.replace(sdCardPath, getString(
+                R.string.sd_card))
             else -> currentPath
         }.split("/").filter { it.isNotEmpty() }
 
@@ -976,7 +963,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             try {
                 val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION).apply {
-                    data = Uri.fromParts("package", requireContext().packageName, null)
+                    Intent.setData = Uri.fromParts("package", requireContext().packageName, null)
                 }
                 storageActivityResultLauncher.launch(intent)
             } catch (_: Exception) {
@@ -1057,7 +1044,8 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     @Suppress("DEPRECATION")
     private fun startFileObserver() {
         if (!isObserving) {
-            val directoryToObserve = File(currentPath ?: Environment.getExternalStorageDirectory().absolutePath)
+            val directoryToObserve =
+                File(currentPath ?: Environment.getExternalStorageDirectory().absolutePath)
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 fileObserver = object : FileObserver(directoryToObserve, CREATE or DELETE or MOVE_SELF or MOVED_TO or MOVED_FROM or MODIFY or CLOSE_WRITE or ATTRIB or DELETE_SELF) {
@@ -1087,7 +1075,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     private fun handleFileEvent(event: Int, file: File) {
         CoroutineScope(Dispatchers.Main).launch {
             when {
-                (event and CREATE) != 0 || (event and MOVED_TO) != 0 || (event and MOVED_FROM) != 0 || (event and MOVE_SELF) != 0 -> {
+                (event and FileObserver.CREATE) != 0 || (event and FileObserver.MOVED_TO) != 0 || (event and FileObserver.MOVED_FROM) != 0 || (event and FileObserver.MOVE_SELF) != 0 -> {
                     // Check if the file already exists in the list
                     val existingPosition = adapter.files.indexOfFirst { it.absolutePath == file.absolutePath }
                     if (existingPosition != -1) {
@@ -1101,7 +1089,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                         adapter.notifyItemInserted(position)
                     }
                 }
-                (event and DELETE) != 0 || (event and DELETE_SELF) != 0 -> {
+                (event and FileObserver.DELETE) != 0 || (event and FileObserver.DELETE_SELF) != 0 -> {
                     // Remove deleted file
                     val position = adapter.files.indexOfFirst { it.absolutePath == file.absolutePath }
                     if (position != -1) {
@@ -1109,7 +1097,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                         adapter.notifyItemRemoved(position)
                     }
                 }
-                (event and MODIFY) != 0 -> {
+                (event and FileObserver.MODIFY) != 0 -> {
                     // Update modified file
                     val position = adapter.files.indexOfFirst { it.absolutePath == file.absolutePath }
                     if (position != -1) {
@@ -1519,7 +1507,9 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         val fileSizeText = bytesToString(file.length())
         binding.fileSize.text = Editable.Factory.getInstance().newEditable(fileSizeText)
         val dateFormat = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT, Locale.getDefault())
-        binding.lastModified.text = Editable.Factory.getInstance().newEditable(dateFormat.format(Date(file.lastModified())))
+        binding.lastModified.text = Editable.Factory.getInstance().newEditable(dateFormat.format(
+            Date(file.lastModified())
+        ))
 
         binding.md5Checksum.keyListener = null
         binding.sha1Checksum.keyListener = null
@@ -1582,9 +1572,9 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
         return when {
             bytes < kilobyte -> "$bytes B"
-            bytes < megabyte -> String.format(Locale.US, "%.2f KB", bytes.toFloat() / kilobyte)
-            bytes < gigabyte -> String.format(Locale.US, "%.2f MB", bytes.toFloat() / megabyte)
-            else -> String.format(Locale.US, "%.2f GB", bytes.toFloat() / gigabyte)
+            bytes < megabyte -> String.Companion.format(Locale.US, "%.2f KB", bytes.toFloat() / kilobyte)
+            bytes < gigabyte -> String.Companion.format(Locale.US, "%.2f MB", bytes.toFloat() / megabyte)
+            else -> String.Companion.format(Locale.US, "%.2f GB", bytes.toFloat() / gigabyte)
         }
     }
 
@@ -1705,14 +1695,17 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 directories.sortBy { it.name }
                 files.sortBy { it.name }
             }
+
             SortBy.SORT_BY_SIZE -> {
                 directories.sortBy { it.length() }
                 files.sortBy { it.length() }
             }
+
             SortBy.SORT_BY_MODIFIED -> {
                 directories.sortBy { getFileTimeOfCreation(it) }
                 files.sortBy { getFileTimeOfCreation(it) }
             }
+
             SortBy.SORT_BY_EXTENSION -> {
                 directories.sortBy { it.extension }
                 files.sortBy { it.extension }
