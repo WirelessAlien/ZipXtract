@@ -29,19 +29,19 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Generate Release AAB
-        run: ./gradlew bundleRelease
+        run: ./gradlew bundlePsRelease
 
       - name: Sign AAB with jarsigner
         id: sign_aab
         env:
-          KEYSTORE_FILE: ${{ secrets.KEYSTORE_FILE_2 }}
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD_2 }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD_2 }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS_2 }}
+          KEYSTORE_FILE_2: ${{ secrets.KEYSTORE_FILE_2 }}
+          KEYSTORE_PASSWORD_2: ${{ secrets.KEYSTORE_PASSWORD_2 }}
+          KEY_PASSWORD_2: ${{ secrets.KEY_PASSWORD_2 }}
+          KEY_ALIAS_2: ${{ secrets.KEY_ALIAS_2 }}
         run: |
           set -e
-          AAB_SRC="app/build/outputs/bundle/release/app-release.aab"
-          AAB_DST="app/build/outputs/bundle/release/app-release-signed.aab"
+          AAB_SRC="app/build/outputs/bundle/psRelease/app-ps-release.aab"
+          AAB_DST="app/build/outputs/bundle/psRelease/app-ps-release-signed.aab"
 
           if [ ! -f "$AAB_SRC" ]; then
             echo "Error: AAB not found at $AAB_SRC"
