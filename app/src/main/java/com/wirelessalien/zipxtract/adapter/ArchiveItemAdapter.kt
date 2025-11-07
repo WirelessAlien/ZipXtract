@@ -23,6 +23,7 @@ import android.icu.text.DateFormat
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.util.size
 import androidx.recyclerview.widget.RecyclerView
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.databinding.ItemFileBinding
@@ -62,7 +63,7 @@ class ArchiveItemAdapter(
 
     fun getSelectedItems(): List<SevenZipFragment.ArchiveItem> {
         val items = mutableListOf<SevenZipFragment.ArchiveItem>()
-        for (i in 0 until selectedItems.size()) {
+        for (i in 0 until selectedItems.size) {
             items.add(this.items[selectedItems.keyAt(i)])
         }
         return items
@@ -77,11 +78,11 @@ class ArchiveItemAdapter(
         }
 
         override fun onClick(v: View?) {
-            onItemClickListener?.onItemClick(items[adapterPosition])
+            onItemClickListener?.onItemClick(items[bindingAdapterPosition])
         }
 
         override fun onLongClick(v: View?): Boolean {
-            onFileLongClickListener?.onFileLongClick(items[adapterPosition], itemView)
+            onFileLongClickListener?.onFileLongClick(items[bindingAdapterPosition], itemView)
             return true
         }
     }

@@ -7,12 +7,25 @@ android {
     namespace 'com.wirelessalien.zipxtract'
     compileSdk = 35
 
+    flavorDimensions "version"
+    productFlavors {
+        foss {
+            dimension "version"
+            applicationId "com.wirelessalien.zipxtract"
+        }
+        ps {
+            dimension "version"
+            applicationId "com.wirelessalien.zipxtract.ps"
+            versionNameSuffix "-ps"
+        }
+    }
+
     defaultConfig {
         applicationId "com.wirelessalien.zipxtract"
         minSdk 24
         targetSdk 35
-        versionCode 20
-        versionName "5.4.1"
+        versionCode 21
+        versionName "6.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

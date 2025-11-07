@@ -31,7 +31,7 @@ class FilePathAdapter(private val filePaths: MutableList<String>, private val on
 
         init {
             binding.deleteBtn.setOnClickListener {
-                val position = adapterPosition
+                val position = bindingAdapterPosition
                 if (position != RecyclerView.NO_POSITION) {
                     val filePath = filePaths[position]
                     onDeleteClick(filePath)

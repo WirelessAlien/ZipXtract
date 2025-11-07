@@ -94,7 +94,7 @@ class FilePickerAdapter(
         }
 
         override fun onClick(v: View?) {
-            val position = adapterPosition
+            val position = bindingAdapterPosition
             if (position == RecyclerView.NO_POSITION) return
 
             val file = filteredFiles[position]

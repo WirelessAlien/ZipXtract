@@ -132,18 +132,18 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
                 onLongClick(v)
             } else {
                 if (mainFragment?.actionMode != null) {
-                    mainFragment.toggleSelection(adapterPosition)
+                    mainFragment.toggleSelection(bindingAdapterPosition)
                     if (mainFragment.getSelectedItemCount() == 0) {
                         mainFragment.actionMode?.finish()
                     }
                 } else {
-                    onItemClickListener?.onItemClick(filteredFiles[adapterPosition])
+                    onItemClickListener?.onItemClick(filteredFiles[bindingAdapterPosition])
                 }
             }
         }
 
         override fun onLongClick(v: View?): Boolean {
-            mainFragment?.startActionMode(adapterPosition)
+            mainFragment?.startActionMode(bindingAdapterPosition)
             return true
         }
     }
