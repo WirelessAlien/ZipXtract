@@ -213,7 +213,12 @@ class ExtractRarService : Service() {
                     }
                 }
             } else {
-                file.parentFile ?: File(Environment.getExternalStorageDirectory().absolutePath)
+                val isInternalDir = file.absolutePath.startsWith(filesDir.absolutePath)
+                if (isInternalDir) {
+                    Environment.getExternalStorageDirectory()
+                } else {
+                    file.parentFile ?: File(Environment.getExternalStorageDirectory().absolutePath)
+                }
             }
         }
 

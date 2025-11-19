@@ -188,7 +188,8 @@ class ArchiveZipService : Service() {
                 this.isIncludeRootFolder = false
             }
 
-            val baseDirectory = File(selectedFiles.first()).parentFile
+            val firstFile = File(selectedFiles.first())
+            val baseDirectory = firstFile.parentFile
             val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
             val archivePath = sharedPreferences.getString(PREFERENCE_ARCHIVE_DIR_PATH, null)
             val parentDir: File
@@ -203,7 +204,12 @@ class ArchiveZipService : Service() {
                     parentDir.mkdirs()
                 }
             } else {
-                parentDir = File(selectedFiles.first()).parentFile ?: Environment.getExternalStorageDirectory()
+                val isInternalDir = firstFile.absolutePath.startsWith(filesDir.absolutePath)
+                if (isInternalDir) {
+                    parentDir = Environment.getExternalStorageDirectory()
+                } else {
+                    parentDir = firstFile.parentFile ?: Environment.getExternalStorageDirectory()
+                }
             }
 
             var outputFile = File(parentDir, "$archiveName.zip")

@@ -206,7 +206,12 @@ class ExtractArchiveService : Service() {
                     parentDir.mkdirs()
                 }
             } else {
-                parentDir = file.parentFile ?: File(Environment.getExternalStorageDirectory().absolutePath)
+                val isInternalDir = file.absolutePath.startsWith(filesDir.absolutePath)
+                if (isInternalDir) {
+                    parentDir = Environment.getExternalStorageDirectory()
+                } else {
+                    parentDir = file.parentFile ?: File(Environment.getExternalStorageDirectory().absolutePath)
+                }
             }
 
             val baseFileName = file.name.substring(0, file.name.lastIndexOf('.'))
@@ -436,7 +441,12 @@ class ExtractArchiveService : Service() {
                 parentDir.mkdirs()
             }
         } else {
-            parentDir = file.parentFile ?: File(Environment.getExternalStorageDirectory().absolutePath)
+            val isInternalDir = file.absolutePath.startsWith(filesDir.absolutePath)
+            if (isInternalDir) {
+                parentDir = Environment.getExternalStorageDirectory()
+            } else {
+                parentDir = file.parentFile ?: File(Environment.getExternalStorageDirectory().absolutePath)
+            }
         }
 
         val baseFileName = file.name.substring(0, file.name.lastIndexOf('.'))
@@ -519,7 +529,12 @@ class ExtractArchiveService : Service() {
                     parentDir.mkdirs()
                 }
             } else {
-                parentDir = file.parentFile ?: File(Environment.getExternalStorageDirectory().absolutePath)
+                val isInternalDir = file.absolutePath.startsWith(filesDir.absolutePath)
+                if (isInternalDir) {
+                    parentDir = Environment.getExternalStorageDirectory()
+                } else {
+                    parentDir = file.parentFile ?: File(Environment.getExternalStorageDirectory().absolutePath)
+                }
             }
 
             val baseFileName = file.name.substring(0, file.name.lastIndexOf('.'))

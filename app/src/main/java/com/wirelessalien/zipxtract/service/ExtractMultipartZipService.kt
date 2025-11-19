@@ -170,7 +170,12 @@ class ExtractMultipartZipService : Service() {
                     parentDir.mkdirs()
                 }
             } else {
-                parentDir = file.parentFile ?: File(Environment.getExternalStorageDirectory().absolutePath)
+                val isInternalDir = file.absolutePath.startsWith(filesDir.absolutePath)
+                if (isInternalDir) {
+                    parentDir = Environment.getExternalStorageDirectory()
+                } else {
+                    parentDir = file.parentFile ?: File(Environment.getExternalStorageDirectory().absolutePath)
+                }
             }
 
             var directoryName = file.nameWithoutExtension

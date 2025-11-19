@@ -155,7 +155,8 @@ class ArchiveTarService : Service() {
         val safeLevel = compressionLevel.coerceIn(0, 22)
 
         try {
-            val baseDirectory = File(filesToArchive.first()).parentFile?.absolutePath ?: ""
+            val firstFile = File(filesToArchive.first())
+            val baseDirectory = firstFile.parentFile?.absolutePath ?: ""
             val archivePath = sharedPreferences.getString(PREFERENCE_ARCHIVE_DIR_PATH, null)
             val parentDir: File
 
@@ -169,7 +170,12 @@ class ArchiveTarService : Service() {
                     parentDir.mkdirs()
                 }
             } else {
-                parentDir = File(filesToArchive.first()).parentFile ?: Environment.getExternalStorageDirectory()
+                val isInternalDir = firstFile.absolutePath.startsWith(filesDir.absolutePath)
+                if (isInternalDir) {
+                    parentDir = Environment.getExternalStorageDirectory()
+                } else {
+                    parentDir = firstFile.parentFile ?: Environment.getExternalStorageDirectory()
+                }
             }
 
             val extension = getExtension(compressionFormat)
