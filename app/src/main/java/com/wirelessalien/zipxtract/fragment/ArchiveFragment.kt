@@ -194,6 +194,7 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
         menuHost.addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
                 menuInflater.inflate(R.menu.menu_main, menu)
+                menuInflater.inflate(R.menu.menu_refresh, menu)
 
                 val searchItem = menu.findItem(R.id.menu_search)
                 searchView = searchItem?.actionView as SearchView?
@@ -251,6 +252,10 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
                             putBoolean("sortAscending", sortAscending)
                         }
 
+                        R.id.menu_refresh -> {
+                            scanStorageAndLoadFiles()
+                        }
+
                         R.id.menu_settings -> {
                             val intent = Intent(requireContext(), SettingsActivity::class.java)
                             startActivity(intent)
@@ -271,7 +276,7 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
 
         extractProgressDialog()
         setupFilterChips()
-        scanStorageAndLoadFiles()
+        loadArchiveFiles(null)
     }
 
     private fun setupFilterChips() {
@@ -437,6 +442,7 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
         MediaScannerConnection.scanFile(requireContext(), arrayOf(externalStoragePath), null) { _, _ ->
             activity?.runOnUiThread {
                 loadArchiveFiles(null)
+                Toast.makeText(requireContext(), getString(R.string.refreshed), Toast.LENGTH_SHORT).show()
             }
         }
     }

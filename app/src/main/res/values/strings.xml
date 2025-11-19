@@ -51,6 +51,9 @@
     <string name="donate_desc">If you find ZipXtract useful, please consider supporting its development:</string>
     <string name="file_list_is_fixed_for_this_operation">File list is fixed for this operation.</string>
     <string name="no_match">No match</string>
+    <string name="refresh">Refresh</string>
+    <string name="refreshed">Refreshed</string>
+
 
     <!-- Bottom navigation -->
     <string name="archive">Archive</string>
