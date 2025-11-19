@@ -489,6 +489,11 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         updateCurrentPathChip()
 
         handleOpenWithIntent()
+
+        val directoryPath = arguments?.getString(ARG_DIRECTORY_PATH)
+        if (directoryPath != null) {
+            navigateToPath(directoryPath)
+        }
     }
 
     private fun handleOpenWithIntent() {
@@ -1896,5 +1901,6 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     companion object {
         const val ARG_JOB_ID = "com.wirelessalien.zipxtract.ARG_JOB_ID"
         const val ARG_ARCHIVE_TYPE = "com.wirelessalien.zipxtract.ARG_ARCHIVE_TYPE"
+        const val ARG_DIRECTORY_PATH = "com.wirelessalien.zipxtract.ARG_DIRECTORY_PATH"
     }
 }

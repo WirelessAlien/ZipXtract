@@ -20,6 +20,7 @@ package com.wirelessalien.zipxtract.service
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
 import android.media.MediaScannerConnection
@@ -33,6 +34,7 @@ import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.preference.PreferenceManager
 import com.wirelessalien.zipxtract.R
+import com.wirelessalien.zipxtract.activity.MainActivity
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_COMPLETE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_ERROR
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_PROGRESS
@@ -229,7 +231,7 @@ class ExtractArchiveService : Service() {
                     if (extractCallback.hasUnsupportedMethod) {
                         tryLibArchiveAndroid(file, destinationDir)
                     } else {
-                        showCompletionNotification()
+                        showCompletionNotification(destinationDir.absolutePath)
                         scanForNewFiles(destinationDir)
                         sendLocalBroadcast(Intent(ACTION_EXTRACTION_COMPLETE).putExtra(EXTRA_DIR_PATH, destinationDir.absolutePath))
                     }
@@ -370,7 +372,7 @@ class ExtractArchiveService : Service() {
                             entry = Archive.readNextHeader(archive)
                         }
 
-                        showCompletionNotification()
+                        showCompletionNotification(destinationDir.absolutePath)
                         sendLocalBroadcast(
                             Intent(ACTION_EXTRACTION_COMPLETE)
                                 .putExtra(EXTRA_DIR_PATH, destinationDir.absolutePath)
@@ -478,7 +480,7 @@ class ExtractArchiveService : Service() {
                     entry = tarInput.nextEntry
                 }
             }
-            showCompletionNotification()
+            showCompletionNotification(destinationDir.absolutePath)
             scanForNewFiles(destinationDir)
             sendLocalBroadcast(Intent(ACTION_EXTRACTION_COMPLETE).putExtra(EXTRA_DIR_PATH, destinationDir.absolutePath))
         } catch (e: IOException) {
@@ -546,7 +548,7 @@ class ExtractArchiveService : Service() {
                 Thread.sleep(100)
             }
 
-            showCompletionNotification()
+            showCompletionNotification(destinationDir.absolutePath)
             scanForNewFiles(destinationDir)
             sendLocalBroadcast(Intent(ACTION_EXTRACTION_COMPLETE).putExtra(EXTRA_DIR_PATH, destinationDir.absolutePath))
 
@@ -721,13 +723,22 @@ class ExtractArchiveService : Service() {
         sendLocalBroadcast(Intent(ACTION_EXTRACTION_PROGRESS).putExtra(EXTRA_PROGRESS, progress))
     }
 
-    private fun showCompletionNotification() {
+    private fun showCompletionNotification(destinationPath: String) {
         stopForegroundService()
+
+        val intent = Intent(this, MainActivity::class.java).apply {
+            action = MainActivity.ACTION_OPEN_DIRECTORY
+            putExtra(MainActivity.EXTRA_DIRECTORY_PATH, destinationPath)
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        val pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+
 
         val notification = NotificationCompat.Builder(this, EXTRACTION_NOTIFICATION_CHANNEL_ID)
             .setContentTitle(getString(R.string.extraction_success))
             .setSmallIcon(R.drawable.ic_notification_icon)
             .setAutoCancel(true)
+            .setContentIntent(pendingIntent)
             .build()
 
         val notificationManager = getSystemService(NotificationManager::class.java)

@@ -104,19 +104,31 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun handleIntent() {
-        if (intent.action == ACTION_CREATE_ARCHIVE) {
-            val jobId = intent.getStringExtra(ServiceConstants.EXTRA_JOB_ID)
-            val archiveType = intent.getStringExtra(EXTRA_ARCHIVE_TYPE)
-            if (jobId != null && archiveType != null) {
-                // Navigate to MainFragment and pass data for archive creation
-                val mainFragment = MainFragment().apply {
-                    arguments = Bundle().apply {
-                        putString(MainFragment.ARG_JOB_ID, jobId)
-                        putString(MainFragment.ARG_ARCHIVE_TYPE, archiveType)
+        when (intent.action) {
+            ACTION_CREATE_ARCHIVE -> {
+                val jobId = intent.getStringExtra(ServiceConstants.EXTRA_JOB_ID)
+                val archiveType = intent.getStringExtra(EXTRA_ARCHIVE_TYPE)
+                if (jobId != null && archiveType != null) {
+                    val mainFragment = MainFragment().apply {
+                        arguments = Bundle().apply {
+                            putString(MainFragment.ARG_JOB_ID, jobId)
+                            putString(MainFragment.ARG_ARCHIVE_TYPE, archiveType)
+                        }
                     }
+                    loadFragment(mainFragment)
+                    binding.bottomNav.selectedItemId = R.id.home
                 }
-                loadFragment(mainFragment)
-                binding.bottomNav.selectedItemId = R.id.home
+            }
+            ACTION_OPEN_DIRECTORY -> {
+                val directoryPath = intent.getStringExtra(EXTRA_DIRECTORY_PATH)
+                if (directoryPath != null) {
+                    val mainFragment = MainFragment().apply {
+                        arguments = Bundle().apply {
+                            putString(MainFragment.ARG_DIRECTORY_PATH, directoryPath)
+                        }
+                    }
+                    loadFragment(mainFragment)
+                }
             }
         }
     }
@@ -130,5 +142,7 @@ class MainActivity : AppCompatActivity() {
     companion object {
         const val ACTION_CREATE_ARCHIVE = "com.wirelessalien.zipxtract.ACTION_CREATE_ARCHIVE"
         const val EXTRA_ARCHIVE_TYPE = "com.wirelessalien.zipxtract.EXTRA_ARCHIVE_TYPE"
+        const val ACTION_OPEN_DIRECTORY = "com.wirelessalien.zipxtract.ACTION_OPEN_DIRECTORY"
+        const val EXTRA_DIRECTORY_PATH = "com.wirelessalien.zipxtract.EXTRA_DIRECTORY_PATH"
     }
 }
