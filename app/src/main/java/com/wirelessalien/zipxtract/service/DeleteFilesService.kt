@@ -68,14 +68,14 @@ class DeleteFilesService : Service() {
     private fun deleteFiles(files: List<File>) {
         val totalFilesCount = countTotalFiles(files)
         var deletedFilesCount = 0
-        val parentDirs = mutableSetOf<String>()
+        val pathsToScan = mutableListOf<String>()
 
         fun deleteFile(file: File) {
-            file.parentFile?.absolutePath?.let { parentDirs.add(it) }
+            pathsToScan.add(file.absolutePath)
             if (file.isDirectory) {
                 file.listFiles()?.forEach { deleteFile(it) }
             }
-            file.deleteRecursively()
+            file.delete()
             deletedFilesCount++
             updateNotification(deletedFilesCount, totalFilesCount)
         }
@@ -84,8 +84,8 @@ class DeleteFilesService : Service() {
             deleteFile(file)
         }
 
-        if (parentDirs.isNotEmpty()) {
-            MediaScannerConnection.scanFile(this, parentDirs.toTypedArray(), null, null)
+        if (pathsToScan.isNotEmpty()) {
+            MediaScannerConnection.scanFile(this, pathsToScan.toTypedArray(), null, null)
         }
 
         stopForegroundService()

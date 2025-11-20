@@ -84,6 +84,7 @@ class CopyMoveService : Service() {
     private fun copyMoveFiles(files: List<File>, destinationPath: String, isCopyAction: Boolean) {
         val totalFilesCount = countTotalFiles(files)
         var processedFilesCount = 0
+        val pathsToScan = mutableListOf<String>()
 
         fun copyMoveFile(file: File, destination: File) {
             if (file.isDirectory) {
@@ -93,10 +94,10 @@ class CopyMoveService : Service() {
                 if (isCopyAction) {
                     file.copyTo(destination, overwrite = true)
                 } else {
-                    MediaScannerConnection.scanFile(this, arrayOf(file.absolutePath), null, null)
+                    pathsToScan.add(file.absolutePath)
                     file.moveTo(destination, overwrite = true)
                 }
-                MediaScannerConnection.scanFile(this, arrayOf(destination.absolutePath), null, null)
+                pathsToScan.add(destination.absolutePath)
                 processedFilesCount++
                 updateNotification(processedFilesCount, totalFilesCount, isCopyAction)
             }
@@ -109,6 +110,8 @@ class CopyMoveService : Service() {
             }
             copyMoveFile(file, destinationFile)
         }
+
+        MediaScannerConnection.scanFile(this, pathsToScan.toTypedArray(), null, null)
 
         stopForegroundService()
         stopSelf()

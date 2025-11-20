@@ -313,18 +313,23 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
         }
     }
 
-    private suspend fun loadArchiveFiles(extension: String?) {
-        binding.shimmerViewContainer.startShimmer()
-        binding.shimmerViewContainer.visibility = View.VISIBLE
-        binding.recyclerView.visibility = View.GONE
+    private suspend fun loadArchiveFiles(extension: String?, showShimmer: Boolean = true) {
+        if (showShimmer) {
+            binding.shimmerViewContainer.startShimmer()
+            binding.shimmerViewContainer.visibility = View.VISIBLE
+            binding.recyclerView.visibility = View.GONE
+        }
 
         val archiveFiles = withContext(Dispatchers.IO) {
             getArchiveFiles(null, extension)
         }
         adapter.updateFilesAndFilter(archiveFiles)
-        binding.shimmerViewContainer.stopShimmer()
-        binding.shimmerViewContainer.visibility = View.GONE
-        binding.recyclerView.visibility = View.VISIBLE
+
+        if (showShimmer) {
+            binding.shimmerViewContainer.stopShimmer()
+            binding.shimmerViewContainer.visibility = View.GONE
+            binding.recyclerView.visibility = View.VISIBLE
+        }
     }
 
     private fun searchFiles(query: String?) {
@@ -441,10 +446,14 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
             binding.shimmerViewContainer.startShimmer()
             binding.shimmerViewContainer.visibility = View.VISIBLE
             binding.recyclerView.visibility = View.GONE
+
             val externalStoragePath = Environment.getExternalStorageDirectory().absolutePath
             MediaScannerConnection.scanFile(requireContext(), arrayOf(externalStoragePath), null) { _, _ ->
                 viewLifecycleOwner.lifecycleScope.launch {
-                    loadArchiveFiles(null)
+                    loadArchiveFiles(null, false)
+                    binding.shimmerViewContainer.stopShimmer()
+                    binding.shimmerViewContainer.visibility = View.GONE
+                    binding.recyclerView.visibility = View.VISIBLE
                     Toast.makeText(requireContext(), getString(R.string.refreshed), Toast.LENGTH_SHORT).show()
                 }
             }

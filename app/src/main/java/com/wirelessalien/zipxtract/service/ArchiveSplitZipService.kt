@@ -265,7 +265,7 @@ class ArchiveSplitZipService : Service() {
 
                 if (progressMonitor.result == ProgressMonitor.Result.SUCCESS) {
                     showCompletionNotification(outputFile.parent ?: "")
-                    scanForNewFiles(outputFile.parentFile ?: Environment.getExternalStorageDirectory())
+                    scanForNewFile(outputFile)
                     sendLocalBroadcast(Intent(ACTION_ARCHIVE_COMPLETE).putExtra(EXTRA_DIR_PATH, outputFile.parent))
                 } else {
                     showErrorNotification(getString(R.string.zip_creation_failed))
@@ -339,11 +339,7 @@ class ArchiveSplitZipService : Service() {
         notificationManager.cancel(NOTIFICATION_ID)
     }
 
-    private fun scanForNewFiles(directory: File) {
-        val files = directory.listFiles()
-        if (files != null) {
-            val paths = files.map { it.absolutePath }.toTypedArray()
-            MediaScannerConnection.scanFile(this, paths, null, null)
-        }
+    private fun scanForNewFile(file: File) {
+        MediaScannerConnection.scanFile(this, arrayOf(file.absolutePath), null, null)
     }
 }
