@@ -276,7 +276,9 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
 
         extractProgressDialog()
         setupFilterChips()
-        loadArchiveFiles(null)
+        viewLifecycleOwner.lifecycleScope.launch {
+            loadArchiveFiles(null)
+        }
     }
 
     private fun setupFilterChips() {
@@ -304,25 +306,25 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
                 } else {
                     checkedChip.text.toString()
                 }
-                loadArchiveFiles(selectedExtension)
+                viewLifecycleOwner.lifecycleScope.launch {
+                    loadArchiveFiles(selectedExtension)
+                }
             }
         }
     }
 
-    private fun loadArchiveFiles(extension: String?) {
+    private suspend fun loadArchiveFiles(extension: String?) {
         binding.shimmerViewContainer.startShimmer()
         binding.shimmerViewContainer.visibility = View.VISIBLE
         binding.recyclerView.visibility = View.GONE
 
-        CoroutineScope(Dispatchers.IO).launch {
-            val archiveFiles = getArchiveFiles(null, extension)
-            withContext(Dispatchers.Main) {
-                adapter.updateFilesAndFilter(archiveFiles)
-                binding.shimmerViewContainer.stopShimmer()
-                binding.shimmerViewContainer.visibility = View.GONE
-                binding.recyclerView.visibility = View.VISIBLE
-            }
+        val archiveFiles = withContext(Dispatchers.IO) {
+            getArchiveFiles(null, extension)
         }
+        adapter.updateFilesAndFilter(archiveFiles)
+        binding.shimmerViewContainer.stopShimmer()
+        binding.shimmerViewContainer.visibility = View.GONE
+        binding.recyclerView.visibility = View.VISIBLE
     }
 
     private fun searchFiles(query: String?) {
@@ -435,32 +437,24 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
     }
 
     private fun scanStorageAndLoadFiles() {
-        binding.shimmerViewContainer.startShimmer()
-        binding.shimmerViewContainer.visibility = View.VISIBLE
-        binding.recyclerView.visibility = View.GONE
-        val externalStoragePath = Environment.getExternalStorageDirectory().absolutePath
-        MediaScannerConnection.scanFile(requireContext(), arrayOf(externalStoragePath), null) { _, _ ->
-            activity?.runOnUiThread {
-                loadArchiveFiles(null)
-                Toast.makeText(requireContext(), getString(R.string.refreshed), Toast.LENGTH_SHORT).show()
+        viewLifecycleOwner.lifecycleScope.launch {
+            binding.shimmerViewContainer.startShimmer()
+            binding.shimmerViewContainer.visibility = View.VISIBLE
+            binding.recyclerView.visibility = View.GONE
+            val externalStoragePath = Environment.getExternalStorageDirectory().absolutePath
+            MediaScannerConnection.scanFile(requireContext(), arrayOf(externalStoragePath), null) { _, _ ->
+                viewLifecycleOwner.lifecycleScope.launch {
+                    loadArchiveFiles(null)
+                    Toast.makeText(requireContext(), getString(R.string.refreshed), Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
 
     private fun updateAdapterWithFullList() {
         if (!isSearchActive) {
-            binding.shimmerViewContainer.startShimmer()
-            binding.shimmerViewContainer.visibility = View.VISIBLE
-            binding.recyclerView.visibility = View.GONE
-
-            CoroutineScope(Dispatchers.IO).launch {
-                val archiveFiles = getArchiveFiles(null, null)
-                withContext(Dispatchers.Main) {
-                    adapter.updateFilesAndFilter(archiveFiles)
-                    binding.shimmerViewContainer.stopShimmer()
-                    binding.shimmerViewContainer.visibility = View.GONE
-                    binding.recyclerView.visibility = View.VISIBLE
-                }
+            viewLifecycleOwner.lifecycleScope.launch {
+                loadArchiveFiles(null)
             }
         }
     }
