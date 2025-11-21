@@ -236,6 +236,8 @@ class ExtractArchiveService : Service() {
                     if (extractCallback.hasUnsupportedMethod) {
                         tryLibArchiveAndroid(file, destinationDir)
                     } else {
+                        extractCallback.applyDirectoryTimestamps()
+
                         showCompletionNotification(destinationDir.absolutePath)
                         scanForNewFiles(destinationDir)
                         sendLocalBroadcast(Intent(ACTION_EXTRACTION_COMPLETE).putExtra(EXTRA_DIR_PATH, destinationDir.absolutePath))
@@ -268,6 +270,8 @@ class ExtractArchiveService : Service() {
         try {
             val totalBytes = file.length()
             var bytesProcessed = 0L
+
+            val directoryTimestamps = HashMap<File, Long>()
 
             FileInputStream(file).use { fileInput ->
                 BufferedInputStream(fileInput).use {
@@ -349,11 +353,13 @@ class ExtractArchiveService : Service() {
                         while (entry != 0L) {
                             val entryPath = getEntryPath(entry)
                             val outputFile = File(destinationDir, entryPath)
+                            val lastModifiedTime = ArchiveEntry.mtime(entry) * 1000 // Convert to MS
 
                             outputFile.parentFile?.mkdirs()
 
                             if (entryPath.endsWith("/")) {
                                 outputFile.mkdirs()
+                                directoryTimestamps[outputFile] = lastModifiedTime
                             } else {
                                 BufferedOutputStream(outputFile.outputStream()).use { outputStream ->
                                     val readBuffer = ByteBuffer.allocateDirect(DEFAULT_BUFFER_SIZE)
@@ -371,10 +377,15 @@ class ExtractArchiveService : Service() {
                                         outputStream.write(bytes)
                                     }
                                 }
-                                val lastModifiedTime = ArchiveEntry.mtime(entry)
-                                outputFile.setLastModified(lastModifiedTime * 1000)
+                                outputFile.setLastModified(lastModifiedTime)
                             }
                             entry = Archive.readNextHeader(archive)
+                        }
+
+                        directoryTimestamps.keys.sortedByDescending { it.absolutePath.length }.forEach { dir ->
+                            directoryTimestamps[dir]?.let { time ->
+                                dir.setLastModified(time)
+                            }
                         }
 
                         showCompletionNotification(destinationDir.absolutePath)
@@ -462,6 +473,8 @@ class ExtractArchiveService : Service() {
 
         destinationDir.mkdirs()
 
+        val directoryTimestamps = HashMap<File, Long>()
+
         try {
             val totalBytes = file.length()
             var bytesRead = 0L
@@ -473,6 +486,7 @@ class ExtractArchiveService : Service() {
                     val outputFile = File(destinationDir, entry.name)
                     if (entry.isDirectory) {
                         outputFile.mkdirs()
+                        directoryTimestamps[outputFile] = entry.modTime.time
                     } else {
                         outputFile.parentFile?.mkdirs()
                         FileOutputStream(outputFile).use { output ->
@@ -490,6 +504,13 @@ class ExtractArchiveService : Service() {
                     entry = tarInput.nextEntry
                 }
             }
+
+            directoryTimestamps.keys.sortedByDescending { it.absolutePath.length }.forEach { dir ->
+                directoryTimestamps[dir]?.let { time ->
+                    dir.setLastModified(time)
+                }
+            }
+
             showCompletionNotification(destinationDir.absolutePath)
             scanForNewFiles(destinationDir)
             sendLocalBroadcast(Intent(ACTION_EXTRACTION_COMPLETE).putExtra(EXTRA_DIR_PATH, destinationDir.absolutePath))
@@ -563,6 +584,25 @@ class ExtractArchiveService : Service() {
                 Thread.sleep(100)
             }
 
+            val headers = zipFile.fileHeaders
+            val dirTimestamps = HashMap<File, Long>()
+
+            if (headers != null) {
+                for (header in headers) {
+                    if (header.isDirectory) {
+                        val cleanName = header.fileName.replace("\\", "/")
+                        val dir = File(destinationDir, cleanName)
+                        dirTimestamps[dir] = header.lastModifiedTimeEpoch
+                    }
+                }
+
+                dirTimestamps.keys.sortedByDescending { it.absolutePath.length }.forEach { dir ->
+                    dirTimestamps[dir]?.let { time ->
+                        if (time > 0) dir.setLastModified(time)
+                    }
+                }
+            }
+
             showCompletionNotification(destinationDir.absolutePath)
             scanForNewFiles(destinationDir)
             sendLocalBroadcast(Intent(ACTION_EXTRACTION_COMPLETE).putExtra(EXTRA_DIR_PATH, destinationDir.absolutePath))
@@ -605,7 +645,10 @@ class ExtractArchiveService : Service() {
         private var extractedSize: Long = 0
         private var currentFileIndex: Int = -1
         private var currentUnpackedFile: File? = null
+        private var isCurrentEntryDir: Boolean = false
         var hasUnsupportedMethod = false
+
+        private val directoryTimestamps = HashMap<File, Long>()
 
         init {
             totalSize = inArchive.numberOfItems.toLong()
@@ -652,12 +695,17 @@ class ExtractArchiveService : Service() {
                                     PropID.LAST_MODIFICATION_TIME
                                 ) as? Date
                             if (modTime != null) {
-                                this.currentUnpackedFile!!.setLastModified(modTime.time)
+                                if (isCurrentEntryDir) {
+                                    directoryTimestamps[this.currentUnpackedFile!!] = modTime.time
+                                } else {
+                                    this.currentUnpackedFile!!.setLastModified(modTime.time)
+                                }
                             }
                         }
                         // Reset currentUnpackedFile and currentFileIndex for the next entry
                         this.currentUnpackedFile = null
                         this.currentFileIndex = -1
+                        this.isCurrentEntryDir = false
                         extractedSize++
                     } catch (e: SevenZipException) {
                         e.printStackTrace()
@@ -683,6 +731,8 @@ class ExtractArchiveService : Service() {
 
             val path: String = inArchive.getStringProperty(p0, PropID.PATH)
             val isDir: Boolean = inArchive.getProperty(p0, PropID.IS_FOLDER) as Boolean
+            this.isCurrentEntryDir = isDir
+
             this.currentUnpackedFile = File(dstDir.path, path) // Store current unpacked file
 
             if (isDir) {
@@ -709,6 +759,15 @@ class ExtractArchiveService : Service() {
                     e.printStackTrace()
                 }
                 data.size
+            }
+        }
+
+        fun applyDirectoryTimestamps() {
+            // Apply timestamps deepest directories first
+            directoryTimestamps.keys.sortedByDescending { it.absolutePath.length }.forEach { dir ->
+                directoryTimestamps[dir]?.let { time ->
+                    dir.setLastModified(time)
+                }
             }
         }
 
