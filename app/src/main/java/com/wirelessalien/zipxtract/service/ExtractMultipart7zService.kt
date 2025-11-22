@@ -242,6 +242,7 @@ class ExtractMultipart7zService : Service() {
         private var currentFileIndex: Int = -1
         private var currentUnpackedFile: File? = null
         val directories = mutableListOf<DirectoryInfo>()
+        private var lastProgress = -1
 
         init {
             totalSize = inArchive.numberOfItems.toLong()
@@ -351,8 +352,11 @@ class ExtractMultipart7zService : Service() {
         override fun prepareOperation(p0: ExtractAskMode?) {}
         override fun setCompleted(complete: Long) {
             val progress = ((complete.toDouble() / totalSize) * 100).toInt()
-            startForeground(NOTIFICATION_ID, createNotification(progress))
-            updateProgress(progress)
+            if (progress != lastProgress) {
+                lastProgress = progress
+                startForeground(NOTIFICATION_ID, createNotification(progress))
+                updateProgress(progress)
+            }
         }
 
         override fun setTotal(p0: Long) {
