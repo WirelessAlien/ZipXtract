@@ -43,6 +43,8 @@ import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_ERROR_MESSA
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_PROGRESS
 import com.wirelessalien.zipxtract.constant.ServiceConstants
 import com.wirelessalien.zipxtract.helper.FileOperationsDao
+import com.wirelessalien.zipxtract.model.DirectoryInfo
+import com.wirelessalien.zipxtract.helper.FileUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -195,6 +197,7 @@ class ExtractCsArchiveService : Service() {
             val totalBytes = file.length()
             var bytesRead = 0L
             val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+            val directories = mutableListOf<DirectoryInfo>()
 
             val fi: InputStream = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 Files.newInputStream(file.toPath())
@@ -221,6 +224,7 @@ class ExtractCsArchiveService : Service() {
                     val outputFile = File(destinationDir, entry.name)
                     if (entry.isDirectory) {
                         outputFile.mkdirs()
+                        directories.add(DirectoryInfo(outputFile.path, entry.lastModifiedDate.time))
                     } else {
                         outputFile.parentFile?.mkdirs()
                         FileOutputStream(outputFile).use { output ->
@@ -237,6 +241,7 @@ class ExtractCsArchiveService : Service() {
                     entry = tarInput.nextEntry
                 }
             }
+            FileUtils.setLastModifiedTime(directories)
             showCompletionNotification(destinationDir.absolutePath)
             scanForNewFiles(destinationDir)
             sendLocalBroadcast(Intent(ACTION_EXTRACTION_COMPLETE).putExtra(EXTRA_DIR_PATH, destinationDir.absolutePath))

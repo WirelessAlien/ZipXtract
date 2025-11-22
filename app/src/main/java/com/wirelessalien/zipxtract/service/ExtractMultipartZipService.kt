@@ -42,6 +42,8 @@ import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_PROGRESS
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.PREFERENCE_EXTRACT_DIR_PATH
 import com.wirelessalien.zipxtract.constant.ServiceConstants
 import com.wirelessalien.zipxtract.helper.FileOperationsDao
+import com.wirelessalien.zipxtract.helper.FileUtils
+import com.wirelessalien.zipxtract.model.DirectoryInfo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -191,26 +193,30 @@ class ExtractMultipartZipService : Service() {
             extractDir.mkdirs()
 
             val fileHeaders = zipFile.fileHeaders
-            val totalSize = fileHeaders.sumOf { it.uncompressedSize }
-            var extractedSize = 0L
             val progressMonitor = zipFile.progressMonitor
+            val directories = mutableListOf<DirectoryInfo>()
 
             fileHeaders.forEach { header ->
-                while (progressMonitor.state != ProgressMonitor.State.READY) {
-                    delay(100)
+                if (header.isDirectory) {
+                    val directoryPath = File(extractDir, header.fileName).path
+                    directories.add(DirectoryInfo(directoryPath, header.lastModifiedTimeEpoch))
                 }
-
-                zipFile.extractFile(header, extractDir.absolutePath)
-
-                extractedSize += header.uncompressedSize
-                val progress = ((extractedSize.toDouble() / totalSize) * 100).toInt()
-                updateProgress(progress)
             }
 
+            zipFile.extractAll(extractDir.absolutePath)
+
+            while (progressMonitor.state != ProgressMonitor.State.READY) {
+                if (progressMonitor.state == ProgressMonitor.State.BUSY) {
+                    val percentDone = progressMonitor.percentDone
+                    updateProgress(percentDone)
+                }
+                delay(100)
+            }
+
+            FileUtils.setLastModifiedTime(directories)
             showCompletionNotification(extractDir.absolutePath)
             scanForNewFiles(extractDir)
             sendLocalBroadcast(Intent(ACTION_EXTRACTION_COMPLETE).putExtra(EXTRA_DIR_PATH, extractDir.absolutePath))
-
         } catch (e: ZipException) {
             e.printStackTrace()
             showErrorNotification(e.message ?: getString(R.string.general_error_msg))

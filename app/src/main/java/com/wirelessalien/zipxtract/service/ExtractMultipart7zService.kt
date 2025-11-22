@@ -43,6 +43,8 @@ import com.wirelessalien.zipxtract.constant.BroadcastConstants.PREFERENCE_EXTRAC
 import com.wirelessalien.zipxtract.constant.ServiceConstants
 import com.wirelessalien.zipxtract.helper.ArchiveOpenMultipart7zCallback
 import com.wirelessalien.zipxtract.helper.FileOperationsDao
+import com.wirelessalien.zipxtract.helper.FileUtils
+import com.wirelessalien.zipxtract.model.DirectoryInfo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -199,27 +201,17 @@ class ExtractMultipart7zService : Service() {
             counter++
         }
 
+        destinationDir.mkdir()
         try {
             val archiveOpenVolumeCallback = ArchiveOpenMultipart7zCallback(inputDir)
             val inStream: IInStream = VolumedArchiveInStream(file.name, archiveOpenVolumeCallback)
             val inArchive: IInArchive = SevenZip.openInArchive(archiveFormat, inStream)
 
             try {
-                val itemCount = inArchive.numberOfItems
-                for (i in 0 until itemCount) {
-                    inArchive.getProperty(i, PropID.PATH) as String
-                    destinationDir.mkdir()
+                val extractCallback = ExtractCallback(inArchive, destinationDir)
+                inArchive.extract(null, false, extractCallback)
+                FileUtils.setLastModifiedTime(extractCallback.directories)
 
-                    try {
-                        inArchive.extract(null, false, ExtractCallback(inArchive, destinationDir))
-                    } catch (e: SevenZipException) {
-                        e.printStackTrace()
-                        showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-                        sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(
-                            EXTRA_ERROR_MESSAGE, e.message ?: getString(R.string.general_error_msg)))
-                        return
-                    }
-                }
                 showCompletionNotification(destinationDir.path)
                 scanForNewFiles(destinationDir)
                 sendLocalBroadcast(Intent(ACTION_EXTRACTION_COMPLETE).putExtra(EXTRA_DIR_PATH, destinationDir.path))
@@ -249,6 +241,7 @@ class ExtractMultipart7zService : Service() {
         private var extractedSize: Long = 0
         private var currentFileIndex: Int = -1
         private var currentUnpackedFile: File? = null
+        val directories = mutableListOf<DirectoryInfo>()
 
         init {
             totalSize = inArchive.numberOfItems.toLong()
@@ -326,6 +319,10 @@ class ExtractMultipart7zService : Service() {
 
             if (isDir) {
                 this.currentUnpackedFile!!.mkdirs()
+                val lastModified =
+                    (inArchive.getProperty(p0, PropID.LAST_MODIFICATION_TIME) as? java.util.Date)?.time
+                        ?: System.currentTimeMillis()
+                directories.add(DirectoryInfo(this.currentUnpackedFile!!.path, lastModified))
             } else {
                 try {
                     val parentDir = this.currentUnpackedFile!!.parentFile

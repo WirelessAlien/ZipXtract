@@ -45,6 +45,8 @@ import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_PROGRESS
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.PREFERENCE_EXTRACT_DIR_PATH
 import com.wirelessalien.zipxtract.constant.ServiceConstants
 import com.wirelessalien.zipxtract.helper.FileOperationsDao
+import com.wirelessalien.zipxtract.model.DirectoryInfo
+import com.wirelessalien.zipxtract.helper.FileUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -236,6 +238,7 @@ class ExtractArchiveService : Service() {
                     if (extractCallback.hasUnsupportedMethod) {
                         tryLibArchiveAndroid(file, destinationDir)
                     } else {
+                        FileUtils.setLastModifiedTime(extractCallback.directories)
                         showCompletionNotification(destinationDir.absolutePath)
                         scanForNewFiles(destinationDir)
                         sendLocalBroadcast(Intent(ACTION_EXTRACTION_COMPLETE).putExtra(EXTRA_DIR_PATH, destinationDir.absolutePath))
@@ -466,6 +469,7 @@ class ExtractArchiveService : Service() {
             val totalBytes = file.length()
             var bytesRead = 0L
             val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+            val directories = mutableListOf<DirectoryInfo>()
 
             TarArchiveInputStream(FileInputStream(file)).use { tarInput ->
                 var entry: TarArchiveEntry? = tarInput.nextEntry
@@ -473,6 +477,7 @@ class ExtractArchiveService : Service() {
                     val outputFile = File(destinationDir, entry.name)
                     if (entry.isDirectory) {
                         outputFile.mkdirs()
+                        directories.add(DirectoryInfo(outputFile.path, entry.modTime.time))
                     } else {
                         outputFile.parentFile?.mkdirs()
                         FileOutputStream(outputFile).use { output ->
@@ -490,6 +495,7 @@ class ExtractArchiveService : Service() {
                     entry = tarInput.nextEntry
                 }
             }
+            FileUtils.setLastModifiedTime(directories)
             showCompletionNotification(destinationDir.absolutePath)
             scanForNewFiles(destinationDir)
             sendLocalBroadcast(Intent(ACTION_EXTRACTION_COMPLETE).putExtra(EXTRA_DIR_PATH, destinationDir.absolutePath))
@@ -551,6 +557,13 @@ class ExtractArchiveService : Service() {
             destinationDir.mkdirs()
 
             zipFile.isRunInThread = true
+            val directories = mutableListOf<DirectoryInfo>()
+            for (fileHeader in zipFile.fileHeaders) {
+                if (fileHeader.isDirectory) {
+                    val directoryPath = File(destinationDir, fileHeader.fileName).path
+                    directories.add(DirectoryInfo(directoryPath, fileHeader.lastModifiedTimeEpoch))
+                }
+            }
             zipFile.extractAll(destinationDir.absolutePath)
 
             val progressMonitor = zipFile.progressMonitor
@@ -562,7 +575,7 @@ class ExtractArchiveService : Service() {
                 }
                 Thread.sleep(100)
             }
-
+            FileUtils.setLastModifiedTime(directories)
             showCompletionNotification(destinationDir.absolutePath)
             scanForNewFiles(destinationDir)
             sendLocalBroadcast(Intent(ACTION_EXTRACTION_COMPLETE).putExtra(EXTRA_DIR_PATH, destinationDir.absolutePath))
@@ -606,6 +619,7 @@ class ExtractArchiveService : Service() {
         private var currentFileIndex: Int = -1
         private var currentUnpackedFile: File? = null
         var hasUnsupportedMethod = false
+        val directories = mutableListOf<DirectoryInfo>()
 
         init {
             totalSize = inArchive.numberOfItems.toLong()
@@ -687,6 +701,10 @@ class ExtractArchiveService : Service() {
 
             if (isDir) {
                 this.currentUnpackedFile!!.mkdir()
+                val lastModified =
+                    (inArchive.getProperty(p0, PropID.LAST_MODIFICATION_TIME) as? Date)?.time
+                        ?: System.currentTimeMillis()
+                directories.add(DirectoryInfo(this.currentUnpackedFile!!.path, lastModified))
             } else {
                 try {
                     val dir = this.currentUnpackedFile!!.parent?.let { File(it) }
