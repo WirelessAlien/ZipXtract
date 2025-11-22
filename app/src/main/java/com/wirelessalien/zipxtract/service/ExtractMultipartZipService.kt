@@ -214,8 +214,8 @@ class ExtractMultipartZipService : Service() {
             }
 
             FileUtils.setLastModifiedTime(directories)
-            showCompletionNotification(extractDir.absolutePath)
             scanForNewFiles(extractDir)
+            showCompletionNotification(extractDir.absolutePath)
             sendLocalBroadcast(Intent(ACTION_EXTRACTION_COMPLETE).putExtra(EXTRA_DIR_PATH, extractDir.absolutePath))
         } catch (e: ZipException) {
             e.printStackTrace()

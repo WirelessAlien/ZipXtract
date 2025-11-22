@@ -43,8 +43,8 @@ import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_ERROR_MESSA
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_PROGRESS
 import com.wirelessalien.zipxtract.constant.ServiceConstants
 import com.wirelessalien.zipxtract.helper.FileOperationsDao
-import com.wirelessalien.zipxtract.model.DirectoryInfo
 import com.wirelessalien.zipxtract.helper.FileUtils
+import com.wirelessalien.zipxtract.model.DirectoryInfo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -242,8 +242,8 @@ class ExtractCsArchiveService : Service() {
                 }
             }
             FileUtils.setLastModifiedTime(directories)
-            showCompletionNotification(destinationDir.absolutePath)
             scanForNewFiles(destinationDir)
+            showCompletionNotification(destinationDir.absolutePath)
             sendLocalBroadcast(Intent(ACTION_EXTRACTION_COMPLETE).putExtra(EXTRA_DIR_PATH, destinationDir.absolutePath))
         } catch (e: CompressorException) {
             e.printStackTrace()

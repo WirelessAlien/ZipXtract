@@ -100,15 +100,31 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
 
     private lateinit var binding: FragmentArchiveBinding
     private lateinit var adapter: FileAdapter
-    private val archiveExtensions = listOf("rar", "r00", "001", "7z", "7z.001", "zip", "tar", "gz", "bz2", "xz", "lz4", "lzma", "sz")
+    private val archiveExtensions = listOf(
+        "rar",
+        "r00",
+        "001",
+        "7z",
+        "7z.001",
+        "zip",
+        "tar",
+        "gz",
+        "bz2",
+        "xz",
+        "lz4",
+        "lzma",
+        "sz"
+    )
     private lateinit var eProgressDialog: AlertDialog
     private lateinit var progressText: TextView
     private lateinit var eProgressBar: LinearProgressIndicator
     private val coroutineScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     private var searchJob: Job? = null
+
     enum class SortBy {
         SORT_BY_NAME, SORT_BY_SIZE, SORT_BY_MODIFIED, SORT_BY_EXTENSION
     }
+
     private var isSearchActive: Boolean = false
     private lateinit var fileOperationsDao: FileOperationsDao
 
@@ -129,20 +145,30 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
                     val dirPath = intent.getStringExtra(BroadcastConstants.EXTRA_DIR_PATH)
 
                     if (dirPath != null) {
-                        Snackbar.make(binding.root, getString(R.string.open_folder), Snackbar.LENGTH_LONG)
+                        Snackbar.make(
+                            binding.root,
+                            getString(R.string.open_folder),
+                            Snackbar.LENGTH_LONG
+                        )
                             .setAction(getString(R.string.ok)) {
                                 navigateToParentDir(File(dirPath))
                             }
                             .show()
                     } else {
-                        Toast.makeText(requireContext(), getString(R.string.extraction_success), Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            requireContext(),
+                            getString(R.string.extraction_success),
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 }
+
                 BroadcastConstants.ACTION_EXTRACTION_ERROR -> {
                     eProgressDialog.dismiss()
                     val errorMessage = intent.getStringExtra(BroadcastConstants.EXTRA_ERROR_MESSAGE)
                     Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show()
                 }
+
                 BroadcastConstants.ACTION_EXTRACTION_PROGRESS -> {
                     val progress = intent.getIntExtra(BroadcastConstants.EXTRA_PROGRESS, 0)
                     updateProgressBar(progress)
@@ -171,7 +197,11 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
         exitTransition = MaterialSharedAxis(MaterialSharedAxis.Z, true)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         binding = FragmentArchiveBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -182,7 +212,10 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
         (activity as AppCompatActivity).setSupportActionBar(binding.toolbar)
         fileOperationsDao = FileOperationsDao(requireContext())
         sharedPreferences = requireActivity().getPreferences(Context.MODE_PRIVATE)
-        sortBy = SortBy.valueOf(sharedPreferences.getString("sortBy", SortBy.SORT_BY_NAME.name) ?: SortBy.SORT_BY_NAME.name)
+        sortBy = SortBy.valueOf(
+            sharedPreferences.getString("sortBy", SortBy.SORT_BY_NAME.name)
+                ?: SortBy.SORT_BY_NAME.name
+        )
         sortAscending = sharedPreferences.getBoolean("sortAscending", true)
 
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
@@ -194,7 +227,6 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
         menuHost.addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
                 menuInflater.inflate(R.menu.menu_main, menu)
-                menuInflater.inflate(R.menu.menu_refresh, menu)
 
                 val searchItem = menu.findItem(R.id.menu_search)
                 searchView = searchItem?.actionView as SearchView?
@@ -252,10 +284,6 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
                             putBoolean("sortAscending", sortAscending)
                         }
 
-                        R.id.menu_refresh -> {
-                            scanStorageAndLoadFiles()
-                        }
-
                         R.id.menu_settings -> {
                             val intent = Intent(requireContext(), SettingsActivity::class.java)
                             startActivity(intent)
@@ -272,12 +300,17 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
             addAction(BroadcastConstants.ACTION_EXTRACTION_ERROR)
             addAction(BroadcastConstants.ACTION_EXTRACTION_PROGRESS)
         }
-        LocalBroadcastManager.getInstance(requireContext()).registerReceiver(extractionReceiver, filter)
+        LocalBroadcastManager.getInstance(requireContext())
+            .registerReceiver(extractionReceiver, filter)
 
         extractProgressDialog()
         setupFilterChips()
         viewLifecycleOwner.lifecycleScope.launch {
             loadArchiveFiles(null)
+        }
+
+        binding.swipeRefreshLayout.setOnRefreshListener {
+            scanStorageAndLoadFiles()
         }
     }
 
@@ -420,7 +453,7 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
                     val path = cursor.getString(dataColumn)
                     if (path != null) {
                         val file = File(path)
-                        if (archiveExtensions.contains(file.extension.lowercase())) {
+                        if (file.isFile && archiveExtensions.contains(file.extension.lowercase())) {
                             archiveFiles.add(file)
                         }
                     }
@@ -442,23 +475,36 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
     }
 
     private fun scanStorageAndLoadFiles() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            binding.shimmerViewContainer.startShimmer()
-            binding.shimmerViewContainer.visibility = View.VISIBLE
-            binding.recyclerView.visibility = View.GONE
+        if (!isAdded) return
 
-            val externalStoragePath = Environment.getExternalStorageDirectory().absolutePath
-            MediaScannerConnection.scanFile(requireContext(), arrayOf(externalStoragePath), null) { _, _ ->
+        binding.shimmerViewContainer.startShimmer()
+        binding.shimmerViewContainer.visibility = View.VISIBLE
+        binding.recyclerView.visibility = View.GONE
+
+        val externalStoragePath =
+            Environment.getExternalStorageDirectory().absolutePath
+
+        MediaScannerConnection.scanFile(
+            context, arrayOf(externalStoragePath), null
+        ) { _, _ ->
+
+            activity?.runOnUiThread {
+                if (!isAdded || view == null) return@runOnUiThread
+
                 viewLifecycleOwner.lifecycleScope.launch {
+                    if (!isAdded) return@launch
+
                     loadArchiveFiles(null, false)
+
                     binding.shimmerViewContainer.stopShimmer()
                     binding.shimmerViewContainer.visibility = View.GONE
                     binding.recyclerView.visibility = View.VISIBLE
-                    Toast.makeText(requireContext(), getString(R.string.refreshed), Toast.LENGTH_SHORT).show()
+                    binding.swipeRefreshLayout.isRefreshing = false
                 }
             }
         }
     }
+
 
     private fun updateAdapterWithFullList() {
         if (!isSearchActive) {
@@ -522,12 +568,17 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
 
         binding.fileSize.text = bytesToString(file.length())
 
-        val dateFormat = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT, Locale.getDefault())
+        val dateFormat = DateFormat.getDateTimeInstance(
+            DateFormat.DEFAULT,
+            DateFormat.SHORT,
+            Locale.getDefault()
+        )
         binding.fileDate.text = dateFormat.format(Date(file.lastModified()))
 
         binding.btnExtract.setOnClickListener {
             val fileExtension = file.name.split('.').takeLast(2).joinToString(".").lowercase()
-            val supportedExtensions = listOf("tar.bz2", "tar.gz", "tar.lz4", "tar.lzma", "tar.sz", "tar.xz")
+            val supportedExtensions =
+                listOf("tar.bz2", "tar.gz", "tar.lz4", "tar.lzma", "tar.sz", "tar.xz")
 
             if (supportedExtensions.any { fileExtension.endsWith(it) }) {
                 startExtractionCsService(filePaths)
@@ -576,7 +627,11 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
         }
 
         binding.btnOpenWith.setOnClickListener {
-            val uri = FileProvider.getUriForFile(requireContext().applicationContext, "${BuildConfig.APPLICATION_ID}.provider", file)
+            val uri = FileProvider.getUriForFile(
+                requireContext().applicationContext,
+                "${BuildConfig.APPLICATION_ID}.provider",
+                file
+            )
             val mime: String = getMimeType(uri.toString())
 
             // Open file with user selected app
@@ -741,46 +796,72 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
         binding.filePath.text = Editable.Factory.getInstance().newEditable(file.absolutePath)
         val fileSizeText = bytesToString(file.length())
         binding.fileSize.text = Editable.Factory.getInstance().newEditable(fileSizeText)
-        val dateFormat = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT, Locale.getDefault())
-        binding.lastModified.text = Editable.Factory.getInstance().newEditable(dateFormat.format(Date(file.lastModified())))
+        val dateFormat = DateFormat.getDateTimeInstance(
+            DateFormat.DEFAULT,
+            DateFormat.SHORT,
+            Locale.getDefault()
+        )
+        binding.lastModified.text =
+            Editable.Factory.getInstance().newEditable(dateFormat.format(Date(file.lastModified())))
 
         binding.md5Checksum.keyListener = null
         binding.sha1Checksum.keyListener = null
         binding.sha256Checksum.keyListener = null
 
-        val clipboardManager = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clipboardManager =
+            requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         binding.fileName.setOnLongClickListener {
             val clip = ClipData.newPlainText("File Name", file.name)
             clipboardManager.setPrimaryClip(clip)
-            Toast.makeText(requireContext(), getString(R.string.copied_to_clipboard), Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                requireContext(),
+                getString(R.string.copied_to_clipboard),
+                Toast.LENGTH_SHORT
+            ).show()
             true
         }
 
         binding.filePath.setOnLongClickListener {
             val clip = ClipData.newPlainText("File Path", file.absolutePath)
             clipboardManager.setPrimaryClip(clip)
-            Toast.makeText(requireContext(), getString(R.string.copied_to_clipboard), Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                requireContext(),
+                getString(R.string.copied_to_clipboard),
+                Toast.LENGTH_SHORT
+            ).show()
             true
         }
 
         binding.md5Checksum.setOnLongClickListener {
             val clip = ClipData.newPlainText("MD5", binding.md5Checksum.text)
             clipboardManager.setPrimaryClip(clip)
-            Toast.makeText(requireContext(), getString(R.string.copied_to_clipboard), Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                requireContext(),
+                getString(R.string.copied_to_clipboard),
+                Toast.LENGTH_SHORT
+            ).show()
             true
         }
 
         binding.sha1Checksum.setOnLongClickListener {
             val clip = ClipData.newPlainText("SHA1", binding.sha1Checksum.text)
             clipboardManager.setPrimaryClip(clip)
-            Toast.makeText(requireContext(), getString(R.string.copied_to_clipboard), Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                requireContext(),
+                getString(R.string.copied_to_clipboard),
+                Toast.LENGTH_SHORT
+            ).show()
             true
         }
 
         binding.sha256Checksum.setOnLongClickListener {
             val clip = ClipData.newPlainText("SHA256", binding.sha256Checksum.text)
             clipboardManager.setPrimaryClip(clip)
-            Toast.makeText(requireContext(), getString(R.string.copied_to_clipboard), Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                requireContext(),
+                getString(R.string.copied_to_clipboard),
+                Toast.LENGTH_SHORT
+            ).show()
             true
         }
 

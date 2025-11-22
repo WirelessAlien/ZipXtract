@@ -245,9 +245,10 @@ class ExtractRarService : Service() {
                     destinationDir.mkdir()
                     val extractCallback = ExtractCallback(inArchive, destinationDir)
                     inArchive.extract(null, false, extractCallback)
+
                     FileUtils.setLastModifiedTime(extractCallback.directories)
-                    showCompletionNotification(destinationDir.path)
                     scanForNewFiles(destinationDir)
+                    showCompletionNotification(destinationDir.path)
                     sendLocalBroadcast(Intent(ACTION_EXTRACTION_COMPLETE).putExtra(EXTRA_DIR_PATH, destinationDir.path))
                 } catch (e: SevenZipException) {
                     e.printStackTrace()

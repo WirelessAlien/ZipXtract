@@ -45,8 +45,8 @@ import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_PROGRESS
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.PREFERENCE_EXTRACT_DIR_PATH
 import com.wirelessalien.zipxtract.constant.ServiceConstants
 import com.wirelessalien.zipxtract.helper.FileOperationsDao
-import com.wirelessalien.zipxtract.model.DirectoryInfo
 import com.wirelessalien.zipxtract.helper.FileUtils
+import com.wirelessalien.zipxtract.model.DirectoryInfo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -239,8 +239,8 @@ class ExtractArchiveService : Service() {
                         tryLibArchiveAndroid(file, destinationDir)
                     } else {
                         FileUtils.setLastModifiedTime(extractCallback.directories)
-                        showCompletionNotification(destinationDir.absolutePath)
                         scanForNewFiles(destinationDir)
+                        showCompletionNotification(destinationDir.absolutePath)
                         sendLocalBroadcast(Intent(ACTION_EXTRACTION_COMPLETE).putExtra(EXTRA_DIR_PATH, destinationDir.absolutePath))
                     }
                 } catch (e: SevenZipException) {
@@ -380,13 +380,12 @@ class ExtractArchiveService : Service() {
                             entry = Archive.readNextHeader(archive)
                         }
 
+                        scanForNewFiles(destinationDir)
                         showCompletionNotification(destinationDir.absolutePath)
                         sendLocalBroadcast(
                             Intent(ACTION_EXTRACTION_COMPLETE)
                                 .putExtra(EXTRA_DIR_PATH, destinationDir.absolutePath)
                         )
-                        scanForNewFiles(destinationDir)
-
                     } catch (e: Exception) {
                         e.printStackTrace()
                         val errorMessage = e.message ?: getString(R.string.general_error_msg)
@@ -496,8 +495,8 @@ class ExtractArchiveService : Service() {
                 }
             }
             FileUtils.setLastModifiedTime(directories)
-            showCompletionNotification(destinationDir.absolutePath)
             scanForNewFiles(destinationDir)
+            showCompletionNotification(destinationDir.absolutePath)
             sendLocalBroadcast(Intent(ACTION_EXTRACTION_COMPLETE).putExtra(EXTRA_DIR_PATH, destinationDir.absolutePath))
         } catch (e: IOException) {
             e.printStackTrace()
@@ -576,8 +575,8 @@ class ExtractArchiveService : Service() {
                 Thread.sleep(100)
             }
             FileUtils.setLastModifiedTime(directories)
-            showCompletionNotification(destinationDir.absolutePath)
             scanForNewFiles(destinationDir)
+            showCompletionNotification(destinationDir.absolutePath)
             sendLocalBroadcast(Intent(ACTION_EXTRACTION_COMPLETE).putExtra(EXTRA_DIR_PATH, destinationDir.absolutePath))
 
             if (useAppNameDir) {

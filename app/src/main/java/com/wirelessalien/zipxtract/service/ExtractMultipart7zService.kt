@@ -65,6 +65,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.OutputStream
+import java.util.Date
 
 class ExtractMultipart7zService : Service() {
 
@@ -210,10 +211,10 @@ class ExtractMultipart7zService : Service() {
             try {
                 val extractCallback = ExtractCallback(inArchive, destinationDir)
                 inArchive.extract(null, false, extractCallback)
-                FileUtils.setLastModifiedTime(extractCallback.directories)
 
-                showCompletionNotification(destinationDir.path)
+                FileUtils.setLastModifiedTime(extractCallback.directories)
                 scanForNewFiles(destinationDir)
+                showCompletionNotification(destinationDir.path)
                 sendLocalBroadcast(Intent(ACTION_EXTRACTION_COMPLETE).putExtra(EXTRA_DIR_PATH, destinationDir.path))
             } catch (e: SevenZipException) {
                 e.printStackTrace()
@@ -283,7 +284,7 @@ class ExtractMultipart7zService : Service() {
                             val modTime = inArchive.getProperty(
                                 this.currentFileIndex,
                                 PropID.LAST_MODIFICATION_TIME
-                            ) as? java.util.Date
+                            ) as? Date
                             if (modTime != null) {
                                 this.currentUnpackedFile!!.setLastModified(modTime.time)
                             }
@@ -321,7 +322,7 @@ class ExtractMultipart7zService : Service() {
             if (isDir) {
                 this.currentUnpackedFile!!.mkdirs()
                 val lastModified =
-                    (inArchive.getProperty(p0, PropID.LAST_MODIFICATION_TIME) as? java.util.Date)?.time
+                    (inArchive.getProperty(p0, PropID.LAST_MODIFICATION_TIME) as? Date)?.time
                         ?: System.currentTimeMillis()
                 directories.add(DirectoryInfo(this.currentUnpackedFile!!.path, lastModified))
             } else {

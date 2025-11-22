@@ -33,174 +33,180 @@
             android:minHeight="?attr/actionBarSize"/>
     </com.google.android.material.appbar.AppBarLayout>
 
-    <RelativeLayout
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipeRefreshLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
         app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
 
-        <com.google.android.material.progressindicator.LinearProgressIndicator
-            android:id="@+id/progressBar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:visibility="gone"
-            android:layout_marginEnd="16dp"/>
-
-        <HorizontalScrollView
-            android:id="@+id/horizontalScrollView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/progressBar"
-            android:scrollIndicators="none"
-            android:scrollbars="none">
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/externalStorageChip"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    style="@style/Widget.Material3.Chip.Suggestion.Elevated"
-                    android:layout_marginStart="16dp"
-                    android:elevation="4dp"
-                    android:clickable="true"
-                    android:checkable="false"
-                    app:chipIconVisible="true"
-                    app:chipIcon="@drawable/ic_change"
-                    app:chipCornerRadius="8dp"
-                    android:text="@string/storage"/>
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/internalStorageChip"
-                    style="@style/Widget.MaterialComponents.Chip.Choice"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/internal_storage"
-                    android:layout_marginStart="5dp"
-                    app:chipCornerRadius="8dp"
-                    android:visibility="gone" />
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/sdCardChip"
-                    style="@style/Widget.MaterialComponents.Chip.Choice"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/sd_card"
-                    android:layout_marginStart="3dp"
-                    app:chipCornerRadius="8dp"
-                    android:visibility="gone" />
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/rootChip"
-                    style="@style/Widget.MaterialComponents.Chip.Choice"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/root"
-                    app:chipCornerRadius="8dp"
-                    android:layout_marginStart="3dp"
-                    android:visibility="gone" />
-
-                <com.google.android.material.chip.ChipGroup
-                    android:id="@+id/chipGroupPath"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginEnd="16dp"
-                    android:orientation="horizontal"
-                    app:singleLine="true"/>
-            </LinearLayout>
-        </HorizontalScrollView>
-
-        <com.google.android.material.progressindicator.CircularProgressIndicator
-            android:id="@+id/circularProgressBar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:indeterminate="true"
-            android:visibility="gone"
-            android:indeterminateBehavior="repeat"
-            android:layout_centerInParent="true"/>
-
-        <TextView
-            android:id="@+id/statusTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:visibility="gone"
-            android:layout_centerInParent="true"
-            android:textSize="16sp"/>
-
-        <com.facebook.shimmer.ShimmerFrameLayout
-            android:id="@+id/shimmer_view_container"
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@id/horizontalScrollView"
-            android:layout_marginTop="5dp"
-            android:orientation="vertical"
-            android:visibility="gone">
+            android:orientation="vertical">
 
-            <LinearLayout
+            <com.google.android.material.progressindicator.LinearProgressIndicator
+                android:id="@+id/progressBar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
-                <include layout="@layout/shimmer_placeholder_item" />
-                <include layout="@layout/shimmer_placeholder_item" />
-                <include layout="@layout/shimmer_placeholder_item" />
-                <include layout="@layout/shimmer_placeholder_item" />
-                <include layout="@layout/shimmer_placeholder_item" />
-                <include layout="@layout/shimmer_placeholder_item" />
-                <include layout="@layout/shimmer_placeholder_item" />
-                <include layout="@layout/shimmer_placeholder_item" />
-                <include layout="@layout/shimmer_placeholder_item" />
-                <include layout="@layout/shimmer_placeholder_item" />
-                <include layout="@layout/shimmer_placeholder_item" />
-                <include layout="@layout/shimmer_placeholder_item" />
-                <include layout="@layout/shimmer_placeholder_item" />
-                <include layout="@layout/shimmer_placeholder_item" />
-                <include layout="@layout/shimmer_placeholder_item" />
-                <include layout="@layout/shimmer_placeholder_item" />
-                <include layout="@layout/shimmer_placeholder_item" />
-                <include layout="@layout/shimmer_placeholder_item" />
-            </LinearLayout>
-        </com.facebook.shimmer.ShimmerFrameLayout>
+                android:layout_marginStart="16dp"
+                android:visibility="gone"
+                android:layout_marginEnd="16dp"/>
 
-        <LinearLayout
-            android:id="@+id/empty_folder_layout"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:visibility="gone">
+            <HorizontalScrollView
+                android:id="@+id/horizontalScrollView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/progressBar"
+                android:scrollIndicators="none"
+                android:scrollbars="none">
 
-            <ImageView
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:src="@drawable/ic_folder_info"
-                app:tint="?attr/colorControlNormal"
-                android:importantForAccessibility="no" />
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
 
-            <TextView
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/externalStorageChip"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/Widget.Material3.Chip.Suggestion.Elevated"
+                        android:layout_marginStart="16dp"
+                        android:elevation="4dp"
+                        android:clickable="true"
+                        android:checkable="false"
+                        app:chipIconVisible="true"
+                        app:chipIcon="@drawable/ic_change"
+                        app:chipCornerRadius="8dp"
+                        android:text="@string/storage"/>
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/internalStorageChip"
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/internal_storage"
+                        android:layout_marginStart="5dp"
+                        app:chipCornerRadius="8dp"
+                        android:visibility="gone" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/sdCardChip"
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/sd_card"
+                        android:layout_marginStart="3dp"
+                        app:chipCornerRadius="8dp"
+                        android:visibility="gone" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/rootChip"
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/root"
+                        app:chipCornerRadius="8dp"
+                        android:layout_marginStart="3dp"
+                        android:visibility="gone" />
+
+                    <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/chipGroupPath"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginEnd="16dp"
+                        android:orientation="horizontal"
+                        app:singleLine="true"/>
+                </LinearLayout>
+            </HorizontalScrollView>
+
+            <com.google.android.material.progressindicator.CircularProgressIndicator
+                android:id="@+id/circularProgressBar"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/directory_empty"
-                android:textSize="18sp"
-                android:layout_marginTop="16dp" />
-        </LinearLayout>
+                android:indeterminate="true"
+                android:visibility="gone"
+                android:indeterminateBehavior="repeat"
+                android:layout_centerInParent="true"/>
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_below="@id/horizontalScrollView"
-            android:layout_marginStart="5dp"
-            android:layout_marginEnd="5dp"
-            android:layout_marginTop="5dp"
-            tools:listitem="@layout/item_file" />
-    </RelativeLayout>
+            <TextView
+                android:id="@+id/statusTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:visibility="gone"
+                android:layout_centerInParent="true"
+                android:textSize="16sp"/>
+
+            <com.facebook.shimmer.ShimmerFrameLayout
+                android:id="@+id/shimmer_view_container"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_below="@id/horizontalScrollView"
+                android:layout_marginTop="5dp"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+                    <include layout="@layout/shimmer_placeholder_item" />
+                    <include layout="@layout/shimmer_placeholder_item" />
+                    <include layout="@layout/shimmer_placeholder_item" />
+                    <include layout="@layout/shimmer_placeholder_item" />
+                    <include layout="@layout/shimmer_placeholder_item" />
+                    <include layout="@layout/shimmer_placeholder_item" />
+                    <include layout="@layout/shimmer_placeholder_item" />
+                    <include layout="@layout/shimmer_placeholder_item" />
+                    <include layout="@layout/shimmer_placeholder_item" />
+                    <include layout="@layout/shimmer_placeholder_item" />
+                    <include layout="@layout/shimmer_placeholder_item" />
+                    <include layout="@layout/shimmer_placeholder_item" />
+                    <include layout="@layout/shimmer_placeholder_item" />
+                    <include layout="@layout/shimmer_placeholder_item" />
+                    <include layout="@layout/shimmer_placeholder_item" />
+                    <include layout="@layout/shimmer_placeholder_item" />
+                    <include layout="@layout/shimmer_placeholder_item" />
+                    <include layout="@layout/shimmer_placeholder_item" />
+                </LinearLayout>
+            </com.facebook.shimmer.ShimmerFrameLayout>
+
+            <LinearLayout
+                android:id="@+id/empty_folder_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:src="@drawable/ic_folder_info"
+                    app:tint="?attr/colorControlNormal"
+                    android:importantForAccessibility="no" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/directory_empty"
+                    android:textSize="18sp"
+                    android:layout_marginTop="16dp" />
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_below="@id/horizontalScrollView"
+                android:layout_marginStart="5dp"
+                android:layout_marginEnd="5dp"
+                android:layout_marginTop="5dp"
+                tools:listitem="@layout/item_file" />
+        </RelativeLayout>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/mainFab"

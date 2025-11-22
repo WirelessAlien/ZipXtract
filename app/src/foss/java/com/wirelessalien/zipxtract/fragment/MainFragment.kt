@@ -486,6 +486,10 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             hideExtendedFabs()
         }
 
+        binding.swipeRefreshLayout.setOnRefreshListener {
+            updateAdapterWithFullList()
+        }
+
         checkAndShowDonationFragment()
 
         updateCurrentPathChip()
@@ -1779,6 +1783,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                             binding.recyclerView.visibility = View.VISIBLE
                         }
                         adapter.updateFilesAndFilter(fullFileList)
+                        binding.swipeRefreshLayout.isRefreshing = false
                     }
                 } catch (e: Exception) {
                     if (e is CancellationException) throw e
@@ -1789,6 +1794,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                             text = getString(R.string.general_error_msg)
                             visibility = View.VISIBLE
                         }
+                        binding.swipeRefreshLayout.isRefreshing = false
                     }
                 }
             }
