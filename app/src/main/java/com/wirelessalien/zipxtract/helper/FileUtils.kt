@@ -23,7 +23,9 @@ import java.io.File
 
 object FileUtils {
     fun setLastModifiedTime(directories: List<DirectoryInfo>) {
-        for (directory in directories) {
+        val sortedDirectories = directories.sortedByDescending { it.path.length }
+
+        for (directory in sortedDirectories) {
             try {
                 val file = File(directory.path)
                 if (file.exists() && file.isDirectory) {

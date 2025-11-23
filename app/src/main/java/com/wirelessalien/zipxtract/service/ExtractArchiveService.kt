@@ -347,16 +347,19 @@ class ExtractArchiveService : Service() {
                             })
 
                         Archive.readOpen1(archive)
+                        val directories = mutableListOf<DirectoryInfo>()
 
                         var entry = Archive.readNextHeader(archive)
                         while (entry != 0L) {
                             val entryPath = getEntryPath(entry)
                             val outputFile = File(destinationDir, entryPath)
+                            val lastModifiedTime = ArchiveEntry.mtime(entry)
 
                             outputFile.parentFile?.mkdirs()
 
                             if (entryPath.endsWith("/")) {
                                 outputFile.mkdirs()
+                                directories.add(DirectoryInfo(outputFile.path, lastModifiedTime * 1000))
                             } else {
                                 BufferedOutputStream(outputFile.outputStream()).use { outputStream ->
                                     val readBuffer = ByteBuffer.allocateDirect(DEFAULT_BUFFER_SIZE)
@@ -374,12 +377,11 @@ class ExtractArchiveService : Service() {
                                         outputStream.write(bytes)
                                     }
                                 }
-                                val lastModifiedTime = ArchiveEntry.mtime(entry)
                                 outputFile.setLastModified(lastModifiedTime * 1000)
                             }
                             entry = Archive.readNextHeader(archive)
                         }
-
+                        FileUtils.setLastModifiedTime(directories)
                         scanForNewFiles(destinationDir)
                         showCompletionNotification(destinationDir.absolutePath)
                         sendLocalBroadcast(

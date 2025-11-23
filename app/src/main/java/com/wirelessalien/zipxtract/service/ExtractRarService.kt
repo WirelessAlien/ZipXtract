@@ -242,7 +242,7 @@ class ExtractRarService : Service() {
                 val inArchive: IInArchive = SevenZip.openInArchive(archiveFormat, inStream, archiveOpenVolumeCallback)
 
                 try {
-                    destinationDir.mkdir()
+                    destinationDir.mkdirs()
                     val extractCallback = ExtractCallback(inArchive, destinationDir)
                     inArchive.extract(null, false, extractCallback)
 
