@@ -123,7 +123,7 @@
     <string name="remove">Kaldır</string>
     <string name="preview_archive">Arşiv Dosyasını Önizle</string>
     <string name="add">Ekle</string>
-    <string name="directory_selection_disabled">Klasör seçilebilir değil, içindeki dosyaları seçin.</string>
+    <string name="directory_selection_disabled">Folder seçilebilir, içindeki dosyaları seçin.</string>
     <string name="select_file">Dosya Seçin…</string>
     <string name="select_files">(%d) Ekle</string>
     <string name="donate_desc">ZipXtract\'ı faydalı bulduysanız, lütfen geliştirilmesini desteklemeyi düşünün:</string>
