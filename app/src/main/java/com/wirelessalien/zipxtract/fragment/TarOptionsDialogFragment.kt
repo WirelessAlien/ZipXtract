@@ -88,7 +88,11 @@ class TarOptionsDialogFragment : DialogFragment() {
                     }
                 } else {
                     binding.progressIndicator.visibility = View.GONE
-                    Toast.makeText(context, getString(R.string.error_no_file_information_provided), Toast.LENGTH_LONG).show()
+                    Toast.makeText(
+                        context,
+                        getString(R.string.error_no_file_information_provided),
+                        Toast.LENGTH_LONG
+                    ).show()
                     dismiss()
                     return@launch
                 }
@@ -100,7 +104,8 @@ class TarOptionsDialogFragment : DialogFragment() {
 
     private fun initializeUI() {
         if (!::selectedFilePaths.isInitialized || selectedFilePaths.isEmpty()) {
-            Toast.makeText(requireContext(), R.string.no_files_to_archive, Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), R.string.no_files_to_archive, Toast.LENGTH_SHORT)
+                .show()
             dismiss()
             return
         }
@@ -115,12 +120,20 @@ class TarOptionsDialogFragment : DialogFragment() {
                     filePathAdapter.notifyItemRangeChanged(position, selectedFilePaths.size)
 
                     if (selectedFilePaths.isEmpty()) {
-                        Toast.makeText(requireContext(), R.string.no_files_to_archive, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            requireContext(),
+                            R.string.no_files_to_archive,
+                            Toast.LENGTH_SHORT
+                        ).show()
                         dismiss()
                     }
                 }
             } else {
-                Toast.makeText(requireContext(), getString(R.string.file_list_is_fixed_for_this_operation), Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    requireContext(),
+                    getString(R.string.file_list_is_fixed_for_this_operation),
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
 
@@ -165,8 +178,18 @@ class TarOptionsDialogFragment : DialogFragment() {
         binding.okButton.setOnClickListener {
             val archiveName = binding.archiveNameEditText.text.toString().ifBlank { defaultName }
 
-            val mainFragment = parentFragmentManager.findFragmentById(R.id.container) as? MainFragment
-            mainFragment?.startArchiveTarService(selectedFilePaths, archiveName, selectedCompressionFormat)
+            val mainFragment =
+                parentFragmentManager.findFragmentById(R.id.container) as? MainFragment
+            mainFragment?.startArchiveTarService(
+                selectedFilePaths,
+                archiveName,
+                selectedCompressionFormat
+            )
+            dismiss()
+        }
+
+
+        binding.cancelButton.setOnClickListener {
             dismiss()
         }
     }
