@@ -1,0 +1,5 @@
+Fix #71 (The app crashed with a `TransactionTooLargeException` when a large number of files are selected for operations like compression, extraction, or deletion.)
+Add #70 (Directory time stump preservation)
+Update localization
+A few small fixes and improvement
+Update Gradle, dependencies, sdk
