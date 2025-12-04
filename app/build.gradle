@@ -24,8 +24,8 @@ android {
         applicationId "com.wirelessalien.zipxtract"
         minSdk 24
         targetSdk 35
-        versionCode 22
-        versionName "6.0.1"
+        versionCode 23
+        versionName "6.0.1.1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
