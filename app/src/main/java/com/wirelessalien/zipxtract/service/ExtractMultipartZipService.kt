@@ -22,7 +22,10 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.media.MediaScannerConnection
 import android.os.Build
 import android.os.Environment
@@ -32,6 +35,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.preference.PreferenceManager
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.activity.MainActivity
+import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_CANCEL_OPERATION
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_COMPLETE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_ERROR
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_PROGRESS
@@ -63,6 +67,17 @@ class ExtractMultipartZipService : Service() {
     }
 
     private var extractionJob: Job? = null
+    private var progressMonitor: ProgressMonitor? = null
+
+    private val cancelReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == ACTION_CANCEL_OPERATION) {
+                progressMonitor?.cancelAllTasks = true
+                extractionJob?.cancel()
+                stopForegroundService()
+            }
+        }
+    }
 
     override fun onBind(intent: Intent): IBinder? = null
 
@@ -70,6 +85,7 @@ class ExtractMultipartZipService : Service() {
         super.onCreate()
         fileOperationsDao = FileOperationsDao(this)
         createNotificationChannel()
+        LocalBroadcastManager.getInstance(this).registerReceiver(cancelReceiver, IntentFilter(ACTION_CANCEL_OPERATION))
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -99,6 +115,7 @@ class ExtractMultipartZipService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         extractionJob?.cancel()
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(cancelReceiver)
     }
 
     private fun createNotificationChannel() {
@@ -193,7 +210,7 @@ class ExtractMultipartZipService : Service() {
             extractDir.mkdirs()
 
             val fileHeaders = zipFile.fileHeaders
-            val progressMonitor = zipFile.progressMonitor
+            progressMonitor = zipFile.progressMonitor
             val directories = mutableListOf<DirectoryInfo>()
 
             fileHeaders.forEach { header ->
@@ -205,18 +222,22 @@ class ExtractMultipartZipService : Service() {
 
             zipFile.extractAll(extractDir.absolutePath)
 
-            while (progressMonitor.state != ProgressMonitor.State.READY) {
-                if (progressMonitor.state == ProgressMonitor.State.BUSY) {
-                    val percentDone = progressMonitor.percentDone
+            while (progressMonitor!!.state != ProgressMonitor.State.READY) {
+                if (progressMonitor!!.state == ProgressMonitor.State.BUSY) {
+                    val percentDone = progressMonitor!!.percentDone
                     updateProgress(percentDone)
                 }
                 delay(100)
             }
 
-            FileUtils.setLastModifiedTime(directories)
-            scanForNewFiles(extractDir)
-            showCompletionNotification(extractDir.absolutePath)
-            sendLocalBroadcast(Intent(ACTION_EXTRACTION_COMPLETE).putExtra(EXTRA_DIR_PATH, extractDir.absolutePath))
+            if (progressMonitor!!.result == ProgressMonitor.Result.CANCELLED) {
+                // Do nothing
+            } else {
+                FileUtils.setLastModifiedTime(directories)
+                scanForNewFiles(extractDir)
+                showCompletionNotification(extractDir.absolutePath)
+                sendLocalBroadcast(Intent(ACTION_EXTRACTION_COMPLETE).putExtra(EXTRA_DIR_PATH, extractDir.absolutePath))
+            }
         } catch (e: ZipException) {
             e.printStackTrace()
             showErrorNotification(e.message ?: getString(R.string.general_error_msg))

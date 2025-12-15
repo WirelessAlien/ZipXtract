@@ -34,5 +34,7 @@ object BroadcastConstants {
 
     const val PREFERENCE_EXTRACT_DIR_PATH = "key_extract_path"
     const val PREFERENCE_ARCHIVE_DIR_PATH = "key_archive_path"
+
+    const val ACTION_CANCEL_OPERATION = "ACTION_CANCEL_OPERATION"
 }
 
