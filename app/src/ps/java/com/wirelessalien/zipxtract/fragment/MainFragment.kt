@@ -763,7 +763,8 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
     private fun cancelAllServices() {
         val intent = Intent(com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_CANCEL_OPERATION)
-        LocalBroadcastManager.getInstance(requireContext()).sendBroadcast(intent)
+        intent.setPackage(requireContext().packageName)
+        requireContext().sendBroadcast(intent)
     }
 
     override fun onFileLongClick(file: File, view: View) {

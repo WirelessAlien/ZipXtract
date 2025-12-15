@@ -31,6 +31,7 @@ import android.os.Build
 import android.os.Environment
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.preference.PreferenceManager
 import com.wirelessalien.zipxtract.R
@@ -88,7 +89,7 @@ class ArchiveZipService : Service() {
         super.onCreate()
         fileOperationsDao = FileOperationsDao(this)
         createNotificationChannel()
-        LocalBroadcastManager.getInstance(this).registerReceiver(cancelReceiver, IntentFilter(ACTION_CANCEL_OPERATION))
+        ContextCompat.registerReceiver(this, cancelReceiver, IntentFilter(ACTION_CANCEL_OPERATION), ContextCompat.RECEIVER_NOT_EXPORTED)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -143,7 +144,7 @@ class ArchiveZipService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         archiveJob?.cancel()
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(cancelReceiver)
+        unregisterReceiver(cancelReceiver)
     }
 
     private fun createNotificationChannel() {
