@@ -22,7 +22,10 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.media.MediaScannerConnection
 import android.os.Build
 import android.os.Environment
@@ -32,6 +35,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.preference.PreferenceManager
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.activity.MainActivity
+import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_CANCEL_OPERATION
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_COMPLETE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_ERROR
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_PROGRESS
@@ -79,12 +83,22 @@ class ExtractMultipart7zService : Service() {
     private var extractionJob: Job? = null
     private var archiveFormat: ArchiveFormat? = null
 
+    private val cancelReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == ACTION_CANCEL_OPERATION) {
+                extractionJob?.cancel()
+                stopForegroundService()
+            }
+        }
+    }
+
     override fun onBind(intent: Intent): IBinder? = null
 
     override fun onCreate() {
         super.onCreate()
         fileOperationsDao = FileOperationsDao(this)
         createNotificationChannel()
+        LocalBroadcastManager.getInstance(this).registerReceiver(cancelReceiver, IntentFilter(ACTION_CANCEL_OPERATION))
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -129,6 +143,7 @@ class ExtractMultipart7zService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         extractionJob?.cancel()
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(cancelReceiver)
     }
 
     private fun createNotificationChannel() {
@@ -217,10 +232,14 @@ class ExtractMultipart7zService : Service() {
                 showCompletionNotification(destinationDir.path)
                 sendLocalBroadcast(Intent(ACTION_EXTRACTION_COMPLETE).putExtra(EXTRA_DIR_PATH, destinationDir.path))
             } catch (e: SevenZipException) {
-                e.printStackTrace()
-                showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-                sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(
-                    EXTRA_ERROR_MESSAGE, e.message ?: getString(R.string.general_error_msg)))
+                if (e.message == "Cancelled") {
+                    // Cancelled by user, do nothing
+                } else {
+                    e.printStackTrace()
+                    showErrorNotification(e.message ?: getString(R.string.general_error_msg))
+                    sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(
+                        EXTRA_ERROR_MESSAGE, e.message ?: getString(R.string.general_error_msg)))
+                }
             } finally {
                 inArchive.close()
                 archiveOpenVolumeCallback.close()
@@ -352,6 +371,9 @@ class ExtractMultipart7zService : Service() {
 
         override fun prepareOperation(p0: ExtractAskMode?) {}
         override fun setCompleted(complete: Long) {
+            if (extractionJob?.isActive == false) {
+                throw SevenZipException("Cancelled")
+            }
             val progress = ((complete.toDouble() / totalSize) * 100).toInt()
             if (progress != lastProgress) {
                 lastProgress = progress

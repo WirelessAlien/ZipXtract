@@ -22,7 +22,10 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.media.MediaScannerConnection
 import android.os.Build
 import android.os.Environment
@@ -37,6 +40,7 @@ import com.wirelessalien.zipxtract.activity.MainActivity
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_COMPLETE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_ERROR
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_PROGRESS
+import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_CANCEL_OPERATION
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ARCHIVE_NOTIFICATION_CHANNEL_ID
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_DIR_PATH
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_ERROR_MESSAGE
@@ -71,12 +75,22 @@ class CompressCsArchiveService : Service() {
 
     private var compressionJob: Job? = null
 
+    private val cancelReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == ACTION_CANCEL_OPERATION) {
+                compressionJob?.cancel()
+                stopForegroundService()
+            }
+        }
+    }
+
     override fun onBind(intent: Intent): IBinder? = null
 
     override fun onCreate() {
         super.onCreate()
         fileOperationsDao = FileOperationsDao(this)
         createNotificationChannel()
+        LocalBroadcastManager.getInstance(this).registerReceiver(cancelReceiver, IntentFilter(ACTION_CANCEL_OPERATION))
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -119,6 +133,7 @@ class CompressCsArchiveService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         compressionJob?.cancel()
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(cancelReceiver)
     }
 
     private fun createNotificationChannel() {
@@ -218,6 +233,11 @@ class CompressCsArchiveService : Service() {
 
             var n: Int
             while (inStream.read(buffer).also { n = it } != -1) {
+                if (compressionJob?.isActive == false) {
+                    compressorOutputStream.close()
+                    inStream.close()
+                    return
+                }
                 compressorOutputStream.write(buffer, 0, n)
                 bytesRead += n
                 val progress = (bytesRead * 100 / totalBytes).toInt()
@@ -304,6 +324,10 @@ class CompressCsArchiveService : Service() {
                 var bytesProcessed = 0L
 
                 while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                    if (compressionJob?.isActive == false) {
+                        compressor.close()
+                        return
+                    }
                     compressor.write(buffer, 0, bytesRead)
                     bytesProcessed += bytesRead
 

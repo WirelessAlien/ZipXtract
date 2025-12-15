@@ -42,15 +42,35 @@
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"/>
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/backgroundButton"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        style="@style/Widget.Material3.Button.TonalButton"
-        app:cornerRadius="10dp"
+        android:orientation="horizontal"
+        android:weightSum="2"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginTop="16dp"
-        android:layout_marginBottom="16dp"
-        android:text="@string/background" />
+        android:layout_marginBottom="16dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/cancelButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            style="@style/Widget.Material3.Button.TextButton"
+            app:cornerRadius="10dp"
+            android:text="@string/cancel"
+            android:layout_marginEnd="8dp"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/backgroundButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            style="@style/Widget.Material3.Button.TonalButton"
+            app:cornerRadius="10dp"
+            android:text="@string/background"
+            android:layout_marginStart="8dp"/>
+
+    </LinearLayout>
 </LinearLayout>

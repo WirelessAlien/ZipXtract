@@ -22,7 +22,10 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.media.MediaScannerConnection
 import android.os.Build
 import android.os.Environment
@@ -34,6 +37,7 @@ import androidx.preference.PreferenceManager
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.activity.MainActivity
 import com.wirelessalien.zipxtract.constant.BroadcastConstants
+import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_CANCEL_OPERATION
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_COMPLETE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_ERROR
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_PROGRESS
@@ -72,12 +76,22 @@ class ExtractCsArchiveService : Service() {
 
     private var extractionJob: Job? = null
 
+    private val cancelReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == ACTION_CANCEL_OPERATION) {
+                extractionJob?.cancel()
+                stopForegroundService()
+            }
+        }
+    }
+
     override fun onBind(intent: Intent): IBinder? = null
 
     override fun onCreate() {
         super.onCreate()
         fileOperationsDao = FileOperationsDao(this)
         createNotificationChannel()
+        LocalBroadcastManager.getInstance(this).registerReceiver(cancelReceiver, IntentFilter(ACTION_CANCEL_OPERATION))
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -113,6 +127,7 @@ class ExtractCsArchiveService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         extractionJob?.cancel()
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(cancelReceiver)
     }
 
     private fun createNotificationChannel() {
@@ -221,6 +236,9 @@ class ExtractCsArchiveService : Service() {
             TarArchiveInputStream(compressorInputStream).use { tarInput ->
                 var entry: TarArchiveEntry? = tarInput.nextEntry
                 while (entry != null) {
+                    if (extractionJob?.isActive == false) {
+                        return
+                    }
                     val outputFile = File(destinationDir, entry.name)
                     if (entry.isDirectory) {
                         outputFile.mkdirs()
@@ -230,6 +248,9 @@ class ExtractCsArchiveService : Service() {
                         FileOutputStream(outputFile).use { output ->
                             var n: Int
                             while (tarInput.read(buffer).also { n = it } != -1) {
+                                if (extractionJob?.isActive == false) {
+                                    return
+                                }
                                 output.write(buffer, 0, n)
                                 bytesRead += n
                                 val progress = (bytesRead * 100 / totalBytes).toInt()

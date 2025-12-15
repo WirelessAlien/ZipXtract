@@ -22,7 +22,10 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.media.MediaScannerConnection
 import android.os.Build
 import android.os.Environment
@@ -36,6 +39,7 @@ import com.wirelessalien.zipxtract.activity.MainActivity
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_COMPLETE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_ERROR
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_PROGRESS
+import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_CANCEL_OPERATION
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ARCHIVE_NOTIFICATION_CHANNEL_ID
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_DIR_PATH
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_ERROR_MESSAGE
@@ -76,12 +80,22 @@ class ArchiveTarService : Service() {
 
     private var archiveJob: Job? = null
 
+    private val cancelReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == ACTION_CANCEL_OPERATION) {
+                archiveJob?.cancel()
+                stopForegroundService()
+            }
+        }
+    }
+
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onCreate() {
         super.onCreate()
         fileOperationsDao = FileOperationsDao(this)
         createNotificationChannel()
+        LocalBroadcastManager.getInstance(this).registerReceiver(cancelReceiver, IntentFilter(ACTION_CANCEL_OPERATION))
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -106,6 +120,7 @@ class ArchiveTarService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         archiveJob?.cancel()
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(cancelReceiver)
     }
 
     private fun createNotificationChannel() {
@@ -248,9 +263,13 @@ class ArchiveTarService : Service() {
                 sendLocalBroadcast(Intent(ACTION_ARCHIVE_COMPLETE).putExtra(EXTRA_DIR_PATH, finalTarFile.parent))
 
             } catch (e: SevenZipException) {
-                e.printStackTrace()
-                showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-                sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message))
+                if (e.message == "Cancelled") {
+                    // Cancelled by user, do nothing
+                } else {
+                    e.printStackTrace()
+                    showErrorNotification(e.message ?: getString(R.string.general_error_msg))
+                    sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message))
+                }
             } catch (e: IOException) {
                 e.printStackTrace()
                 showErrorNotification(e.message ?: getString(R.string.general_error_msg))
@@ -277,6 +296,9 @@ class ArchiveTarService : Service() {
             override fun setTotal(total: Long) {}
 
             override fun setCompleted(complete: Long) {
+                if (archiveJob?.isActive == false) {
+                    throw SevenZipException("Cancelled")
+                }
                 val totalSize = filesToArchive.sumOf { File(it).length() }
                 var progress = if (totalSize > 0) ((complete.toDouble() / totalSize) * 100).toInt() else 0
                 if (compressionActive) {
