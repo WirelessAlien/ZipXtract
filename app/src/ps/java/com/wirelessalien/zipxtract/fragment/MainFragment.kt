@@ -730,6 +730,11 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             aProgressDialog.dismiss()
         }
 
+        binding.cancelButton.setOnClickListener {
+            cancelAllServices()
+            aProgressDialog.dismiss()
+        }
+
         aProgressDialog = MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
             .setView(binding.root)
             .setCancelable(false)
@@ -745,10 +750,20 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             eProgressDialog.dismiss()
         }
 
+        binding.cancelButton.setOnClickListener {
+            cancelAllServices()
+            eProgressDialog.dismiss()
+        }
+
         eProgressDialog = MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
             .setView(binding.root)
             .setCancelable(false)
             .create()
+    }
+
+    private fun cancelAllServices() {
+        val intent = Intent(com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_CANCEL_OPERATION)
+        LocalBroadcastManager.getInstance(requireContext()).sendBroadcast(intent)
     }
 
     override fun onFileLongClick(file: File, view: View) {
