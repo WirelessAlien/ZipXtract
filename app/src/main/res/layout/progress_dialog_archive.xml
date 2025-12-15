@@ -42,11 +42,9 @@
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"/>
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:weightSum="2"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginTop="16dp"
@@ -54,24 +52,23 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/cancelButton"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_alignParentStart="true"
+            style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
             app:cornerRadius="10dp"
-            android:text="@string/cancel"
+            app:icon="@drawable/ic_close"
             android:layout_marginEnd="8dp"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/backgroundButton"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_toEndOf="@id/cancelButton"
+            android:layout_alignParentEnd="true"
             style="@style/Widget.Material3.Button.TonalButton"
             app:cornerRadius="10dp"
             android:text="@string/background"
             android:layout_marginStart="8dp"/>
-
-    </LinearLayout>
-
+    </RelativeLayout>
 </LinearLayout>

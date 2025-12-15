@@ -149,11 +149,20 @@ class CompressCsArchiveService : Service() {
     }
 
     private fun createNotification(progress: Int): Notification {
+        val cancelIntent = Intent(ACTION_CANCEL_OPERATION)
+        val cancelPendingIntent = PendingIntent.getBroadcast(
+            this,
+            0,
+            cancelIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
         val builder = NotificationCompat.Builder(this, ARCHIVE_NOTIFICATION_CHANNEL_ID)
             .setContentTitle(getString(R.string.compression_ongoing))
             .setSmallIcon(R.drawable.ic_notification_icon)
             .setProgress(100, progress, progress == 0)
             .setOngoing(true)
+            .addAction(R.drawable.ic_close, getString(R.string.cancel), cancelPendingIntent)
 
         return builder.build()
     }

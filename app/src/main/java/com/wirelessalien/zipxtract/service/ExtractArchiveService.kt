@@ -169,11 +169,20 @@ class ExtractArchiveService : Service() {
     }
 
     private fun createNotification(progress: Int): Notification {
+        val cancelIntent = Intent(ACTION_CANCEL_OPERATION)
+        val cancelPendingIntent = PendingIntent.getBroadcast(
+            this,
+            0,
+            cancelIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
         val builder = NotificationCompat.Builder(this, EXTRACTION_NOTIFICATION_CHANNEL_ID)
             .setContentTitle(getString(R.string.extraction_ongoing))
             .setSmallIcon(R.drawable.ic_notification_icon)
             .setProgress(100, progress, progress == 0)
             .setOngoing(true)
+            .addAction(R.drawable.ic_close, getString(R.string.cancel), cancelPendingIntent)
 
         return builder.build()
     }
@@ -516,9 +525,9 @@ class ExtractArchiveService : Service() {
                         FileOutputStream(outputFile).use { output ->
                             var n: Int
                             while (tarInput.read(buffer).also { n = it } != -1) {
-                                    if (extractionJob?.isActive == false) {
-                                        return
-                                    }
+                                if (extractionJob?.isActive == false) {
+                                    return
+                                }
                                 output.write(buffer, 0, n)
                                 bytesRead += n
                                 val progress = (bytesRead * 100 / totalBytes).toInt()
