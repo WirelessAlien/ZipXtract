@@ -42,6 +42,7 @@ import android.os.FileObserver.MOVED_TO
 import android.os.FileObserver.MOVE_SELF
 import android.os.Handler
 import android.os.Looper
+import android.os.StatFs
 import android.os.storage.StorageManager
 import android.provider.MediaStore
 import android.provider.Settings
@@ -178,6 +179,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     private val handler = Handler(Looper.getMainLooper())
     private var fileLoadingJob: Job? = null
     private val coroutineScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+    private var storageInfoJob: Job? = null
     private var searchJob: Job? = null
     private lateinit var fileOperationsDao: FileOperationsDao
 
@@ -448,6 +450,8 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 }
             }
         }
+
+        updateStorageInfo(currentPath ?: Environment.getExternalStorageDirectory().absolutePath)
         startFileObserver()
 
         val filter = IntentFilter().apply {
@@ -628,6 +632,49 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         currentPath = path
         updateCurrentPathChip()
         updateAdapterWithFullList()
+        updateStorageInfo(path)
+    }
+
+    private fun updateStorageInfo(path: String) {
+        storageInfoJob?.cancel()
+        storageInfoJob = lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                // Determine which storage volume the path belongs to
+                val sdCardPath = getSdCardPath()
+                val rootPath = if (sdCardPath != null && path.startsWith(sdCardPath)) {
+                    sdCardPath
+                } else {
+                    Environment.getExternalStorageDirectory().absolutePath
+                }
+
+                val stat = StatFs(rootPath)
+                val totalSize = stat.totalBytes
+                val availableSize = stat.availableBytes
+                val usedSize = totalSize - availableSize
+
+                val progress = if (totalSize > 0) ((usedSize.toDouble() / totalSize) * 100).toInt() else 0
+
+                val totalSizeStr = android.text.format.Formatter.formatFileSize(requireContext(), totalSize)
+                val availableSizeStr = android.text.format.Formatter.formatFileSize(requireContext(), availableSize)
+
+                val infoText = getString(R.string.storage_info_format, availableSizeStr, totalSizeStr)
+
+                withContext(Dispatchers.Main) {
+                    if (isAdded) {
+                        binding.storageInfoLayout.visibility = View.VISIBLE
+                        binding.storageInfoText.text = infoText
+                        binding.storageProgressBar.progress = progress
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                withContext(Dispatchers.Main) {
+                    if (isAdded) {
+                         binding.storageInfoLayout.visibility = View.GONE
+                    }
+                }
+            }
+        }
     }
 
     private fun showExtendedFabs() {
@@ -1192,6 +1239,8 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         val bottomSheetDialog = BottomSheetDialog(requireContext())
         bottomSheetDialog.setContentView(binding.root)
 
+        checkStorageForOperation(binding.lowStorageWarning, file.parent ?: Environment.getExternalStorageDirectory().absolutePath, file.length())
+
         binding.fileName.text = file.name
 
         binding.fileExtension.text = if (file.extension.isNotEmpty()) {
@@ -1309,6 +1358,8 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         val binding = BottomSheetOptionBinding.inflate(layoutInflater)
         val bottomSheetDialog = BottomSheetDialog(requireContext())
         bottomSheetDialog.setContentView(binding.root)
+
+        checkStorageForOperation(binding.lowStorageWarning, file.parent ?: Environment.getExternalStorageDirectory().absolutePath, file.length())
 
         binding.fileName.text = file.name
 
@@ -1813,6 +1864,32 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                         binding.swipeRefreshLayout.isRefreshing = false
                     }
                 }
+            }
+        }
+    }
+
+    private fun checkStorageForOperation(warningTextView: TextView, path: String, requiredSize: Long) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val stat = StatFs(path)
+                val availableSize = stat.availableBytes
+                val safeRequiredSize = (requiredSize * 1.1).toLong()
+
+                if (availableSize < safeRequiredSize) {
+                    val availableSizeStr = android.text.format.Formatter.formatFileSize(requireContext(), availableSize)
+                    val requiredSizeStr = android.text.format.Formatter.formatFileSize(requireContext(), requiredSize)
+                    val warningText = getString(R.string.low_storage_warning_dynamic, availableSizeStr, requiredSizeStr)
+                    withContext(Dispatchers.Main) {
+                        warningTextView.text = warningText
+                        warningTextView.visibility = View.VISIBLE
+                    }
+                } else {
+                    withContext(Dispatchers.Main) {
+                        warningTextView.visibility = View.GONE
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }

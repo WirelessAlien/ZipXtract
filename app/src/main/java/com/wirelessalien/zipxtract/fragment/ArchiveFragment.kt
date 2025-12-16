@@ -32,6 +32,7 @@ import android.os.Bundle
 import android.os.Environment
 import android.os.Handler
 import android.os.Looper
+import android.os.StatFs
 import android.provider.MediaStore
 import android.text.Editable
 import android.view.LayoutInflater
@@ -548,6 +549,8 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
         val bottomSheetDialog = BottomSheetDialog(requireContext())
         bottomSheetDialog.setContentView(binding.root)
 
+        checkStorageForExtraction(binding.lowStorageWarning, file.parent ?: Environment.getExternalStorageDirectory().absolutePath, file.length())
+
         val filePath = file.absolutePath
         binding.fileName.text = file.name
 
@@ -889,6 +892,32 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
             bytes < megabyte -> String.format(Locale.US, "%.2f KB", bytes.toFloat() / kilobyte)
             bytes < gigabyte -> String.format(Locale.US, "%.2f MB", bytes.toFloat() / megabyte)
             else -> String.format(Locale.US, "%.2f GB", bytes.toFloat() / gigabyte)
+        }
+    }
+
+    private fun checkStorageForExtraction(warningTextView: TextView, path: String, requiredSize: Long) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val stat = StatFs(path)
+                val availableSize = stat.availableBytes
+                val safeRequiredSize = (requiredSize * 1.1).toLong()
+
+                if (availableSize < safeRequiredSize) {
+                    val availableSizeStr = android.text.format.Formatter.formatFileSize(requireContext(), availableSize)
+                    val requiredSizeStr = android.text.format.Formatter.formatFileSize(requireContext(), requiredSize)
+                    val warningText = getString(R.string.low_storage_warning_dynamic, availableSizeStr, requiredSizeStr)
+                    withContext(Dispatchers.Main) {
+                        warningTextView.text = warningText
+                        warningTextView.visibility = View.VISIBLE
+                    }
+                } else {
+                    withContext(Dispatchers.Main) {
+                        warningTextView.visibility = View.GONE
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 }

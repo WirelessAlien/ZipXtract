@@ -21,12 +21,15 @@ package com.wirelessalien.zipxtract.fragment
 import android.R
 import android.app.Dialog
 import android.os.Bundle
+import android.os.Environment
+import android.os.StatFs
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.TextView
 import android.widget.Toast
 import androidx.core.view.isGone
 import androidx.fragment.app.DialogFragment
@@ -107,6 +110,32 @@ class ZipOptionDialogFragment : DialogFragment() {
         }
     }
 
+    private fun checkStorageForArchive(warningTextView: TextView, path: String, requiredSize: Long) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val stat = StatFs(path)
+                val availableSize = stat.availableBytes
+                val safeRequiredSize = (requiredSize * 1.1).toLong()
+
+                if (availableSize < safeRequiredSize) {
+                    val availableSizeStr = android.text.format.Formatter.formatFileSize(requireContext(), availableSize)
+                    val requiredSizeStr = android.text.format.Formatter.formatFileSize(requireContext(), requiredSize)
+                    val warningText = getString(com.wirelessalien.zipxtract.R.string.low_storage_warning_dynamic, availableSizeStr, requiredSizeStr)
+                    withContext(Dispatchers.Main) {
+                        warningTextView.text = warningText
+                        warningTextView.visibility = View.VISIBLE
+                    }
+                } else {
+                    withContext(Dispatchers.Main) {
+                        warningTextView.visibility = View.GONE
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
     private fun initializeUI() {
         if (!::selectedFilePaths.isInitialized || selectedFilePaths.isEmpty()) {
             Toast.makeText(requireContext(), com.wirelessalien.zipxtract.R.string.no_files_to_archive, Toast.LENGTH_SHORT).show()
@@ -161,6 +190,19 @@ class ZipOptionDialogFragment : DialogFragment() {
             File(selectedFilePaths.first()).name
         } else {
             "outputZp"
+        }
+
+        // Check storage
+        val targetPath = if (selectedFilePaths.isNotEmpty()) {
+            File(selectedFilePaths.first()).parent ?: Environment.getExternalStorageDirectory().absolutePath
+        } else {
+            Environment.getExternalStorageDirectory().absolutePath
+        }
+        lifecycleScope.launch {
+            val totalSize = withContext(Dispatchers.IO) {
+                selectedFilePaths.sumOf { File(it).length() }
+            }
+            checkStorageForArchive(binding.lowStorageWarning, targetPath, totalSize)
         }
 
         val compressionMethodSpinner = binding.compressionMethodInput

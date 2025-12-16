@@ -53,6 +53,9 @@
     <string name="no_match">No match</string>
     <string name="refresh">Refresh</string>
     <string name="refreshed">Refreshed</string>
+    <string name="storage_info_format">Available: %1$s / Total: %2$s</string>
+    <string name="low_storage_warning">Warning: Low storage space! Available: %1$s</string>
+    <string name="low_storage_warning_dynamic">Low storage! %1$s available, Free up at least ~%2$s. Additional space maybe needed based on the archive format.</string>
 
 
     <!-- Bottom navigation -->

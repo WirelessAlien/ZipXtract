@@ -54,6 +54,15 @@
                 android:visibility="gone"
                 android:indeterminate="true"/>
 
+            <TextView
+                android:id="@+id/lowStorageWarning"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/low_storage_warning"
+                android:textColor="@android:color/holo_red_dark"
+                android:layout_margin="5dp"
+                android:visibility="gone"/>
+
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/toggleFileViewBtn"
                 android:layout_width="match_parent"
