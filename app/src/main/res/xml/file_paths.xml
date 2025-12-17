@@ -17,4 +17,5 @@
 
 <paths>
     <external-path name="filespath" path="/" />
+    <root-path name="root" path="/" />
 </paths>
