@@ -1,1 +1,1 @@
-An open-source Android app for extracting and creating various archive formats like ZIP, RAR, 7z, and more
+Extract and create various archive formats like ZIP, RAR, 7z, and more
