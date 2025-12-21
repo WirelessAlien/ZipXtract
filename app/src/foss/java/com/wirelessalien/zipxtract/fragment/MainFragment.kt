@@ -46,6 +46,7 @@ import android.os.StatFs
 import android.provider.MediaStore
 import android.provider.Settings
 import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
@@ -79,6 +80,7 @@ import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.chip.Chip
+import com.google.android.material.color.MaterialColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.google.android.material.snackbar.Snackbar
@@ -130,6 +132,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.Runnable
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -1229,7 +1232,43 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         val bottomSheetDialog = BottomSheetDialog(requireContext())
         bottomSheetDialog.setContentView(binding.root)
 
-        checkStorageForOperation(binding.lowStorageWarning, file.parent ?: Environment.getExternalStorageDirectory().absolutePath, file.length())
+        val buttons = listOf(
+            binding.btnLzma,
+            binding.btnBzip2,
+            binding.btnXz,
+            binding.btnGzip,
+            binding.btnZstd,
+            binding.btnExtract
+        )
+
+        val defaultColor = binding.btnExtract.backgroundTintList
+
+        checkStorageForOperation(
+            binding.lowStorageWarning,
+            file.parent ?: Environment.getExternalStorageDirectory().absolutePath,
+            file.length(),
+            buttons,
+            defaultColor
+        )
+
+        var storageCheckJob: Job? = null
+        binding.outputPathInput.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                storageCheckJob?.cancel()
+                storageCheckJob = lifecycleScope.launch {
+                    delay(1000)
+                    checkStorageForOperation(
+                        binding.lowStorageWarning,
+                        s.toString(),
+                        file.length(),
+                        buttons,
+                        defaultColor
+                    )
+                }
+            }
+        })
 
         binding.fileName.text = file.name
 
@@ -1380,7 +1419,41 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         val bottomSheetDialog = BottomSheetDialog(requireContext())
         bottomSheetDialog.setContentView(binding.root)
 
-        checkStorageForOperation(binding.lowStorageWarning, file.parent ?: Environment.getExternalStorageDirectory().absolutePath, file.length())
+        val buttons = listOf(
+            binding.btnExtract,
+            binding.btnMultiExtract,
+            binding.btnMulti7zExtract,
+            binding.btnMultiZipExtract
+        )
+
+        val defaultColor = binding.btnExtract.backgroundTintList
+
+        checkStorageForOperation(
+            binding.lowStorageWarning,
+            file.parent ?: Environment.getExternalStorageDirectory().absolutePath,
+            file.length(),
+            buttons,
+            defaultColor
+        )
+
+        var storageCheckJob: Job? = null
+        binding.outputPathInput.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                storageCheckJob?.cancel()
+                storageCheckJob = lifecycleScope.launch {
+                    delay(1000)
+                    checkStorageForOperation(
+                        binding.lowStorageWarning,
+                        s.toString(),
+                        file.length(),
+                        buttons,
+                        defaultColor
+                    )
+                }
+            }
+        })
 
         binding.fileName.text = file.name
 
@@ -1924,7 +1997,13 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         }
     }
 
-    private fun checkStorageForOperation(warningTextView: TextView, path: String, requiredSize: Long) {
+    private fun checkStorageForOperation(
+        warningTextView: TextView,
+        path: String,
+        requiredSize: Long,
+        buttons: List<View>? = null,
+        defaultColor: android.content.res.ColorStateList? = null
+    ) {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val stat = StatFs(path)
@@ -1938,10 +2017,15 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                     withContext(Dispatchers.Main) {
                         warningTextView.text = warningText
                         warningTextView.visibility = View.VISIBLE
+                        val errorColor = MaterialColors.getColor(warningTextView, com.google.android.material.R.attr.colorOnError)
+                        buttons?.forEach { it.backgroundTintList = android.content.res.ColorStateList.valueOf(errorColor) }
                     }
                 } else {
                     withContext(Dispatchers.Main) {
                         warningTextView.visibility = View.GONE
+                        if (defaultColor != null) {
+                            buttons?.forEach { it.backgroundTintList = defaultColor }
+                        }
                     }
                 }
             } catch (e: Exception) {
