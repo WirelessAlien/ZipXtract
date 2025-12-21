@@ -67,6 +67,21 @@
                 android:paddingEnd="16dp"
                 android:orientation="horizontal">
 
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/externalStorageChip"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/Widget.Material3.Chip.Suggestion.Elevated"
+                    android:elevation="4dp"
+                    android:clickable="true"
+                    android:checkable="false"
+                    android:visibility="gone"
+                    android:layout_marginEnd="8dp"
+                    app:chipIconVisible="true"
+                    app:chipIcon="@drawable/ic_change"
+                    app:chipCornerRadius="8dp"
+                    android:text="@string/storage"/>
+
                 <com.google.android.material.chip.ChipGroup
                     android:id="@+id/chipGroupPath"
                     android:layout_width="wrap_content"

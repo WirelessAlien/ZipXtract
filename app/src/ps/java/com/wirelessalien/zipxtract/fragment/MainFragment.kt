@@ -111,6 +111,7 @@ import com.wirelessalien.zipxtract.databinding.ProgressDialogArchiveBinding
 import com.wirelessalien.zipxtract.databinding.ProgressDialogExtractBinding
 import com.wirelessalien.zipxtract.helper.ChecksumUtils
 import com.wirelessalien.zipxtract.helper.FileOperationsDao
+import com.wirelessalien.zipxtract.helper.StorageHelper
 import com.wirelessalien.zipxtract.service.Archive7zService
 import com.wirelessalien.zipxtract.service.ArchiveSplitZipService
 import com.wirelessalien.zipxtract.service.ArchiveTarService
@@ -438,21 +439,22 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             initRecyclerView()
         }
 
-        val sdCardPath = getSdCardPath()
+        val sdCardPath = StorageHelper.getSdCardPath(requireContext())
         if (sdCardPath != null) {
             binding.externalStorageChip.visibility = View.VISIBLE
             binding.externalStorageChip.setOnClickListener {
-                val currentPath = currentPath ?: Environment.getExternalStorageDirectory().absolutePath
+                val currentPathToCheck = currentPath ?: Environment.getExternalStorageDirectory().absolutePath
                 val basePath = Environment.getExternalStorageDirectory().absolutePath
-                if (currentPath.startsWith(basePath) && !currentPath.startsWith(sdCardPath)) {
+                if (currentPathToCheck.startsWith(basePath) && !currentPathToCheck.startsWith(sdCardPath)) {
                     parentFragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
                     navigateToPath(sdCardPath)
-                } else if (currentPath.startsWith(sdCardPath) && !currentPath.startsWith(basePath)) {
+                } else if (currentPathToCheck.startsWith(sdCardPath) && !currentPathToCheck.startsWith(basePath)) {
                     parentFragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
                     navigateToPath(basePath)
                 }
             }
         }
+
         updateStorageInfo(currentPath ?: Environment.getExternalStorageDirectory().absolutePath)
         startFileObserver()
 
@@ -557,24 +559,6 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         }
     }
 
-    private fun getSdCardPath(): String? {
-        val storageManager = requireContext().getSystemService(Context.STORAGE_SERVICE) as StorageManager
-        val storageVolumes = storageManager.storageVolumes
-        for (storageVolume in storageVolumes) {
-            if (storageVolume.isRemovable) {
-                val storageVolumePath = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    storageVolume.directory?.absolutePath
-                } else {
-                    Environment.getExternalStorageDirectory().absolutePath
-                }
-                if (storageVolumePath != null && storageVolumePath != Environment.getExternalStorageDirectory().absolutePath) {
-                    return storageVolumePath
-                }
-            }
-        }
-        return null
-    }
-
     private fun showPermissionRequestLayout() {
         val permissionBinding = LayoutPermissionRequestBinding.inflate(layoutInflater)
         binding.root.removeAllViews()
@@ -592,12 +576,15 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
     private fun updateCurrentPathChip() {
         val internalStorage = getString(R.string.internal_storage)
-        val sdCardPath = getSdCardPath()
+        val sdCardString = getString(R.string.sd_card)
+        val sdCardPath = StorageHelper.getSdCardPath(requireContext())
         val basePath = Environment.getExternalStorageDirectory().absolutePath
         val currentPath = currentPath ?: basePath
+        val isSdCard = sdCardPath != null && currentPath.startsWith(sdCardPath)
+
         val displayPath = when {
             currentPath.startsWith(basePath) -> currentPath.replace(basePath, internalStorage)
-            sdCardPath != null && currentPath.startsWith(sdCardPath) -> currentPath.replace(sdCardPath, getString(R.string.sd_card))
+            isSdCard -> currentPath.replace(sdCardPath!!, sdCardString)
             else -> currentPath
         }.split("/").filter { it.isNotEmpty() }
 
@@ -605,14 +592,16 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
         var pathAccumulator = ""
 
-        for (part in displayPath) {
+        for ((index, part) in displayPath.withIndex()) {
             val chip = LayoutInflater.from(requireContext()).inflate(R.layout.custom_chip, binding.chipGroupPath, false) as Chip
             chip.text = part
 
-            pathAccumulator = when (part) {
-                internalStorage -> basePath
-                getString(R.string.sd_card) -> sdCardPath!!
-                else -> if (pathAccumulator.endsWith("/")) "$pathAccumulator$part" else "$pathAccumulator/$part"
+            if (index == 0) {
+                if (part == internalStorage) pathAccumulator = basePath
+                else if (part == sdCardString && isSdCard) pathAccumulator = sdCardPath!!
+                else pathAccumulator = "/$part"
+            } else {
+                pathAccumulator = if (pathAccumulator.endsWith("/")) "$pathAccumulator$part" else "$pathAccumulator/$part"
             }
 
             val finalPathForChip = pathAccumulator
@@ -640,7 +629,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         storageInfoJob = lifecycleScope.launch(Dispatchers.IO) {
             try {
                 // Determine which storage volume the path belongs to
-                val sdCardPath = getSdCardPath()
+                val sdCardPath = StorageHelper.getSdCardPath(requireContext())
                 val rootPath = if (sdCardPath != null && path.startsWith(sdCardPath)) {
                     sdCardPath
                 } else {
@@ -1975,7 +1964,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 searchFilesWithMediaStore(query)
             } else {
                 val basePath = Environment.getExternalStorageDirectory().absolutePath
-                val sdCardPath = getSdCardPath()
+                val sdCardPath = StorageHelper.getSdCardPath(requireContext())
                 val searchPath = if (currentPath?.startsWith(sdCardPath ?: "") == true) {
                     sdCardPath ?: basePath
                 } else {
