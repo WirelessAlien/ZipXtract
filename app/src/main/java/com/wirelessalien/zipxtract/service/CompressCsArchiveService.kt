@@ -97,6 +97,7 @@ class CompressCsArchiveService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val jobId = intent?.getStringExtra(ServiceConstants.EXTRA_JOB_ID)
         val compressionFormat = intent?.getStringExtra(ServiceConstants.EXTRA_COMPRESSION_FORMAT)
+        val destinationPath = intent?.getStringExtra(ServiceConstants.EXTRA_DESTINATION_PATH)
 
 
         if (jobId == null || compressionFormat == null) {
@@ -120,9 +121,9 @@ class CompressCsArchiveService : Service() {
 
         compressionJob = CoroutineScope(Dispatchers.IO).launch {
             if (compressionFormat == ZSTD_FORMAT) {
-                compressWithZstd(filePath, compressionFormat)
+                compressWithZstd(filePath, compressionFormat, destinationPath)
             } else {
-                compressArchive(filePath, compressionFormat)
+                compressArchive(filePath, compressionFormat, destinationPath)
             }
             fileOperationsDao.deleteFilesForJob(jobId)
         }
@@ -172,7 +173,7 @@ class CompressCsArchiveService : Service() {
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
     }
 
-    private fun compressArchive(filePath: String, format: String) {
+    private fun compressArchive(filePath: String, format: String, destinationPath: String?) {
 
         if (filePath.isEmpty()) {
             val errorMessage = getString(R.string.no_files_to_archive)
@@ -188,7 +189,9 @@ class CompressCsArchiveService : Service() {
         val archivePath = sharedPreferences.getString(PREFERENCE_ARCHIVE_DIR_PATH, null)
         val parentDir: File
 
-        if (!archivePath.isNullOrEmpty()) {
+        if (!destinationPath.isNullOrBlank()) {
+            parentDir = File(destinationPath)
+        } else if (!archivePath.isNullOrEmpty()) {
             parentDir = if (File(archivePath).isAbsolute) {
                 File(archivePath)
             } else {
@@ -278,7 +281,7 @@ class CompressCsArchiveService : Service() {
         }
     }
 
-    private fun compressWithZstd(inputFilePath: String, format: String) {
+    private fun compressWithZstd(inputFilePath: String, format: String, destinationPath: String?) {
 
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
         val compressionLevel = sharedPreferences.getString("zstd_compression_level", "3")?.toIntOrNull() ?: 3
@@ -296,7 +299,9 @@ class CompressCsArchiveService : Service() {
         val archivePath = sharedPreferences.getString(PREFERENCE_ARCHIVE_DIR_PATH, null)
         val parentDir: File
 
-        if (!archivePath.isNullOrEmpty()) {
+        if (!destinationPath.isNullOrBlank()) {
+            parentDir = File(destinationPath)
+        } else if (!archivePath.isNullOrEmpty()) {
             parentDir = if (File(archivePath).isAbsolute) {
                 File(archivePath)
             } else {

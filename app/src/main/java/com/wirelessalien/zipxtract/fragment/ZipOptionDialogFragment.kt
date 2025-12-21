@@ -34,10 +34,12 @@ import android.widget.Toast
 import androidx.core.view.isGone
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.wirelessalien.zipxtract.adapter.FileAdapter
 import com.wirelessalien.zipxtract.adapter.FilePathAdapter
+import com.wirelessalien.zipxtract.constant.BroadcastConstants.PREFERENCE_ARCHIVE_DIR_PATH
 import com.wirelessalien.zipxtract.databinding.ZipOptionDialogBinding
 import com.wirelessalien.zipxtract.helper.FileOperationsDao
 import kotlinx.coroutines.CoroutineScope
@@ -100,7 +102,11 @@ class ZipOptionDialogFragment : DialogFragment() {
                     }
                 } else {
                     binding.progressIndicator.visibility = View.GONE
-                    Toast.makeText(context, getString(com.wirelessalien.zipxtract.R.string.error_no_file_information_provided), Toast.LENGTH_LONG).show()
+                    Toast.makeText(
+                        context,
+                        getString(com.wirelessalien.zipxtract.R.string.error_no_file_information_provided),
+                        Toast.LENGTH_LONG
+                    ).show()
                     dismiss()
                     return@launch
                 }
@@ -110,7 +116,11 @@ class ZipOptionDialogFragment : DialogFragment() {
         }
     }
 
-    private fun checkStorageForArchive(warningTextView: TextView, path: String, requiredSize: Long) {
+    private fun checkStorageForArchive(
+        warningTextView: TextView,
+        path: String,
+        requiredSize: Long
+    ) {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val stat = StatFs(path)
@@ -118,9 +128,17 @@ class ZipOptionDialogFragment : DialogFragment() {
                 val safeRequiredSize = (requiredSize * 1.1).toLong()
 
                 if (availableSize < safeRequiredSize) {
-                    val availableSizeStr = android.text.format.Formatter.formatFileSize(requireContext(), availableSize)
-                    val requiredSizeStr = android.text.format.Formatter.formatFileSize(requireContext(), requiredSize)
-                    val warningText = getString(com.wirelessalien.zipxtract.R.string.low_storage_warning_dynamic, availableSizeStr, requiredSizeStr)
+                    val availableSizeStr = android.text.format.Formatter.formatFileSize(
+                        requireContext(),
+                        availableSize
+                    )
+                    val requiredSizeStr =
+                        android.text.format.Formatter.formatFileSize(requireContext(), requiredSize)
+                    val warningText = getString(
+                        com.wirelessalien.zipxtract.R.string.low_storage_warning_dynamic,
+                        availableSizeStr,
+                        requiredSizeStr
+                    )
                     withContext(Dispatchers.Main) {
                         warningTextView.text = warningText
                         warningTextView.visibility = View.VISIBLE
@@ -138,7 +156,11 @@ class ZipOptionDialogFragment : DialogFragment() {
 
     private fun initializeUI() {
         if (!::selectedFilePaths.isInitialized || selectedFilePaths.isEmpty()) {
-            Toast.makeText(requireContext(), com.wirelessalien.zipxtract.R.string.no_files_to_archive, Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                requireContext(),
+                com.wirelessalien.zipxtract.R.string.no_files_to_archive,
+                Toast.LENGTH_SHORT
+            ).show()
             dismiss()
             return
         }
@@ -153,12 +175,20 @@ class ZipOptionDialogFragment : DialogFragment() {
                     filePathAdapter.notifyItemRangeChanged(position, selectedFilePaths.size)
 
                     if (selectedFilePaths.isEmpty()) {
-                        Toast.makeText(requireContext(), com.wirelessalien.zipxtract.R.string.no_files_to_archive, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            requireContext(),
+                            com.wirelessalien.zipxtract.R.string.no_files_to_archive,
+                            Toast.LENGTH_SHORT
+                        ).show()
                         dismiss()
                     }
                 }
             } else {
-                Toast.makeText(requireContext(), getString(com.wirelessalien.zipxtract.R.string.file_list_is_fixed_for_this_operation), Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    requireContext(),
+                    getString(com.wirelessalien.zipxtract.R.string.file_list_is_fixed_for_this_operation),
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
 
@@ -179,7 +209,10 @@ class ZipOptionDialogFragment : DialogFragment() {
         }
 
         binding.encInfo.setOnClickListener {
-            MaterialAlertDialogBuilder(requireContext(), com.wirelessalien.zipxtract.R.style.MaterialDialog)
+            MaterialAlertDialogBuilder(
+                requireContext(),
+                com.wirelessalien.zipxtract.R.style.MaterialDialog
+            )
                 .setMessage(getString(com.wirelessalien.zipxtract.R.string.settings_info_text))
                 .setPositiveButton(getString(com.wirelessalien.zipxtract.R.string.ok)) { _, _ ->
                 }
@@ -193,8 +226,9 @@ class ZipOptionDialogFragment : DialogFragment() {
         }
 
         // Check storage
-        val targetPath = if (selectedFilePaths.isNotEmpty()) {
-            File(selectedFilePaths.first()).parent ?: Environment.getExternalStorageDirectory().absolutePath
+        val parentPath = if (selectedFilePaths.isNotEmpty()) {
+            File(selectedFilePaths.first()).parent
+                ?: Environment.getExternalStorageDirectory().absolutePath
         } else {
             Environment.getExternalStorageDirectory().absolutePath
         }
@@ -202,7 +236,30 @@ class ZipOptionDialogFragment : DialogFragment() {
             val totalSize = withContext(Dispatchers.IO) {
                 selectedFilePaths.sumOf { File(it).length() }
             }
-            checkStorageForArchive(binding.lowStorageWarning, targetPath, totalSize)
+            checkStorageForArchive(binding.lowStorageWarning, parentPath, totalSize)
+        }
+
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
+        val archivePath = sharedPreferences.getString(PREFERENCE_ARCHIVE_DIR_PATH, null)
+        val defaultPath = if (!archivePath.isNullOrEmpty()) {
+            if (File(archivePath).isAbsolute) {
+                archivePath
+            } else {
+                File(Environment.getExternalStorageDirectory(), archivePath).absolutePath
+            }
+        } else {
+            parentPath
+        }
+
+        binding.outputPathInput.setText(defaultPath)
+        binding.outputPathLayout.setEndIconOnClickListener {
+            val pathPicker = PathPickerFragment.newInstance()
+            pathPicker.setPathPickerListener(object : PathPickerFragment.PathPickerListener {
+                override fun onPathSelected(path: String) {
+                    binding.outputPathInput.setText(path)
+                }
+            })
+            pathPicker.show(parentFragmentManager, "path_picker")
         }
 
         val compressionMethodSpinner = binding.compressionMethodInput
@@ -218,7 +275,8 @@ class ZipOptionDialogFragment : DialogFragment() {
 
         val splitSizeUnitSpinner = binding.splitSizeUnitSpinner
         val splitSizeUnits = arrayOf("KB", "MB", "GB")
-        val splitSizeUnitAdapter = ArrayAdapter(requireContext(), R.layout.simple_spinner_item, splitSizeUnits)
+        val splitSizeUnitAdapter =
+            ArrayAdapter(requireContext(), R.layout.simple_spinner_item, splitSizeUnits)
         splitSizeUnitAdapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item)
         splitSizeUnitSpinner.adapter = splitSizeUnitAdapter
 
@@ -234,28 +292,37 @@ class ZipOptionDialogFragment : DialogFragment() {
             zipNameEditText.selectAll()
         }
 
-        val compressionMethods = CompressionMethod.entries.filter { it != CompressionMethod.AES_INTERNAL_ONLY }.map { it.name }.toTypedArray()
-        val compressionMethodAdapter = ArrayAdapter(requireContext(), R.layout.simple_spinner_item, compressionMethods)
+        val compressionMethods =
+            CompressionMethod.entries.filter { it != CompressionMethod.AES_INTERNAL_ONLY }
+                .map { it.name }.toTypedArray()
+        val compressionMethodAdapter =
+            ArrayAdapter(requireContext(), R.layout.simple_spinner_item, compressionMethods)
         compressionMethodAdapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item)
         compressionMethodSpinner.adapter = compressionMethodAdapter
 
         val compressionLevels = CompressionLevel.entries.map { it.name }.toTypedArray()
-        val compressionLevelAdapter = ArrayAdapter(requireContext(), R.layout.simple_spinner_item, compressionLevels)
+        val compressionLevelAdapter =
+            ArrayAdapter(requireContext(), R.layout.simple_spinner_item, compressionLevels)
         compressionLevelAdapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item)
         compressionLevelSpinner.adapter = compressionLevelAdapter
 
         val encryptionMethods = EncryptionMethod.entries.map { it.name }.toTypedArray()
-        val encryptionMethodAdapter = ArrayAdapter(requireContext(), R.layout.simple_spinner_item, encryptionMethods)
+        val encryptionMethodAdapter =
+            ArrayAdapter(requireContext(), R.layout.simple_spinner_item, encryptionMethods)
         encryptionMethodAdapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item)
         encryptionMethodSpinner.adapter = encryptionMethodAdapter
 
-        val encryptionStrengths = AesKeyStrength.entries.filter { it != AesKeyStrength.KEY_STRENGTH_192 }.map { it.name }.toTypedArray()
-        val encryptionStrengthAdapter = ArrayAdapter(requireContext(), R.layout.simple_spinner_item, encryptionStrengths)
+        val encryptionStrengths =
+            AesKeyStrength.entries.filter { it != AesKeyStrength.KEY_STRENGTH_192 }.map { it.name }
+                .toTypedArray()
+        val encryptionStrengthAdapter =
+            ArrayAdapter(requireContext(), R.layout.simple_spinner_item, encryptionStrengths)
         encryptionStrengthAdapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item)
         encryptionStrengthSpinner.adapter = encryptionStrengthAdapter
 
-        val mainFragment = parentFragmentManager.findFragmentById(com.wirelessalien.zipxtract.R.id.container) as? MainFragment
-            ?: return
+        val mainFragment =
+            parentFragmentManager.findFragmentById(com.wirelessalien.zipxtract.R.id.container) as? MainFragment
+                ?: return
 
         binding.okButton.setOnClickListener {
             val archiveName = zipNameEditText.text.toString().ifBlank { defaultName }
@@ -263,27 +330,32 @@ class ZipOptionDialogFragment : DialogFragment() {
             val confirmPassword = confirmPasswordInput.text.toString()
 
             if (password != confirmPassword) {
-                confirmPasswordInput.error = getString(com.wirelessalien.zipxtract.R.string.passwords_do_not_match)
+                confirmPasswordInput.error =
+                    getString(com.wirelessalien.zipxtract.R.string.passwords_do_not_match)
                 return@setOnClickListener
             }
             val isEncryptionEnabled = password.isNotEmpty()
-            val selectedCompressionMethod = CompressionMethod.valueOf(compressionMethods[compressionMethodSpinner.selectedItemPosition])
-            val selectedCompressionLevel = CompressionLevel.valueOf(compressionLevels[compressionLevelSpinner.selectedItemPosition])
+            val selectedCompressionMethod =
+                CompressionMethod.valueOf(compressionMethods[compressionMethodSpinner.selectedItemPosition])
+            val selectedCompressionLevel =
+                CompressionLevel.valueOf(compressionLevels[compressionLevelSpinner.selectedItemPosition])
             val selectedEncryptionMethod = if (encryptionMethodSpinner.selectedItemPosition != 0) {
                 EncryptionMethod.valueOf(encryptionMethods[encryptionMethodSpinner.selectedItemPosition])
             } else {
                 null
             }
-            val selectedEncryptionStrength = if (selectedEncryptionMethod != null && selectedEncryptionMethod != EncryptionMethod.NONE) {
-                AesKeyStrength.valueOf(encryptionStrengths[encryptionStrengthSpinner.selectedItemPosition])
-            } else {
-                null
-            }
+            val selectedEncryptionStrength =
+                if (selectedEncryptionMethod != null && selectedEncryptionMethod != EncryptionMethod.NONE) {
+                    AesKeyStrength.valueOf(encryptionStrengths[encryptionStrengthSpinner.selectedItemPosition])
+                } else {
+                    null
+                }
 
             val isSplitZip = splitZipCheckbox.isChecked
             val splitSizeText = splitSizeInput.text.toString().toLongOrNull() ?: 64L
             val splitSizeUnit = splitSizeUnits[splitSizeUnitSpinner.selectedItemPosition]
             val splitZipSize = mainFragment.convertToBytes(splitSizeText, splitSizeUnit)
+            val destinationPath = binding.outputPathInput.text.toString()
 
             if (!isSplitZip) {
                 mainFragment.startZipService(
@@ -294,7 +366,8 @@ class ZipOptionDialogFragment : DialogFragment() {
                     isEncryptionEnabled,
                     selectedEncryptionMethod,
                     selectedEncryptionStrength,
-                    selectedFilePaths
+                    selectedFilePaths,
+                    destinationPath
                 )
                 dismiss()
                 return@setOnClickListener
@@ -328,7 +401,8 @@ class ZipOptionDialogFragment : DialogFragment() {
                     selectedEncryptionMethod,
                     selectedEncryptionStrength,
                     selectedFilePaths,
-                    splitZipSize
+                    splitZipSize,
+                    destinationPath
                 )
                 dismiss()
             }
@@ -338,18 +412,27 @@ class ZipOptionDialogFragment : DialogFragment() {
             dismiss()
         }
 
-        encryptionMethodSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                val selectedEncryptionMethod = EncryptionMethod.valueOf(encryptionMethods[position])
-                passwordInput.isEnabled = selectedEncryptionMethod != EncryptionMethod.NONE
-                confirmPasswordInput.isEnabled = selectedEncryptionMethod != EncryptionMethod.NONE
-                encryptionStrengthSpinner.isEnabled = selectedEncryptionMethod == EncryptionMethod.AES
-            }
+        encryptionMethodSpinner.onItemSelectedListener =
+            object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(
+                    parent: AdapterView<*>?,
+                    view: View?,
+                    position: Int,
+                    id: Long
+                ) {
+                    val selectedEncryptionMethod =
+                        EncryptionMethod.valueOf(encryptionMethods[position])
+                    passwordInput.isEnabled = selectedEncryptionMethod != EncryptionMethod.NONE
+                    confirmPasswordInput.isEnabled =
+                        selectedEncryptionMethod != EncryptionMethod.NONE
+                    encryptionStrengthSpinner.isEnabled =
+                        selectedEncryptionMethod == EncryptionMethod.AES
+                }
 
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-                // Do nothing
+                override fun onNothingSelected(parent: AdapterView<*>?) {
+                    // Do nothing
+                }
             }
-        }
     }
 
     companion object {

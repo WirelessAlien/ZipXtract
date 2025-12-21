@@ -126,6 +126,8 @@ class ArchiveSplitZipService : Service() {
             intent.getSerializableExtra(ServiceConstants.EXTRA_AES_STRENGTH) as? AesKeyStrength
         }
         val jobId = intent.getStringExtra(ServiceConstants.EXTRA_JOB_ID)
+        val destinationPath = intent.getStringExtra(ServiceConstants.EXTRA_DESTINATION_PATH)
+
         if (jobId == null) {
             sendErrorBroadcast(getString(R.string.general_error_msg))
             return START_NOT_STICKY
@@ -137,7 +139,7 @@ class ArchiveSplitZipService : Service() {
         startForeground(NOTIFICATION_ID, createNotification(0))
 
         archiveJob = CoroutineScope(Dispatchers.IO).launch {
-            createSplitZipFile(archiveName, password, compressionMethod, compressionLevel, isEncrypted, encryptionMethod, aesStrength, filesToArchive, splitSize)
+            createSplitZipFile(archiveName, password, compressionMethod, compressionLevel, isEncrypted, encryptionMethod, aesStrength, filesToArchive, splitSize, destinationPath)
             fileOperationsDao.deleteFilesForJob(jobId)
         }
         return START_STICKY
@@ -197,7 +199,8 @@ class ArchiveSplitZipService : Service() {
         encryptionMethod: EncryptionMethod?,
         aesStrength: AesKeyStrength?,
         selectedFiles: List<String>,
-        splitSize: Long
+        splitSize: Long,
+        destinationPath: String?
     ) {
 
         if (selectedFiles.isEmpty()) {
@@ -223,7 +226,9 @@ class ArchiveSplitZipService : Service() {
             val archivePath = sharedPreferences.getString(PREFERENCE_ARCHIVE_DIR_PATH, null)
             val parentDir: File
 
-            if (!archivePath.isNullOrEmpty()) {
+            if (!destinationPath.isNullOrBlank()) {
+                parentDir = File(destinationPath)
+            } else if (!archivePath.isNullOrEmpty()) {
                 parentDir = if (File(archivePath).isAbsolute) {
                     File(archivePath)
                 } else {

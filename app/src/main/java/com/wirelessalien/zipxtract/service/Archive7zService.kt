@@ -99,6 +99,8 @@ class Archive7zService : Service() {
         val solid = intent.getBooleanExtra(ServiceConstants.EXTRA_SOLID, false)
         val threadCount = intent.getIntExtra(ServiceConstants.EXTRA_THREAD_COUNT, -1)
         val jobId = intent.getStringExtra(ServiceConstants.EXTRA_JOB_ID)
+        val destinationPath = intent.getStringExtra(ServiceConstants.EXTRA_DESTINATION_PATH)
+
         if (jobId == null) {
             sendErrorBroadcast(getString(R.string.general_error_msg))
             return START_NOT_STICKY
@@ -108,7 +110,7 @@ class Archive7zService : Service() {
         startForeground(NOTIFICATION_ID, createNotification(0))
 
         archiveJob = CoroutineScope(Dispatchers.IO).launch {
-            create7zFile(archiveName, password, compressionLevel, solid, threadCount, filesToArchive)
+            create7zFile(archiveName, password, compressionLevel, solid, threadCount, filesToArchive, destinationPath)
             fileOperationsDao.deleteFilesForJob(jobId)
         }
         return START_STICKY
@@ -155,7 +157,15 @@ class Archive7zService : Service() {
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
     }
 
-    private fun create7zFile(archiveName: String, password: String?, compressionLevel: Int, solid: Boolean, threadCount: Int, filesToArchive: List<String>) {
+    private fun create7zFile(
+        archiveName: String,
+        password: String?,
+        compressionLevel: Int,
+        solid: Boolean,
+        threadCount: Int,
+        filesToArchive: List<String>,
+        destinationPath: String?
+    ) {
 
         if (filesToArchive.isEmpty()) {
             val errorMessage = getString(R.string.no_files_to_archive)
@@ -172,7 +182,9 @@ class Archive7zService : Service() {
             val archivePath = sharedPreferences.getString(PREFERENCE_ARCHIVE_DIR_PATH, null)
             val parentDir: File
 
-            if (!archivePath.isNullOrEmpty()) {
+            if (!destinationPath.isNullOrBlank()) {
+                parentDir = File(destinationPath)
+            } else if (!archivePath.isNullOrEmpty()) {
                 parentDir = if (File(archivePath).isAbsolute) {
                     File(archivePath)
                 } else {

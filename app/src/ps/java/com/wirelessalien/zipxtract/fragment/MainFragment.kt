@@ -97,7 +97,10 @@ import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_DIR_PATH
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_ERROR_MESSAGE
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_PROGRESS
+import com.wirelessalien.zipxtract.constant.BroadcastConstants.PREFERENCE_ARCHIVE_DIR_PATH
+import com.wirelessalien.zipxtract.constant.BroadcastConstants.PREFERENCE_EXTRACT_DIR_PATH
 import com.wirelessalien.zipxtract.constant.ServiceConstants
+import com.wirelessalien.zipxtract.constant.ServiceConstants.EXTRA_DESTINATION_PATH
 import com.wirelessalien.zipxtract.databinding.BottomSheetCompressorArchiveBinding
 import com.wirelessalien.zipxtract.databinding.BottomSheetOptionBinding
 import com.wirelessalien.zipxtract.databinding.DialogFileInfoBinding
@@ -667,7 +670,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 e.printStackTrace()
                 withContext(Dispatchers.Main) {
                     if (isAdded) {
-                         binding.storageInfoLayout.visibility = View.GONE
+                        binding.storageInfoLayout.visibility = View.GONE
                     }
                 }
             }
@@ -1231,6 +1234,29 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
         binding.fileName.text = file.name
 
+        val archivePath = sharedPreferences.getString(PREFERENCE_ARCHIVE_DIR_PATH, null)
+        val defaultPath = if (!archivePath.isNullOrEmpty()) {
+            if (File(archivePath).isAbsolute) {
+                archivePath
+            } else {
+                File(Environment.getExternalStorageDirectory(), archivePath).absolutePath
+            }
+        } else {
+            file.parent ?: Environment.getExternalStorageDirectory().absolutePath
+        }
+
+        binding.outputPathInput.setText(defaultPath)
+
+        binding.outputPathLayout.setEndIconOnClickListener {
+            val pathPicker = PathPickerFragment.newInstance()
+            pathPicker.setPathPickerListener(object : PathPickerFragment.PathPickerListener {
+                override fun onPathSelected(path: String) {
+                    binding.outputPathInput.setText(path)
+                }
+            })
+            pathPicker.show(parentFragmentManager, "path_picker")
+        }
+
         binding.fileExtension.text = if (file.extension.isNotEmpty()) {
             if (file.extension.length > 4) {
                 "FILE"
@@ -1252,32 +1278,38 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         binding.fileDate.text = dateFormat.format(Date(file.lastModified()))
 
         binding.btnLzma.setOnClickListener {
-            startCompressService(filePath, CompressorStreamFactory.LZMA)
+            val destinationPath = binding.outputPathInput.text.toString()
+            startCompressService(filePath, CompressorStreamFactory.LZMA, destinationPath)
             bottomSheetDialog.dismiss()
         }
 
         binding.btnBzip2.setOnClickListener {
-            startCompressService(filePath, CompressorStreamFactory.BZIP2)
+            val destinationPath = binding.outputPathInput.text.toString()
+            startCompressService(filePath, CompressorStreamFactory.BZIP2, destinationPath)
             bottomSheetDialog.dismiss()
         }
 
         binding.btnXz.setOnClickListener {
-            startCompressService(filePath, CompressorStreamFactory.XZ)
+            val destinationPath = binding.outputPathInput.text.toString()
+            startCompressService(filePath, CompressorStreamFactory.XZ, destinationPath)
             bottomSheetDialog.dismiss()
         }
 
         binding.btnGzip.setOnClickListener {
-            startCompressService(filePath, CompressorStreamFactory.GZIP)
+            val destinationPath = binding.outputPathInput.text.toString()
+            startCompressService(filePath, CompressorStreamFactory.GZIP, destinationPath)
             bottomSheetDialog.dismiss()
         }
 
         binding.btnZstd.setOnClickListener {
-            startCompressService(filePath, CompressorStreamFactory.ZSTANDARD)
+            val destinationPath = binding.outputPathInput.text.toString()
+            startCompressService(filePath, CompressorStreamFactory.ZSTANDARD, destinationPath)
             bottomSheetDialog.dismiss()
         }
 
         binding.btnExtract.setOnClickListener {
-            startExtractionService(filePath, null)
+            val destinationPath = binding.outputPathInput.text.toString()
+            startExtractionService(filePath, null, destinationPath)
             bottomSheetDialog.dismiss()
         }
 
@@ -1321,23 +1353,25 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         bottomSheetDialog.show()
     }
 
-    private fun startCompressService(file: String, compressionFormat: String) {
+    private fun startCompressService(file: String, compressionFormat: String, destinationPath: String?) {
         aProgressDialog.show()
         val jobId = fileOperationsDao.addFilesForJob(listOf(file))
         val intent = Intent(requireContext(), CompressCsArchiveService::class.java).apply {
             putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
             putExtra(ServiceConstants.EXTRA_COMPRESSION_FORMAT, compressionFormat)
+            putExtra(EXTRA_DESTINATION_PATH, destinationPath)
         }
         ContextCompat.startForegroundService(requireContext(), intent)
     }
 
-    fun startArchiveTarService(file: List<String>, archiveName: String, compressionFormat: String) {
+    fun startArchiveTarService(file: List<String>, archiveName: String, compressionFormat: String, destinationPath: String? = null) {
         aProgressDialog.show()
         val jobId = fileOperationsDao.addFilesForJob(file)
         val intent = Intent(requireContext(), ArchiveTarService::class.java).apply {
             putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
             putExtra(ServiceConstants.EXTRA_ARCHIVE_NAME, archiveName)
             putExtra(ServiceConstants.EXTRA_COMPRESSION_FORMAT, compressionFormat)
+            putExtra(EXTRA_DESTINATION_PATH, destinationPath)
         }
         ContextCompat.startForegroundService(requireContext(), intent)
     }
@@ -1350,6 +1384,29 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         checkStorageForOperation(binding.lowStorageWarning, file.parent ?: Environment.getExternalStorageDirectory().absolutePath, file.length())
 
         binding.fileName.text = file.name
+
+        val extractPath = sharedPreferences.getString(PREFERENCE_EXTRACT_DIR_PATH, null)
+        val defaultPath = if (!extractPath.isNullOrEmpty()) {
+            if (File(extractPath).isAbsolute) {
+                extractPath
+            } else {
+                File(Environment.getExternalStorageDirectory(), extractPath).absolutePath
+            }
+        } else {
+            file.parent ?: Environment.getExternalStorageDirectory().absolutePath
+        }
+
+        binding.outputPathInput.setText(defaultPath)
+
+        binding.outputPathLayout.setEndIconOnClickListener {
+            val pathPicker = PathPickerFragment.newInstance()
+            pathPicker.setPathPickerListener(object : PathPickerFragment.PathPickerListener {
+                override fun onPathSelected(path: String) {
+                    binding.outputPathInput.setText(path)
+                }
+            })
+            pathPicker.show(parentFragmentManager, "path_picker")
+        }
 
         binding.fileExtension.text = if (file.extension.isNotEmpty()) {
             if (file.extension.length > 4) {
@@ -1374,14 +1431,15 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         binding.btnExtract.setOnClickListener {
             val fileExtension = file.name.split('.').takeLast(2).joinToString(".").lowercase()
             val supportedExtensions = listOf("tar.bz2", "tar.gz", "tar.lz4", "tar.lzma", "tar.sz", "tar.xz", "tar.zstd", "tar.zst")
+            val destinationPath = binding.outputPathInput.text.toString()
 
             if (supportedExtensions.any { fileExtension.endsWith(it) }) {
-                startExtractionCsService(filePaths)
+                startExtractionCsService(filePaths, destinationPath)
             } else {
                 if (file.extension.equals("rar", ignoreCase = true)) {
-                    showPasswordInputMultiRarDialog(filePaths)
+                    showPasswordInputMultiRarDialog(filePaths, destinationPath)
                 } else {
-                    showPasswordInputDialog(filePaths)
+                    showPasswordInputDialog(filePaths, destinationPath)
                 }
             }
             bottomSheetDialog.dismiss()
@@ -1402,17 +1460,20 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         }
 
         binding.btnMultiExtract.setOnClickListener {
-            showPasswordInputMultiRarDialog(file.absolutePath)
+            val destinationPath = binding.outputPathInput.text.toString()
+            showPasswordInputMultiRarDialog(file.absolutePath, destinationPath)
             bottomSheetDialog.dismiss()
         }
 
         binding.btnMulti7zExtract.setOnClickListener {
-            showPasswordInputMulti7zDialog(file.absolutePath)
+            val destinationPath = binding.outputPathInput.text.toString()
+            showPasswordInputMulti7zDialog(file.absolutePath, destinationPath)
             bottomSheetDialog.dismiss()
         }
 
         binding.btnMultiZipExtract.setOnClickListener {
-            showPasswordInputMultiZipDialog(file.absolutePath)
+            val destinationPath = binding.outputPathInput.text.toString()
+            showPasswordInputMultiZipDialog(file.absolutePath, destinationPath)
             bottomSheetDialog.dismiss()
         }
 
@@ -1462,7 +1523,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         return MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext) ?: "text/plain"
     }
 
-    private fun showPasswordInputDialog(file: String) {
+    private fun showPasswordInputDialog(file: String, destinationPath: String?) {
         val binding = PasswordInputDialogBinding.inflate(layoutInflater)
 
         MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
@@ -1470,15 +1531,15 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             .setView(binding.root)
             .setPositiveButton(getString(R.string.ok)) { _, _ ->
                 val password = binding.passwordInput.text.toString()
-                startExtractionService(file, password.ifBlank { null })
+                startExtractionService(file, password.ifBlank { null }, destinationPath)
             }
             .setNegativeButton(getString(R.string.no_password)) { _, _ ->
-                startExtractionService(file, null)
+                startExtractionService(file, null, destinationPath)
             }
             .show()
     }
 
-    private fun showPasswordInputMultiRarDialog(file: String) {
+    private fun showPasswordInputMultiRarDialog(file: String, destinationPath: String?) {
         val binding = PasswordInputDialogBinding.inflate(layoutInflater)
 
         MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
@@ -1486,15 +1547,15 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             .setView(binding.root)
             .setPositiveButton(getString(R.string.ok)) { _, _ ->
                 val password = binding.passwordInput.text.toString()
-                startRarExtractionService(file, password.ifBlank { null })
+                startRarExtractionService(file, password.ifBlank { null }, destinationPath)
             }
             .setNegativeButton(getString(R.string.no_password)) { _, _ ->
-                startRarExtractionService(file, null)
+                startRarExtractionService(file, null, destinationPath)
             }
             .show()
     }
 
-    private fun showPasswordInputMulti7zDialog(file: String) {
+    private fun showPasswordInputMulti7zDialog(file: String, destinationPath: String?) {
         val binding = PasswordInputDialogBinding.inflate(layoutInflater)
 
         MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
@@ -1502,15 +1563,15 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             .setView(binding.root)
             .setPositiveButton(getString(R.string.ok)) { _, _ ->
                 val password = binding.passwordInput.text.toString()
-                startMulti7zExtractionService(file, password.ifBlank { null })
+                startMulti7zExtractionService(file, password.ifBlank { null }, destinationPath)
             }
             .setNegativeButton(getString(R.string.no_password)) { _, _ ->
-                startMulti7zExtractionService(file, null)
+                startMulti7zExtractionService(file, null, destinationPath)
             }
             .show()
     }
 
-    private fun showPasswordInputMultiZipDialog(file: String) {
+    private fun showPasswordInputMultiZipDialog(file: String, destinationPath: String?) {
         val binding = PasswordInputDialogBinding.inflate(layoutInflater)
 
         MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
@@ -1518,59 +1579,64 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             .setView(binding.root)
             .setPositiveButton(getString(R.string.ok)) { _, _ ->
                 val password = binding.passwordInput.text.toString()
-                startMultiZipExtractionService(file, password.ifBlank { null })
+                startMultiZipExtractionService(file, password.ifBlank { null }, destinationPath)
             }
             .setNegativeButton(getString(R.string.no_password)) { _, _ ->
-                startMultiZipExtractionService(file, null)
+                startMultiZipExtractionService(file, null, destinationPath)
             }
             .show()
     }
 
-    private fun startExtractionService(file: String, password: String?) {
+    private fun startExtractionService(file: String, password: String?, destinationPath: String?) {
         eProgressDialog.show()
         val jobId = fileOperationsDao.addFilesForJob(listOf(file))
         val intent = Intent(requireContext(), ExtractArchiveService::class.java).apply {
             putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
             putExtra(ServiceConstants.EXTRA_PASSWORD, password)
+            putExtra(EXTRA_DESTINATION_PATH, destinationPath)
         }
         ContextCompat.startForegroundService(requireContext(), intent)
     }
 
-    private fun startExtractionCsService(file: String) {
+    private fun startExtractionCsService(file: String, destinationPath: String?) {
         eProgressDialog.show()
         val jobId = fileOperationsDao.addFilesForJob(listOf(file))
         val intent = Intent(requireContext(), ExtractCsArchiveService::class.java).apply {
             putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
+            putExtra(EXTRA_DESTINATION_PATH, destinationPath)
         }
         ContextCompat.startForegroundService(requireContext(), intent)
     }
 
-    private fun startRarExtractionService(file: String, password: String?) {
+    private fun startRarExtractionService(file: String, password: String?, destinationPath: String?) {
         eProgressDialog.show()
         val jobId = fileOperationsDao.addFilesForJob(listOf(file))
         val intent = Intent(requireContext(), ExtractRarService::class.java).apply {
             putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
             putExtra(ServiceConstants.EXTRA_PASSWORD, password)
+            putExtra(EXTRA_DESTINATION_PATH, destinationPath)
         }
         ContextCompat.startForegroundService(requireContext(), intent)
     }
 
-    private fun startMulti7zExtractionService(file: String, password: String?) {
+    private fun startMulti7zExtractionService(file: String, password: String?, destinationPath: String?) {
         eProgressDialog.show()
         val jobId = fileOperationsDao.addFilesForJob(listOf(file))
         val intent = Intent(requireContext(), ExtractMultipart7zService::class.java).apply {
             putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
             putExtra(ServiceConstants.EXTRA_PASSWORD, password)
+            putExtra(EXTRA_DESTINATION_PATH, destinationPath)
         }
         ContextCompat.startForegroundService(requireContext(), intent)
     }
 
-    private fun startMultiZipExtractionService(file: String, password: String?) {
+    private fun startMultiZipExtractionService(file: String, password: String?, destinationPath: String?) {
         eProgressDialog.show()
         val jobId = fileOperationsDao.addFilesForJob(listOf(file))
         val intent = Intent(requireContext(), ExtractMultipartZipService::class.java).apply {
             putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
             putExtra(ServiceConstants.EXTRA_PASSWORD, password)
+            putExtra(EXTRA_DESTINATION_PATH, destinationPath)
         }
         ContextCompat.startForegroundService(requireContext(), intent)
     }
@@ -1662,7 +1728,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         updateActionModeTitle()
     }
 
-    fun startZipService(archiveName: String, password: String?, compressionMethod: CompressionMethod, compressionLevel: CompressionLevel, isEncrypted: Boolean, encryptionMethod: EncryptionMethod?, aesStrength: AesKeyStrength?, filesToArchive: List<String>) {
+    fun startZipService(archiveName: String, password: String?, compressionMethod: CompressionMethod, compressionLevel: CompressionLevel, isEncrypted: Boolean, encryptionMethod: EncryptionMethod?, aesStrength: AesKeyStrength?, filesToArchive: List<String>, destinationPath: String? = null) {
         aProgressDialog.show()
         val jobId = fileOperationsDao.addFilesForJob(filesToArchive)
         val intent = Intent(requireContext(), ArchiveZipService::class.java).apply {
@@ -1674,11 +1740,12 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             putExtra(ServiceConstants.EXTRA_IS_ENCRYPTED, isEncrypted)
             putExtra(ServiceConstants.EXTRA_ENCRYPTION_METHOD, encryptionMethod)
             putExtra(ServiceConstants.EXTRA_AES_STRENGTH, aesStrength)
+            putExtra(EXTRA_DESTINATION_PATH, destinationPath)
         }
         ContextCompat.startForegroundService(requireContext(), intent)
     }
 
-    fun startSplitZipService(archiveName: String, password: String?, compressionMethod: CompressionMethod, compressionLevel: CompressionLevel, isEncrypted: Boolean, encryptionMethod: EncryptionMethod?, aesStrength: AesKeyStrength?, filesToArchive: List<String>, splitSize: Long?) {
+    fun startSplitZipService(archiveName: String, password: String?, compressionMethod: CompressionMethod, compressionLevel: CompressionLevel, isEncrypted: Boolean, encryptionMethod: EncryptionMethod?, aesStrength: AesKeyStrength?, filesToArchive: List<String>, splitSize: Long?, destinationPath: String? = null) {
         aProgressDialog.show()
         val jobId = fileOperationsDao.addFilesForJob(filesToArchive)
         val intent = Intent(requireContext(), ArchiveSplitZipService::class.java).apply {
@@ -1691,6 +1758,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             putExtra(ServiceConstants.EXTRA_ENCRYPTION_METHOD, encryptionMethod)
             putExtra(ServiceConstants.EXTRA_AES_STRENGTH, aesStrength)
             putExtra(ServiceConstants.EXTRA_SPLIT_SIZE, splitSize)
+            putExtra(EXTRA_DESTINATION_PATH, destinationPath)
         }
         ContextCompat.startForegroundService(requireContext(), intent)
     }
@@ -1714,7 +1782,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         return if (remainder > 0) division + 1 else division
     }
 
-    fun startSevenZService(password: String?, archiveName: String, compressionLevel: Int, solid: Boolean, threadCount: Int, filesToArchive: List<String>) {
+    fun startSevenZService(password: String?, archiveName: String, compressionLevel: Int, solid: Boolean, threadCount: Int, filesToArchive: List<String>, destinationPath: String? = null) {
         aProgressDialog.show()
         val jobId = fileOperationsDao.addFilesForJob(filesToArchive)
         val intent = Intent(requireContext(), Archive7zService::class.java).apply {
@@ -1724,6 +1792,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             putExtra(ServiceConstants.EXTRA_COMPRESSION_LEVEL, compressionLevel)
             putExtra(ServiceConstants.EXTRA_SOLID, solid)
             putExtra(ServiceConstants.EXTRA_THREAD_COUNT, threadCount)
+            putExtra(EXTRA_DESTINATION_PATH, destinationPath)
         }
         ContextCompat.startForegroundService(requireContext(), intent)
     }

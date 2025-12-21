@@ -31,10 +31,12 @@ import android.widget.Toast
 import androidx.core.view.isGone
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.adapter.FileAdapter
 import com.wirelessalien.zipxtract.adapter.FilePathAdapter
+import com.wirelessalien.zipxtract.constant.BroadcastConstants.PREFERENCE_ARCHIVE_DIR_PATH
 import com.wirelessalien.zipxtract.databinding.SevenZOptionDialogBinding
 import com.wirelessalien.zipxtract.helper.FileOperationsDao
 import kotlinx.coroutines.CoroutineScope
@@ -92,7 +94,11 @@ class SevenZOptionDialogFragment : DialogFragment() {
                     }
                 } else {
                     binding.progressIndicator.visibility = View.GONE
-                    Toast.makeText(context, getString(R.string.error_no_file_information_provided), Toast.LENGTH_LONG).show()
+                    Toast.makeText(
+                        context,
+                        getString(R.string.error_no_file_information_provided),
+                        Toast.LENGTH_LONG
+                    ).show()
                     dismiss()
                     return@launch
                 }
@@ -102,7 +108,11 @@ class SevenZOptionDialogFragment : DialogFragment() {
         }
     }
 
-    private fun checkStorageForArchive(warningTextView: TextView, path: String, requiredSize: Long) {
+    private fun checkStorageForArchive(
+        warningTextView: TextView,
+        path: String,
+        requiredSize: Long
+    ) {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val stat = StatFs(path)
@@ -110,9 +120,17 @@ class SevenZOptionDialogFragment : DialogFragment() {
                 val safeRequiredSize = (requiredSize * 1.1).toLong()
 
                 if (availableSize < safeRequiredSize) {
-                    val availableSizeStr = android.text.format.Formatter.formatFileSize(requireContext(), availableSize)
-                    val requiredSizeStr = android.text.format.Formatter.formatFileSize(requireContext(), requiredSize)
-                    val warningText = getString(R.string.low_storage_warning_dynamic, availableSizeStr, requiredSizeStr)
+                    val availableSizeStr = android.text.format.Formatter.formatFileSize(
+                        requireContext(),
+                        availableSize
+                    )
+                    val requiredSizeStr =
+                        android.text.format.Formatter.formatFileSize(requireContext(), requiredSize)
+                    val warningText = getString(
+                        R.string.low_storage_warning_dynamic,
+                        availableSizeStr,
+                        requiredSizeStr
+                    )
                     withContext(Dispatchers.Main) {
                         warningTextView.text = warningText
                         warningTextView.visibility = View.VISIBLE
@@ -130,7 +148,8 @@ class SevenZOptionDialogFragment : DialogFragment() {
 
     private fun initializeUI() {
         if (!::selectedFilePaths.isInitialized || selectedFilePaths.isEmpty()) {
-            Toast.makeText(requireContext(), R.string.no_files_to_archive, Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), R.string.no_files_to_archive, Toast.LENGTH_SHORT)
+                .show()
             dismiss()
             return
         }
@@ -145,12 +164,20 @@ class SevenZOptionDialogFragment : DialogFragment() {
                     filePathAdapter.notifyItemRangeChanged(position, selectedFilePaths.size)
 
                     if (selectedFilePaths.isEmpty()) {
-                        Toast.makeText(requireContext(), R.string.no_files_to_archive, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            requireContext(),
+                            R.string.no_files_to_archive,
+                            Toast.LENGTH_SHORT
+                        ).show()
                         dismiss()
                     }
                 }
             } else {
-                Toast.makeText(requireContext(), getString(R.string.file_list_is_fixed_for_this_operation), Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    requireContext(),
+                    getString(R.string.file_list_is_fixed_for_this_operation),
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
 
@@ -177,8 +204,9 @@ class SevenZOptionDialogFragment : DialogFragment() {
         }
 
         // Check storage
-        val targetPath = if (selectedFilePaths.isNotEmpty()) {
-            File(selectedFilePaths.first()).parent ?: Environment.getExternalStorageDirectory().absolutePath
+        val parentPath = if (selectedFilePaths.isNotEmpty()) {
+            File(selectedFilePaths.first()).parent
+                ?: Environment.getExternalStorageDirectory().absolutePath
         } else {
             Environment.getExternalStorageDirectory().absolutePath
         }
@@ -186,12 +214,35 @@ class SevenZOptionDialogFragment : DialogFragment() {
             val totalSize = withContext(Dispatchers.IO) {
                 selectedFilePaths.sumOf { File(it).length() }
             }
-            checkStorageForArchive(binding.lowStorageWarning, targetPath, totalSize)
+            checkStorageForArchive(binding.lowStorageWarning, parentPath, totalSize)
         }
 
         binding.archiveNameEditText.setText(defaultName)
         binding.archiveNameEditText.setOnClickListener {
             binding.archiveNameEditText.selectAll()
+        }
+
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
+        val archivePath = sharedPreferences.getString(PREFERENCE_ARCHIVE_DIR_PATH, null)
+        val defaultPath = if (!archivePath.isNullOrEmpty()) {
+            if (File(archivePath).isAbsolute) {
+                archivePath
+            } else {
+                File(Environment.getExternalStorageDirectory(), archivePath).absolutePath
+            }
+        } else {
+            parentPath
+        }
+
+        binding.outputPathInput.setText(defaultPath)
+        binding.outputPathLayout.setEndIconOnClickListener {
+            val pathPicker = PathPickerFragment.newInstance()
+            pathPicker.setPathPickerListener(object : PathPickerFragment.PathPickerListener {
+                override fun onPathSelected(path: String) {
+                    binding.outputPathInput.setText(path)
+                }
+            })
+            pathPicker.show(parentFragmentManager, "path_picker")
         }
 
         val mainFragment = parentFragmentManager.findFragmentById(R.id.container) as? MainFragment
@@ -217,8 +268,17 @@ class SevenZOptionDialogFragment : DialogFragment() {
             }
             val solid = binding.solidCheckBox.isChecked
             val threadCount = binding.threadCountEditText.text.toString().toIntOrNull() ?: -1
+            val destinationPath = binding.outputPathInput.text.toString()
 
-            mainFragment?.startSevenZService(password.ifBlank { null }, archiveName, compressionLevel, solid, threadCount, selectedFilePaths)
+            mainFragment?.startSevenZService(
+                password.ifBlank { null },
+                archiveName,
+                compressionLevel,
+                solid,
+                threadCount,
+                selectedFilePaths,
+                destinationPath
+            )
             dismiss()
         }
 

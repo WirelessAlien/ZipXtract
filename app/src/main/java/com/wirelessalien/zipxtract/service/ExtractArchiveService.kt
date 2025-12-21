@@ -124,6 +124,7 @@ class ExtractArchiveService : Service() {
         val jobId = intent?.getStringExtra(ServiceConstants.EXTRA_JOB_ID)
         val password = intent?.getStringExtra(ServiceConstants.EXTRA_PASSWORD)
         val useAppNameDir = intent?.getBooleanExtra(ServiceConstants.EXTRA_USE_APP_NAME_DIR, false) ?: false
+        val destinationPath = intent?.getStringExtra(ServiceConstants.EXTRA_DESTINATION_PATH)
 
         if (jobId == null) {
             stopSelf()
@@ -144,7 +145,7 @@ class ExtractArchiveService : Service() {
         startForeground(NOTIFICATION_ID, createNotification(0))
 
         extractionJob = CoroutineScope(Dispatchers.IO).launch {
-            extractArchive(filePath, password, useAppNameDir)
+            extractArchive(filePath, password, useAppNameDir, destinationPath)
             fileOperationsDao.deleteFilesForJob(jobId)
         }
 
@@ -192,7 +193,7 @@ class ExtractArchiveService : Service() {
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
     }
 
-    private fun extractArchive(filePath: String, password: String?, useAppNameDir: Boolean) {
+    private fun extractArchive(filePath: String, password: String?, useAppNameDir: Boolean, destinationPath: String?) {
         if (filePath.isEmpty()) {
             val errorMessage = getString(R.string.no_files_to_archive)
             showErrorNotification(errorMessage)
@@ -204,11 +205,11 @@ class ExtractArchiveService : Service() {
         val file = File(filePath)
         when {
             file.extension.equals("zip", ignoreCase = true) -> {
-                extractZipArchive(file, password, useAppNameDir)
+                extractZipArchive(file, password, useAppNameDir, destinationPath)
                 return
             }
             file.extension.equals("tar", ignoreCase = true) -> {
-                extractTarArchive(file, useAppNameDir)
+                extractTarArchive(file, useAppNameDir, destinationPath)
                 return
             }
         }
@@ -219,7 +220,9 @@ class ExtractArchiveService : Service() {
             val extractPath = sharedPreferences.getString(PREFERENCE_EXTRACT_DIR_PATH, null)
 
             val parentDir: File
-            if (!extractPath.isNullOrEmpty()) {
+            if (!destinationPath.isNullOrBlank()) {
+                parentDir = File(destinationPath)
+            } else if (!extractPath.isNullOrEmpty()) {
                 parentDir = if (File(extractPath).isAbsolute) {
                     File(extractPath)
                 } else {
@@ -466,12 +469,14 @@ class ExtractArchiveService : Service() {
         }
     }
 
-    private fun extractTarArchive(file: File, useAppNameDir: Boolean) {
+    private fun extractTarArchive(file: File, useAppNameDir: Boolean, destinationPath: String?) {
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
         val extractPath = sharedPreferences.getString(PREFERENCE_EXTRACT_DIR_PATH, null)
 
         val parentDir: File
-        if (!extractPath.isNullOrEmpty()) {
+        if (!destinationPath.isNullOrBlank()) {
+            parentDir = File(destinationPath)
+        } else if (!extractPath.isNullOrEmpty()) {
             parentDir = if (File(extractPath).isAbsolute) {
                 File(extractPath)
             } else {
@@ -558,7 +563,7 @@ class ExtractArchiveService : Service() {
         }
     }
 
-    private fun extractZipArchive(file: File, password: String?, useAppNameDir: Boolean) {
+    private fun extractZipArchive(file: File, password: String?, useAppNameDir: Boolean, destinationPath: String?) {
         try {
             val zipFile = ZipFile(file)
 
@@ -570,7 +575,9 @@ class ExtractArchiveService : Service() {
             val extractPath = sharedPreferences.getString(PREFERENCE_EXTRACT_DIR_PATH, null)
 
             val parentDir: File
-            if (!extractPath.isNullOrEmpty()) {
+            if (!destinationPath.isNullOrBlank()) {
+                parentDir = File(destinationPath)
+            } else if (!extractPath.isNullOrEmpty()) {
                 parentDir = if (File(extractPath).isAbsolute) {
                     File(extractPath)
                 } else {

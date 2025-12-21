@@ -108,11 +108,12 @@ class ArchiveTarService : Service() {
         }
         val filesToArchive = fileOperationsDao.getFilesForJob(jobId)
         val compressionFormat = intent.getStringExtra(ServiceConstants.EXTRA_COMPRESSION_FORMAT) ?: "TAR_ONLY"
+        val destinationPath = intent.getStringExtra(ServiceConstants.EXTRA_DESTINATION_PATH)
 
         startForeground(NOTIFICATION_ID, createNotification(0))
 
         archiveJob = CoroutineScope(Dispatchers.IO).launch {
-            createTarFile(archiveName, filesToArchive, compressionFormat)
+            createTarFile(archiveName, filesToArchive, compressionFormat, destinationPath)
             fileOperationsDao.deleteFilesForJob(jobId)
         }
         return START_STICKY
@@ -163,7 +164,7 @@ class ArchiveTarService : Service() {
         sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, errorMessage))
     }
 
-    private fun createTarFile(archiveName: String, filesToArchive: List<String>, compressionFormat: String) {
+    private fun createTarFile(archiveName: String, filesToArchive: List<String>, compressionFormat: String, destinationPath: String?) {
 
         if (filesToArchive.isEmpty()) {
             val errorMessage = getString(R.string.no_files_to_archive)
@@ -185,7 +186,9 @@ class ArchiveTarService : Service() {
             val archivePath = sharedPreferences.getString(PREFERENCE_ARCHIVE_DIR_PATH, null)
             val parentDir: File
 
-            if (!archivePath.isNullOrEmpty()) {
+            if (!destinationPath.isNullOrBlank()) {
+                parentDir = File(destinationPath)
+            } else if (!archivePath.isNullOrEmpty()) {
                 parentDir = if (File(archivePath).isAbsolute) {
                     File(archivePath)
                 } else {

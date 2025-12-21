@@ -105,6 +105,7 @@ class ExtractMultipart7zService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val jobId = intent?.getStringExtra(ServiceConstants.EXTRA_JOB_ID)
         val password = intent?.getStringExtra(ServiceConstants.EXTRA_PASSWORD)
+        val destinationPath = intent?.getStringExtra(ServiceConstants.EXTRA_DESTINATION_PATH)
         this.password = password?.toCharArray()
 
         if (jobId.isNullOrEmpty()) {
@@ -123,7 +124,7 @@ class ExtractMultipart7zService : Service() {
         startForeground(NOTIFICATION_ID, createNotification(0))
 
         extractionJob = CoroutineScope(Dispatchers.IO).launch {
-            extractArchive(modifiedFilePath)
+            extractArchive(modifiedFilePath, destinationPath)
             fileOperationsDao.deleteFilesForJob(jobId)
         }
 
@@ -182,7 +183,7 @@ class ExtractMultipart7zService : Service() {
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
     }
 
-    private fun extractArchive(filePath: String) {
+    private fun extractArchive(filePath: String, destinationPath: String?) {
 
         if (filePath.isEmpty()) {
             val errorMessage = getString(R.string.no_files_to_archive)
@@ -198,7 +199,9 @@ class ExtractMultipart7zService : Service() {
 
         val inputDir = file.parentFile ?: File(Environment.getExternalStorageDirectory().absolutePath)
         val parentDir: File
-        if (!extractPath.isNullOrEmpty()) {
+        if (!destinationPath.isNullOrBlank()) {
+            parentDir = File(destinationPath)
+        } else if (!extractPath.isNullOrEmpty()) {
             parentDir = if (File(extractPath).isAbsolute) {
                 File(extractPath)
             } else {

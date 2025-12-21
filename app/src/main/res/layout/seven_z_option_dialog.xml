@@ -96,6 +96,28 @@
                     android:hint="@string/enter_name_of_archive_optional"/>
             </com.google.android.material.textfield.TextInputLayout>
 
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/outputPathLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                app:boxCornerRadiusTopStart="10dp"
+                app:boxCornerRadiusTopEnd="10dp"
+                app:boxCornerRadiusBottomStart="10dp"
+                app:boxCornerRadiusBottomEnd="10dp"
+                android:hint="@string/output_path"
+                app:endIconMode="custom"
+                app:endIconDrawable="@drawable/ic_folder"
+                app:endIconContentDescription="@string/select_directory">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/outputPathInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textNoSuggestions"
+                    style="@style/Widget.Material3.TextInputEditText.OutlinedBox.Dense"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

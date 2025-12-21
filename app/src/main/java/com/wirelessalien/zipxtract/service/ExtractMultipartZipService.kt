@@ -92,6 +92,7 @@ class ExtractMultipartZipService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val jobId = intent?.getStringExtra(ServiceConstants.EXTRA_JOB_ID) ?: return START_NOT_STICKY
         val password = intent.getStringExtra(ServiceConstants.EXTRA_PASSWORD)
+        val destinationPath = intent.getStringExtra(ServiceConstants.EXTRA_DESTINATION_PATH)
 
         if (jobId.isEmpty()) {
             stopSelf()
@@ -107,7 +108,7 @@ class ExtractMultipartZipService : Service() {
         startForeground(NOTIFICATION_ID, createNotification(0))
 
         extractionJob = CoroutineScope(Dispatchers.IO).launch {
-            extractArchive(filesToExtract ?:"", password)
+            extractArchive(filesToExtract ?:"", password, destinationPath)
             fileOperationsDao.deleteFilesForJob(jobId)
         }
         return START_STICKY
@@ -154,7 +155,7 @@ class ExtractMultipartZipService : Service() {
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
     }
 
-    private suspend fun extractArchive(filePath: String, password: String?) {
+    private suspend fun extractArchive(filePath: String, password: String?, destinationPath: String?) {
 
         if (filePath.isEmpty()) {
             val errorMessage = getString(R.string.no_files_to_archive)
@@ -189,7 +190,9 @@ class ExtractMultipartZipService : Service() {
             val extractPath = sharedPreferences.getString(PREFERENCE_EXTRACT_DIR_PATH, null)
 
             val parentDir: File
-            if (!extractPath.isNullOrEmpty()) {
+            if (!destinationPath.isNullOrBlank()) {
+                parentDir = File(destinationPath)
+            } else if (!extractPath.isNullOrEmpty()) {
                 parentDir = if (File(extractPath).isAbsolute) {
                     File(extractPath)
                 } else {

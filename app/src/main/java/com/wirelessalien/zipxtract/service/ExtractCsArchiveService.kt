@@ -98,6 +98,7 @@ class ExtractCsArchiveService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val jobId = intent?.getStringExtra(ServiceConstants.EXTRA_JOB_ID)
         val useAppNameDir = intent?.getBooleanExtra(ServiceConstants.EXTRA_USE_APP_NAME_DIR, false) ?: false
+        val destinationPath = intent?.getStringExtra(ServiceConstants.EXTRA_DESTINATION_PATH)
 
         if (jobId == null) {
             stopSelf()
@@ -118,7 +119,7 @@ class ExtractCsArchiveService : Service() {
         startForeground(NOTIFICATION_ID, createNotification(0))
 
         extractionJob = CoroutineScope(Dispatchers.IO).launch {
-            extractArchive(filePath, useAppNameDir)
+            extractArchive(filePath, useAppNameDir, destinationPath)
             fileOperationsDao.deleteFilesForJob(jobId)
         }
 
@@ -166,7 +167,7 @@ class ExtractCsArchiveService : Service() {
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
     }
 
-    private fun extractArchive(filePath: String, useAppNameDir: Boolean) {
+    private fun extractArchive(filePath: String, useAppNameDir: Boolean, destinationPath: String?) {
 
         if (filePath.isEmpty()) {
             val errorMessage = getString(R.string.no_files_to_archive)
@@ -181,7 +182,9 @@ class ExtractCsArchiveService : Service() {
         val extractPath = sharedPreferences.getString(BroadcastConstants.PREFERENCE_EXTRACT_DIR_PATH, null)
 
         val parentDir: File
-        if (!extractPath.isNullOrEmpty()) {
+        if (!destinationPath.isNullOrBlank()) {
+            parentDir = File(destinationPath)
+        } else if (!extractPath.isNullOrEmpty()) {
             parentDir = if (File(extractPath).isAbsolute) {
                 File(extractPath)
             } else {

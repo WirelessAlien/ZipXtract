@@ -47,6 +47,9 @@
     <string name="add">Add</string>
     <string name="directory_selection_disabled">Folder cannot be selected, select the files inside it.</string>
     <string name="select_file">Select File…</string>
+    <string name="select_directory">Select Directory…</string>
+    <string name="output_path">Output path</string>
+    <string name="select">Select</string>
     <string name="select_files">Add (%d)</string>
     <string name="donate_desc">If you find ZipXtract useful, please consider supporting its development:</string>
     <string name="file_list_is_fixed_for_this_operation">File list is fixed for this operation.</string>
