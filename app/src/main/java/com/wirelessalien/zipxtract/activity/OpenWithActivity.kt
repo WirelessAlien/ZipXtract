@@ -38,6 +38,7 @@ import com.wirelessalien.zipxtract.databinding.DialogArchiveTypeBinding
 import com.wirelessalien.zipxtract.databinding.DialogCrashLogBinding
 import com.wirelessalien.zipxtract.databinding.PasswordInputOpenWithBinding
 import com.wirelessalien.zipxtract.helper.FileOperationsDao
+import com.wirelessalien.zipxtract.helper.FileUtils
 import com.wirelessalien.zipxtract.service.ExtractArchiveService
 import com.wirelessalien.zipxtract.service.ExtractCsArchiveService
 import com.wirelessalien.zipxtract.service.ExtractRarService
@@ -298,28 +299,19 @@ class OpenWithActivity : AppCompatActivity() {
         val returnCursor = context.contentResolver.query(uri, null, null, null, null)
         returnCursor?.use {
             val nameIndex = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-            val sizeIndex = it.getColumnIndex(OpenableColumns.SIZE)
             it.moveToFirst()
             val name = it.getString(nameIndex)
-            it.getLong(sizeIndex).toString()
             val file = File(context.filesDir, name)
             try {
                 val inputStream: InputStream? = context.contentResolver.openInputStream(uri)
-                val outputStream = FileOutputStream(file)
-                var read = 0
-                val maxBufferSize = 1 * 1024 * 1024
-                val bytesAvailable: Int = inputStream?.available() ?: 0
-                val bufferSize = bytesAvailable.coerceAtMost(maxBufferSize)
-                val buffers = ByteArray(bufferSize)
-                while (inputStream?.read(buffers).also { it1 ->
-                        if (it1 != null) {
-                            read = it1
+                if (inputStream != null) {
+                    val outputStream = FileOutputStream(file)
+                    inputStream.use { input ->
+                        outputStream.use { output ->
+                            FileUtils.copyStream(input, output)
                         }
-                    } != -1) {
-                    outputStream.write(buffers, 0, read)
+                    }
                 }
-                inputStream?.close()
-                outputStream.close()
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -343,13 +335,11 @@ class OpenWithActivity : AppCompatActivity() {
                     val inputStream: InputStream? = context.contentResolver.openInputStream(uri)
                     if (inputStream != null) {
                         val outputStream = FileOutputStream(file)
-                        var read: Int
-                        val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
-                        while (inputStream.read(buffer).also { read = it } != -1) {
-                            outputStream.write(buffer, 0, read)
+                        inputStream.use { input ->
+                            outputStream.use { output ->
+                                FileUtils.copyStream(input, output)
+                            }
                         }
-                        inputStream.close()
-                        outputStream.close()
                         copiedPaths.add(file.path)
                     } else {
                         Log.e("OpenWithActivity", "Failed to open input stream for URI: $uri")

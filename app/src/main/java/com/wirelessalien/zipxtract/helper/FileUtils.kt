@@ -20,6 +20,8 @@ package com.wirelessalien.zipxtract.helper
 import android.util.Log
 import com.wirelessalien.zipxtract.model.DirectoryInfo
 import java.io.File
+import java.io.InputStream
+import java.io.OutputStream
 
 object FileUtils {
     fun setLastModifiedTime(directories: List<DirectoryInfo>) {
@@ -167,9 +169,13 @@ object FileUtils {
     fun fastCopy(source: File, destination: File) {
         source.inputStream().use { input ->
             destination.outputStream().use { output ->
-                input.copyTo(output, bufferSize = 64 * 1024)
+                copyStream(input, output)
             }
         }
+    }
+
+    fun copyStream(input: InputStream, output: OutputStream) {
+        input.copyTo(output, bufferSize = 64 * 1024)
     }
 
     fun countTotalFiles(file: File): Int {
