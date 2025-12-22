@@ -43,7 +43,6 @@ import com.wirelessalien.zipxtract.helper.FileUtils
 import com.wirelessalien.zipxtract.service.ExtractArchiveService
 import com.wirelessalien.zipxtract.service.ExtractCsArchiveService
 import com.wirelessalien.zipxtract.service.ExtractRarService
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -197,7 +196,7 @@ class OpenWithActivity : AppCompatActivity() {
             .setCancelable(false)
             .show()
 
-        CoroutineScope(Dispatchers.IO).launch {
+        lifecycleScope.launch(Dispatchers.IO) {
             val filePath = getRealPathFromURI(uri, this@OpenWithActivity)
             withContext(Dispatchers.Main) {
                 progressDialog.dismiss()
@@ -218,7 +217,7 @@ class OpenWithActivity : AppCompatActivity() {
             .setCancelable(false)
             .show()
 
-        CoroutineScope(Dispatchers.IO).launch {
+        lifecycleScope.launch(Dispatchers.IO) {
             val filePaths = getRealPathsFromURIs(uris, this@OpenWithActivity)
             withContext(Dispatchers.Main) {
                 progressDialog.dismiss()
