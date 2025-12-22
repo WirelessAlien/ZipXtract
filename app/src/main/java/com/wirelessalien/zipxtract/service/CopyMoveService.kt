@@ -30,6 +30,7 @@ import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.COPY_MOVE_NOTIFICATION_CHANNEL_ID
 import com.wirelessalien.zipxtract.constant.ServiceConstants
 import com.wirelessalien.zipxtract.helper.FileOperationsDao
+import com.wirelessalien.zipxtract.helper.FileUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -69,38 +70,18 @@ class CopyMoveService : Service() {
         return START_STICKY
     }
 
-    private fun countTotalFiles(files: List<File>): Int {
-        var count = 0
-        for (file in files) {
-            if (file.isDirectory) {
-                count += countTotalFiles(file.listFiles()?.toList() ?: emptyList())
-            } else {
-                count++
-            }
-        }
-        return count
-    }
-
     private fun copyMoveFiles(files: List<File>, destinationPath: String, isCopyAction: Boolean) {
-        val totalFilesCount = countTotalFiles(files)
+        var totalFilesCount = 0
+        for (file in files) {
+            totalFilesCount += FileUtils.countTotalFiles(file)
+        }
+
         var processedFilesCount = 0
         val pathsToScan = mutableListOf<String>()
 
-        fun copyMoveFile(file: File, destination: File) {
-            if (file.isDirectory) {
-                destination.mkdirs()
-                file.listFiles()?.forEach { copyMoveFile(it, File(destination, it.name)) }
-            } else {
-                if (isCopyAction) {
-                    file.copyTo(destination, overwrite = true)
-                } else {
-                    pathsToScan.add(file.absolutePath)
-                    file.moveTo(destination, overwrite = true)
-                }
-                pathsToScan.add(destination.absolutePath)
-                processedFilesCount++
-                updateNotification(processedFilesCount, totalFilesCount, isCopyAction)
-            }
+        val progressCallback: (Int) -> Unit = { count ->
+            processedFilesCount += count
+            updateNotification(processedFilesCount, totalFilesCount, isCopyAction)
         }
 
         for (file in files) {
@@ -108,21 +89,35 @@ class CopyMoveService : Service() {
             if (file.absolutePath == destinationFile.absolutePath) {
                 continue // Skip if the source and destination paths are the same
             }
-            copyMoveFile(file, destinationFile)
+
+            if (isCopyAction) {
+                FileUtils.copyRecursively(
+                    source = file,
+                    destination = destinationFile,
+                    overwrite = true,
+                    progressCallback = progressCallback,
+                    scanCallback = { dest ->
+                        pathsToScan.add(dest.absolutePath)
+                    }
+                )
+            } else {
+                FileUtils.smartMove(
+                    source = file,
+                    destination = destinationFile,
+                    overwrite = true,
+                    progressCallback = progressCallback,
+                    scanCallback = { src, dest ->
+                        pathsToScan.add(src.absolutePath)
+                        pathsToScan.add(dest.absolutePath)
+                    }
+                )
+            }
         }
 
         MediaScannerConnection.scanFile(this, pathsToScan.toTypedArray(), null, null)
 
         stopForegroundService()
         stopSelf()
-    }
-
-    private fun File.moveTo(destination: File, overwrite: Boolean = false) {
-        if (overwrite && destination.exists()) {
-            destination.deleteRecursively()
-        }
-        this.copyRecursively(destination, overwrite = true)
-        this.deleteRecursively()
     }
 
     private fun createNotificationChannel() {

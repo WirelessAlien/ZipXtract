@@ -43,7 +43,6 @@ import android.os.FileObserver.MOVE_SELF
 import android.os.Handler
 import android.os.Looper
 import android.os.StatFs
-import android.os.storage.StorageManager
 import android.provider.MediaStore
 import android.provider.Settings
 import android.text.Editable
@@ -587,7 +586,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
         val displayPath = when {
             currentPath.startsWith(basePath) -> currentPath.replace(basePath, internalStorage)
-            isSdCard -> currentPath.replace(sdCardPath!!, sdCardString)
+            isSdCard -> currentPath.replace(sdCardPath, sdCardString)
             else -> currentPath
         }.split("/").filter { it.isNotEmpty() }
 
@@ -601,7 +600,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
             if (index == 0) {
                 if (part == internalStorage) pathAccumulator = basePath
-                else if (part == sdCardString && isSdCard) pathAccumulator = sdCardPath!!
+                else if (part == sdCardString && isSdCard) pathAccumulator = sdCardPath
                 else pathAccumulator = "/$part"
             } else {
                 pathAccumulator = if (pathAccumulator.endsWith("/")) "$pathAccumulator$part" else "$pathAccumulator/$part"
@@ -1248,7 +1247,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             override fun afterTextChanged(s: Editable?) {
                 storageCheckJob?.cancel()
                 storageCheckJob = lifecycleScope.launch {
-                    delay(500)
+                    delay(1000)
                     checkStorageForOperation(
                         binding.lowStorageWarning,
                         s.toString(),
@@ -1433,7 +1432,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             override fun afterTextChanged(s: Editable?) {
                 storageCheckJob?.cancel()
                 storageCheckJob = lifecycleScope.launch {
-                    delay(500)
+                    delay(1000)
                     checkStorageForOperation(
                         binding.lowStorageWarning,
                         s.toString(),
