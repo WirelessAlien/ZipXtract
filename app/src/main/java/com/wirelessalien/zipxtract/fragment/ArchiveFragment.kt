@@ -651,11 +651,31 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
             } else {
                 if (file.extension.lowercase() == "tar") {
                     startExtractionService(filePaths, null, destinationPath)
+                    bottomSheetDialog.dismiss()
+                } else if (file.extension.equals("zip", ignoreCase = true)) {
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        var isEncrypted = true
+                        try {
+                            net.lingala.zip4j.ZipFile(file).use { zipFile ->
+                                isEncrypted = zipFile.isEncrypted
+                            }
+                        } catch (e: Exception) {
+                            // isEncrypted remains true
+                        }
+                        withContext(Dispatchers.Main) {
+                            if (isEncrypted) {
+                                showPasswordInputDialog(filePaths, destinationPath)
+                            } else {
+                                startExtractionService(filePaths, null, destinationPath)
+                            }
+                            bottomSheetDialog.dismiss()
+                        }
+                    }
                 } else {
                     showPasswordInputDialog(filePaths, destinationPath)
+                    bottomSheetDialog.dismiss()
                 }
             }
-            bottomSheetDialog.dismiss()
         }
 
         val previewExtensions = listOf("7z", "zip")

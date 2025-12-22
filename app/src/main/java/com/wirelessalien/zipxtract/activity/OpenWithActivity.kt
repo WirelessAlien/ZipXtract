@@ -30,6 +30,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.chip.Chip
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.wirelessalien.zipxtract.R
@@ -138,10 +139,54 @@ class OpenWithActivity : AppCompatActivity() {
     private fun handleViewIntent() {
         val uri = intent?.data
         if (uri != null) {
-            showPasswordInputDialog(uri)
+            processFileAndCheckEncryption(uri)
         } else {
             Toast.makeText(this, getString(R.string.no_file_selected), Toast.LENGTH_SHORT).show()
             finish()
+        }
+    }
+
+    private fun processFileAndCheckEncryption(uri: Uri) {
+        val progressDialog = MaterialAlertDialogBuilder(this, R.style.MaterialDialog)
+            .setTitle(getString(R.string.copying_files))
+            .setView(R.layout.dialog_progress)
+            .setCancelable(false)
+            .show()
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            val filePath = getRealPathFromURI(uri, this@OpenWithActivity)
+
+            var isEncrypted = true
+            var isZip = false
+
+            if (filePath != null) {
+                val file = File(filePath)
+                if (file.extension.equals("zip", ignoreCase = true)) {
+                    isZip = true
+                    try {
+                        net.lingala.zip4j.ZipFile(file).use { zipFile ->
+                            isEncrypted = zipFile.isEncrypted
+                        }
+                    } catch (e: Exception) {
+                        // isEncrypted remains true
+                    }
+                }
+            }
+
+            withContext(Dispatchers.Main) {
+                progressDialog.dismiss()
+                if (filePath != null) {
+                    if (isZip && !isEncrypted) {
+                        handleFileExtraction(filePath, null)
+                        finish()
+                    } else {
+                        showPasswordInputDialog(filePath)
+                    }
+                } else {
+                    Toast.makeText(this@OpenWithActivity, getString(R.string.no_file_selected), Toast.LENGTH_SHORT).show()
+                    finish()
+                }
+            }
         }
     }
 
@@ -235,42 +280,19 @@ class OpenWithActivity : AppCompatActivity() {
             .show()
     }
 
-    private fun showPasswordInputDialog(uri: Uri) {
+    private fun showPasswordInputDialog(filePath: String) {
         val dialogBinding = PasswordInputOpenWithBinding.inflate(layoutInflater)
         val passwordEditText = dialogBinding.passwordInput
-        val progressBar = dialogBinding.progressIndicator
 
         MaterialAlertDialogBuilder(this, R.style.MaterialDialog)
             .setTitle(getString(R.string.enter_password))
             .setView(dialogBinding.root)
             .setPositiveButton(getString(R.string.ok)) { _, _ ->
                 val password = passwordEditText.text.toString()
-                progressBar.visibility = View.VISIBLE
-                CoroutineScope(Dispatchers.IO).launch {
-                    val filePath = getRealPathFromURI(uri, this@OpenWithActivity)
-                    withContext(Dispatchers.Main) {
-                        progressBar.visibility = View.GONE
-                        if (filePath != null) {
-                            handleFileExtraction(filePath, password)
-                        } else {
-                            Log.i("OpenWithActivity", "Failed to get file path")
-                        }
-                    }
-                }
+                handleFileExtraction(filePath, password)
             }
             .setNegativeButton(getString(R.string.no_password)) { _, _ ->
-                progressBar.visibility = View.VISIBLE
-                CoroutineScope(Dispatchers.IO).launch {
-                    val filePath = getRealPathFromURI(uri, this@OpenWithActivity)
-                    withContext(Dispatchers.Main) {
-                        progressBar.visibility = View.GONE
-                        if (filePath != null) {
-                            handleFileExtraction(filePath, null)
-                        } else {
-                            Log.i("OpenWithActivity", "Failed to get file path")
-                        }
-                    }
-                }
+                handleFileExtraction(filePath, null)
             }
             .setOnDismissListener {
                 finish()
