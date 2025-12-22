@@ -245,11 +245,16 @@ class ExtractMultipartZipService : Service() {
 
             if (progressMonitor!!.result == ProgressMonitor.Result.CANCELLED) {
                 // Do nothing
-            } else {
+            } else if (progressMonitor!!.result == ProgressMonitor.Result.SUCCESS) {
                 FileUtils.setLastModifiedTime(directories)
                 scanForNewFiles(extractDir)
                 showCompletionNotification(extractDir.absolutePath)
                 sendLocalBroadcast(Intent(ACTION_EXTRACTION_COMPLETE).putExtra(EXTRA_DIR_PATH, extractDir.absolutePath))
+            } else {
+                val exception = progressMonitor!!.exception
+                val errorMessage = exception?.message ?: getString(R.string.general_error_msg)
+                showErrorNotification(errorMessage)
+                sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(EXTRA_ERROR_MESSAGE, errorMessage))
             }
         } catch (e: ZipException) {
             e.printStackTrace()

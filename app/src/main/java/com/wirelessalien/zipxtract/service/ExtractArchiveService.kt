@@ -265,7 +265,9 @@ class ExtractArchiveService : Service() {
                     val extractCallback = ExtractCallback(inArchive, destinationDir, password)
                     inArchive.extract(null, false, extractCallback)
 
-                    if (extractCallback.hasUnsupportedMethod) {
+                    if (extractCallback.hasError) {
+                        // Error already handled in callback
+                    } else if (extractCallback.hasUnsupportedMethod) {
                         tryLibArchiveAndroid(file, destinationDir)
                     } else {
                         FileUtils.setLastModifiedTime(extractCallback.directories)
@@ -636,7 +638,7 @@ class ExtractArchiveService : Service() {
 
             if (progressMonitor!!.result == ProgressMonitor.Result.CANCELLED) {
                 // Do nothing
-            } else {
+            } else if (progressMonitor!!.result == ProgressMonitor.Result.SUCCESS) {
                 FileUtils.setLastModifiedTime(directories)
                 scanForNewFiles(destinationDir)
                 showCompletionNotification(destinationDir.absolutePath)
@@ -682,6 +684,7 @@ class ExtractArchiveService : Service() {
         private var currentFileIndex: Int = -1
         private var currentUnpackedFile: File? = null
         var hasUnsupportedMethod = false
+        var hasError = false
         val directories = mutableListOf<DirectoryInfo>()
 
         init {
@@ -696,6 +699,7 @@ class ExtractArchiveService : Service() {
                     hasUnsupportedMethod = true
                 }
                 ExtractOperationResult.WRONG_PASSWORD -> {
+                    hasError = true
                     if (!errorBroadcasted) {
                         showErrorNotification(getString(R.string.wrong_password))
                         sendLocalBroadcast(
@@ -708,6 +712,7 @@ class ExtractArchiveService : Service() {
                     }
                 }
                 ExtractOperationResult.DATAERROR, ExtractOperationResult.CRCERROR, ExtractOperationResult.UNAVAILABLE, ExtractOperationResult.HEADERS_ERROR, ExtractOperationResult.UNEXPECTED_END, ExtractOperationResult.UNKNOWN_OPERATION_RESULT -> {
+                    hasError = true
                     if (!errorBroadcasted) {
                         showErrorNotification(getString(R.string.general_error_msg))
                         sendLocalBroadcast(
@@ -741,6 +746,7 @@ class ExtractArchiveService : Service() {
                     }
                 }
                 else -> {
+                    hasError = true
                     if (!errorBroadcasted) {
                         showErrorNotification(getString(R.string.general_error_msg))
                         sendLocalBroadcast(
