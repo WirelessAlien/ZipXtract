@@ -230,7 +230,7 @@ class ExtractMultipart7zService : Service() {
             counter++
         }
 
-        destinationDir.mkdir()
+        destinationDir.mkdirs()
         try {
             val archiveOpenVolumeCallback = ArchiveOpenMultipart7zCallback(inputDir)
             val inStream: IInStream = VolumedArchiveInStream(file.name, archiveOpenVolumeCallback)

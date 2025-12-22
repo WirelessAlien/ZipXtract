@@ -17,6 +17,7 @@
 
 package com.wirelessalien.zipxtract.helper
 
+import android.content.Context
 import android.util.Log
 import com.wirelessalien.zipxtract.model.DirectoryInfo
 import java.io.File
@@ -24,6 +25,13 @@ import java.io.InputStream
 import java.io.OutputStream
 
 object FileUtils {
+
+    fun isInternalPath(context: Context, path: String): Boolean {
+        val filesDir = context.filesDir.absolutePath
+        val cacheDir = context.cacheDir.absolutePath
+        return path.startsWith(filesDir) || path.startsWith(cacheDir)
+    }
+
     fun setLastModifiedTime(directories: List<DirectoryInfo>) {
         val sortedDirectories = directories.sortedByDescending { it.path.length }
 

@@ -259,7 +259,7 @@ class ExtractArchiveService : Service() {
 
             try {
                 val inArchive = SevenZip.openInArchive(archiveFormat, inStream, OpenCallback(password))
-                destinationDir.mkdir()
+                destinationDir.mkdirs()
 
                 try {
                     val extractCallback = ExtractCallback(inArchive, destinationDir, password)
@@ -769,7 +769,7 @@ class ExtractArchiveService : Service() {
             this.currentUnpackedFile = File(dstDir.path, path) // Store current unpacked file
 
             if (isDir) {
-                this.currentUnpackedFile!!.mkdir()
+                this.currentUnpackedFile!!.mkdirs()
                 val lastModified =
                     (inArchive.getProperty(p0, PropID.LAST_MODIFICATION_TIME) as? Date)?.time
                         ?: System.currentTimeMillis()

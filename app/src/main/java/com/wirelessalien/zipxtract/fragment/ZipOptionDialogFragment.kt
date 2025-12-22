@@ -45,6 +45,7 @@ import com.wirelessalien.zipxtract.adapter.FilePathAdapter
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.PREFERENCE_ARCHIVE_DIR_PATH
 import com.wirelessalien.zipxtract.databinding.ZipOptionDialogBinding
 import com.wirelessalien.zipxtract.helper.FileOperationsDao
+import com.wirelessalien.zipxtract.helper.FileUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -238,11 +239,15 @@ class ZipOptionDialogFragment : DialogFragment() {
         }
 
         // Check storage
-        val parentPath = if (selectedFilePaths.isNotEmpty()) {
+        var parentPath = if (selectedFilePaths.isNotEmpty()) {
             File(selectedFilePaths.first()).parent
                 ?: Environment.getExternalStorageDirectory().absolutePath
         } else {
             Environment.getExternalStorageDirectory().absolutePath
+        }
+
+        if (FileUtils.isInternalPath(requireContext(), parentPath)) {
+            parentPath = Environment.getExternalStorageDirectory().absolutePath
         }
 
         val defaultColor = binding.okButton.backgroundTintList
