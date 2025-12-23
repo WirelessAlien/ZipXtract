@@ -21,12 +21,12 @@ package com.wirelessalien.zipxtract.adapter
 import android.annotation.SuppressLint
 import android.content.Context
 import android.icu.text.DateFormat
-import android.os.Build
 import android.util.SparseBooleanArray
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.util.size
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DecodeFormat
@@ -35,15 +35,14 @@ import com.bumptech.glide.request.RequestOptions
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.databinding.ItemFileBinding
 import com.wirelessalien.zipxtract.fragment.MainFragment
+import com.wirelessalien.zipxtract.model.FileItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.nio.file.Files
-import java.nio.file.attribute.BasicFileAttributes
 import java.util.Date
 import java.util.Locale
 
-class FileAdapter(private val context: Context, private val mainFragment: MainFragment?, val files: ArrayList<File>, private var filteredFiles: List<File> = emptyList()) :
+class FileAdapter(private val context: Context, private val mainFragment: MainFragment?, val files: ArrayList<FileItem>, private var filteredFiles: List<FileItem> = emptyList()) :
     RecyclerView.Adapter<FileAdapter.ViewHolder>() {
 
     interface OnItemClickListener {
@@ -60,9 +59,9 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
     private val selectedItems = SparseBooleanArray()
 
     fun toggleSelection(position: Int) {
-        val file = filteredFiles[position]
+        val fileItem = filteredFiles[position]
 
-        if (file.isDirectory) {
+        if (fileItem.isDirectory) {
             toggleDirectorySelection(position)
         } else {
             if (selectedItems.get(position, false)) {
@@ -75,7 +74,7 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
     }
 
     private fun toggleDirectorySelection(position: Int) {
-        val directory = filteredFiles[position]
+        val directory = filteredFiles[position].file
 
         if (selectedItems.get(position, false)) {
             selectedItems.delete(position)
@@ -84,7 +83,7 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
         }
 
         for (file in directory.listFiles() ?: emptyArray()) {
-            val index = filteredFiles.indexOf(file)
+            val index = filteredFiles.indexOfFirst { it.file == file }
             if (index != -1) {
                 toggleSelection(index)
             }
@@ -95,11 +94,11 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
         val selectedPaths = mutableListOf<String>()
 
         for (i in 0 until selectedItems.size) {
-            val file = filteredFiles[selectedItems.keyAt(i)]
-            selectedPaths.add(file.absolutePath)
+            val fileItem = filteredFiles[selectedItems.keyAt(i)]
+            selectedPaths.add(fileItem.file.absolutePath)
 
-            if (file.isDirectory) {
-                val directoryPaths = getFilesPathsInsideDirectory(file)
+            if (fileItem.isDirectory) {
+                val directoryPaths = getFilesPathsInsideDirectory(fileItem.file)
                 selectedPaths.addAll(directoryPaths)
             }
         }
@@ -145,7 +144,7 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
                         mainFragment.actionMode?.finish()
                     }
                 } else {
-                    onItemClickListener?.onItemClick(filteredFiles[bindingAdapterPosition])
+                    onItemClickListener?.onItemClick(filteredFiles[bindingAdapterPosition].file)
                 }
             }
         }
@@ -162,22 +161,23 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val file = filteredFiles[position]
+        val fileItem = filteredFiles[position]
+        val file = fileItem.file
         val binding = holder.binding
 
         binding.fileName.text = file.name
 
         val dateFormat =
             DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT, Locale.getDefault())
-        binding.fileDate.text = dateFormat.format(Date(getFileTimeOfCreation(file)))
+        binding.fileDate.text = dateFormat.format(Date(fileItem.lastModified))
 
-        if (file.isDirectory) {
+        if (fileItem.isDirectory) {
             binding.fileIcon.setImageResource(R.drawable.ic_folder)
             binding.fileSize.text = context.getString(R.string.folder)
             binding.fileIcon.visibility = View.VISIBLE
             binding.fileExtension.visibility = View.GONE
         } else {
-            binding.fileSize.text = bytesToString(file.length())
+            binding.fileSize.text = bytesToString(fileItem.size)
 
             val imageLoadingOptions = RequestOptions()
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
@@ -240,35 +240,23 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
         notifyItemRemoved(position)
     }
 
-    @SuppressLint("NotifyDataSetChanged")
-    fun updateFilesAndFilter(newFiles: ArrayList<File>, query: String? = null) {
+    fun updateFilesAndFilter(newFiles: List<FileItem>, query: String? = null) {
+        val newFilteredFiles = if (!query.isNullOrBlank()) {
+            newFiles.filter { it.file.name.contains(query, true) || it.isDirectory }
+        } else {
+            newFiles.toList()
+        }
+
+        val diffCallback = FileDiffCallback(filteredFiles, newFilteredFiles)
+        val diffResult = DiffUtil.calculateDiff(diffCallback)
+
         files.clear()
         files.addAll(newFiles)
+        filteredFiles = newFilteredFiles
 
-        filteredFiles = if (!query.isNullOrBlank()) {
-            files.filter { it.name.contains(query, true) || it.isDirectory }
-        } else {
-            files
-        }
-        notifyDataSetChanged()
+        diffResult.dispatchUpdatesTo(this)
     }
 
-    private fun getFileTimeOfCreation(file: File): Long {
-        return try {
-            if (file.exists()) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    val attr = Files.readAttributes(file.toPath(), BasicFileAttributes::class.java)
-                    attr.lastModifiedTime().toMillis()
-                } else {
-                    file.lastModified()
-                }
-            } else {
-                System.currentTimeMillis()
-            }
-        } catch (_: NoSuchFileException) {
-            0L
-        }
-    }
 
     private fun bytesToString(bytes: Long): String {
         val kilobyte = 1024

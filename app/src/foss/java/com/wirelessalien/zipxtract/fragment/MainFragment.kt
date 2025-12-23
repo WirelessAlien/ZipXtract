@@ -39,7 +39,6 @@ import android.os.FileObserver.DELETE_SELF
 import android.os.FileObserver.MODIFY
 import android.os.FileObserver.MOVED_FROM
 import android.os.FileObserver.MOVED_TO
-import android.os.FileObserver.MOVE_SELF
 import android.os.Handler
 import android.os.Looper
 import android.os.StatFs
@@ -124,6 +123,7 @@ import com.wirelessalien.zipxtract.service.ExtractArchiveService
 import com.wirelessalien.zipxtract.service.ExtractCsArchiveService
 import com.wirelessalien.zipxtract.service.ExtractMultipart7zService
 import com.wirelessalien.zipxtract.service.ExtractMultipartZipService
+import com.wirelessalien.zipxtract.model.FileItem
 import com.wirelessalien.zipxtract.service.ExtractRarService
 import com.wirelessalien.zipxtract.viewmodel.FileOperationViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -163,6 +163,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var adapter: FileAdapter
     private var isSearchActive: Boolean = false
+    private var currentQuery: String? = null
     private var sortBy: SortBy = SortBy.SORT_BY_NAME
     private var sortAscending: Boolean = true
     private var currentPath: String? = null
@@ -188,6 +189,9 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     private var storageInfoJob: Job? = null
     private var searchJob: Job? = null
     private lateinit var fileOperationsDao: FileOperationsDao
+
+    private val pendingFileEvents = mutableListOf<Pair<Int, File>>()
+    private var processEventsJob: Job? = null
 
 
     private val updateProgressRunnable = object : Runnable {
@@ -810,7 +814,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     }
 
     override fun onFileLongClick(file: File, view: View) {
-        val position = adapter.files.indexOf(file)
+        val position = adapter.files.indexOfFirst { it.file == file }
         if (position != -1) {
             startActionMode(position)
         }
@@ -818,7 +822,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
     override fun onItemClick(file: File, filePath: String) {
         if (actionMode != null) {
-            val position = adapter.files.indexOf(file)
+            val position = adapter.files.indexOfFirst { it.file == file }
             if (position != -1) {
                 toggleSelection(position)
                 if (getSelectedItemCount() == 0) {
@@ -995,7 +999,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     }
 
     fun toggleSelection(position: Int) {
-        val file = adapter.files[position]
+        val file = adapter.files[position].file
         if (selectedFiles.contains(file)) {
             selectedFiles.remove(file)
         } else {
@@ -1150,63 +1154,77 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     }
 
     private fun handleFileEvent(event: Int, file: File) {
-        CoroutineScope(Dispatchers.Main).launch {
-            when {
-                (event and CREATE) != 0 || (event and MOVED_TO) != 0 -> {
-                    // Check if the file already exists in the list
-                    val existingPosition = adapter.files.indexOfFirst { it.absolutePath == file.absolutePath }
-                    if (existingPosition != -1) {
-                        // Update the existing file entry
-                        adapter.files[existingPosition] = file
-                        adapter.notifyItemChanged(existingPosition)
-                    } else {
-                        // Add new file
-                        val position = findInsertPosition(file)
-                        adapter.files.add(position, file)
-                        adapter.notifyItemInserted(position)
-                    }
-                }
-                (event and DELETE) != 0 || (event and DELETE_SELF) != 0 || (event and MOVED_FROM) != 0 -> {
-                    // Remove deleted file
-                    val position = adapter.files.indexOfFirst { it.absolutePath == file.absolutePath }
-                    if (position != -1) {
-                        adapter.files.removeAt(position)
-                        adapter.notifyItemRemoved(position)
-                    }
-                }
-                (event and MODIFY) != 0 -> {
-                    // Update modified file
-                    val position = adapter.files.indexOfFirst { it.absolutePath == file.absolutePath }
-                    if (position != -1) {
-                        adapter.files[position] = file
-                        adapter.notifyItemChanged(position)
-                    }
-                }
-                (event and MOVE_SELF) != 0 -> {
-                   //nothing now
-                }
+        synchronized(pendingFileEvents) {
+            pendingFileEvents.add(event to file)
+        }
+
+        if (processEventsJob?.isActive != true) {
+            processEventsJob = lifecycleScope.launch(Dispatchers.Main) {
+                delay(500)
+                processPendingEvents()
             }
         }
     }
 
-    private fun findInsertPosition(newFile: File): Int {
-        val comparator = when (sortBy) {
-            SortBy.SORT_BY_NAME -> compareBy { it.name }
-            SortBy.SORT_BY_SIZE -> compareBy { it.length() }
-            SortBy.SORT_BY_MODIFIED -> compareBy { getFileTimeOfCreation(it) }
-            SortBy.SORT_BY_EXTENSION -> compareBy<File> { it.extension }
+    private suspend fun processPendingEvents() {
+        val events = synchronized(pendingFileEvents) {
+            val copy = pendingFileEvents.toList()
+            pendingFileEvents.clear()
+            copy
         }
 
-        val finalComparator = if (sortAscending) {
-            compareBy<File> { !it.isDirectory }.then(comparator)
-        } else {
-            compareBy<File> { !it.isDirectory }.then(comparator.reversed())
+        if (events.isEmpty()) return
+
+        // Capture snapshot on Main thread
+        val snapshotFiles = ArrayList(adapter.files)
+
+        // Process in background
+        val updatedFiles = withContext(Dispatchers.IO) {
+            for ((event, file) in events) {
+                when {
+                    (event and CREATE) != 0 || (event and MOVED_TO) != 0 -> {
+                        val existingPosition = snapshotFiles.indexOfFirst { it.file.absolutePath == file.absolutePath }
+                        if (existingPosition != -1) {
+                            snapshotFiles[existingPosition] = FileItem.fromFile(file)
+                        } else {
+                            snapshotFiles.add(FileItem.fromFile(file))
+                        }
+                    }
+                    (event and DELETE) != 0 || (event and DELETE_SELF) != 0 || (event and MOVED_FROM) != 0 -> {
+                        val position = snapshotFiles.indexOfFirst { it.file.absolutePath == file.absolutePath }
+                        if (position != -1) {
+                            snapshotFiles.removeAt(position)
+                        }
+                    }
+                    (event and MODIFY) != 0 -> {
+                        val position = snapshotFiles.indexOfFirst { it.file.absolutePath == file.absolutePath }
+                        if (position != -1) {
+                            snapshotFiles[position] = FileItem.fromFile(file)
+                        }
+                    }
+                }
+            }
+
+            val comparator = when (sortBy) {
+                SortBy.SORT_BY_NAME -> compareBy { it.file.name }
+                SortBy.SORT_BY_SIZE -> compareBy { it.size }
+                SortBy.SORT_BY_MODIFIED -> compareBy { it.lastModified }
+                SortBy.SORT_BY_EXTENSION -> compareBy<FileItem> { it.file.extension }
+            }
+
+            val finalComparator = if (sortAscending) {
+                compareBy<FileItem> { !it.isDirectory }.then(comparator)
+            } else {
+                compareBy<FileItem> { !it.isDirectory }.then(comparator.reversed())
+            }
+
+            snapshotFiles.sortWith(finalComparator)
+            snapshotFiles
         }
 
-        return adapter.files.binarySearch(newFile, finalComparator).let {
-            if (it < 0) -(it + 1) else it
-        }
+        adapter.updateFilesAndFilter(updatedFiles, currentQuery)
     }
+
 
     private fun stopFileObserver() {
         // Stop the file observer when the activity is destroyed
@@ -1815,8 +1833,9 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
     private fun selectAllFiles() {
         for (i in 0 until adapter.itemCount) {
-            if (!selectedFiles.contains(adapter.files[i])) {
-                selectedFiles.add(adapter.files[i])
+            val file = adapter.files[i].file
+            if (!selectedFiles.contains(file)) {
+                selectedFiles.add(file)
                 adapter.toggleSelection(i)
             }
         }
@@ -1892,9 +1911,9 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         ContextCompat.startForegroundService(requireContext(), intent)
     }
 
-    private suspend fun getFiles(): ArrayList<File> = withContext(Dispatchers.IO) {
-        val files = ArrayList<File>()
-        val directories = ArrayList<File>()
+    private suspend fun getFiles(): ArrayList<FileItem> = withContext(Dispatchers.IO) {
+        val files = ArrayList<FileItem>()
+        val directories = ArrayList<FileItem>()
 
         val directory = File(currentPath ?: Environment.getExternalStorageDirectory().absolutePath)
 
@@ -1914,9 +1933,9 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                     for (path in directoryStream) {
                         val file = path.toFile()
                         if (file.isDirectory) {
-                            directories.add(file)
+                            directories.add(FileItem.fromFile(file))
                         } else {
-                            files.add(file)
+                            files.add(FileItem.fromFile(file))
                         }
                     }
                 }
@@ -1927,9 +1946,9 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 if (fileList != null) {
                     for (file in fileList) {
                         if (file.isDirectory) {
-                            directories.add(file)
+                            directories.add(FileItem.fromFile(file))
                         } else {
-                            files.add(file)
+                            files.add(FileItem.fromFile(file))
                         }
                     }
                 }
@@ -1939,9 +1958,9 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             if (fileList != null) {
                 for (file in fileList) {
                     if (file.isDirectory) {
-                        directories.add(file)
+                        directories.add(FileItem.fromFile(file))
                     } else {
-                        files.add(file)
+                        files.add(FileItem.fromFile(file))
                     }
                 }
             }
@@ -1959,20 +1978,20 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         // Sort files based on current criteria
         when (sortBy) {
             SortBy.SORT_BY_NAME -> {
-                directories.sortBy { it.name }
-                files.sortBy { it.name }
+                directories.sortBy { it.file.name }
+                files.sortBy { it.file.name }
             }
             SortBy.SORT_BY_SIZE -> {
-                directories.sortBy { it.length() }
-                files.sortBy { it.length() }
+                directories.sortBy { it.size }
+                files.sortBy { it.size }
             }
             SortBy.SORT_BY_MODIFIED -> {
-                directories.sortBy { getFileTimeOfCreation(it) }
-                files.sortBy { getFileTimeOfCreation(it) }
+                directories.sortBy { it.lastModified }
+                files.sortBy { it.lastModified }
             }
             SortBy.SORT_BY_EXTENSION -> {
-                directories.sortBy { it.extension }
-                files.sortBy { it.extension }
+                directories.sortBy { it.file.extension }
+                files.sortBy { it.file.extension }
             }
         }
 
@@ -1981,7 +2000,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             files.reverse()
         }
 
-        val combinedList = ArrayList<File>()
+        val combinedList = ArrayList<FileItem>()
         combinedList.addAll(directories)
         combinedList.addAll(files)
 
@@ -2009,7 +2028,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
     private fun updateAdapterWithFullList() {
         if (!isSearchActive) {
-            adapter.updateFilesAndFilter(ArrayList())
+            adapter.updateFilesAndFilter(ArrayList(), currentQuery)
             fileLoadingJob?.cancel()
 
             binding.shimmerViewContainer.startShimmer()
@@ -2030,7 +2049,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                         } else {
                             binding.recyclerView.visibility = View.VISIBLE
                         }
-                        adapter.updateFilesAndFilter(fullFileList)
+                        adapter.updateFilesAndFilter(fullFileList, currentQuery)
                         binding.swipeRefreshLayout.isRefreshing = false
                     }
                 } catch (e: Exception) {
@@ -2088,6 +2107,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
     private fun searchFiles(query: String?) {
         isSearchActive = !query.isNullOrEmpty()
+        currentQuery = query
 
         if (query.isNullOrEmpty()) {
             updateAdapterWithFullList()
@@ -2098,7 +2118,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         binding.shimmerViewContainer.visibility = View.VISIBLE
         binding.recyclerView.visibility = View.GONE
 
-        adapter.updateFilesAndFilter(ArrayList())
+        adapter.updateFilesAndFilter(ArrayList(), currentQuery)
 
         val fastSearchEnabled = sharedPreferences.getBoolean("fast_search", false)
 
@@ -2133,7 +2153,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 }
                 .collect { files ->
                     withContext(Dispatchers.Main) {
-                        adapter.updateFilesAndFilter(ArrayList(files))
+                        adapter.updateFilesAndFilter(ArrayList(files), currentQuery)
                         binding.shimmerViewContainer.stopShimmer()
                         binding.shimmerViewContainer.visibility = View.GONE
                         binding.recyclerView.visibility = View.VISIBLE
@@ -2142,8 +2162,8 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         }
     }
 
-    private fun searchAllFiles(directory: File, query: String): Flow<List<File>> = flow {
-        val results = mutableListOf<File>()
+    private fun searchAllFiles(directory: File, query: String): Flow<List<FileItem>> = flow {
+        val results = mutableListOf<FileItem>()
 
         suspend fun searchRecursively(dir: File) {
             val files = dir.listFiles() ?: return
@@ -2154,7 +2174,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 if (file.isDirectory) {
                     searchRecursively(file)
                 } else if (file.name.contains(query, true)) {
-                    results.add(file)
+                    results.add(FileItem.fromFile(file))
                     emit(results.toList())
                 }
             }
@@ -2164,8 +2184,8 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         emit(results)
     }.distinctUntilChanged { old, new -> old.size == new.size }
 
-    private fun searchFilesWithMediaStore(query: String): Flow<List<File>> = flow {
-        val results = mutableListOf<File>()
+    private fun searchFilesWithMediaStore(query: String): Flow<List<FileItem>> = flow {
+        val results = mutableListOf<FileItem>()
         val projection = arrayOf(
             MediaStore.Files.FileColumns.DATA,
             MediaStore.Files.FileColumns.DISPLAY_NAME
@@ -2189,7 +2209,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                     val filePath = cursor.getString(dataColumn)
                     val file = File(filePath)
                     if (file.exists()) {
-                        results.add(file)
+                        results.add(FileItem.fromFile(file))
                         emit(results.toList())
                     }
                 }
