@@ -132,8 +132,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.Runnable
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -1152,7 +1152,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     private fun handleFileEvent(event: Int, file: File) {
         CoroutineScope(Dispatchers.Main).launch {
             when {
-                (event and CREATE) != 0 || (event and MOVED_TO) != 0 || (event and MOVED_FROM) != 0 || (event and MOVE_SELF) != 0 -> {
+                (event and CREATE) != 0 || (event and MOVED_TO) != 0 -> {
                     // Check if the file already exists in the list
                     val existingPosition = adapter.files.indexOfFirst { it.absolutePath == file.absolutePath }
                     if (existingPosition != -1) {
@@ -1166,7 +1166,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                         adapter.notifyItemInserted(position)
                     }
                 }
-                (event and DELETE) != 0 || (event and DELETE_SELF) != 0 -> {
+                (event and DELETE) != 0 || (event and DELETE_SELF) != 0 || (event and MOVED_FROM) != 0 -> {
                     // Remove deleted file
                     val position = adapter.files.indexOfFirst { it.absolutePath == file.absolutePath }
                     if (position != -1) {
@@ -1181,6 +1181,9 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                         adapter.files[position] = file
                         adapter.notifyItemChanged(position)
                     }
+                }
+                (event and MOVE_SELF) != 0 -> {
+                   //nothing now
                 }
             }
         }
@@ -1905,23 +1908,52 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             return@withContext files
         }
 
-        val fileList = directory.listFiles()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            try {
+                Files.newDirectoryStream(directory.toPath()).use { directoryStream ->
+                    for (path in directoryStream) {
+                        val file = path.toFile()
+                        if (file.isDirectory) {
+                            directories.add(file)
+                        } else {
+                            files.add(file)
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                // Fallback if error
+                val fileList = directory.listFiles()
+                if (fileList != null) {
+                    for (file in fileList) {
+                        if (file.isDirectory) {
+                            directories.add(file)
+                        } else {
+                            files.add(file)
+                        }
+                    }
+                }
+            }
+        } else {
+            val fileList = directory.listFiles()
+            if (fileList != null) {
+                for (file in fileList) {
+                    if (file.isDirectory) {
+                        directories.add(file)
+                    } else {
+                        files.add(file)
+                    }
+                }
+            }
+        }
 
-        if (fileList == null || fileList.isEmpty()) {
+        if (files.isEmpty() && directories.isEmpty()) {
             withContext(Dispatchers.Main) {
                 binding.emptyFolderLayout.visibility = View.VISIBLE
                 binding.recyclerView.visibility = View.GONE
                 binding.statusTextView.visibility = View.GONE
             }
             return@withContext files
-        }
-
-        fileList.forEach { file ->
-            if (file.isDirectory) {
-                directories.add(file)
-            } else {
-                files.add(file)
-            }
         }
 
         // Sort files based on current criteria

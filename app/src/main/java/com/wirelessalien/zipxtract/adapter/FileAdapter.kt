@@ -124,12 +124,20 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
             itemView.isFocusable = true
             itemView.setOnClickListener(this)
             itemView.setOnLongClickListener(this)
-            binding.cardView.setOnClickListener(this)
+            binding.fileIcon.setOnClickListener(this)
+            binding.fileExtension.setOnClickListener(this)
         }
 
         override fun onClick(v: View?) {
-            if (v?.id == R.id.card_view) {
-                onLongClick(v)
+            if (v?.id == R.id.card_view || v?.id == R.id.file_icon || v?.id == R.id.file_extension) {
+                if (mainFragment != null && mainFragment.actionMode == null) {
+                    mainFragment.startActionMode(bindingAdapterPosition)
+                } else if (mainFragment != null) {
+                    mainFragment.toggleSelection(bindingAdapterPosition)
+                    if (mainFragment.getSelectedItemCount() == 0) {
+                        mainFragment.actionMode?.finish()
+                    }
+                }
             } else {
                 if (mainFragment?.actionMode != null) {
                     mainFragment.toggleSelection(bindingAdapterPosition)
