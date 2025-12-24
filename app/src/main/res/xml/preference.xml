@@ -17,19 +17,17 @@
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <EditTextPreference
+    <Preference
         android:key="key_extract_path"
         android:title="@string/extract_path"
         android:icon="@drawable/ic_folder_2"
-        android:summary="@string/extract_path_summary"
-        android:dialogTitle="@string/extract_path"/>
+        android:summary="@string/extract_path_summary"/>
 
-    <EditTextPreference
+    <Preference
         android:key="key_archive_path"
         android:title="@string/archive_path"
         android:icon="@drawable/ic_folder_2"
-        android:summary="@string/archive_path_summary"
-        android:dialogTitle="@string/archive_path"/>
+        android:summary="@string/archive_path_summary"/>
 
     <EditTextPreference
         android:key="zstd_compression_level"

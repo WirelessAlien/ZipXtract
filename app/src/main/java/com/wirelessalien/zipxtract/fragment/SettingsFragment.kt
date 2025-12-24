@@ -20,10 +20,10 @@ package com.wirelessalien.zipxtract.fragment
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener
-import android.net.Uri
 import android.os.Bundle
-import android.os.Environment
 import android.widget.Toast
+import androidx.core.content.edit
+import androidx.core.net.toUri
 import androidx.fragment.app.FragmentTransaction
 import androidx.preference.EditTextPreference
 import androidx.preference.Preference
@@ -70,27 +70,49 @@ class SettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeLis
 //            true
 //        }
 
-        val extractPathPreference = findPreference<EditTextPreference>("key_extract_path")
-        extractPathPreference?.let {
+        val extractPathPreference = findPreference<Preference>("key_extract_path")
+        extractPathPreference?.let { pref ->
             val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
-            val defaultPath = Environment.getExternalStorageDirectory().absolutePath + "/"
-            val savedPath = sharedPreferences.getString("key_extract_path", defaultPath)
-            if (!savedPath!!.startsWith(defaultPath)) {
-                it.text = defaultPath + savedPath
+            val savedPath = sharedPreferences.getString("key_extract_path", null)
+            if (savedPath != null) {
+                pref.summary = savedPath
             } else {
-                it.text = savedPath
+                pref.setSummary(R.string.extract_path_summary)
+            }
+
+            pref.setOnPreferenceClickListener {
+                val pathPicker = PathPickerFragment.newInstance()
+                pathPicker.setPathPickerListener(object : PathPickerFragment.PathPickerListener {
+                    override fun onPathSelected(path: String) {
+                        sharedPreferences.edit { putString("key_extract_path", path) }
+                        pref.summary = path
+                    }
+                })
+                pathPicker.show(parentFragmentManager, "PathPicker")
+                true
             }
         }
 
-        val archivePathPreference = findPreference<EditTextPreference>("key_archive_path")
-        archivePathPreference?.let {
+        val archivePathPreference = findPreference<Preference>("key_archive_path")
+        archivePathPreference?.let { pref ->
             val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
-            val defaultPath = Environment.getExternalStorageDirectory().absolutePath + "/"
-            val savedPath = sharedPreferences.getString("key_archive_path", defaultPath)
-            if (!savedPath!!.startsWith(defaultPath)) {
-                it.text = defaultPath + savedPath
+            val savedPath = sharedPreferences.getString("key_archive_path", null)
+            if (savedPath != null) {
+                pref.summary = savedPath
             } else {
-                it.text = savedPath
+                pref.setSummary(R.string.archive_path_summary)
+            }
+
+            pref.setOnPreferenceClickListener {
+                val pathPicker = PathPickerFragment.newInstance()
+                pathPicker.setPathPickerListener(object : PathPickerFragment.PathPickerListener {
+                    override fun onPathSelected(path: String) {
+                        sharedPreferences.edit { putString("key_archive_path", path) }
+                        pref.summary = path
+                    }
+                })
+                pathPicker.show(parentFragmentManager, "PathPicker")
+                true
             }
         }
 
@@ -139,7 +161,7 @@ class SettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeLis
 //    }
 
     private fun openUrl(url: String) {
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        val intent = Intent(Intent.ACTION_VIEW, url.toUri())
         startActivity(intent)
     }
 
