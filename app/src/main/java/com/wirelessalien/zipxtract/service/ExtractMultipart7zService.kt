@@ -126,6 +126,7 @@ class ExtractMultipart7zService : Service() {
         extractionJob = CoroutineScope(Dispatchers.IO).launch {
             extractArchive(modifiedFilePath, destinationPath)
             fileOperationsDao.deleteFilesForJob(jobId)
+            stopSelf()
         }
 
         return START_NOT_STICKY
@@ -398,10 +399,10 @@ class ExtractMultipart7zService : Service() {
             if (extractionJob?.isActive == false) {
                 throw SevenZipException("Cancelled")
             }
+            if (hasError) return
             val progress = ((complete.toDouble() / totalSize) * 100).toInt()
             if (progress != lastProgress) {
                 lastProgress = progress
-                startForeground(NOTIFICATION_ID, createNotification(progress))
                 updateProgress(progress)
             }
         }

@@ -139,6 +139,7 @@ class ArchiveZipService : Service() {
         archiveJob = CoroutineScope(Dispatchers.IO).launch {
             createZipFile(archiveName, password, compressionMethod, compressionLevel, isEncrypted, encryptionMethod, aesStrength, filesToArchive, destinationPath)
             fileOperationsDao.deleteFilesForJob(jobId)
+            stopSelf()
         }
         return START_STICKY
     }

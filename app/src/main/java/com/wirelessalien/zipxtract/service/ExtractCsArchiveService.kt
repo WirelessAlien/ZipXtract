@@ -121,6 +121,7 @@ class ExtractCsArchiveService : Service() {
         extractionJob = CoroutineScope(Dispatchers.IO).launch {
             extractArchive(filePath, useAppNameDir, destinationPath)
             fileOperationsDao.deleteFilesForJob(jobId)
+            stopSelf()
         }
 
         return START_NOT_STICKY

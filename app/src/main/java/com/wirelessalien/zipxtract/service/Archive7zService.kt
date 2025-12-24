@@ -112,6 +112,7 @@ class Archive7zService : Service() {
         archiveJob = CoroutineScope(Dispatchers.IO).launch {
             create7zFile(archiveName, password, compressionLevel, solid, threadCount, filesToArchive, destinationPath)
             fileOperationsDao.deleteFilesForJob(jobId)
+            stopSelf()
         }
         return START_STICKY
     }
@@ -240,7 +241,6 @@ class Archive7zService : Service() {
                             }
                             val totalSize = filesToArchive.sumOf { File(it).length() }
                             val progress = ((complete.toDouble() / totalSize) * 100).toInt()
-                            startForeground(NOTIFICATION_ID, createNotification(progress))
                             updateProgress(progress)
                         }
 

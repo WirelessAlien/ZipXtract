@@ -110,6 +110,7 @@ class ExtractMultipartZipService : Service() {
         extractionJob = CoroutineScope(Dispatchers.IO).launch {
             extractArchive(filesToExtract ?:"", password, destinationPath)
             fileOperationsDao.deleteFilesForJob(jobId)
+            stopSelf()
         }
         return START_STICKY
     }

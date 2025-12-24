@@ -85,6 +85,7 @@ class Update7zService : Service() {
             update7zFile(archivePath, itemsToAdd, itemsToRemovePaths)
             itemsToAddJobId?.let { fileOperationsDao.deleteFilesForJob(it) }
             itemsToRemoveJobId?.let { fileOperationsDao.deleteFilesForJob(it) }
+            stopSelf()
         }
         return START_STICKY
     }

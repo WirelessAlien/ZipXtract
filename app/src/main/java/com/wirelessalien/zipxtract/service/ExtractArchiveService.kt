@@ -147,6 +147,7 @@ class ExtractArchiveService : Service() {
         extractionJob = CoroutineScope(Dispatchers.IO).launch {
             extractArchive(filePath, password, useAppNameDir, destinationPath)
             fileOperationsDao.deleteFilesForJob(jobId)
+            stopSelf()
         }
 
         return START_NOT_STICKY
@@ -632,8 +633,7 @@ class ExtractArchiveService : Service() {
             while (!progressMonitor!!.state.equals(ProgressMonitor.State.READY)) {
                 if (progressMonitor!!.state.equals(ProgressMonitor.State.BUSY)) {
                     val percentDone = (progressMonitor!!.percentDone)
-                    startForeground(NOTIFICATION_ID, createNotification(percentDone))
-                    sendLocalBroadcast(Intent(ACTION_EXTRACTION_PROGRESS).putExtra(EXTRA_PROGRESS, percentDone))
+                    updateProgress(percentDone)
                 }
                 Thread.sleep(100)
             }
@@ -817,8 +817,8 @@ class ExtractArchiveService : Service() {
             if (extractionJob?.isActive == false) {
                 throw SevenZipException("Cancelled")
             }
+            if (hasError) return
             val progress = ((complete.toDouble() / totalSize) * 100).toInt()
-            startForeground(NOTIFICATION_ID, createNotification(progress))
             updateProgress(progress)
         }
 

@@ -126,6 +126,7 @@ class CompressCsArchiveService : Service() {
                 compressArchive(filePath, compressionFormat, destinationPath)
             }
             fileOperationsDao.deleteFilesForJob(jobId)
+            stopSelf()
         }
 
 

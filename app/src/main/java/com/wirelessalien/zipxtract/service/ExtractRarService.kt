@@ -126,6 +126,7 @@ class ExtractRarService : Service() {
         extractionJob = CoroutineScope(Dispatchers.IO).launch {
             extractArchive(modifiedFilePath, useAppNameDir, destinationPath)
             fileOperationsDao.deleteFilesForJob(jobId)
+            stopSelf()
         }
 
         return START_NOT_STICKY
@@ -435,8 +436,8 @@ class ExtractRarService : Service() {
             if (extractionJob?.isActive == false) {
                 throw SevenZipException("Cancelled")
             }
+            if (hasError) return
             val progress = ((complete.toDouble() / totalSize) * 100).toInt()
-            startForeground(NOTIFICATION_ID, createNotification(progress))
             updateProgress(progress)
         }
 

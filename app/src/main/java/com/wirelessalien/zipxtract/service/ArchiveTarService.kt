@@ -115,6 +115,7 @@ class ArchiveTarService : Service() {
         archiveJob = CoroutineScope(Dispatchers.IO).launch {
             createTarFile(archiveName, filesToArchive, compressionFormat, destinationPath)
             fileOperationsDao.deleteFilesForJob(jobId)
+            stopSelf()
         }
         return START_STICKY
     }
@@ -317,7 +318,6 @@ class ArchiveTarService : Service() {
                 if (compressionActive) {
                     progress /= 2 // Scale to 0-50
                 }
-                startForeground(NOTIFICATION_ID, createNotification(progress))
                 updateProgress(progress)
             }
 

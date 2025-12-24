@@ -141,6 +141,7 @@ class ArchiveSplitZipService : Service() {
         archiveJob = CoroutineScope(Dispatchers.IO).launch {
             createSplitZipFile(archiveName, password, compressionMethod, compressionLevel, isEncrypted, encryptionMethod, aesStrength, filesToArchive, splitSize, destinationPath)
             fileOperationsDao.deleteFilesForJob(jobId)
+            stopSelf()
         }
         return START_STICKY
     }
