@@ -285,6 +285,8 @@ class ExtractRarService : Service() {
                 } catch (e: SevenZipException) {
                     if (e.message == "Cancelled") {
                         // Cancelled by user, do nothing
+                    } else if (e.message == "WrongPasswordDetected") {
+                        // Error already handled in callback
                     } else {
                         e.printStackTrace()
                         showErrorNotification(e.message ?: getString(R.string.general_error_msg))
@@ -339,6 +341,7 @@ class ExtractRarService : Service() {
                         )
                         errorBroadcasted = true
                     }
+                    throw SevenZipException("WrongPasswordDetected")
                 }
                 ExtractOperationResult.DATAERROR, ExtractOperationResult.UNSUPPORTEDMETHOD, ExtractOperationResult.CRCERROR, ExtractOperationResult.UNAVAILABLE, ExtractOperationResult.HEADERS_ERROR, ExtractOperationResult.UNEXPECTED_END, ExtractOperationResult.UNKNOWN_OPERATION_RESULT -> {
                     hasError = true

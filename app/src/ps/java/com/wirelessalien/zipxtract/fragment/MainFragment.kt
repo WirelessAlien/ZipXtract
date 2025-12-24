@@ -829,6 +829,11 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 }
             }
         } else {
+            if (!file.exists()) {
+                Toast.makeText(requireContext(), getString(R.string.file_does_not_exist), Toast.LENGTH_SHORT).show()
+                updateAdapterWithFullList()
+                return
+            }
             if (file.isDirectory) {
                 val fragment = MainFragment().apply {
                     arguments = Bundle().apply {

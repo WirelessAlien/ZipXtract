@@ -252,7 +252,11 @@ class ExtractMultipartZipService : Service() {
                 sendLocalBroadcast(Intent(ACTION_EXTRACTION_COMPLETE).putExtra(EXTRA_DIR_PATH, extractDir.absolutePath))
             } else {
                 val exception = progressMonitor!!.exception
-                val errorMessage = exception?.message ?: getString(R.string.general_error_msg)
+                val errorMessage = if (exception is ZipException && exception.type == ZipException.Type.WRONG_PASSWORD) {
+                    getString(R.string.wrong_password)
+                } else {
+                    exception?.message ?: getString(R.string.general_error_msg)
+                }
                 showErrorNotification(errorMessage)
                 sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(EXTRA_ERROR_MESSAGE, errorMessage))
             }

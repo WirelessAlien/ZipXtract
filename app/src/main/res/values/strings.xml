@@ -176,6 +176,7 @@
     <string name="error_updating_archive">Error updating archive</string>
     <string name="error_opening_archive">Error opening archive: %1$s</string>
     <string name="no_valid_files_found_to_archive">No valid files found to archive.</string>
+    <string name="file_does_not_exist">File does not exist</string>
     <string name="invalid_archive_type">Invalid archive type</string>
 
 

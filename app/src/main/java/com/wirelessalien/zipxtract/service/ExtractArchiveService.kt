@@ -278,6 +278,8 @@ class ExtractArchiveService : Service() {
                 } catch (e: SevenZipException) {
                     if (e.message == "Cancelled") {
                         // Cancelled by user, do nothing
+                    } else if (e.message == "WrongPasswordDetected") {
+                        // Error already handled in callback
                     } else {
                         e.printStackTrace()
                         showErrorNotification(e.message ?: getString(R.string.general_error_msg))
@@ -647,6 +649,15 @@ class ExtractArchiveService : Service() {
                 if (useAppNameDir) {
                     filesDir.deleteRecursively()
                 }
+            } else {
+                val exception = progressMonitor!!.exception
+                val errorMessage = if (exception is ZipException && exception.type == ZipException.Type.WRONG_PASSWORD) {
+                    getString(R.string.wrong_password)
+                } else {
+                    exception?.message ?: getString(R.string.general_error_msg)
+                }
+                showErrorNotification(errorMessage)
+                sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(EXTRA_ERROR_MESSAGE, errorMessage))
             }
 
         } catch (e: ZipException) {
@@ -710,6 +721,7 @@ class ExtractArchiveService : Service() {
                         )
                         errorBroadcasted = true
                     }
+                    throw SevenZipException("WrongPasswordDetected")
                 }
                 ExtractOperationResult.DATAERROR, ExtractOperationResult.CRCERROR, ExtractOperationResult.UNAVAILABLE, ExtractOperationResult.HEADERS_ERROR, ExtractOperationResult.UNEXPECTED_END, ExtractOperationResult.UNKNOWN_OPERATION_RESULT -> {
                     hasError = true

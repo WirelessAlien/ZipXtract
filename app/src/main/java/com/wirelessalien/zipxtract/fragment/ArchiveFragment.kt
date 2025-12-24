@@ -546,6 +546,11 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
     }
 
     override fun onItemClick(file: File, filePath: String) {
+        if (!file.exists()) {
+            Toast.makeText(requireContext(), getString(R.string.file_does_not_exist), Toast.LENGTH_SHORT).show()
+            updateAdapterWithFullList()
+            return
+        }
         showBottomSheetOptions(filePath, file)
     }
 
