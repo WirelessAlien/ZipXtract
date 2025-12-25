@@ -461,6 +461,14 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             }
         }
 
+        binding.storageInfoLayout.setOnClickListener {
+            try {
+                startActivity(Intent(Settings.ACTION_INTERNAL_STORAGE_SETTINGS))
+            } catch (e: Exception) {
+                Toast.makeText(requireContext(), getString(R.string.general_error_msg), Toast.LENGTH_SHORT).show()
+            }
+        }
+
         updateStorageInfo(currentPath ?: Environment.getExternalStorageDirectory().absolutePath)
         startFileObserver()
 
@@ -667,7 +675,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 e.printStackTrace()
                 withContext(Dispatchers.Main) {
                     if (isAdded) {
-                         binding.storageInfoLayout.visibility = View.GONE
+                        binding.storageInfoLayout.visibility = View.GONE
                     }
                 }
             }
