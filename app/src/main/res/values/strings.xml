@@ -84,6 +84,7 @@
     <string name="cancel">Cancel</string>
     <string name="donate">Donate</string>
     <string name="ok">OK</string>
+    <string name="please_wait">Please wait…</string>
     <string name="enter_password">Enter Password</string>
     <string name="extract">Extract</string>
     <string name="file_info">File info</string>
