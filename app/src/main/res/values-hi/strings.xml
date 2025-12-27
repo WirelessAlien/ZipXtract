@@ -147,4 +147,15 @@
     <string name="invalid_archive_type">अवैध संग्रह प्रकार</string>
     <string name="updating_archive">अद्यतन पुरालेख..</string>
     <string name="update_archive_service">अद्यतन पुरालेख</string>
+    <string name="refreshed">ताज़ा</string>
+    <string name="select_directory">निर्देशिका चुनें..</string>
+    <string name="output_path">आउटपुट पथ</string>
+    <string name="no_match">कोई मैच नहीं</string>
+    <string name="refresh">रिफ्रेश</string>
+    <string name="storage_info_format">उपलब्ध: %1$s / कुल: %2$s</string>
+    <string name="low_storage_warning">चेतावनी: कम भंडारण स्थान! उपलब्ध: %1$s</string>
+    <string name="low_storage_warning_dynamic">कम भंडारण! %1$s उपलब्ध, कम से कम ~ %2$s को मुक्त करें। अतिरिक्त अंतरिक्ष शायद संग्रह प्रारूप के आधार पर की जरूरत है।।</string>
+    <string name="please_wait">कृपया प्रतीक्षा करें</string>
+    <string name="compare">तुलना</string>
+    <string name="file_does_not_exist">फ़ाइल मौजूद नहीं है</string>
 </resources>
