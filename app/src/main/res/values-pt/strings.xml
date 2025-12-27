@@ -154,4 +154,5 @@
     <string name="please_wait">Por favor, espere..</string>
     <string name="compare">Comparar</string>
     <string name="file_does_not_exist">O arquivo não existe</string>
+    <string name="select">Selecionar</string>
 </resources>
