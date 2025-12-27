@@ -147,4 +147,15 @@
     <string name="invalid_archive_type">Неправильный тип архива</string>
     <string name="updating_archive">Обновление архива…</string>
     <string name="update_archive_service">Архив обновлений</string>
+    <string name="select_directory">Выберите каталог..</string>
+    <string name="output_path">Выходной путь</string>
+    <string name="no_match">Без матча</string>
+    <string name="refresh">Refresh</string>
+    <string name="refreshed">Refreshed</string>
+    <string name="storage_info_format">Доступно: %1$s / Всего: %2$s</string>
+    <string name="low_storage_warning">Предупреждение: низкое пространство для хранения! Доступно: %1$s</string>
+    <string name="low_storage_warning_dynamic">"Низкое хранилище! %1$s имеется,  Free %2$s Возможно, потребуется дополнительное пространство на основе архивного формата."</string>
+    <string name="please_wait">Подождите..</string>
+    <string name="compare">Сравнить</string>
+    <string name="file_does_not_exist">Файла не существует</string>
 </resources>
