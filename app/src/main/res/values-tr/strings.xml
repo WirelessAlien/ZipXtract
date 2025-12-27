@@ -154,4 +154,5 @@
     <string name="please_wait">Lütfen bekleyin..</string>
     <string name="compare">Karşılaştırma</string>
     <string name="file_does_not_exist">Dosya mevcut değildir</string>
+    <string name="select">Seçiniz</string>
 </resources>
