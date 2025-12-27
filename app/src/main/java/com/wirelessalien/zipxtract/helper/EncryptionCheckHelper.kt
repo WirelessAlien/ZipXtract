@@ -34,7 +34,7 @@ object EncryptionCheckHelper {
             when {
                 name.endsWith(".zip") || name.matches(Regex(".*\\.z\\d{2}$")) || name.matches(Regex(".*\\.zip\\.\\d{3}$")) -> checkZip(file)
                 name.endsWith(".rar") || name.matches(Regex(".*\\.part\\d+\\.rar$")) || name.matches(Regex(".*\\.r\\d{2}$")) || name.matches(Regex(".*\\.rar\\.\\d{3}$")) -> checkRar(file)
-                name.endsWith(".7z") || name.matches(Regex(".*\\.7z\\.\\d{3}$")) -> check7z(file)
+                name.matches(Regex(".*\\.7z\\.\\d{3}$")) -> check7z(file)
                 else -> checkGenericSevenZip(file)
             }
         } catch (e: Exception) {
