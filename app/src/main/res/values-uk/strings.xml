@@ -158,4 +158,5 @@
     <string name="please_wait">Будь ласка, почекайте..</string>
     <string name="compare">Порівняти</string>
     <string name="file_does_not_exist">Файл не існує</string>
+    <string name="select">Вибрати</string>
 </resources>
