@@ -73,15 +73,14 @@ class Update7zService : Service() {
         val itemsToAddJobId = intent.getStringExtra(ServiceConstants.EXTRA_ITEMS_TO_ADD_JOB_ID)
         val itemsToRemoveJobId = intent.getStringExtra(ServiceConstants.EXTRA_ITEMS_TO_REMOVE_JOB_ID)
 
-        val itemsToAdd = itemsToAddJobId?.let { fileOperationsDao.getFilePairsForJob(it) }
-        val itemsToRemovePaths = itemsToRemoveJobId?.let { fileOperationsDao.getFilesForJob(it) }
-
-
         lastProgress = -1
         notificationBuilder = createNotificationBuilder()
         startForeground(NOTIFICATION_ID, notificationBuilder.build())
 
         updateJob = CoroutineScope(Dispatchers.IO).launch {
+            val itemsToAdd = itemsToAddJobId?.let { fileOperationsDao.getFilePairsForJob(it) }
+            val itemsToRemovePaths = itemsToRemoveJobId?.let { fileOperationsDao.getFilesForJob(it) }
+
             update7zFile(archivePath, itemsToAdd, itemsToRemovePaths)
             itemsToAddJobId?.let { fileOperationsDao.deleteFilesForJob(it) }
             itemsToRemoveJobId?.let { fileOperationsDao.deleteFilesForJob(it) }

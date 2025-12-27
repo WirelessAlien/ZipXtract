@@ -105,11 +105,11 @@ class Archive7zService : Service() {
             sendErrorBroadcast(getString(R.string.general_error_msg))
             return START_NOT_STICKY
         }
-        val filesToArchive = fileOperationsDao.getFilesForJob(jobId)
 
         startForeground(NOTIFICATION_ID, createNotification(0))
 
         archiveJob = CoroutineScope(Dispatchers.IO).launch {
+            val filesToArchive = fileOperationsDao.getFilesForJob(jobId)
             create7zFile(archiveName, password, compressionLevel, solid, threadCount, filesToArchive, destinationPath)
             fileOperationsDao.deleteFilesForJob(jobId)
             stopSelf()
@@ -220,6 +220,9 @@ class Archive7zService : Service() {
                 outArchive.setSolidSize(8192)
                 outArchive.setThreadCount(threadCount)
 
+                val totalSize = filesToArchive.sumOf { File(it).length() }
+                var lastProgress = -1
+
                 outArchive.createArchive(
                     RandomAccessFileOutStream(raf), filesToArchive.size,
                     object : IOutCreateCallback<IOutItem7z>, ICryptoGetTextPassword {
@@ -239,9 +242,11 @@ class Archive7zService : Service() {
                             if (archiveJob?.isActive == false) {
                                 throw SevenZipException("Cancelled")
                             }
-                            val totalSize = filesToArchive.sumOf { File(it).length() }
-                            val progress = ((complete.toDouble() / totalSize) * 100).toInt()
-                            updateProgress(progress)
+                            val progress = if (totalSize > 0) ((complete.toDouble() / totalSize) * 100).toInt() else 0
+                            if (progress > lastProgress) {
+                                lastProgress = progress
+                                updateProgress(progress)
+                            }
                         }
 
                         override fun getItemInformation(index: Int, outItemFactory: OutItemFactory<IOutItem7z>): IOutItem7z {

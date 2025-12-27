@@ -112,18 +112,17 @@ class ExtractRarService : Service() {
             stopSelf()
             return START_NOT_STICKY
         }
-        val filesToExtract = fileOperationsDao.getFileForJob(jobId)
-        if (filesToExtract?.isEmpty() == true) {
-            fileOperationsDao.deleteFilesForJob(jobId)
-            stopSelf()
-            return START_NOT_STICKY
-        }
-
-        val modifiedFilePath = getModifiedFilePath(filesToExtract ?:"")
-
         startForeground(NOTIFICATION_ID, createNotification(0))
 
         extractionJob = CoroutineScope(Dispatchers.IO).launch {
+            val filesToExtract = fileOperationsDao.getFileForJob(jobId)
+            if (filesToExtract?.isEmpty() == true) {
+                fileOperationsDao.deleteFilesForJob(jobId)
+                stopSelf()
+                return@launch
+            }
+
+            val modifiedFilePath = getModifiedFilePath(filesToExtract ?:"")
             extractArchive(modifiedFilePath, useAppNameDir, destinationPath)
             fileOperationsDao.deleteFilesForJob(jobId)
             stopSelf()
@@ -432,13 +431,18 @@ class ExtractRarService : Service() {
         }
 
         override fun prepareOperation(p0: ExtractAskMode?) {}
+        private var lastProgress = -1
+
         override fun setCompleted(complete: Long) {
             if (extractionJob?.isActive == false) {
                 throw SevenZipException("Cancelled")
             }
             if (hasError) return
-            val progress = ((complete.toDouble() / totalSize) * 100).toInt()
-            updateProgress(progress)
+            val progress = if (totalSize > 0) ((complete.toDouble() / totalSize) * 100).toInt() else 0
+            if (progress > lastProgress) {
+                lastProgress = progress
+                updateProgress(progress)
+            }
         }
 
         override fun setTotal(p0: Long) {

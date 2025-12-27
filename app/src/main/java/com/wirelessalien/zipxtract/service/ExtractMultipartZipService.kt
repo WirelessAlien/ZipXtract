@@ -98,16 +98,15 @@ class ExtractMultipartZipService : Service() {
             stopSelf()
             return START_NOT_STICKY
         }
-        val filesToExtract = fileOperationsDao.getFileForJob(jobId)
-        if (filesToExtract?.isEmpty() == true) {
-            fileOperationsDao.deleteFilesForJob(jobId)
-            stopSelf()
-            return START_NOT_STICKY
-        }
-
         startForeground(NOTIFICATION_ID, createNotification(0))
 
         extractionJob = CoroutineScope(Dispatchers.IO).launch {
+            val filesToExtract = fileOperationsDao.getFileForJob(jobId)
+            if (filesToExtract?.isEmpty() == true) {
+                fileOperationsDao.deleteFilesForJob(jobId)
+                stopSelf()
+                return@launch
+            }
             extractArchive(filesToExtract ?:"", password, destinationPath)
             fileOperationsDao.deleteFilesForJob(jobId)
             stopSelf()
@@ -236,10 +235,14 @@ class ExtractMultipartZipService : Service() {
 
             zipFile.extractAll(extractDir.absolutePath)
 
+            var lastProgress = -1
             while (progressMonitor!!.state != ProgressMonitor.State.READY) {
                 if (progressMonitor!!.state == ProgressMonitor.State.BUSY) {
                     val percentDone = progressMonitor!!.percentDone
-                    updateProgress(percentDone)
+                    if (percentDone > lastProgress) {
+                        lastProgress = percentDone
+                        updateProgress(percentDone)
+                    }
                 }
                 delay(100)
             }

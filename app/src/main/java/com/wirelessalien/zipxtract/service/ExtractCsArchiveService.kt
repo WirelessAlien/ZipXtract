@@ -105,20 +105,20 @@ class ExtractCsArchiveService : Service() {
             return START_NOT_STICKY
         }
 
-        val filesToExtract = fileOperationsDao.getFilesForJob(jobId)
-        if (filesToExtract.isEmpty()) {
-            fileOperationsDao.deleteFilesForJob(jobId)
-            stopSelf()
-            return START_NOT_STICKY
-        }
-        if (filesToExtract.size > 1) {
-            Log.w("ExtractCsArchiveService", "This service only supports single file extraction. Only the first file will be extracted.")
-        }
-        val filePath = filesToExtract[0]
-
         startForeground(NOTIFICATION_ID, createNotification(0))
 
         extractionJob = CoroutineScope(Dispatchers.IO).launch {
+            val filesToExtract = fileOperationsDao.getFilesForJob(jobId)
+            if (filesToExtract.isEmpty()) {
+                fileOperationsDao.deleteFilesForJob(jobId)
+                stopSelf()
+                return@launch
+            }
+            if (filesToExtract.size > 1) {
+                Log.w("ExtractCsArchiveService", "This service only supports single file extraction. Only the first file will be extracted.")
+            }
+            val filePath = filesToExtract[0]
+
             extractArchive(filePath, useAppNameDir, destinationPath)
             fileOperationsDao.deleteFilesForJob(jobId)
             stopSelf()
@@ -249,6 +249,7 @@ class ExtractCsArchiveService : Service() {
 
             TarArchiveInputStream(compressorInputStream).use { tarInput ->
                 var entry: TarArchiveEntry? = tarInput.nextEntry
+                var lastProgress = -1
                 while (entry != null) {
                     if (extractionJob?.isActive == false) {
                         return
@@ -268,7 +269,10 @@ class ExtractCsArchiveService : Service() {
                                 output.write(buffer, 0, n)
                                 bytesRead += n
                                 val progress = (bytesRead * 100 / totalBytes).toInt()
-                                updateProgress(progress)
+                                if (progress > lastProgress) {
+                                    lastProgress = progress
+                                    updateProgress(progress)
+                                }
                             }
                         }
                         outputFile.setLastModified(entry.lastModifiedDate.time)

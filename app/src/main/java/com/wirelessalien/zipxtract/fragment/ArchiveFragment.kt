@@ -531,10 +531,21 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
             eProgressDialog.dismiss()
         }
 
+        binding.cancelButton.setOnClickListener {
+            cancelAllServices()
+            eProgressDialog.dismiss()
+        }
+
         eProgressDialog = MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
             .setView(binding.root)
             .setCancelable(false)
             .create()
+    }
+
+    private fun cancelAllServices() {
+        val intent = Intent(BroadcastConstants.ACTION_CANCEL_OPERATION)
+        intent.setPackage(requireContext().packageName)
+        requireContext().sendBroadcast(intent)
     }
 
     private fun updateProgressBar(progress: Int) {

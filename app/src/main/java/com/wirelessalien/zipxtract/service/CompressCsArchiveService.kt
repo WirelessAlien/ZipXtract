@@ -105,21 +105,20 @@ class CompressCsArchiveService : Service() {
             return START_NOT_STICKY
         }
 
-        val filesToCompress = fileOperationsDao.getFilesForJob(jobId)
-        if (filesToCompress.isEmpty()) {
-            fileOperationsDao.deleteFilesForJob(jobId)
-            stopSelf()
-            return START_NOT_STICKY
-        }
-        if (filesToCompress.size > 1) {
-            Log.w("CompressCsArchiveService", "This service only supports single file compression. Only the first file will be compressed.")
-        }
-        val filePath = filesToCompress[0]
-
-
         startForeground(NOTIFICATION_ID, createNotification(0))
 
         compressionJob = CoroutineScope(Dispatchers.IO).launch {
+            val filesToCompress = fileOperationsDao.getFilesForJob(jobId)
+            if (filesToCompress.isEmpty()) {
+                fileOperationsDao.deleteFilesForJob(jobId)
+                stopSelf()
+                return@launch
+            }
+            if (filesToCompress.size > 1) {
+                Log.w("CompressCsArchiveService", "This service only supports single file compression. Only the first file will be compressed.")
+            }
+            val filePath = filesToCompress[0]
+
             if (compressionFormat == ZSTD_FORMAT) {
                 compressWithZstd(filePath, compressionFormat, destinationPath)
             } else {
@@ -246,6 +245,7 @@ class CompressCsArchiveService : Service() {
             var bytesRead = 0L
 
             var n: Int
+            var lastProgress = -1
             while (inStream.read(buffer).also { n = it } != -1) {
                 if (compressionJob?.isActive == false) {
                     compressorOutputStream.close()
@@ -255,7 +255,10 @@ class CompressCsArchiveService : Service() {
                 compressorOutputStream.write(buffer, 0, n)
                 bytesRead += n
                 val progress = (bytesRead * 100 / totalBytes).toInt()
-                updateProgress(progress)
+                if (progress > lastProgress) {
+                    lastProgress = progress
+                    updateProgress(progress)
+                }
             }
 
             compressorOutputStream.close()
@@ -338,6 +341,7 @@ class CompressCsArchiveService : Service() {
                 var bytesRead: Int
                 val totalBytes = file.length()
                 var bytesProcessed = 0L
+                var lastProgress = -1
 
                 while (inputStream.read(buffer).also { bytesRead = it } != -1) {
                     if (compressionJob?.isActive == false) {
@@ -349,7 +353,10 @@ class CompressCsArchiveService : Service() {
 
                     // Update progress (0-100%)
                     val progress = (bytesProcessed * 100 / totalBytes).toInt()
-                    updateProgress(progress)
+                    if (progress > lastProgress) {
+                        lastProgress = progress
+                        updateProgress(progress)
+                    }
                 }
             }
 

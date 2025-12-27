@@ -130,21 +130,21 @@ class ExtractArchiveService : Service() {
             stopSelf()
             return START_NOT_STICKY
         }
-        val filesToExtract = fileOperationsDao.getFilesForJob(jobId)
-        if (filesToExtract.isEmpty()) {
-            fileOperationsDao.deleteFilesForJob(jobId)
-            stopSelf()
-            return START_NOT_STICKY
-        }
-        if (filesToExtract.size > 1) {
-            Log.w("ExtractArchiveService", "This service only supports single file extraction. Only the first file will be extracted.")
-        }
-        val filePath = filesToExtract[0]
-
 
         startForeground(NOTIFICATION_ID, createNotification(0))
 
         extractionJob = CoroutineScope(Dispatchers.IO).launch {
+            val filesToExtract = fileOperationsDao.getFilesForJob(jobId)
+            if (filesToExtract.isEmpty()) {
+                fileOperationsDao.deleteFilesForJob(jobId)
+                stopSelf()
+                return@launch
+            }
+            if (filesToExtract.size > 1) {
+                Log.w("ExtractArchiveService", "This service only supports single file extraction. Only the first file will be extracted.")
+            }
+            val filePath = filesToExtract[0]
+
             extractArchive(filePath, password, useAppNameDir, destinationPath)
             fileOperationsDao.deleteFilesForJob(jobId)
             stopSelf()
@@ -314,6 +314,7 @@ class ExtractArchiveService : Service() {
         try {
             val totalBytes = file.length()
             var bytesProcessed = 0L
+            var lastProgress = -1
 
             FileInputStream(file).use { fileInput ->
                 BufferedInputStream(fileInput).use {
@@ -345,8 +346,11 @@ class ExtractArchiveService : Service() {
                                         }
                                         val bytesRead = Os.read(clientData, buffer)
                                         bytesProcessed += bytesRead
-                                        val progress = (bytesProcessed * 100 / totalBytes).toInt()
-                                        updateProgress(progress)
+                                        val progress = if (totalBytes > 0) (bytesProcessed * 100 / totalBytes).toInt() else 0
+                                        if (progress > lastProgress) {
+                                            lastProgress = progress
+                                            updateProgress(progress)
+                                        }
                                         buffer.flip()
                                         return buffer
                                     } catch (e: Exception) {
@@ -523,6 +527,7 @@ class ExtractArchiveService : Service() {
             var bytesRead = 0L
             val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
             val directories = mutableListOf<DirectoryInfo>()
+            var lastProgress = -1
 
             TarArchiveInputStream(FileInputStream(file)).use { tarInput ->
                 var entry: TarArchiveEntry? = tarInput.nextEntry
@@ -541,8 +546,11 @@ class ExtractArchiveService : Service() {
                                 }
                                 output.write(buffer, 0, n)
                                 bytesRead += n
-                                val progress = (bytesRead * 100 / totalBytes).toInt()
-                                updateProgress(progress)
+                                val progress = if (totalBytes > 0) (bytesRead * 100 / totalBytes).toInt() else 0
+                                if (progress > lastProgress) {
+                                    lastProgress = progress
+                                    updateProgress(progress)
+                                }
                             }
                         }
                         outputFile.setLastModified(entry.modTime.time)
@@ -630,10 +638,14 @@ class ExtractArchiveService : Service() {
             zipFile.extractAll(destinationDir.absolutePath)
 
             progressMonitor = zipFile.progressMonitor
+            var lastProgress = -1
             while (!progressMonitor!!.state.equals(ProgressMonitor.State.READY)) {
                 if (progressMonitor!!.state.equals(ProgressMonitor.State.BUSY)) {
                     val percentDone = (progressMonitor!!.percentDone)
-                    updateProgress(percentDone)
+                    if (percentDone > lastProgress) {
+                        lastProgress = percentDone
+                        updateProgress(percentDone)
+                    }
                 }
                 Thread.sleep(100)
             }
@@ -813,13 +825,18 @@ class ExtractArchiveService : Service() {
 
         override fun prepareOperation(p0: ExtractAskMode?) {}
 
+        private var lastProgress = -1
+
         override fun setCompleted(complete: Long) {
             if (extractionJob?.isActive == false) {
                 throw SevenZipException("Cancelled")
             }
             if (hasError) return
-            val progress = ((complete.toDouble() / totalSize) * 100).toInt()
-            updateProgress(progress)
+            val progress = if (totalSize > 0) ((complete.toDouble() / totalSize) * 100).toInt() else 0
+            if (progress > lastProgress) {
+                lastProgress = progress
+                updateProgress(progress)
+            }
         }
 
         override fun setTotal(p0: Long) {

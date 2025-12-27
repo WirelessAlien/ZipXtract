@@ -112,18 +112,17 @@ class ExtractMultipart7zService : Service() {
             stopSelf()
             return START_NOT_STICKY
         }
-        val filesToExtract = fileOperationsDao.getFileForJob(jobId)
-        if (filesToExtract?.isEmpty() == true) {
-            fileOperationsDao.deleteFilesForJob(jobId)
-            stopSelf()
-            return START_NOT_STICKY
-        }
-
-        val modifiedFilePath = getModifiedFilePath(filesToExtract ?:"")
-
         startForeground(NOTIFICATION_ID, createNotification(0))
 
         extractionJob = CoroutineScope(Dispatchers.IO).launch {
+            val filesToExtract = fileOperationsDao.getFileForJob(jobId)
+            if (filesToExtract?.isEmpty() == true) {
+                fileOperationsDao.deleteFilesForJob(jobId)
+                stopSelf()
+                return@launch
+            }
+
+            val modifiedFilePath = getModifiedFilePath(filesToExtract ?:"")
             extractArchive(modifiedFilePath, destinationPath)
             fileOperationsDao.deleteFilesForJob(jobId)
             stopSelf()
@@ -400,8 +399,8 @@ class ExtractMultipart7zService : Service() {
                 throw SevenZipException("Cancelled")
             }
             if (hasError) return
-            val progress = ((complete.toDouble() / totalSize) * 100).toInt()
-            if (progress != lastProgress) {
+            val progress = if (totalSize > 0) ((complete.toDouble() / totalSize) * 100).toInt() else 0
+            if (progress > lastProgress) {
                 lastProgress = progress
                 updateProgress(progress)
             }

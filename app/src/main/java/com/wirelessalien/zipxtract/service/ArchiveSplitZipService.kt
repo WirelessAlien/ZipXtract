@@ -132,13 +132,13 @@ class ArchiveSplitZipService : Service() {
             sendErrorBroadcast(getString(R.string.general_error_msg))
             return START_NOT_STICKY
         }
-        val filesToArchive = fileOperationsDao.getFilesForJob(jobId)
 
         val splitSize = intent.getLongExtra(ServiceConstants.EXTRA_SPLIT_SIZE, 64)
 
         startForeground(NOTIFICATION_ID, createNotification(0))
 
         archiveJob = CoroutineScope(Dispatchers.IO).launch {
+            val filesToArchive = fileOperationsDao.getFilesForJob(jobId)
             createSplitZipFile(archiveName, password, compressionMethod, compressionLevel, isEncrypted, encryptionMethod, aesStrength, filesToArchive, splitSize, destinationPath)
             fileOperationsDao.deleteFilesForJob(jobId)
             stopSelf()
@@ -291,9 +291,14 @@ class ArchiveSplitZipService : Service() {
 
                 zipFile.createSplitZipFileFromFolder(renamedTempDir, zipParameters, true, splitSize)
 
+                var lastProgress = -1
                 while (!progressMonitor!!.state.equals(ProgressMonitor.State.READY)) {
                     val progress = progressMonitor!!.percentDone
-                    updateProgress(progress)
+                    if (progress > lastProgress) {
+                        lastProgress = progress
+                        updateProgress(progress)
+                    }
+                    Thread.sleep(100)
                 }
 
                 if (progressMonitor!!.result == ProgressMonitor.Result.SUCCESS) {

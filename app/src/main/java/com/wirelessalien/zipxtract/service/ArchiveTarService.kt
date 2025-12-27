@@ -106,13 +106,13 @@ class ArchiveTarService : Service() {
             sendErrorBroadcast(getString(R.string.general_error_msg))
             return START_NOT_STICKY
         }
-        val filesToArchive = fileOperationsDao.getFilesForJob(jobId)
         val compressionFormat = intent.getStringExtra(ServiceConstants.EXTRA_COMPRESSION_FORMAT) ?: "TAR_ONLY"
         val destinationPath = intent.getStringExtra(ServiceConstants.EXTRA_DESTINATION_PATH)
 
         startForeground(NOTIFICATION_ID, createNotification(0))
 
         archiveJob = CoroutineScope(Dispatchers.IO).launch {
+            val filesToArchive = fileOperationsDao.getFilesForJob(jobId)
             createTarFile(archiveName, filesToArchive, compressionFormat, destinationPath)
             fileOperationsDao.deleteFilesForJob(jobId)
             stopSelf()
@@ -259,11 +259,16 @@ class ArchiveTarService : Service() {
                                     var bytesCopied = 0L
                                     val buffer = ByteArray(DEFAULT_BUFFER_SIZE) // 8KB buffer
                                     var bytes = fis.read(buffer)
+                                    var lastProgress = -1
                                     while (bytes >= 0) {
                                         cos.write(buffer, 0, bytes)
                                         bytesCopied += bytes
                                         val compressionProgress = ((bytesCopied.toDouble() / tempTarSize) * 50).toInt()
-                                        updateProgress(50 + compressionProgress)
+                                        val totalProgress = 50 + compressionProgress
+                                        if (totalProgress > lastProgress) {
+                                            lastProgress = totalProgress
+                                            updateProgress(totalProgress)
+                                        }
                                         bytes = fis.read(buffer)
                                     }
                                 }
@@ -304,21 +309,26 @@ class ArchiveTarService : Service() {
     }
 
     private fun createArchiveCallback(filesToArchive: List<String>, baseDirectory: String, compressionActive: Boolean): IOutCreateCallback<IOutItemTar> {
+        val totalSize = filesToArchive.sumOf { File(it).length() }
         return object : IOutCreateCallback<IOutItemTar> {
             override fun setOperationResult(operationResultOk: Boolean) {}
 
             override fun setTotal(total: Long) {}
 
+            var lastProgress = -1
+
             override fun setCompleted(complete: Long) {
                 if (archiveJob?.isActive == false) {
                     throw SevenZipException("Cancelled")
                 }
-                val totalSize = filesToArchive.sumOf { File(it).length() }
                 var progress = if (totalSize > 0) ((complete.toDouble() / totalSize) * 100).toInt() else 0
                 if (compressionActive) {
                     progress /= 2 // Scale to 0-50
                 }
-                updateProgress(progress)
+                if (progress > lastProgress) {
+                    lastProgress = progress
+                    updateProgress(progress)
+                }
             }
 
             override fun getItemInformation(index: Int, outItemFactory: OutItemFactory<IOutItemTar>): IOutItemTar {
