@@ -147,4 +147,5 @@
     <string name="invalid_archive_type">Type d\'archive invalide</string>
     <string name="updating_archive">Mise à jour des archives..</string>
     <string name="update_archive_service">Update Archive</string>
+    <string name="select">Sélectionner</string>
 </resources>
