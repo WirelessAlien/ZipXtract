@@ -142,4 +142,16 @@
     <string name="invalid_archive_type">잘못된 아카이브 유형</string>
     <string name="updating_archive">압축 파일 업데이트…</string>
     <string name="update_archive_service">공지사항</string>
+    <string name="select">제품정보</string>
+    <string name="refresh">지원하다</string>
+    <string name="refreshed">지원하다</string>
+    <string name="output_path">출력 경로</string>
+    <string name="no_match">아니 일치</string>
+    <string name="select_directory">연락처</string>
+    <string name="storage_info_format">사용 가능: %1$s / 총: %2$s</string>
+    <string name="low_storage_warning">경고: 낮은 저장 공간! 사용 가능: %1$s</string>
+    <string name="low_storage_warning_dynamic">낮은 저장! %1$s 사용 가능, 최소 ~%2$s 무료. 아카이브 형식을 기반으로하는 추가 공간.</string>
+    <string name="please_wait">자세히보기</string>
+    <string name="compare">기타 제품</string>
+    <string name="file_does_not_exist">파일이 존재하지 않습니다</string>
 </resources>
