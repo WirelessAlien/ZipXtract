@@ -116,4 +116,5 @@
     <string name="passwords_do_not_match">கடவுச்சொற்கள் பொருந்தவில்லை</string>
     <string name="wrong_password">தவறான கடவுச்சொல்</string>
     <string name="file_already_exists">கோப்பு ஏற்கனவே உள்ளது</string>
+    <string name="select">தேர்ந்தெடு</string>
 </resources>
