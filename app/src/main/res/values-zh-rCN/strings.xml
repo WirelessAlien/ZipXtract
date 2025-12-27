@@ -143,4 +143,15 @@
     <string name="invalid_archive_type">无效压缩文件类型</string>
     <string name="updating_archive">更新压缩文件…</string>
     <string name="update_archive_service">更新压缩文件</string>
+    <string name="select_directory">选择名录..…</string>
+    <string name="output_path">产出途径</string>
+    <string name="no_match">无</string>
+    <string name="refresh">Refresh</string>
+    <string name="refreshed">恢复</string>
+    <string name="storage_info_format">可查阅:%1$s/总数:%2$s</string>
+    <string name="low_storage_warning">警告:储存空间低! 可查阅:%1$s</string>
+    <string name="low_storage_warning_dynamic">低储存 %1$s 至少可免税%2$s。 可能需要根据档案格式增加空间.</string>
+    <string name="please_wait">请等待</string>
+    <string name="compare">比较</string>
+    <string name="file_does_not_exist">不存在档案</string>
 </resources>
