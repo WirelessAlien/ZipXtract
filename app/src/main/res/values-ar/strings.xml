@@ -142,4 +142,16 @@
     <string name="invalid_archive_type">محفوظات غير صالحة</string>
     <string name="updating_archive">محفوظات متطورة..</string>
     <string name="update_archive_service">تحديث المحفوظات</string>
+    <string name="select_directory">إختار دليل..</string>
+    <string name="output_path">مسار النواتج</string>
+    <string name="select">مختارة</string>
+    <string name="no_match">لا تطابق</string>
+    <string name="refresh">التجديد</string>
+    <string name="refreshed">المبالغ المستردة</string>
+    <string name="storage_info_format">Available: %1$s / Total: %2$s</string>
+    <string name="low_storage_warning">مخزن منخفض Available: %1$s</string>
+    <string name="low_storage_warning_dynamic">مخزن منخفض! %1$s available, حرّر على الأقل وقد يحتاج الأمر إلى حيز إضافي على أساس شكل المحفوظات.</string>
+    <string name="please_wait">من فضلك انتظر</string>
+    <string name="compare">Compare</string>
+    <string name="file_does_not_exist">الملف لا وجود له</string>
 </resources>
