@@ -143,4 +143,15 @@
     <string name="invalid_archive_type">Nieprawidłowy typ archiwum</string>
     <string name="updating_archive">Trwa aktualizacja archiwum…</string>
     <string name="update_archive_service">Zaktualizuj archiwum</string>
+    <string name="refresh">Refresh</string>
+    <string name="refreshed">Refreshed</string>
+    <string name="no_match">No match</string>
+    <string name="output_path">Strona internetowa</string>
+    <string name="select_directory">Wybór..</string>
+    <string name="compare">W porównaniu z innymi</string>
+    <string name="storage_info_format">(X11X) (ang.)</string>
+    <string name="low_storage_warning">Warning: Low storage space (ang.). (X39X) (ang.)</string>
+    <string name="low_storage_warning_dynamic">Niski magazyn! (X13X) dostępne. Free up co najmniej (X47X) (ang.). Dodatkowa przestrzeń może być potrzebna w oparciu o format archiwum.</string>
+    <string name="please_wait">Oczekuję..</string>
+    <string name="file_does_not_exist">File nie istnieje</string>
 </resources>
