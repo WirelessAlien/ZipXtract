@@ -143,4 +143,5 @@
     <string name="invalid_archive_type">Невалиден тип архив</string>
     <string name="updating_archive">Обновяване на архива…</string>
     <string name="update_archive_service">Обновен архив</string>
+    <string name="select">Избери</string>
 </resources>
