@@ -154,4 +154,5 @@
     <string name="please_wait">请等待</string>
     <string name="compare">比较</string>
     <string name="file_does_not_exist">不存在档案</string>
+    <string name="select">选择</string>
 </resources>
