@@ -47,9 +47,19 @@
     <string name="add">Add</string>
     <string name="directory_selection_disabled">Folder cannot be selected, select the files inside it.</string>
     <string name="select_file">Select File…</string>
+    <string name="select_directory">Select Directory…</string>
+    <string name="output_path">Output path</string>
+    <string name="select">Select</string>
     <string name="select_files">Add (%d)</string>
     <string name="donate_desc">If you find ZipXtract useful, please consider supporting its development:</string>
     <string name="file_list_is_fixed_for_this_operation">File list is fixed for this operation.</string>
+    <string name="no_match">No match</string>
+    <string name="refresh">Refresh</string>
+    <string name="refreshed">Refreshed</string>
+    <string name="storage_info_format">Available: %1$s / Total: %2$s</string>
+    <string name="low_storage_warning">Warning: Low storage space! Available: %1$s</string>
+    <string name="low_storage_warning_dynamic">Low storage! %1$s available, Free up at least ~%2$s. Additional space maybe needed based on the archive format.</string>
+
 
     <!-- Bottom navigation -->
     <string name="archive">Archive</string>
@@ -74,6 +84,7 @@
     <string name="cancel">Cancel</string>
     <string name="donate">Donate</string>
     <string name="ok">OK</string>
+    <string name="please_wait">Please wait…</string>
     <string name="enter_password">Enter Password</string>
     <string name="extract">Extract</string>
     <string name="file_info">File info</string>
@@ -91,6 +102,7 @@
     <string name="add_folder_confirmation_title">Add current folder?</string>
     <string name="add_folder_confirmation_message">Do you want to add the folder \'%1$s\' to the archive?</string>
     <string name="split_parts_number_req">Allow more than 100 split parts</string>
+    <string name="compare">Compare</string>
 
     <!-- Menu items -->
     <string name="move">Move to</string>
@@ -165,7 +177,9 @@
     <string name="error_updating_archive">Error updating archive</string>
     <string name="error_opening_archive">Error opening archive: %1$s</string>
     <string name="no_valid_files_found_to_archive">No valid files found to archive.</string>
+    <string name="file_does_not_exist">File does not exist</string>
     <string name="invalid_archive_type">Invalid archive type</string>
+
 
     <!-- Notification title-->
     <string name="copying_files">Copying…</string>
@@ -199,6 +213,9 @@
     <string name="xz" translatable="false">XZ</string>
     <string name="gzip" translatable="false">GZIP</string>
     <string name="liberapay" translatable="false">Liberapay</string>
-    <string name="author_wirelessalien" translatable="false">Author: WirelessAlien</string>
+    <string name="author_wirelessalien" translatable="false">Author: Abhilash</string>
     <string name="zstd" translatable="false">ZSTD</string>
+    <string name="md5" translatable="false">MD5</string>
+    <string name="sha1" translatable="false">SHA-1</string>
+    <string name="sha256" translatable="false">SHA-256</string>
 </resources>
