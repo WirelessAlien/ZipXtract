@@ -147,4 +147,15 @@
     <string name="invalid_archive_type">Tipo de archivo inválido</string>
     <string name="updating_archive">Archivo actualizado..</string>
     <string name="update_archive_service">Archivo de actualización</string>
+    <string name="select_directory">Select Directory..</string>
+    <string name="output_path">Camino de salida</string>
+    <string name="no_match">No hay coincidencia</string>
+    <string name="refresh">Refresh</string>
+    <string name="refreshed">Reformado</string>
+    <string name="storage_info_format">Disponible: %1$s / Total: %2$s</string>
+    <string name="low_storage_warning">Advertencia: ¡Espacio bajo de almacenamiento! Disponible: %1$s</string>
+    <string name="low_storage_warning_dynamic">¡Bajo almacenamiento! %1$s disponible, Libre al menos ~ %2$s. Es posible que necesite espacio adicional basado en el formato de archivo.</string>
+    <string name="please_wait">Por favor, espera..</string>
+    <string name="compare">Compare</string>
+    <string name="file_does_not_exist">El archivo no existe</string>
 </resources>
