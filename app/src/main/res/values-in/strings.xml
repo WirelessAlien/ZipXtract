@@ -147,4 +147,15 @@
     <string name="invalid_archive_type">Jenis arsip tidak valid</string>
     <string name="updating_archive">WordPress.org</string>
     <string name="update_archive_service">Database</string>
+    <string name="select_directory">Pilih Direktori..</string>
+    <string name="output_path">Jalur output</string>
+    <string name="no_match">Tidak cocok</string>
+    <string name="refresh">Login</string>
+    <string name="refreshed">Sitemap</string>
+    <string name="storage_info_format">Tersedia: %1$s / Total: %2$s</string>
+    <string name="low_storage_warning">Peringatan: Ruang penyimpanan rendah! Tersedia: %1$s</string>
+    <string name="low_storage_warning_dynamic">Penyimpanan rendah! %1$s tersedia, Gratis setidaknya ~%2$s. Ruang tambahan mungkin diperlukan berdasarkan format arsip.</string>
+    <string name="please_wait">Sitemap</string>
+    <string name="compare">Login</string>
+    <string name="file_does_not_exist">File tidak ada</string>
 </resources>
