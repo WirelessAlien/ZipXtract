@@ -148,4 +148,15 @@
     <string name="updating_archive">Mise à jour des archives..</string>
     <string name="update_archive_service">Update Archive</string>
     <string name="select">Sélectionner</string>
+    <string name="refresh">Refresh</string>
+    <string name="select_directory">Sélectionnez Directory..</string>
+    <string name="output_path">Piste de sortie</string>
+    <string name="no_match">Pas de correspondance</string>
+    <string name="refreshed">Refrétée</string>
+    <string name="storage_info_format">Disponible: %1$s / Total: %2$s</string>
+    <string name="low_storage_warning">Attention : espace de rangement bas ! Disponible: %1$s</string>
+    <string name="low_storage_warning_dynamic">Faible stockage ! %1$s disponible, Libérez au moins ~%2$s. Un espace supplémentaire peut être nécessaire en fonction du format d\'archive.</string>
+    <string name="please_wait">S\'il vous plaît attendez..</string>
+    <string name="compare">Comparer</string>
+    <string name="file_does_not_exist">Le fichier n\'existe pas</string>
 </resources>
