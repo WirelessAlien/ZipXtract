@@ -143,4 +143,15 @@
     <string name="invalid_archive_type">Geçersiz arşiv türü</string>
     <string name="updating_archive">Arşiv güncelleniyor…</string>
     <string name="update_archive_service">Arşivi Güncelle</string>
+    <string name="select_directory">Directory\'yi seçin..</string>
+    <string name="output_path">Çıkış yolu</string>
+    <string name="no_match">Hiç maç yok</string>
+    <string name="refresh">Yenileme</string>
+    <string name="refreshed">Yenilendi</string>
+    <string name="storage_info_format">Mevcut: %1$s / Total: %2$s</string>
+    <string name="low_storage_warning">Uyarı: Low depolama alanı! Var: %1$s</string>
+    <string name="low_storage_warning_dynamic">Low storage! %1$s mevcut, En azından - %2$s Ek alan belki arşiv formatına göre gerekliydi.</string>
+    <string name="please_wait">Lütfen bekleyin..</string>
+    <string name="compare">Karşılaştırma</string>
+    <string name="file_does_not_exist">Dosya mevcut değildir</string>
 </resources>
