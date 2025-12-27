@@ -455,10 +455,24 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 val basePath = Environment.getExternalStorageDirectory().absolutePath
                 if (currentPathToCheck.startsWith(basePath) && !currentPathToCheck.startsWith(sdCardPath)) {
                     parentFragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
-                    navigateToPath(sdCardPath)
+                    val fragment = MainFragment().apply {
+                        arguments = Bundle().apply {
+                            putString("path", sdCardPath)
+                        }
+                    }
+                    parentFragmentManager.beginTransaction()
+                        .replace(R.id.container, fragment)
+                        .commit()
                 } else if (currentPathToCheck.startsWith(sdCardPath) && !currentPathToCheck.startsWith(basePath)) {
                     parentFragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
-                    navigateToPath(basePath)
+                    val fragment = MainFragment().apply {
+                        arguments = Bundle().apply {
+                            putString("path", basePath)
+                        }
+                    }
+                    parentFragmentManager.beginTransaction()
+                        .replace(R.id.container, fragment)
+                        .commit()
                 }
             }
         }
