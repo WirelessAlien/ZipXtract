@@ -154,4 +154,5 @@
     <string name="low_storage_warning_dynamic">Niski magazyn! (X13X) dostępne. Free up co najmniej (X47X) (ang.). Dodatkowa przestrzeń może być potrzebna w oparciu o format archiwum.</string>
     <string name="please_wait">Oczekuję..</string>
     <string name="file_does_not_exist">File nie istnieje</string>
+    <string name="select">Wybierz</string>
 </resources>
