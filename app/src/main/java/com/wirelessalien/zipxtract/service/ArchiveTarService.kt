@@ -261,6 +261,9 @@ class ArchiveTarService : Service() {
                                     var bytes = fis.read(buffer)
                                     var lastProgress = -1
                                     while (bytes >= 0) {
+                                        if (archiveJob?.isActive == false) {
+                                            throw SevenZipException("Cancelled")
+                                        }
                                         cos.write(buffer, 0, bytes)
                                         bytesCopied += bytes
                                         val compressionProgress = ((bytesCopied.toDouble() / tempTarSize) * 50).toInt()
