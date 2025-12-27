@@ -26,11 +26,11 @@
         android:layout_height="wrap_content"
         android:fitsSystemWindows="true">
 
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/toolbar"
+        <com.google.android.material.search.SearchBar
+            android:id="@+id/search_bar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:minHeight="?attr/actionBarSize"/>
+            android:hint="@string/search" />
     </com.google.android.material.appbar.AppBarLayout>
 
     <RelativeLayout
@@ -295,4 +295,12 @@
         android:text="@string/compress_tar"
         app:layout_behavior="com.google.android.material.behavior.HideViewOnScrollBehavior"
         android:icon="@drawable/ic_archive" />
+
+    <com.google.android.material.search.SearchView
+        android:id="@+id/search_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:hint="@string/search"
+        app:layout_anchor="@id/search_bar">
+    </com.google.android.material.search.SearchView>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

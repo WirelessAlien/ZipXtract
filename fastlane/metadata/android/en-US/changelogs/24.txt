@@ -1,0 +1,7 @@
+Add ability to cancel ongoing extraction or archive operation
+Add low storage warning display before file operation starts
+Add encrypted dialog display only to encrypted file
+Add ability to select output path before extraction or archive
+Improve file loading for large directories
+Improve file copy/move performance
+Fix ANR issue for archive or extraction failure
