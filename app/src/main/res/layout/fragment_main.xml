@@ -125,7 +125,7 @@
             android:paddingEnd="16dp"
             android:paddingBottom="8dp"
             android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
+            android:layout_marginBottom="3dp"
             android:visibility="gone">
 
             <TextView
@@ -224,6 +224,7 @@
             android:layout_height="match_parent"
             android:layout_marginStart="5dp"
             android:layout_marginEnd="5dp"
+            android:layout_marginTop="5dp"
             android:layout_below="@id/storageInfoLayout">
 
             <androidx.recyclerview.widget.RecyclerView
