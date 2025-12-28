@@ -243,7 +243,6 @@
         android:layout_margin="16dp"
         app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Medium"
         android:text="@string/archive"
-        app:materialThemeOverlay="@style/ThemeOverlay.Material3Expressive.FloatingActionButton.Primary"
         app:layout_behavior="com.google.android.material.behavior.HideViewOnScrollBehavior"
         android:src="@drawable/ic_compress" />
 
@@ -257,7 +256,6 @@
         app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Medium"
         android:text="@string/paste"
         android:visibility="gone"
-        app:materialThemeOverlay="@style/ThemeOverlay.Material3Expressive.FloatingActionButton.Primary"
         app:layout_behavior="com.google.android.material.behavior.HideViewOnScrollBehavior"
         android:src="@drawable/ic_paste" />
 
@@ -271,7 +269,6 @@
         app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Medium"
         android:visibility="gone"
         android:text="@string/create_zip"
-        app:materialThemeOverlay="@style/ThemeOverlay.Material3Expressive.FloatingActionButton.Primary"
         app:layout_behavior="com.google.android.material.behavior.HideViewOnScrollBehavior"
         android:icon="@drawable/ic_archive" />
 
@@ -285,7 +282,6 @@
         android:layout_marginEnd="16dp"
         android:visibility="gone"
         android:text="@string/compress_sevenz"
-        app:materialThemeOverlay="@style/ThemeOverlay.Material3Expressive.FloatingActionButton.Primary"
         app:layout_behavior="com.google.android.material.behavior.HideViewOnScrollBehavior"
         android:icon="@drawable/ic_archive" />
 
@@ -299,7 +295,6 @@
         app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Medium"
         android:visibility="gone"
         android:text="@string/compress_tar"
-        app:materialThemeOverlay="@style/ThemeOverlay.Material3Expressive.FloatingActionButton.Primary"
         app:layout_behavior="com.google.android.material.behavior.HideViewOnScrollBehavior"
         android:icon="@drawable/ic_archive" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
