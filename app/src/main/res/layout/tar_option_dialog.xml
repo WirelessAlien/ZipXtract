@@ -33,25 +33,24 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginTop="10dp">
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="10dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="18sp"
+                android:textSize="20sp"
                 android:textStyle="bold"
                 android:layout_marginTop="16dp"
-                android:layout_marginStart="5dp"
-                android:layout_marginBottom="5dp"
+                android:layout_marginBottom="16dp"
                 android:text="@string/compress_tar"/>
 
             <com.google.android.material.progressindicator.LinearProgressIndicator
                 android:id="@+id/progressIndicator"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="5dp"
+                android:layout_marginBottom="8dp"
                 android:visibility="gone"
                 android:indeterminate="true"/>
 
@@ -61,14 +60,14 @@
                 android:layout_height="wrap_content"
                 android:text="@string/low_storage_warning"
                 android:textColor="@android:color/holo_red_dark"
-                android:layout_margin="5dp"
+                android:layout_marginBottom="8dp"
                 android:visibility="gone"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/toggleFileViewBtn"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="5dp"
+                android:layout_marginBottom="8dp"
                 app:cornerRadius="10dp"
                 style="@style/Widget.Material3.Button.TonalButton"
                 android:text="@string/show_hide_selected_files" />
@@ -77,147 +76,182 @@
                 android:id="@+id/filePathsRv"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="5dp"
+                android:layout_marginBottom="8dp"
                 android:visibility="gone" />
 
-            <com.google.android.material.textfield.TextInputLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:boxCornerRadiusTopStart="10dp"
-                app:boxCornerRadiusTopEnd="10dp"
-                app:boxCornerRadiusBottomStart="10dp"
-                app:boxCornerRadiusBottomEnd="10dp"
-                android:layout_margin="5dp">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/archiveNameEditText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    style="@style/Widget.Material3.TextInputEditText.OutlinedBox.Dense"
-                    android:hint="@string/enter_name_of_archive_optional"/>
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/outputPathLayout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="5dp"
-                app:boxCornerRadiusTopStart="10dp"
-                app:boxCornerRadiusTopEnd="10dp"
-                app:boxCornerRadiusBottomStart="10dp"
-                app:boxCornerRadiusBottomEnd="10dp"
-                android:hint="@string/output_path"
-                app:endIconMode="custom"
-                app:endIconDrawable="@drawable/ic_folder"
-                app:endIconContentDescription="@string/select_directory">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/outputPathInput"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="textNoSuggestions"
-                    style="@style/Widget.Material3.TextInputEditText.OutlinedBox.Dense"/>
-            </com.google.android.material.textfield.TextInputLayout>
-
+            <!-- Card 1: Destination -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="16sp"
-                android:layout_marginTop="16dp"
-                android:layout_marginStart="5dp"
-                android:layout_marginBottom="5dp"
+                android:text="@string/destination"
                 android:textStyle="bold"
-                android:text="@string/compression_method"/>
+                android:layout_marginBottom="8dp"/>
 
-            <com.google.android.material.chip.ChipGroup
-                android:id="@+id/compressionChipGroup"
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="5dp"
-                app:singleSelection="true">
+                android:layout_marginBottom="16dp"
+                style="@style/Widget.Material3.CardView.Elevated"
+                app:cardElevation="0dp"
+                app:cardCornerRadius="10dp">
 
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chipTar"
-                    style="@style/Widget.MaterialComponents.Chip.Choice"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:chipCornerRadius="8dp"
-                    android:text="@string/no_compression"
-                    android:checked="true"/>
+                    android:orientation="vertical"
+                    android:padding="16dp">
 
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chipTarBz2"
-                    style="@style/Widget.MaterialComponents.Chip.Choice"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:chipCornerRadius="8dp"
-                    android:text="tar.bz2"/>
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:boxCornerRadiusTopStart="10dp"
+                        app:boxCornerRadiusTopEnd="10dp"
+                        app:boxCornerRadiusBottomStart="10dp"
+                        app:boxCornerRadiusBottomEnd="10dp"
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.Dense">
 
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chipTarGz"
-                    style="@style/Widget.MaterialComponents.Chip.Choice"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:chipCornerRadius="8dp"
-                    android:text="tar.gz"/>
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/archiveNameEditText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="@string/enter_name_of_archive_optional"/>
+                    </com.google.android.material.textfield.TextInputLayout>
 
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chipTarLzma"
-                    style="@style/Widget.MaterialComponents.Chip.Choice"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:chipCornerRadius="8dp"
-                    android:text="tar.lzma"/>
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/outputPathLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:hint="@string/output_path"
+                        app:boxCornerRadiusTopStart="10dp"
+                        app:boxCornerRadiusTopEnd="10dp"
+                        app:boxCornerRadiusBottomStart="10dp"
+                        app:boxCornerRadiusBottomEnd="10dp"
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.Dense"
+                        app:endIconMode="custom"
+                        app:endIconDrawable="@drawable/ic_folder"
+                        app:endIconContentDescription="@string/select_directory">
 
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chipTarXz"
-                    style="@style/Widget.MaterialComponents.Chip.Choice"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:chipCornerRadius="8dp"
-                    android:text="tar.xz"/>
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/outputPathInput"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="textNoSuggestions"/>
+                    </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chipTarZstd"
-                    style="@style/Widget.MaterialComponents.Chip.Choice"
-                    android:layout_width="wrap_content"
+            <!-- Card 2: Compression Settings -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/compression_method"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp"/>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                style="@style/Widget.Material3.CardView.Elevated"
+                app:cardElevation="0dp"
+                app:cardCornerRadius="10dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:chipCornerRadius="8dp"
-                    android:text="tar.zst"/>
-            </com.google.android.material.chip.ChipGroup>
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/compressionChipGroup"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:singleSelection="true">
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chipTar"
+                            style="@style/Widget.Material3.Chip.Suggestion"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:chipCornerRadius="8dp"
+                            android:text="@string/no_compression"
+                            android:checked="true"/>
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chipTarBz2"
+                            style="@style/Widget.Material3.Chip.Suggestion"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:chipCornerRadius="8dp"
+                            android:text="tar.bz2"/>
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chipTarGz"
+                            style="@style/Widget.Material3.Chip.Suggestion"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:chipCornerRadius="8dp"
+                            android:text="tar.gz"/>
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chipTarLzma"
+                            style="@style/Widget.Material3.Chip.Suggestion"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:chipCornerRadius="8dp"
+                            android:text="tar.lzma"/>
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chipTarXz"
+                            style="@style/Widget.Material3.Chip.Suggestion"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:chipCornerRadius="8dp"
+                            android:text="tar.xz"/>
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chipTarZstd"
+                            style="@style/Widget.Material3.Chip.Suggestion"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:chipCornerRadius="8dp"
+                            android:text="tar.zst"/>
+                    </com.google.android.material.chip.ChipGroup>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="80dp" />
+
         </LinearLayout>
     </ScrollView>
 
-    <RelativeLayout
+    <LinearLayout
         android:id="@+id/buttonContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:orientation="horizontal"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:paddingTop="16dp"
-        android:paddingBottom="16dp">
+        android:gravity="end"
+        android:padding="16dp">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/cancelButton"
-            style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
+            style="@style/Widget.Material3.Button.TextButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
-            android:layout_alignParentStart="true"
-            app:icon="@drawable/ic_round_cancel"
-            app:cornerRadius="10dp"/>
+            android:text="@string/cancel"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/okButton"
             style="@style/Widget.Material3.Button.TonalButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_toEndOf="@id/cancelButton"
-            android:layout_alignParentEnd="true"
-            android:text="@string/ok"
-            app:cornerRadius="10dp"/>
-    </RelativeLayout>
+            app:cornerRadius="10dp"
+            android:text="@string/archive"/>
+    </LinearLayout>
 </RelativeLayout>

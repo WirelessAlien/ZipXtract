@@ -29,7 +29,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
-import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.TextView
 import android.widget.Toast
@@ -302,10 +301,6 @@ class ZipOptionDialogFragment : DialogFragment() {
             pathPicker.show(parentFragmentManager, "path_picker")
         }
 
-        val compressionMethodSpinner = binding.compressionMethodInput
-        val compressionLevelSpinner = binding.compressionLevelInput
-        val encryptionMethodSpinner = binding.encryptionMethodInput
-        val encryptionStrengthSpinner = binding.encryptionStrengthInput
         val passwordInput = binding.passwordEditText
         val confirmPasswordInput = binding.confirmPasswordEditText
         val zipNameEditText = binding.zipNameEditText
@@ -313,15 +308,15 @@ class ZipOptionDialogFragment : DialogFragment() {
         val splitZipCheckbox = binding.splitZipCheckbox
         val splitSizeInput = binding.splitSizeEditText
 
-        val splitSizeUnitSpinner = binding.splitSizeUnitSpinner
+        val splitSizeUnitAutoComplete = binding.splitSizeUnitAutoComplete
         val splitSizeUnits = arrayOf("KB", "MB", "GB")
         val splitSizeUnitAdapter =
-            ArrayAdapter(requireContext(), R.layout.simple_spinner_item, splitSizeUnits)
-        splitSizeUnitAdapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item)
-        splitSizeUnitSpinner.adapter = splitSizeUnitAdapter
+            ArrayAdapter(requireContext(), R.layout.simple_spinner_dropdown_item, splitSizeUnits)
+        splitSizeUnitAutoComplete.setAdapter(splitSizeUnitAdapter)
+        splitSizeUnitAutoComplete.setText(splitSizeUnits[1], false) // Default MB
 
         splitZipCheckbox.setOnCheckedChangeListener { _, isChecked ->
-            splitSizeInput.isEnabled = isChecked
+            binding.splitZipContainer.visibility = if (isChecked) View.VISIBLE else View.GONE
             if (!isChecked) {
                 splitSizeInput.text?.clear()
             }
@@ -332,33 +327,96 @@ class ZipOptionDialogFragment : DialogFragment() {
             zipNameEditText.selectAll()
         }
 
-        val compressionMethods =
-            CompressionMethod.entries.filter { it != CompressionMethod.AES_INTERNAL_ONLY }
-                .map { it.name }.toTypedArray()
-        val compressionMethodAdapter =
-            ArrayAdapter(requireContext(), R.layout.simple_spinner_item, compressionMethods)
-        compressionMethodAdapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item)
-        compressionMethodSpinner.adapter = compressionMethodAdapter
 
-        val compressionLevels = CompressionLevel.entries.map { it.name }.toTypedArray()
-        val compressionLevelAdapter =
-            ArrayAdapter(requireContext(), R.layout.simple_spinner_item, compressionLevels)
-        compressionLevelAdapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item)
-        compressionLevelSpinner.adapter = compressionLevelAdapter
+        val compressionMethodChipGroup = binding.compressionMethodChipGroup
+        val compressionMethods = listOf(CompressionMethod.STORE, CompressionMethod.DEFLATE)
 
-        val encryptionMethods = EncryptionMethod.entries.map { it.name }.toTypedArray()
-        val encryptionMethodAdapter =
-            ArrayAdapter(requireContext(), R.layout.simple_spinner_item, encryptionMethods)
-        encryptionMethodAdapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item)
-        encryptionMethodSpinner.adapter = encryptionMethodAdapter
+        compressionMethodChipGroup.setOnCheckedStateChangeListener { _, checkedIds ->
+            val checkedId = checkedIds.firstOrNull()
+            if (checkedId != null && checkedId < compressionMethods.size) {
+                val method = compressionMethods[checkedId]
+                val isStore = method == CompressionMethod.STORE
+                binding.compressionLevelSlider.isEnabled = !isStore
+                binding.compressionLevelDescription.alpha = if (isStore) 0.5f else 1.0f
+                if (isStore) {
+                    binding.compressionLevelDescription.text = "Level 0 (STORE)"
+                } else {
+                    updateCompressionLevelDescription(binding.compressionLevelSlider.value.toInt())
+                }
+            }
+        }
 
-        val encryptionStrengths =
-            AesKeyStrength.entries.filter { it != AesKeyStrength.KEY_STRENGTH_192 }.map { it.name }
-                .toTypedArray()
-        val encryptionStrengthAdapter =
-            ArrayAdapter(requireContext(), R.layout.simple_spinner_item, encryptionStrengths)
-        encryptionStrengthAdapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item)
-        encryptionStrengthSpinner.adapter = encryptionStrengthAdapter
+        compressionMethods.forEachIndexed { index, method ->
+            val chip = com.google.android.material.chip.Chip(requireContext())
+            chip.text = method.name
+            chip.isCheckable = true
+            chip.id = index
+            if (method == CompressionMethod.DEFLATE) {
+                chip.isChecked = true
+            }
+            compressionMethodChipGroup.addView(chip)
+        }
+
+        binding.compressionLevelSlider.addOnChangeListener { _, value, _ ->
+            updateCompressionLevelDescription(value.toInt())
+        }
+        updateCompressionLevelDescription(5)
+
+        val encryptionMethodChipGroup = binding.encryptionMethodChipGroup
+        // Display Names mapping
+        val encryptionMethodsMap = mapOf(
+            "NONE" to EncryptionMethod.NONE,
+            "ZIP STANDARD" to EncryptionMethod.ZIP_STANDARD,
+            "ZIP STANDARD STRONG" to EncryptionMethod.ZIP_STANDARD_VARIANT_STRONG,
+            "AES" to EncryptionMethod.AES
+        )
+        val encryptionMethodKeys = encryptionMethodsMap.keys.toList()
+
+        encryptionMethodChipGroup.setOnCheckedStateChangeListener { _, checkedIds ->
+            val checkedId = checkedIds.firstOrNull()
+            if (checkedId != null && checkedId < encryptionMethodKeys.size) {
+                val methodKey = encryptionMethodKeys[checkedId]
+                val method = encryptionMethodsMap[methodKey]
+
+                passwordInput.isEnabled = method != EncryptionMethod.NONE
+                confirmPasswordInput.isEnabled = method != EncryptionMethod.NONE
+
+                if (method == EncryptionMethod.AES) {
+                    binding.encryptionStrengthContainer.visibility = View.VISIBLE
+                } else {
+                    binding.encryptionStrengthContainer.visibility = View.GONE
+                }
+            }
+        }
+
+        encryptionMethodKeys.forEachIndexed { index, name ->
+            val chip = com.google.android.material.chip.Chip(requireContext())
+            chip.text = name
+            chip.isCheckable = true
+            chip.id = index
+            if (name == "NONE") {
+                chip.isChecked = true
+            }
+            encryptionMethodChipGroup.addView(chip)
+        }
+
+        val encryptionStrengthChipGroup = binding.encryptionStrengthChipGroup
+        val encryptionStrengthsMap = mapOf(
+            "AES 128" to AesKeyStrength.KEY_STRENGTH_128,
+            "AES 256" to AesKeyStrength.KEY_STRENGTH_256
+        )
+        val encryptionStrengthKeys = encryptionStrengthsMap.keys.toList()
+
+        encryptionStrengthKeys.forEachIndexed { index, name ->
+            val chip = com.google.android.material.chip.Chip(requireContext())
+            chip.text = name
+            chip.isCheckable = true
+            chip.id = index
+            if (name == "AES 256") {
+                chip.isChecked = true
+            }
+            encryptionStrengthChipGroup.addView(chip)
+        }
 
         val mainFragment =
             parentFragmentManager.findFragmentById(com.wirelessalien.zipxtract.R.id.container) as? MainFragment
@@ -375,25 +433,38 @@ class ZipOptionDialogFragment : DialogFragment() {
                 return@setOnClickListener
             }
             val isEncryptionEnabled = password.isNotEmpty()
-            val selectedCompressionMethod =
-                CompressionMethod.valueOf(compressionMethods[compressionMethodSpinner.selectedItemPosition])
-            val selectedCompressionLevel =
-                CompressionLevel.valueOf(compressionLevels[compressionLevelSpinner.selectedItemPosition])
-            val selectedEncryptionMethod = if (encryptionMethodSpinner.selectedItemPosition != 0) {
-                EncryptionMethod.valueOf(encryptionMethods[encryptionMethodSpinner.selectedItemPosition])
+
+            val selectedMethodChipId = binding.compressionMethodChipGroup.checkedChipId
+            val selectedCompressionMethod = if (selectedMethodChipId != -1 && selectedMethodChipId < compressionMethods.size) {
+                compressionMethods[selectedMethodChipId]
+            } else {
+                CompressionMethod.DEFLATE
+            }
+
+            val selectedCompressionLevel = if (selectedCompressionMethod == CompressionMethod.STORE) {
+                CompressionLevel.NO_COMPRESSION // Or NO_COMPRESSION if available, but Store method overrides level usually
+            } else {
+                getCompressionLevelFromInt(binding.compressionLevelSlider.value.toInt())
+            }
+
+            val selectedEncMethodChipId = binding.encryptionMethodChipGroup.checkedChipId
+            val selectedEncryptionMethod = if (selectedEncMethodChipId != -1 && selectedEncMethodChipId < encryptionMethodKeys.size) {
+                encryptionMethodsMap[encryptionMethodKeys[selectedEncMethodChipId]]
             } else {
                 null
             }
+
+            val selectedEncStrengthChipId = binding.encryptionStrengthChipGroup.checkedChipId
             val selectedEncryptionStrength =
-                if (selectedEncryptionMethod != null && selectedEncryptionMethod != EncryptionMethod.NONE) {
-                    AesKeyStrength.valueOf(encryptionStrengths[encryptionStrengthSpinner.selectedItemPosition])
+                if (selectedEncryptionMethod != null && selectedEncryptionMethod != EncryptionMethod.NONE && selectedEncStrengthChipId != -1 && selectedEncStrengthChipId < encryptionStrengthKeys.size) {
+                    encryptionStrengthsMap[encryptionStrengthKeys[selectedEncStrengthChipId]]
                 } else {
                     null
                 }
 
             val isSplitZip = splitZipCheckbox.isChecked
             val splitSizeText = splitSizeInput.text.toString().toLongOrNull() ?: 64L
-            val splitSizeUnit = splitSizeUnits[splitSizeUnitSpinner.selectedItemPosition]
+            val splitSizeUnit = splitSizeUnitAutoComplete.text.toString()
             val splitZipSize = mainFragment.convertToBytes(splitSizeText, splitSizeUnit)
             val destinationPath = binding.outputPathInput.text.toString()
 
@@ -451,28 +522,6 @@ class ZipOptionDialogFragment : DialogFragment() {
         binding.cancelButton.setOnClickListener {
             dismiss()
         }
-
-        encryptionMethodSpinner.onItemSelectedListener =
-            object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(
-                    parent: AdapterView<*>?,
-                    view: View?,
-                    position: Int,
-                    id: Long
-                ) {
-                    val selectedEncryptionMethod =
-                        EncryptionMethod.valueOf(encryptionMethods[position])
-                    passwordInput.isEnabled = selectedEncryptionMethod != EncryptionMethod.NONE
-                    confirmPasswordInput.isEnabled =
-                        selectedEncryptionMethod != EncryptionMethod.NONE
-                    encryptionStrengthSpinner.isEnabled =
-                        selectedEncryptionMethod == EncryptionMethod.AES
-                }
-
-                override fun onNothingSelected(parent: AdapterView<*>?) {
-                    // Do nothing
-                }
-            }
     }
 
     companion object {
@@ -492,6 +541,37 @@ class ZipOptionDialogFragment : DialogFragment() {
             args.putString(ARG_JOB_ID, jobId)
             fragment.arguments = args
             return fragment
+        }
+    }
+
+    private fun updateCompressionLevelDescription(level: Int) {
+        val description = when (level) {
+            1 -> "Level 1 (FASTEST)"
+            2 -> "Level 2 (FASTER)"
+            3 -> "Level 3 (FAST)"
+            4 -> "Level 4 (MEDIUM FAST)"
+            5 -> "Level 5 (NORMAL)"
+            6 -> "Level 6 (HIGHER)"
+            7 -> "Level 7 (MAXIMUM)"
+            8 -> "Level 8 (PRE ULTRA)"
+            9 -> "Level 9 (ULTRA)"
+            else -> "Level $level"
+        }
+        binding.compressionLevelDescription.text = description
+    }
+
+    private fun getCompressionLevelFromInt(level: Int): CompressionLevel {
+        return when (level) {
+            1 -> CompressionLevel.FASTEST
+            2 -> CompressionLevel.FASTER
+            3 -> CompressionLevel.FAST
+            4 -> CompressionLevel.MEDIUM_FAST
+            5 -> CompressionLevel.NORMAL
+            6 -> CompressionLevel.HIGHER
+            7 -> CompressionLevel.MAXIMUM
+            8 -> CompressionLevel.PRE_ULTRA
+            9 -> CompressionLevel.ULTRA
+            else -> CompressionLevel.NORMAL
         }
     }
 }

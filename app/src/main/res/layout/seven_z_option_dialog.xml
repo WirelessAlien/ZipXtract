@@ -32,25 +32,24 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginTop="10dp">
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="10dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="18sp"
+                android:textSize="20sp"
                 android:textStyle="bold"
                 android:layout_marginTop="16dp"
-                android:layout_marginStart="5dp"
-                android:layout_marginBottom="5dp"
+                android:layout_marginBottom="16dp"
                 android:text="@string/compress_sevenz"/>
 
             <com.google.android.material.progressindicator.LinearProgressIndicator
                 android:id="@+id/progressIndicator"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="5dp"
+                android:layout_marginBottom="8dp"
                 android:visibility="gone"
                 android:indeterminate="true"/>
 
@@ -60,14 +59,14 @@
                 android:layout_height="wrap_content"
                 android:text="@string/low_storage_warning"
                 android:textColor="@android:color/holo_red_dark"
-                android:layout_margin="5dp"
+                android:layout_marginBottom="8dp"
                 android:visibility="gone"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/toggleFileViewBtn"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="5dp"
+                android:layout_marginBottom="8dp"
                 app:cornerRadius="10dp"
                 style="@style/Widget.Material3.Button.TonalButton"
                 android:text="@string/show_hide_selected_files" />
@@ -76,193 +75,279 @@
                 android:id="@+id/filePathsRv"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="5dp"
+                android:layout_marginBottom="8dp"
                 android:visibility="gone" />
 
-            <com.google.android.material.textfield.TextInputLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:boxCornerRadiusTopStart="10dp"
-                app:boxCornerRadiusTopEnd="10dp"
-                app:boxCornerRadiusBottomStart="10dp"
-                app:boxCornerRadiusBottomEnd="10dp"
-                android:layout_margin="5dp">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/archiveNameEditText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    style="@style/Widget.Material3.TextInputEditText.OutlinedBox.Dense"
-                    android:hint="@string/enter_name_of_archive_optional"/>
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/outputPathLayout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="5dp"
-                app:boxCornerRadiusTopStart="10dp"
-                app:boxCornerRadiusTopEnd="10dp"
-                app:boxCornerRadiusBottomStart="10dp"
-                app:boxCornerRadiusBottomEnd="10dp"
-                android:hint="@string/output_path"
-                app:endIconMode="custom"
-                app:endIconDrawable="@drawable/ic_folder"
-                app:endIconContentDescription="@string/select_directory">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/outputPathInput"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="textNoSuggestions"
-                    style="@style/Widget.Material3.TextInputEditText.OutlinedBox.Dense"/>
-            </com.google.android.material.textfield.TextInputLayout>
-
+            <!-- Card 1: Destination -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="16sp"
+                android:text="@string/destination"
                 android:textStyle="bold"
-                android:layout_marginTop="10dp"
-                android:text="@string/enter_password"
-                android:layout_margin="5dp"/>
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="5dp"
-                app:boxCornerRadiusTopStart="10dp"
-                app:boxCornerRadiusTopEnd="10dp"
-                app:boxCornerRadiusBottomStart="10dp"
-                app:boxCornerRadiusBottomEnd="10dp"
-                app:endIconMode="password_toggle">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/passwordEditText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="textPassword"
-                    style="@style/Widget.Material3.TextInputEditText.OutlinedBox.Dense"
-                    android:hint="@string/enter_password"/>
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="5dp"
-                app:boxCornerRadiusTopStart="10dp"
-                app:boxCornerRadiusTopEnd="10dp"
-                app:boxCornerRadiusBottomStart="10dp"
-                app:boxCornerRadiusBottomEnd="10dp"
-                app:endIconMode="password_toggle">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/confirmPasswordEditText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/confirm_password"
-                    style="@style/Widget.Material3.TextInputEditText.OutlinedBox.Dense"
-                    android:hyphenationFrequency="none"
-                    android:inputType="textPassword"/>
-            </com.google.android.material.textfield.TextInputLayout>
-
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:text="@string/compression_level"
-                android:layout_margin="5dp"/>
+                android:layout_marginBottom="8dp"/>
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:elevation="0dp"
                 app:cardCornerRadius="10dp"
-                android:layout_margin="5dp"
-                style="@style/Widget.Material3.CardView.Outlined"
-                android:layout_height="wrap_content">
+                style="@style/Widget.Material3.CardView.Elevated">
 
-                <Spinner
-                    android:id="@+id/compressionSpinner"
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="48dp"
-                    android:padding="5dp"
-                    android:entries="@array/compression_levels"
-                    android:spinnerMode="dropdown"/>
-            </com.google.android.material.card.MaterialCardView>
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                app:cardCornerRadius="10dp"
-                android:layout_margin="5dp"
-                style="@style/Widget.Material3.CardView.Outlined"
-                android:layout_height="wrap_content">
-
-                <com.google.android.material.checkbox.MaterialCheckBox
-                    android:id="@+id/solidCheckBox"
-                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/solid_compression"/>
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/enter_name_of_archive_optional"
+                        app:boxCornerRadiusTopStart="10dp"
+                        app:boxCornerRadiusTopEnd="10dp"
+                        app:boxCornerRadiusBottomStart="10dp"
+                        app:boxCornerRadiusBottomEnd="10dp"
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.Dense">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/archiveNameEditText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="text"/>
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/outputPathLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:hint="@string/output_path"
+                        app:boxCornerRadiusTopStart="10dp"
+                        app:boxCornerRadiusTopEnd="10dp"
+                        app:boxCornerRadiusBottomStart="10dp"
+                        app:boxCornerRadiusBottomEnd="10dp"
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.Dense"
+                        app:endIconMode="custom"
+                        app:endIconDrawable="@drawable/ic_folder"
+                        app:endIconContentDescription="@string/select_directory">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/outputPathInput"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="textNoSuggestions"/>
+                    </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- Card 2: Compression Settings -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="16sp"
+                android:text="@string/compression_settings"
                 android:textStyle="bold"
-                android:text="@string/thread_count"
-                android:layout_margin="5dp"/>
+                android:layout_marginBottom="8dp"/>
 
-            <com.google.android.material.textfield.TextInputLayout
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:boxCornerRadiusTopStart="10dp"
-                app:boxCornerRadiusTopEnd="10dp"
-                app:boxCornerRadiusBottomStart="10dp"
-                app:boxCornerRadiusBottomEnd="10dp"
-                android:layout_margin="5dp">
+                android:layout_marginBottom="16dp"
+                android:elevation="0dp"
+                app:cardCornerRadius="10dp"
+                style="@style/Widget.Material3.CardView.Elevated">
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/threadCountEditText"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    style="@style/Widget.Material3.TextInputEditText.OutlinedBox.Dense"
-                    android:hint="@string/max_available_thread"
-                    android:inputType="number"/>
-            </com.google.android.material.textfield.TextInputLayout>
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/compression_level"
+                        android:layout_marginBottom="10dp"/>
+
+                    <TextView
+                        android:id="@+id/compressionLevelDescription"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Level 5 (Normal)"
+                        android:textSize="14sp"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:layout_marginBottom="4dp"/>
+
+                    <com.google.android.material.slider.Slider
+                        android:id="@+id/compressionLevelSlider"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:labelBehavior="gone"
+                        android:valueFrom="0.0"
+                        android:valueTo="5.0"
+                        android:stepSize="1.0"
+                        android:value="3.0"/>
+
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/automaticThreadsSwitch"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:text="@string/automatic_threads"
+                        android:checked="false"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/automatic_threads_subtitle"
+                        android:textSize="12sp"
+                        android:layout_marginStart="0dp"
+                        android:layout_marginTop="-5dp"/>
+
+                    <TextView
+                        android:id="@+id/automaticThreadsWarning"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="@string/automatic_threads_warning"
+                        android:textColor="@android:color/holo_red_dark"
+                        android:visibility="gone"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/specify_custom_thread_count"
+                        android:layout_marginTop="10dp"/>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/threadCountInputLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:visibility="visible"
+                        app:boxCornerRadiusTopStart="10dp"
+                        app:boxCornerRadiusTopEnd="10dp"
+                        app:boxCornerRadiusBottomStart="10dp"
+                        app:boxCornerRadiusBottomEnd="10dp"
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.Dense">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/threadCountEditText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="@string/thread_count"
+                            android:inputType="number"/>
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/solidCheckBox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="@string/solid_compression"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/solid_compression_subtitle"
+                        android:textSize="12sp"
+                        android:layout_marginTop="-5dp"/>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Card 3: Security -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/security"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp"/>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:elevation="0dp"
+                app:cardCornerRadius="10dp"
+                style="@style/Widget.Material3.CardView.Elevated">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:endIconMode="password_toggle"
+                        app:boxCornerRadiusTopStart="10dp"
+                        app:boxCornerRadiusTopEnd="10dp"
+                        app:boxCornerRadiusBottomStart="10dp"
+                        app:boxCornerRadiusBottomEnd="10dp"
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.Dense">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/passwordEditText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="textPassword"
+                            android:hint="@string/enter_password"/>
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        app:endIconMode="password_toggle"
+                        app:boxCornerRadiusTopStart="10dp"
+                        app:boxCornerRadiusTopEnd="10dp"
+                        app:boxCornerRadiusBottomStart="10dp"
+                        app:boxCornerRadiusBottomEnd="10dp"
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.Dense">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/confirmPasswordEditText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="@string/confirm_password"
+                            android:inputType="textPassword"/>
+                    </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="80dp" />
+
         </LinearLayout>
     </ScrollView>
 
-    <RelativeLayout
+    <LinearLayout
         android:id="@+id/buttonContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:orientation="horizontal"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:paddingTop="16dp"
-        android:paddingBottom="16dp">
+        android:gravity="end"
+        android:padding="16dp">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/cancelButton"
-            style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
+            style="@style/Widget.Material3.Button.TextButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
-            android:layout_alignParentStart="true"
-            app:icon="@drawable/ic_round_cancel"
-            app:cornerRadius="10dp"/>
+            android:text="@string/cancel" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/okButton"
             style="@style/Widget.Material3.Button.TonalButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_toEndOf="@id/cancelButton"
-            android:layout_alignParentEnd="true"
-            android:text="@string/ok"
-            app:cornerRadius="10dp"/>
-    </RelativeLayout>
+            app:cornerRadius="10dp"
+            android:text="@string/archive" />
+    </LinearLayout>
 </RelativeLayout>

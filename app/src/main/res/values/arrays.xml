@@ -17,7 +17,7 @@
 
 <resources>
     <array name="compression_levels">
-        <item>Copy mode (no compression)</item>
+        <item>No Compression</item>
         <item>Fastest</item>
         <item>Fast</item>
         <item>Normal</item>

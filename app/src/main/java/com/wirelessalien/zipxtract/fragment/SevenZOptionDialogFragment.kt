@@ -285,6 +285,31 @@ class SevenZOptionDialogFragment : DialogFragment() {
             pathPicker.show(parentFragmentManager, "path_picker")
         }
 
+        val compressionValues = listOf(0, 1, 3, 5, 7, 9)
+        val compressionLevelNames = resources.getStringArray(R.array.compression_levels)
+
+        binding.compressionLevelSlider.addOnChangeListener { _, value, _ ->
+            val index = value.toInt()
+            if (index in compressionLevelNames.indices) {
+                binding.compressionLevelDescription.text = "Level ${compressionValues[index]} (${compressionLevelNames[index]})"
+            }
+        }
+        // Set initial text
+        val initialIndex = binding.compressionLevelSlider.value.toInt()
+        if (initialIndex in compressionLevelNames.indices) {
+            binding.compressionLevelDescription.text = "Level ${compressionValues[initialIndex]} (${compressionLevelNames[initialIndex]})"
+        }
+
+        binding.automaticThreadsSwitch.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                binding.threadCountInputLayout.visibility = View.GONE
+                binding.automaticThreadsWarning.visibility = View.VISIBLE
+            } else {
+                binding.threadCountInputLayout.visibility = View.VISIBLE
+                binding.automaticThreadsWarning.visibility = View.GONE
+            }
+        }
+
         val mainFragment = parentFragmentManager.findFragmentById(R.id.container) as? MainFragment
 
         binding.okButton.setOnClickListener {
@@ -297,17 +322,21 @@ class SevenZOptionDialogFragment : DialogFragment() {
                 return@setOnClickListener
             }
 
-            val compressionLevel = when (binding.compressionSpinner.selectedItemPosition) {
-                0 -> 0
-                1 -> 1
-                2 -> 3
-                3 -> 5
-                4 -> 7
-                5 -> 9
-                else -> -1
+            val sliderIndex = binding.compressionLevelSlider.value.toInt()
+            val compressionLevel = if (sliderIndex in compressionValues.indices) {
+                compressionValues[sliderIndex]
+            } else {
+                5 // Default Normal
             }
+
             val solid = binding.solidCheckBox.isChecked
-            val threadCount = binding.threadCountEditText.text.toString().toIntOrNull() ?: -1
+
+            val threadCount = if (binding.automaticThreadsSwitch.isChecked) {
+                0 // Max available threads
+            } else {
+                binding.threadCountEditText.text.toString().toIntOrNull() ?: -1 // Default -1
+            }
+
             val destinationPath = binding.outputPathInput.text.toString()
 
             mainFragment?.startSevenZService(
