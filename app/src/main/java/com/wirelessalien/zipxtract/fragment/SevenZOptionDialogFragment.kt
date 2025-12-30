@@ -336,7 +336,7 @@ class SevenZOptionDialogFragment : DialogFragment() {
             val threadCount = if (binding.automaticThreadsSwitch.isChecked) {
                 0 // Max available threads
             } else {
-                binding.threadCountEditText.text.toString().toIntOrNull() ?: -1 // Default -1
+                binding.threadCountEditText.text.toString().toIntOrNull() ?: 2 // Default 2, may change later
             }
 
             val destinationPath = binding.outputPathInput.text.toString()
