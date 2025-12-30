@@ -303,9 +303,11 @@ class SevenZOptionDialogFragment : DialogFragment() {
         binding.automaticThreadsSwitch.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
                 binding.threadCountInputLayout.visibility = View.GONE
+                binding.threadCountText.visibility = View.GONE
                 binding.automaticThreadsWarning.visibility = View.VISIBLE
             } else {
                 binding.threadCountInputLayout.visibility = View.VISIBLE
+                binding.threadCountText.visibility = View.VISIBLE
                 binding.automaticThreadsWarning.visibility = View.GONE
             }
         }

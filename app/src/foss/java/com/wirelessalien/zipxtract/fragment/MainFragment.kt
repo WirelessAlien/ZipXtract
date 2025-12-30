@@ -1451,7 +1451,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         ContextCompat.startForegroundService(requireContext(), intent)
     }
 
-    fun startArchiveTarService(file: List<String>, archiveName: String, compressionFormat: String, destinationPath: String? = null) {
+    fun startArchiveTarService(file: List<String>, archiveName: String, compressionFormat: String, destinationPath: String? = null, compressionLevel: Int = 3) {
         aProgressDialog.show()
         val jobId = fileOperationsDao.addFilesForJob(file)
         val intent = Intent(requireContext(), ArchiveTarService::class.java).apply {
@@ -1459,6 +1459,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             putExtra(ServiceConstants.EXTRA_ARCHIVE_NAME, archiveName)
             putExtra(ServiceConstants.EXTRA_COMPRESSION_FORMAT, compressionFormat)
             putExtra(EXTRA_DESTINATION_PATH, destinationPath)
+            putExtra(ServiceConstants.EXTRA_COMPRESSION_LEVEL, compressionLevel)
         }
         ContextCompat.startForegroundService(requireContext(), intent)
     }

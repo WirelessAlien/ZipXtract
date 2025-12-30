@@ -29,15 +29,6 @@
         android:icon="@drawable/ic_folder_2"
         android:summary="@string/archive_path_summary"/>
 
-    <EditTextPreference
-        android:key="zstd_compression_level"
-        android:title="ZSTD Compression Level"
-        android:dialogTitle="@string/compression_level"
-        android:dialogMessage="@string/please_enter_value_between_0_and_22"
-        android:defaultValue="3"
-        android:inputType="number"
-        android:icon="@drawable/ic_compress"/>
-
     <SwitchPreferenceCompat
         android:key="fast_search"
         android:title="@string/fast_search"

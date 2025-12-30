@@ -107,13 +107,14 @@ class ArchiveTarService : Service() {
             return START_NOT_STICKY
         }
         val compressionFormat = intent.getStringExtra(ServiceConstants.EXTRA_COMPRESSION_FORMAT) ?: "TAR_ONLY"
+        val compressionLevel = intent.getIntExtra(ServiceConstants.EXTRA_COMPRESSION_LEVEL, 3)
         val destinationPath = intent.getStringExtra(ServiceConstants.EXTRA_DESTINATION_PATH)
 
         startForeground(NOTIFICATION_ID, createNotification(0))
 
         archiveJob = CoroutineScope(Dispatchers.IO).launch {
             val filesToArchive = fileOperationsDao.getFilesForJob(jobId)
-            createTarFile(archiveName, filesToArchive, compressionFormat, destinationPath)
+            createTarFile(archiveName, filesToArchive, compressionFormat, compressionLevel, destinationPath)
             fileOperationsDao.deleteFilesForJob(jobId)
             stopSelf()
         }
@@ -165,7 +166,7 @@ class ArchiveTarService : Service() {
         sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, errorMessage))
     }
 
-    private fun createTarFile(archiveName: String, filesToArchive: List<String>, compressionFormat: String, destinationPath: String?) {
+    private fun createTarFile(archiveName: String, filesToArchive: List<String>, compressionFormat: String, compressionLevel: Int, destinationPath: String?) {
 
         if (filesToArchive.isEmpty()) {
             val errorMessage = getString(R.string.no_files_to_archive)
@@ -175,10 +176,7 @@ class ArchiveTarService : Service() {
             return
         }
 
-        // Get ZSTD compression level from SharedPreferences
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
-        val compressionLevelString = sharedPreferences.getString("zstd_compression_level", "3")
-        val compressionLevel = compressionLevelString?.toIntOrNull() ?: 3
         val safeLevel = compressionLevel.coerceIn(0, 22)
 
         try {

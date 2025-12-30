@@ -116,22 +116,6 @@ class SettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeLis
             }
         }
 
-        val compressionPref = findPreference<EditTextPreference>("zstd_compression_level")
-        compressionPref?.setOnPreferenceChangeListener { _, newValue ->
-            try {
-                val level = (newValue as String).toInt()
-                if (level in 0..22) {
-                    true
-                } else {
-                    Toast.makeText(context,
-                        getString(R.string.please_enter_value_between_0_and_22), Toast.LENGTH_SHORT).show()
-                    false
-                }
-            } catch (e: NumberFormatException) {
-                Toast.makeText(context, getString(R.string.invalid_value), Toast.LENGTH_SHORT).show()
-                false
-            }
-        }
     }
 
 //    private fun grantRootAccess(keyRootAccess: SwitchPreferenceCompat) {

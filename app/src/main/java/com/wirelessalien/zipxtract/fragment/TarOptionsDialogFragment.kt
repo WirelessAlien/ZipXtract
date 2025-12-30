@@ -285,6 +285,13 @@ class TarOptionsDialogFragment : DialogFragment() {
             pathPicker.show(parentFragmentManager, "path_picker")
         }
 
+        binding.zstdCompressionLevelSlider.addOnChangeListener { _, value, _ ->
+            binding.zstdCompressionLevelLabel.text = getString(R.string.zstd_compression_level_format, value.toInt())
+        }
+
+        // Initialize label with default value
+        binding.zstdCompressionLevelLabel.text = getString(R.string.zstd_compression_level_format, binding.zstdCompressionLevelSlider.value.toInt())
+
         binding.compressionChipGroup.setOnCheckedStateChangeListener { _, checkedIds ->
             val checkedId = checkedIds.firstOrNull() ?: View.NO_ID
             selectedCompressionFormat = when (checkedId) {
@@ -295,11 +302,17 @@ class TarOptionsDialogFragment : DialogFragment() {
                 R.id.chipTarGz -> org.apache.commons.compress.compressors.CompressorStreamFactory.GZIP
                 else -> "TAR_ONLY"
             }
+            if (selectedCompressionFormat == org.apache.commons.compress.compressors.CompressorStreamFactory.ZSTANDARD) {
+                binding.zstdCompressionLevelContainer.visibility = View.VISIBLE
+            } else {
+                binding.zstdCompressionLevelContainer.visibility = View.GONE
+            }
         }
 
         binding.okButton.setOnClickListener {
             val archiveName = binding.archiveNameEditText.text.toString().ifBlank { defaultName }
             val destinationPath = binding.outputPathInput.text.toString()
+            val zstdCompressionLevel = binding.zstdCompressionLevelSlider.value.toInt()
 
             val mainFragment =
                 parentFragmentManager.findFragmentById(R.id.container) as? MainFragment
@@ -307,7 +320,8 @@ class TarOptionsDialogFragment : DialogFragment() {
                 selectedFilePaths,
                 archiveName,
                 selectedCompressionFormat,
-                destinationPath
+                destinationPath,
+                zstdCompressionLevel
             )
             dismiss()
         }
