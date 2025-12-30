@@ -463,9 +463,19 @@ class ZipOptionDialogFragment : DialogFragment() {
                 }
 
             val isSplitZip = splitZipCheckbox.isChecked
+            if (isSplitZip && splitSizeInput.text.toString().isBlank()) {
+                splitSizeInput.error = getString(com.wirelessalien.zipxtract.R.string.invalid_value)
+                return@setOnClickListener
+            }
+
             val splitSizeText = splitSizeInput.text.toString().toLongOrNull() ?: 64L
             val splitSizeUnit = splitSizeUnitAutoComplete.text.toString()
             val splitZipSize = mainFragment.convertToBytes(splitSizeText, splitSizeUnit)
+
+            if (isSplitZip && splitZipSize < 65536) {
+                splitSizeInput.error = getString(com.wirelessalien.zipxtract.R.string.min_split_size_error)
+                return@setOnClickListener
+            }
             val destinationPath = binding.outputPathInput.text.toString()
 
             if (!isSplitZip) {

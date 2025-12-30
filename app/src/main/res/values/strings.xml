@@ -149,12 +149,13 @@
     <string name="max_available_thread">0 for maximum available threads</string>
     <string name="automatic_threads">Maximum Threads</string>
     <string name="automatic_threads_subtitle">Uses maximum CPU for fastest speeds</string>
-    <string name="automatic_threads_warning">Warning: Uses all CPU cores. Device may become unresponsive.</string>
-    <string name="solid_compression_subtitle">Improves ratio for many small files</string>
-    <string name="destination">Basics</string>
+    <string name="automatic_threads_warning">Warning: Uses all CPU cores. Device may become unresponsive during archive operation.</string>
+    <string name="solid_compression_subtitle">Improves ratio for many small files but extraction time will increase</string>
+    <string name="destination">General</string>
     <string name="compression_settings">Compression Settings</string>
     <string name="security">Security</string>
     <string name="specify_custom_thread_count">Specify custom thread count</string>
+    <string name="min_split_size_error">Minimum split size is 64KB</string>
 
     <!-- Success toast messages -->
     <string name="compression_success">Compression successful</string>

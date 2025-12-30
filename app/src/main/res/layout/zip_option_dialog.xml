@@ -217,12 +217,6 @@
                         android:orientation="vertical"
                         android:visibility="gone">
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginBottom="8dp"
-                            android:text="@string/split_size_mb" />
-
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -244,7 +238,7 @@
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:digits="1234567890"
-                                    android:hint="@string/_ten"
+                                    android:hint="@string/split_size_mb"
                                     android:inputType="number" />
                             </com.google.android.material.textfield.TextInputLayout>
 
