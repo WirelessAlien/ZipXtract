@@ -34,6 +34,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.preference.PreferenceManager
+import com.aroma.unrartool.Unrar
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.activity.MainActivity
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_CANCEL_OPERATION
@@ -288,10 +289,15 @@ class ExtractRarService : Service() {
                     } else if (e.message == "WrongPasswordDetected") {
                         // Error already handled in callback
                     } else {
-                        e.printStackTrace()
-                        showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-                        sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(
-                            EXTRA_ERROR_MESSAGE, e.message ?: getString(R.string.general_error_msg)))
+                        if (!tryFallbackWithUnrar(file, destinationDir)) {
+                            e.printStackTrace()
+                            showErrorNotification(e.message ?: getString(R.string.general_error_msg))
+                            sendLocalBroadcast(
+                                Intent(ACTION_EXTRACTION_ERROR).putExtra(
+                                    EXTRA_ERROR_MESSAGE, e.message ?: getString(R.string.general_error_msg)
+                                )
+                            )
+                        }
                     }
                 } finally {
                     inArchive.close()
@@ -509,5 +515,47 @@ class ExtractRarService : Service() {
             val paths = files.map { it.absolutePath }.toTypedArray()
             MediaScannerConnection.scanFile(this, paths, null, null)
         }
+    }
+
+    private fun tryFallbackWithUnrar(file: File, destinationDir: File): Boolean {
+        try {
+            val unrar = Unrar()
+            val listener = object : Unrar.CallBackListener {
+                override fun onFileProcessed(msgID: Int, filename: String?) {
+                    // Optional: update notification
+                }
+
+                override fun onPassWordRequired() {
+                    if (password != null) {
+                        unrar.setPassWord(String(password!!))
+                    }
+                }
+
+                override fun onDataProcessed(bytesProcessed: Int): Int {
+                    return 1 // Continue
+                }
+            }
+            unrar.setCallBackListener(listener)
+
+            if (password != null) {
+                unrar.setPassWord(String(password!!))
+            }
+
+            val ret = unrar.RarOpenArchive(file.absolutePath, destinationDir.absolutePath)
+            if (ret == Unrar.ERAR_SUCCESS) {
+                scanForNewFiles(destinationDir)
+                showCompletionNotification(destinationDir.path)
+                sendLocalBroadcast(
+                    Intent(ACTION_EXTRACTION_COMPLETE).putExtra(
+                        EXTRA_DIR_PATH,
+                        destinationDir.path
+                    )
+                )
+                return true
+            }
+        } catch (t: Throwable) {
+            t.printStackTrace()
+        }
+        return false
     }
 }

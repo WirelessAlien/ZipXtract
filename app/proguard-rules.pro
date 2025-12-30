@@ -33,6 +33,7 @@
 -keep class org.apache.commons.compress.** { *; }
 -keep class me.zhanghai.android.libarchive.** { *; }
 -keep class com.github.luben.zstd.** { *; }
+-keep class com.aroma.unrartool.Unrar
 
 # Keep native method names
 -keepclasseswithmembernames class * {

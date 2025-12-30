@@ -58,6 +58,12 @@ android {
         includeInApk false
     }
 
+    externalNativeBuild {
+        ndkBuild {
+            path 'src/main/jni/Android.mk'
+        }
+    }
+
     packagingOptions {
         resources {
             excludes += [
