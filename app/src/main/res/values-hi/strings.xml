@@ -159,4 +159,19 @@
     <string name="compare">तुलना</string>
     <string name="file_does_not_exist">फ़ाइल मौजूद नहीं है</string>
     <string name="select">चुनें</string>
+    <string name="automatic_threads">अधिकतम थ्रेड</string>
+    <string name="automatic_threads_subtitle">सबसे तेज गति के लिए अधिकतम CPU का उपयोग करता है</string>
+    <string name="automatic_threads_warning">चेतावनी: सभी CPU कोर का उपयोग करता है। उपकरण संग्रह संचालन के दौरान उत्तरदायी हो सकता है।।</string>
+    <string name="solid_compression_subtitle">कई छोटी फ़ाइलों के लिए अनुपात में सुधार लेकिन निष्कर्षण समय में वृद्धि होगी</string>
+    <string name="destination">जनरल</string>
+    <string name="security">सुरक्षा</string>
+    <string name="specify_custom_thread_count">कस्टम धागा गिनती निर्दिष्ट करें</string>
+    <string name="min_split_size_error">न्यूनतम विभाजन आकार 64KB है</string>
+    <string name="success">सफलता</string>
+    <string name="error">त्रुटि</string>
+    <string name="archive_created">संग्रहित</string>
+    <string name="extraction_completed">निष्कर्षण पूरा</string>
+    <string name="archive_updated">पुरालेख अद्यतन</string>
+    <string name="compression_completed">संपीड़न पूर्ण</string>
+    <string name="zstd_compression_level_format">ZSTD संपीड़न स्तर: %d</string>
 </resources>
