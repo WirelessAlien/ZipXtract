@@ -154,4 +154,20 @@
     <string name="please_wait">자세히보기</string>
     <string name="compare">기타 제품</string>
     <string name="file_does_not_exist">파일이 존재하지 않습니다</string>
+    <string name="automatic_threads">최대 스레드</string>
+    <string name="automatic_threads_subtitle">빠른 속도를 위한 최대 CPU를 사용하십시오</string>
+    <string name="automatic_threads_warning">경고: 모든 CPU 코어를 사용합니다. 장치는 아카이브 작업에서 응답 할 수 있습니다.</string>
+    <string name="solid_compression_subtitle">많은 작은 파일에 대한 비율을 개선하지만 추출 시간은 증가</string>
+    <string name="destination">주요사업</string>
+    <string name="compression_settings">압축 설정</string>
+    <string name="security">보안</string>
+    <string name="specify_custom_thread_count">사용자 정의 스레드 카운트</string>
+    <string name="min_split_size_error">최소한도 쪼개지는 크기는 64KB입니다</string>
+    <string name="success">지원하다</string>
+    <string name="error">계정 정보</string>
+    <string name="archive_created">아카이브 생성</string>
+    <string name="extraction_completed">적출 완료</string>
+    <string name="archive_updated">Archive 업데이트</string>
+    <string name="compression_completed">압축 완료</string>
+    <string name="zstd_compression_level_format">ZSTD 압축 수준: %d</string>
 </resources>
