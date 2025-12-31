@@ -11,4 +11,5 @@
     <string name="compression_level">Sammenpakkingsnivå</string>
     <string name="compression_method">Sammenpakkingsmetode</string>
     <string name="select">Velg</string>
+    <string name="compression_settings">Sammenpakkingsinnstillinger</string>
 </resources>
