@@ -174,4 +174,5 @@
     <string name="archive_updated">पुरालेख अद्यतन</string>
     <string name="compression_completed">संपीड़न पूर्ण</string>
     <string name="zstd_compression_level_format">ZSTD संपीड़न स्तर: %d</string>
+    <string name="compression_settings">संपीड़न सेटिंग्स</string>
 </resources>
