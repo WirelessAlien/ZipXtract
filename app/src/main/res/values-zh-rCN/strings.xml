@@ -163,4 +163,12 @@
     <string name="extraction_completed">解压完成</string>
     <string name="compression_completed">压缩完成</string>
     <string name="zstd_compression_level_format">ZSTD 压缩级别：%d</string>
+    <string name="automatic_threads">最大线程数</string>
+    <string name="automatic_threads_subtitle">使用最大 CPU 获取最快速度</string>
+    <string name="automatic_threads_warning">警告：使用所有 CPU 核心。在压缩过程中，设备可能会无响应。</string>
+    <string name="solid_compression_subtitle">提高许多小文件的压缩比，但解压时间会增加</string>
+    <string name="specify_custom_thread_count">指定自定义线程数</string>
+    <string name="min_split_size_error">最小分割大小为 64KB</string>
+    <string name="archive_created">创建了压缩文件</string>
+    <string name="archive_updated">更新了压缩文件</string>
 </resources>
