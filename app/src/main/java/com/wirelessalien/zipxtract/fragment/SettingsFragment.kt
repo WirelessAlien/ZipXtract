@@ -21,15 +21,14 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import android.os.Bundle
-import android.widget.Toast
 import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.fragment.app.FragmentTransaction
-import androidx.preference.EditTextPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
 import com.wirelessalien.zipxtract.R
+import com.wirelessalien.zipxtract.preference.LongClickablePreference
 
 class SettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeListener {
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
@@ -70,7 +69,7 @@ class SettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeLis
 //            true
 //        }
 
-        val extractPathPreference = findPreference<Preference>("key_extract_path")
+        val extractPathPreference = findPreference<LongClickablePreference>("key_extract_path")
         extractPathPreference?.let { pref ->
             val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
             val savedPath = sharedPreferences.getString("key_extract_path", null)
@@ -91,9 +90,14 @@ class SettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeLis
                 pathPicker.show(parentFragmentManager, "PathPicker")
                 true
             }
+            pref.setOnLongClickListener {
+                sharedPreferences.edit { remove("key_extract_path") }
+                pref.setSummary(R.string.extract_path_summary)
+                true
+            }
         }
 
-        val archivePathPreference = findPreference<Preference>("key_archive_path")
+        val archivePathPreference = findPreference<LongClickablePreference>("key_archive_path")
         archivePathPreference?.let { pref ->
             val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
             val savedPath = sharedPreferences.getString("key_archive_path", null)
@@ -112,6 +116,11 @@ class SettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeLis
                     }
                 })
                 pathPicker.show(parentFragmentManager, "PathPicker")
+                true
+            }
+            pref.setOnLongClickListener {
+                sharedPreferences.edit { remove("key_archive_path") }
+                pref.setSummary(R.string.archive_path_summary)
                 true
             }
         }

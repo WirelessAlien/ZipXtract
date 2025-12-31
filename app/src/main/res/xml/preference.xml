@@ -17,13 +17,13 @@
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <Preference
+    <com.wirelessalien.zipxtract.preference.LongClickablePreference
         android:key="key_extract_path"
         android:title="@string/extract_path"
         android:icon="@drawable/ic_folder_2"
         android:summary="@string/extract_path_summary"/>
 
-    <Preference
+    <com.wirelessalien.zipxtract.preference.LongClickablePreference
         android:key="key_archive_path"
         android:title="@string/archive_path"
         android:icon="@drawable/ic_folder_2"
