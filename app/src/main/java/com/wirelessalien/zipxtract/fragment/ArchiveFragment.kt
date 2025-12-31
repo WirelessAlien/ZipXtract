@@ -82,6 +82,7 @@ import com.wirelessalien.zipxtract.databinding.ProgressDialogExtractBinding
 import com.wirelessalien.zipxtract.helper.ChecksumUtils
 import com.wirelessalien.zipxtract.helper.EncryptionCheckHelper
 import com.wirelessalien.zipxtract.helper.FileOperationsDao
+import com.wirelessalien.zipxtract.helper.MultipartArchiveHelper
 import com.wirelessalien.zipxtract.model.FileItem
 import com.wirelessalien.zipxtract.service.DeleteFilesService
 import com.wirelessalien.zipxtract.service.ExtractArchiveService
@@ -579,6 +580,11 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
             binding.btnMultiZipExtract
         )
 
+        // Reset visibility
+        binding.btnMultiExtract.visibility = View.GONE
+        binding.btnMulti7zExtract.visibility = View.GONE
+        binding.btnMultiZipExtract.visibility = View.GONE
+
         val defaultColor = binding.btnExtract.backgroundTintList
 
         checkStorageForExtraction(
@@ -677,13 +683,33 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
                     loadingDialog.show()
 
                     lifecycleScope.launch(Dispatchers.IO) {
+                        val isMultipartZip = MultipartArchiveHelper.isMultipartZip(file)
+                        val isMultipart7z = MultipartArchiveHelper.isMultipart7z(file)
+                        val isMultipartRar = MultipartArchiveHelper.isMultipartRar(file)
+
                         val isEncrypted = EncryptionCheckHelper.isEncrypted(file)
                         withContext(Dispatchers.Main) {
                             loadingDialog.dismiss()
-                            if (isEncrypted) {
-                                showPasswordInputDialog(filePaths, destinationPath)
+                            if (isMultipartZip) {
+                                if (isEncrypted) showPasswordInputMultiZipDialog(filePaths, destinationPath)
+                                else startMultiZipExtractionService(filePaths, null, destinationPath)
+                            } else if (isMultipart7z) {
+                                if (isEncrypted) showPasswordInputMulti7zDialog(filePaths, destinationPath)
+                                else startMulti7zExtractionService(filePaths, null, destinationPath)
+                            } else if (isMultipartRar) {
+                                if (isEncrypted) showPasswordInputMultiRarDialog(filePaths, destinationPath)
+                                else startRarExtractionService(filePaths, null, destinationPath)
                             } else {
-                                startExtractionService(filePaths, null, destinationPath)
+                                if (file.extension.equals("rar", ignoreCase = true)) {
+                                    if (isEncrypted) showPasswordInputMultiRarDialog(filePaths, destinationPath)
+                                    else startRarExtractionService(filePaths, null, destinationPath)
+                                } else {
+                                    if (isEncrypted) {
+                                        showPasswordInputDialog(filePaths, destinationPath)
+                                    } else {
+                                        startExtractionService(filePaths, null, destinationPath)
+                                    }
+                                }
                             }
                             bottomSheetDialog.dismiss()
                         }

@@ -30,8 +30,9 @@
                 android:alpha="0.7"
                 android:text="TextView"
                 android:textSize="12sp"
+                android:layout_marginStart="10dp"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"/>
+                app:layout_constraintStart_toEndOf="@id/fileSize" />
 
             <TextView
                 android:id="@+id/fileSize"
@@ -72,13 +73,27 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
+                android:layout_marginEnd="8dp"
                 android:text="TextView"
                 android:textSize="15sp"
                 android:ellipsize="middle"
                 android:maxLines="1"
                 app:layout_constraintStart_toEndOf="@+id/cardView"
-                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/btnFileInfo"
                 app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageButton
+                android:id="@+id/btnFileInfo"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="0dp"
+                android:src="@drawable/ic_info"
+                android:contentDescription="@string/file_info"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:tint="?attr/colorOnSurface" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <com.google.android.material.divider.MaterialDivider
@@ -88,28 +103,38 @@
             android:layout_marginTop="5dp"
             android:layout_marginEnd="16dp"/>
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnPreviewArchive"
-            style="@style/Widget.Material3.Button.TonalButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="20dp"
-            android:layout_marginEnd="16dp"
-            android:text="@string/preview_archive"
-            android:visibility="gone"
-            app:cornerRadius="10dp" />
+       <LinearLayout
+           android:layout_width="match_parent"
+           android:layout_height="wrap_content"
+           android:layout_marginStart="8dp"
+           android:layout_marginEnd="8dp"
+           android:orientation="horizontal">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnOpenWith"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/open_with"
-            style="@style/Widget.Material3.Button.TonalButton"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginTop="20dp"
-            app:cornerRadius="10dp"/>
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnPreviewArchive"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginTop="20dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="16dp"
+                android:text="@string/preview_archive"
+                android:visibility="gone"
+                app:cornerRadius="10dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnOpenWith"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/open_with"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginTop="20dp"
+                app:cornerRadius="10dp"/>
+       </LinearLayout>
 
         <TextView
             android:id="@+id/lowStorageWarning"
@@ -157,74 +182,23 @@
             app:cornerRadius="10dp"
             android:text="@string/extract" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/multi_part_extract"
-            android:textSize="16sp"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="20dp"
-            android:textStyle="bold"/>
-
-        <LinearLayout
+        <com.google.android.material.divider.MaterialDivider
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:orientation="horizontal">
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnMultiExtract"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                style="@style/Widget.Material3.Button.TonalButton"
-                android:layout_weight="1"
-                app:cornerRadius="10dp"
-                android:text="@string/rar" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnMulti7zExtract"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                style="@style/Widget.Material3.Button.TonalButton"
-                android:layout_weight="1"
-                android:layout_marginStart="10dp"
-                android:layout_marginEnd="5dp"
-                app:cornerRadius="10dp"
-                android:text="@string/_7z" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnMultiZipExtract"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                style="@style/Widget.Material3.Button.TonalButton"
-                android:layout_marginStart="10dp"
-                app:cornerRadius="10dp"
-                android:text="@string/zip" />
-        </LinearLayout>
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnFileInfo"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:cornerRadius="10dp"
-            style="@style/Widget.Material3.Button.TonalButton"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="20dp"
-            android:layout_marginEnd="16dp"
-            android:text="@string/file_info" />
+            android:layout_marginTop="50dp"
+            android:layout_marginBottom="10dp"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnDelete"
+            style="@style/Widget.Material3.Button.OutlinedButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:cornerRadius="10dp"
             android:layout_marginStart="16dp"
-            android:layout_marginTop="20dp"
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="20dp"
-            android:text="@string/delete" />
+            android:text="@string/delete"
+            app:strokeColor="?attr/colorError"
+            android:textColor="?attr/colorError" />
     </LinearLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
