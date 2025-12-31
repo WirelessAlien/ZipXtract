@@ -197,6 +197,12 @@
     <string name="extraction_ongoing">Extracting…</string>
     <string name="archive_ongoing">Archiving…</string>
     <string name="updating_archive">Updating archive…</string>
+    <string name="success">Success</string>
+    <string name="error">Error</string>
+    <string name="archive_created">Archive Created</string>
+    <string name="extraction_completed">Extraction Completed</string>
+    <string name="archive_updated">Archive Updated</string>
+    <string name="compression_completed">Compression Completed</string>
 
     <!-- Notification content-->
     <string name="copying_files_progress">Copying files: %1$d/%2$d</string>

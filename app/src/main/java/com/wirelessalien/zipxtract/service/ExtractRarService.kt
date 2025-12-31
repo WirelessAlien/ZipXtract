@@ -279,7 +279,7 @@ class ExtractRarService : Service() {
                     } else {
                         FileUtils.setLastModifiedTime(extractCallback.directories)
                         scanForNewFiles(destinationDir)
-                        showCompletionNotification(destinationDir.path)
+                        showCompletionNotification(destinationDir)
                         sendLocalBroadcast(Intent(ACTION_EXTRACTION_COMPLETE).putExtra(EXTRA_DIR_PATH, destinationDir.path))
                     }
                 } catch (e: SevenZipException) {
@@ -462,19 +462,21 @@ class ExtractRarService : Service() {
         sendLocalBroadcast(Intent(ACTION_EXTRACTION_PROGRESS).putExtra(EXTRA_PROGRESS, progress))
     }
 
-    private fun showCompletionNotification(destinationPath: String) {
+    private fun showCompletionNotification(destination: File) {
         stopForegroundService()
 
         val intent = Intent(this, MainActivity::class.java).apply {
             action = MainActivity.ACTION_OPEN_DIRECTORY
-            putExtra(MainActivity.EXTRA_DIRECTORY_PATH, destinationPath)
+            putExtra(MainActivity.EXTRA_DIRECTORY_PATH, destination.absolutePath)
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
         val pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
 
 
         val notification = NotificationCompat.Builder(this, EXTRACTION_NOTIFICATION_CHANNEL_ID)
-            .setContentTitle(getString(R.string.extraction_success))
+            .setContentTitle(getString(R.string.extraction_completed))
+            .setContentText(destination.name)
+            .setStyle(NotificationCompat.BigTextStyle().bigText("${destination.name} - ${destination.path}"))
             .setSmallIcon(R.drawable.ic_notification_icon)
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)
@@ -487,8 +489,9 @@ class ExtractRarService : Service() {
     private fun showErrorNotification(error: String) {
         stopForegroundService()
         val notification = NotificationCompat.Builder(this, EXTRACTION_NOTIFICATION_CHANNEL_ID)
-            .setContentTitle(getString(R.string.extraction_failed))
+            .setContentTitle(getString(R.string.error))
             .setContentText(error)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(error))
             .setSmallIcon(R.drawable.ic_notification_icon)
             .setAutoCancel(true)
             .build()

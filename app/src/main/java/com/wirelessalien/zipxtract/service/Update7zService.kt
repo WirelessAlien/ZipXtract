@@ -217,8 +217,10 @@ class Update7zService : Service() {
         }
 
         if (success) {
+            showCompletionNotification(File(archivePath))
             sendLocalBroadcast(Intent(BroadcastConstants.ACTION_ARCHIVE_COMPLETE))
         } else {
+            showErrorNotification(getString(R.string.error_updating_archive))
             sendLocalBroadcast(Intent(BroadcastConstants.ACTION_ARCHIVE_ERROR))
         }
         stopForegroundService()
@@ -292,5 +294,29 @@ class Update7zService : Service() {
     private fun stopForegroundService() {
         stopForeground(STOP_FOREGROUND_REMOVE)
         notificationManager.cancel(NOTIFICATION_ID)
+    }
+
+    private fun showCompletionNotification(file: File) {
+        val notification = NotificationCompat.Builder(this, BroadcastConstants.ARCHIVE_NOTIFICATION_CHANNEL_ID)
+            .setContentTitle(getString(R.string.archive_updated))
+            .setContentText(file.name)
+            .setStyle(NotificationCompat.BigTextStyle().bigText("${file.name} - ${file.parent}"))
+            .setSmallIcon(R.drawable.ic_notification_icon)
+            .setAutoCancel(true)
+            .build()
+
+        notificationManager.notify(NOTIFICATION_ID + 1, notification)
+    }
+
+    private fun showErrorNotification(error: String) {
+        val notification = NotificationCompat.Builder(this, BroadcastConstants.ARCHIVE_NOTIFICATION_CHANNEL_ID)
+            .setContentTitle(getString(R.string.error))
+            .setContentText(error)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(error))
+            .setSmallIcon(R.drawable.ic_notification_icon)
+            .setAutoCancel(true)
+            .build()
+
+        notificationManager.notify(NOTIFICATION_ID + 2, notification)
     }
 }

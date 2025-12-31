@@ -278,7 +278,7 @@ class ArchiveTarService : Service() {
                     }
                 }
                 stopForegroundService()
-                showCompletionNotification(finalTarFile.parent ?: "")
+                showCompletionNotification(finalTarFile)
                 scanForNewFile(finalTarFile)
                 sendLocalBroadcast(Intent(ACTION_ARCHIVE_COMPLETE).putExtra(EXTRA_DIR_PATH, finalTarFile.parent))
 
@@ -370,19 +370,21 @@ class ArchiveTarService : Service() {
         }
     }
 
-    private fun showCompletionNotification(destinationPath: String) {
+    private fun showCompletionNotification(file: File) {
         stopForegroundService()
 
         val intent = Intent(this, MainActivity::class.java).apply {
             action = MainActivity.ACTION_OPEN_DIRECTORY
-            putExtra(MainActivity.EXTRA_DIRECTORY_PATH, destinationPath)
+            putExtra(MainActivity.EXTRA_DIRECTORY_PATH, file.parent)
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
 
         val pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
 
         val notification = NotificationCompat.Builder(this, ARCHIVE_NOTIFICATION_CHANNEL_ID)
-            .setContentTitle(getString(R.string.tar_creation_success))
+            .setContentTitle(getString(R.string.archive_created))
+            .setContentText(file.name)
+            .setStyle(NotificationCompat.BigTextStyle().bigText("${file.name} - ${file.parent}"))
             .setSmallIcon(R.drawable.ic_notification_icon)
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)
@@ -395,8 +397,9 @@ class ArchiveTarService : Service() {
     private fun showErrorNotification(error: String) {
         stopForegroundService()
         val notification = NotificationCompat.Builder(this, ARCHIVE_NOTIFICATION_CHANNEL_ID)
-            .setContentTitle(getString(R.string.tar_creation_failed))
+            .setContentTitle(getString(R.string.error))
             .setContentText(error)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(error))
             .setSmallIcon(R.drawable.ic_notification_icon)
             .setAutoCancel(true)
             .build()
