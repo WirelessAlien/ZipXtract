@@ -116,4 +116,5 @@
     <string name="info_tip_description">● Nhấn giữ file và tệp tin hoặc nhấn vào biểu tượng của file/tệp tin để chọn nó cho việc nén.\n\n● Nhấn vào file để hiển thị menu giải nén cho chọn tùy chọn giải nén.\n\n● File được giải nén bằng menu \"Mở Bằng\" của hệ điều hành được lưu trữ trong Bộ nhớ trong/ZipXtract theo mặc định. Việc này có thể được chỉnh trong cài đặt ứng dụng.\n\n● Vị trí mặc định cho việc nén hoặc giải nén (trong ứng dụng) là thư mục chính của (những) file đó. Việc này có thể được chỉnh trong cài đặt ứng dụng.</string>
     <string name="crash_log">Nhật kí sự cố</string>
     <string name="select">Chọn</string>
+    <string name="compression_settings">Thiết đặt nén</string>
 </resources>
