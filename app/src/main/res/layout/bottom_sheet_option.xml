@@ -111,6 +111,7 @@
             android:scrollIndicators="none"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
+            android:fillViewport="true"
             android:scrollbars="none">
 
             <LinearLayout
