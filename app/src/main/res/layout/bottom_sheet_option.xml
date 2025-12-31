@@ -105,40 +105,44 @@
             android:layout_marginTop="5dp"
             android:layout_marginEnd="16dp"/>
 
-       <LinearLayout
-           android:layout_width="match_parent"
-           android:layout_height="wrap_content"
-           android:layout_marginStart="8dp"
-           android:layout_marginEnd="8dp"
-           android:orientation="horizontal">
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollIndicators="none"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:scrollbars="none">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnPreviewArchive"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginTop="16dp"
-                android:layout_marginStart="8dp"
-                android:layout_marginEnd="16dp"
-                android:layout_marginBottom="20dp"
-                android:text="@string/preview_archive"
-                android:visibility="gone"
-                app:cornerRadius="10dp" />
+            <LinearLayout
+               android:layout_width="wrap_content"
+               android:layout_height="wrap_content"
+               android:orientation="horizontal">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnOpenWith"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/open_with"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_marginStart="8dp"
-                android:layout_marginEnd="8dp"
-                android:layout_marginBottom="20dp"
-                android:layout_marginTop="16dp"
-                app:cornerRadius="10dp"/>
-       </LinearLayout>
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnPreviewArchive"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginBottom="20dp"
+                    android:text="@string/preview_archive"
+                    android:visibility="gone"
+                    app:cornerRadius="10dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnOpenWith"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/open_with"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_marginBottom="20dp"
+                    android:layout_marginTop="16dp"
+                    app:cornerRadius="10dp"/>
+           </LinearLayout>
+        </HorizontalScrollView>
 
         <TextView
             android:id="@+id/lowStorageWarning"
