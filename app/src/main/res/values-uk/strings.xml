@@ -174,4 +174,5 @@
     <string name="archive_updated">Архів оновлений</string>
     <string name="compression_completed">Стиснення завершено</string>
     <string name="zstd_compression_level_format">ZSTD Рівень стиснення: %d</string>
+    <string name="compression_settings">Налаштування стиснення</string>
 </resources>
