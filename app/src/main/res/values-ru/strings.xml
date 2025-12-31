@@ -159,4 +159,19 @@
     <string name="compare">Сравнить</string>
     <string name="file_does_not_exist">Файла не существует</string>
     <string name="select">Выбрать</string>
+    <string name="automatic_threads">Максимальные протекторы</string>
+    <string name="automatic_threads_subtitle">Использовать максимальный процессор для быстрых скоростей</string>
+    <string name="automatic_threads_warning">Предупреждение: Использует все ядер процессоров. Устройство может не реагировать во время работы архива.</string>
+    <string name="solid_compression_subtitle">Улучшает соотношение для многих небольших файлов, но время извлечения увеличится</string>
+    <string name="destination">General</string>
+    <string name="security">Безопасность</string>
+    <string name="specify_custom_thread_count">Указать настраиваемый счет потока</string>
+    <string name="min_split_size_error">Минимальный размер 64KB</string>
+    <string name="success">Успех</string>
+    <string name="error">Ошибка</string>
+    <string name="archive_created">Архив Создан</string>
+    <string name="extraction_completed">Выделено</string>
+    <string name="archive_updated">Архив Обновлено</string>
+    <string name="compression_completed">Компрессия завершена</string>
+    <string name="zstd_compression_level_format">Уровень сжатия ZSTD: %d</string>
 </resources>
