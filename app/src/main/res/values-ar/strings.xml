@@ -154,4 +154,20 @@
     <string name="please_wait">من فضلك انتظر</string>
     <string name="compare">Compare</string>
     <string name="file_does_not_exist">الملف لا وجود له</string>
+    <string name="automatic_threads">الحد الأقصى للخيوط</string>
+    <string name="automatic_threads_subtitle">استخدام الحد الأقصى للوحدة في أسرع سرعة</string>
+    <string name="automatic_threads_warning">تحذير: يستعمل كل النواة قد يصبح الجهاز غير مستجيب أثناء عملية المحفوظات.</string>
+    <string name="solid_compression_subtitle">تحسّن نسبة العديد من الملفات الصغيرة لكن وقت الاستخراج سيزيد</string>
+    <string name="destination">معلومات عامة</string>
+    <string name="compression_settings">حالات الضغط</string>
+    <string name="security">الأمن</string>
+    <string name="specify_custom_thread_count">تحديد عدد الخيوط المعتادة</string>
+    <string name="min_split_size_error">الحد الأدنى للحجم هو 64 كيلوبايت</string>
+    <string name="success">النجاح</string>
+    <string name="error">الرعب</string>
+    <string name="archive_created">المحفوظات</string>
+    <string name="extraction_completed">الإنجاز</string>
+    <string name="archive_updated">تحديث المحفوظات</string>
+    <string name="compression_completed">إكمال الضغط</string>
+    <string name="zstd_compression_level_format">ZSTD Compression Level: %d</string>
 </resources>
