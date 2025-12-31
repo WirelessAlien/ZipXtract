@@ -174,4 +174,5 @@
     <string name="archive_updated">Arsip Diperbarui</string>
     <string name="compression_completed">Kompresi Lengkap</string>
     <string name="zstd_compression_level_format">Tingkat Kompresi ZSTD: %d</string>
+    <string name="compression_settings">Pengaturan Kompresi</string>
 </resources>
