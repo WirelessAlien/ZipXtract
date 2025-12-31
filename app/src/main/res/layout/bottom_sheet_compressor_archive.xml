@@ -46,8 +46,9 @@
                 android:alpha="0.7"
                 android:text="TextView"
                 android:textSize="12sp"
+                android:layout_marginStart="10dp"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"/>
+                app:layout_constraintStart_toEndOf="@id/fileSize" />
 
             <TextView
                 android:id="@+id/fileSize"
@@ -88,13 +89,27 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
+                android:layout_marginEnd="8dp"
                 android:text="TextView"
                 android:textSize="15sp"
                 android:ellipsize="middle"
                 android:maxLines="1"
                 app:layout_constraintStart_toEndOf="@+id/cardView"
-                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/btnFileInfo"
                 app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageButton
+                android:id="@+id/btnFileInfo"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="0dp"
+                android:src="@drawable/ic_info"
+                android:contentDescription="@string/file_info"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:tint="?attr/colorOnSurface" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <com.google.android.material.divider.MaterialDivider
@@ -110,7 +125,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
             android:layout_marginStart="16dp"
-            style="@style/Widget.Material3.Button.TonalButton"
+            style="@style/Widget.Material3.Button.OutlinedButton"
             android:layout_marginEnd="16dp"
             android:text="@string/open_with"
             app:cornerRadius="10dp"/>
@@ -237,26 +252,23 @@
                 app:cornerRadius="10dp"/>
         </LinearLayout>
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnFileInfo"
+        <com.google.android.material.divider.MaterialDivider
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cornerRadius="10dp"
-            style="@style/Widget.Material3.Button.TonalButton"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="20dp"
-            android:layout_marginEnd="16dp"
-            android:text="@string/file_info" />
+            android:layout_marginTop="50dp"
+            android:layout_marginBottom="10dp"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnDelete"
+            style="@style/Widget.Material3.Button.OutlinedButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:cornerRadius="10dp"
             android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="20dp"
-            android:text="@string/delete" />
+            android:text="@string/delete"
+            app:strokeColor="?attr/colorError"
+            android:textColor="?attr/colorError" />
     </LinearLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
