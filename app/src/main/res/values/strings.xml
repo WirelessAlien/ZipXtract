@@ -147,6 +147,15 @@
     <string name="solid_compression">Solid Compression</string>
     <string name="thread_count">Thread Count</string>
     <string name="max_available_thread">0 for maximum available threads</string>
+    <string name="automatic_threads">Maximum Threads</string>
+    <string name="automatic_threads_subtitle">Uses maximum CPU for fastest speeds</string>
+    <string name="automatic_threads_warning">Warning: Uses all CPU cores. Device may become unresponsive during archive operation.</string>
+    <string name="solid_compression_subtitle">Improves ratio for many small files but extraction time will increase</string>
+    <string name="destination">General</string>
+    <string name="compression_settings">Compression Settings</string>
+    <string name="security">Security</string>
+    <string name="specify_custom_thread_count">Specify custom thread count</string>
+    <string name="min_split_size_error">Minimum split size is 64KB</string>
 
     <!-- Success toast messages -->
     <string name="compression_success">Compression successful</string>
@@ -188,6 +197,12 @@
     <string name="extraction_ongoing">Extracting…</string>
     <string name="archive_ongoing">Archiving…</string>
     <string name="updating_archive">Updating archive…</string>
+    <string name="success">Success</string>
+    <string name="error">Error</string>
+    <string name="archive_created">Archive Created</string>
+    <string name="extraction_completed">Extraction Completed</string>
+    <string name="archive_updated">Archive Updated</string>
+    <string name="compression_completed">Compression Completed</string>
 
     <!-- Notification content-->
     <string name="copying_files_progress">Copying files: %1$d/%2$d</string>
@@ -214,6 +229,7 @@
     <string name="gzip" translatable="false">GZIP</string>
     <string name="liberapay" translatable="false">Liberapay</string>
     <string name="author_wirelessalien" translatable="false">Author: Abhilash</string>
+    <string name="zstd_compression_level_format">ZSTD Compression Level: %d</string>
     <string name="zstd" translatable="false">ZSTD</string>
     <string name="md5" translatable="false">MD5</string>
     <string name="sha1" translatable="false">SHA-1</string>
