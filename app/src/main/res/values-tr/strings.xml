@@ -170,4 +170,5 @@
     <string name="archive_updated">Archive Güncelleme Tarihi</string>
     <string name="compression_completed">Tamamlandı</string>
     <string name="zstd_compression_level_format">ZSTD Promosyon Düzeyi: %d</string>
+    <string name="compression_settings">Sıkıştırma Ayarları</string>
 </resources>
