@@ -159,4 +159,19 @@
     <string name="compare">Порівняти</string>
     <string name="file_does_not_exist">Файл не існує</string>
     <string name="select">Вибрати</string>
+    <string name="automatic_threads">Максимальні нитки</string>
+    <string name="automatic_threads_subtitle">Використовуйте максимальний процесор для найшвидших швидкостей</string>
+    <string name="automatic_threads_warning">Попередження: Використовуйте всі ядра процесора. Пристрої можуть стати невідповідними при роботі з архівом.</string>
+    <string name="solid_compression_subtitle">Покращує співвідношення для багатьох невеликих файлів, але час видобутку збільшиться</string>
+    <string name="destination">Головна</string>
+    <string name="security">Безпека</string>
+    <string name="specify_custom_thread_count">Вказати користувацьку кількість ниток</string>
+    <string name="min_split_size_error">Мінімальний розмір спліту 64KB</string>
+    <string name="success">Про нас</string>
+    <string name="error">Помилка</string>
+    <string name="archive_created">Архіви</string>
+    <string name="extraction_completed">Вилучення завершено</string>
+    <string name="archive_updated">Архів оновлений</string>
+    <string name="compression_completed">Стиснення завершено</string>
+    <string name="zstd_compression_level_format">ZSTD Рівень стиснення: %d</string>
 </resources>
