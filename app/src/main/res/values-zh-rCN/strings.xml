@@ -5,7 +5,7 @@
     <string name="settings_info_text">文件的默认加密方法是 AES，它提供了高级别的安全性。但是，请注意，AES 加密可能非常耗时，尤其是在低端设备上。 \n \n对于设备性能较弱的用户，可以使用ZIP_STANDARD等替代方案。但是，请注意，此方法不提供与 AES 相同的安全级别。 \n \n如果安全性是您最关心的问题，我们强烈建议您使用 AES，尽管它的处理时间较长。</string>
     <string name="folder">文件夹</string>
     <string name="no_file_selected">未选择文件</string>
-    <string name="compression_level">压缩等级</string>
+    <string name="compression_level">压缩级别</string>
     <string name="liberapay">Liberapay</string>
     <string name="no_password">无密码</string>
     <string name="ok">好</string>
@@ -155,4 +155,12 @@
     <string name="compare">比较</string>
     <string name="file_does_not_exist">文件不存在</string>
     <string name="select">选择</string>
+    <string name="success">成功</string>
+    <string name="error">错误</string>
+    <string name="destination">常规</string>
+    <string name="security">安全</string>
+    <string name="compression_settings">压缩设置</string>
+    <string name="extraction_completed">解压完成</string>
+    <string name="compression_completed">压缩完成</string>
+    <string name="zstd_compression_level_format">ZSTD 压缩级别：%d</string>
 </resources>
