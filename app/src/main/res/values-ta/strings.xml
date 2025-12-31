@@ -117,4 +117,5 @@
     <string name="wrong_password">தவறான கடவுச்சொல்</string>
     <string name="file_already_exists">கோப்பு ஏற்கனவே உள்ளது</string>
     <string name="select">தேர்ந்தெடு</string>
+    <string name="compression_settings">சுருக்க அமைப்புகள்</string>
 </resources>
