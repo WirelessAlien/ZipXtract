@@ -1290,14 +1290,15 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             binding.btnExtract
         )
 
-        val defaultColor = binding.btnExtract.backgroundTintList
+        val defaultColors = buttons.associateWith { view ->
+            if (view is Chip) view.chipBackgroundColor else view.backgroundTintList
+        }
 
         checkStorageForOperation(
             binding.lowStorageWarning,
             file.parent ?: Environment.getExternalStorageDirectory().absolutePath,
             file.length(),
-            buttons,
-            defaultColor
+            defaultColors
         )
 
         var storageCheckJob: Job? = null
@@ -1312,8 +1313,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                         binding.lowStorageWarning,
                         s.toString(),
                         file.length(),
-                        buttons,
-                        defaultColor
+                        defaultColors
                     )
                 }
             }
@@ -1471,14 +1471,13 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
         val buttons = listOf(binding.btnExtract)
 
-        val defaultColor = binding.btnExtract.backgroundTintList
+        val defaultColors = buttons.associateWith { it.backgroundTintList }
 
         checkStorageForOperation(
             binding.lowStorageWarning,
             file.parent ?: Environment.getExternalStorageDirectory().absolutePath,
             file.length(),
-            buttons,
-            defaultColor
+            defaultColors
         )
 
         var storageCheckJob: Job? = null
@@ -1493,8 +1492,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                         binding.lowStorageWarning,
                         s.toString(),
                         file.length(),
-                        buttons,
-                        defaultColor
+                        defaultColors
                     )
                 }
             }
@@ -2095,8 +2093,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         warningTextView: TextView,
         path: String,
         requiredSize: Long,
-        buttons: List<View>? = null,
-        defaultColor: android.content.res.ColorStateList? = null
+        viewsDefaultColors: Map<View, android.content.res.ColorStateList?>? = null
     ) {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
@@ -2112,13 +2109,23 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                         warningTextView.text = warningText
                         warningTextView.visibility = View.VISIBLE
                         val errorColor = MaterialColors.getColor(warningTextView, com.google.android.material.R.attr.colorOnError)
-                        buttons?.forEach { it.backgroundTintList = android.content.res.ColorStateList.valueOf(errorColor) }
+                        viewsDefaultColors?.keys?.forEach { view ->
+                            if (view is Chip) {
+                                view.chipBackgroundColor = android.content.res.ColorStateList.valueOf(errorColor)
+                            } else {
+                                view.backgroundTintList = android.content.res.ColorStateList.valueOf(errorColor)
+                            }
+                        }
                     }
                 } else {
                     withContext(Dispatchers.Main) {
                         warningTextView.visibility = View.GONE
-                        if (defaultColor != null) {
-                            buttons?.forEach { it.backgroundTintList = defaultColor }
+                        viewsDefaultColors?.forEach { (view, color) ->
+                            if (view is Chip) {
+                                view.chipBackgroundColor = color
+                            } else {
+                                view.backgroundTintList = color
+                            }
                         }
                     }
                 }
