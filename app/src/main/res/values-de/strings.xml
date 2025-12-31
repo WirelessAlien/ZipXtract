@@ -155,4 +155,18 @@
     <string name="compare">Vergleich</string>
     <string name="file_does_not_exist">Datei existiert nicht</string>
     <string name="select">Auswählen</string>
+    <string name="automatic_threads">Maximale Threads</string>
+    <string name="automatic_threads_subtitle">Benutzt maximale CPU für schnellste Geschwindigkeiten</string>
+    <string name="automatic_threads_warning">Warnung: Benutzt alle CPU-Kerne. Das Gerät kann während des Archivbetriebs unverantwortlich werden.</string>
+    <string name="solid_compression_subtitle">Verbessert das Verhältnis für viele kleine Dateien, aber Extraktionszeit wird erhöhen</string>
+    <string name="security">Sicherheit</string>
+    <string name="specify_custom_thread_count">Geben Sie benutzerdefinierte Thread count an</string>
+    <string name="min_split_size_error">Mindestspaltgröße ist 64KB</string>
+    <string name="success">Erfolg</string>
+    <string name="error">Fehler</string>
+    <string name="archive_created">Archiv erstellt</string>
+    <string name="extraction_completed">Auszug abgeschlossen</string>
+    <string name="archive_updated">Archiv aktualisiert</string>
+    <string name="compression_completed">Komprimierung abgeschlossen</string>
+    <string name="zstd_compression_level_format">ZSTD Compression Level: %d</string>
 </resources>
