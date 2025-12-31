@@ -159,4 +159,19 @@
     <string name="compare">Confronta</string>
     <string name="file_does_not_exist">Il file non esiste</string>
     <string name="select">Seleziona</string>
+    <string name="automatic_threads">Filetti massimi</string>
+    <string name="automatic_threads_subtitle">Utilizza la CPU massima per velocità più veloci</string>
+    <string name="automatic_threads_warning">Attenzione: Utilizza tutti i core della CPU. Il dispositivo può diventare non rispondente durante l\'operazione di archivio.</string>
+    <string name="solid_compression_subtitle">Migliora il rapporto per molti piccoli file, ma il tempo di estrazione aumenterà</string>
+    <string name="destination">Generale</string>
+    <string name="security">Sicurezza</string>
+    <string name="specify_custom_thread_count">Specificare il conteggio del thread personalizzato</string>
+    <string name="min_split_size_error">Dimensione minima di divisione è 64KB</string>
+    <string name="success">Successo</string>
+    <string name="error">Errore</string>
+    <string name="archive_created">Archivio Creato</string>
+    <string name="extraction_completed">Estrazione completata</string>
+    <string name="archive_updated">Archivio aggiornato</string>
+    <string name="compression_completed">Compressione Completata</string>
+    <string name="zstd_compression_level_format">Livello di compressione ZSTD: %d</string>
 </resources>
