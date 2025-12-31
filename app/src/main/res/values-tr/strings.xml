@@ -155,4 +155,19 @@
     <string name="compare">Karşılaştırma</string>
     <string name="file_does_not_exist">Dosya mevcut değildir</string>
     <string name="select">Seçiniz</string>
+    <string name="automatic_threads">Maksimum Konular</string>
+    <string name="automatic_threads_subtitle">En hızlı hızlar için maksimum CPU kullanın</string>
+    <string name="automatic_threads_warning">Uyarı: Tüm CPU çekirdeklerini kullanın. Cihaz arşiv işlemi sırasında sorumlu olabilir.</string>
+    <string name="solid_compression_subtitle">Birçok küçük dosyalar için oranı geliştirir, ancak zaman ayırın</string>
+    <string name="destination">General</string>
+    <string name="security">Güvenlik Güvenliği</string>
+    <string name="specify_custom_thread_count">Özel thread count</string>
+    <string name="min_split_size_error">Asgari bölünme boyutu 64KB</string>
+    <string name="success">Başarı</string>
+    <string name="error">Hata hatası</string>
+    <string name="archive_created">Arşiv oluşturma</string>
+    <string name="extraction_completed">Ekstraksiyon Tamamlandı</string>
+    <string name="archive_updated">Archive Güncelleme Tarihi</string>
+    <string name="compression_completed">Tamamlandı</string>
+    <string name="zstd_compression_level_format">ZSTD Promosyon Düzeyi: %d</string>
 </resources>
