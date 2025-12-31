@@ -1272,7 +1272,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         val bottomSheetDialog = BottomSheetDialog(requireContext())
         bottomSheetDialog.setContentView(binding.root)
 
-        val buttons = listOf(
+        val buttons: List<View> = listOf(
             binding.btnLzma,
             binding.btnBzip2,
             binding.btnXz,
@@ -1460,7 +1460,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         val bottomSheetDialog = BottomSheetDialog(requireContext())
         bottomSheetDialog.setContentView(binding.root)
 
-        val buttons = listOf(binding.btnExtract)
+        val buttons: List<View> = listOf(binding.btnExtract)
 
         val defaultColors = buttons.associateWith { it.backgroundTintList }
 
