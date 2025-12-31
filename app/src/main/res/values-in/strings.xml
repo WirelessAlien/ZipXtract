@@ -159,4 +159,19 @@
     <string name="compare">Login</string>
     <string name="file_does_not_exist">File tidak ada</string>
     <string name="select">Pilih</string>
+    <string name="automatic_threads">Thread Maksimum</string>
+    <string name="automatic_threads_subtitle">Menggunakan CPU maksimum untuk kecepatan tercepat</string>
+    <string name="automatic_threads_warning">Sitemap Menggunakan semua core CPU. Perangkat dapat menjadi tidak responsif selama operasi arsip.</string>
+    <string name="solid_compression_subtitle">Meningkatkan rasio untuk banyak file kecil tetapi waktu ekstraksi akan meningkatkan</string>
+    <string name="destination">Sitemap</string>
+    <string name="security">Login</string>
+    <string name="specify_custom_thread_count">Tentukan jumlah benang kustom</string>
+    <string name="min_split_size_error">Ukuran split minimum 64KB</string>
+    <string name="success">Sitemap</string>
+    <string name="error">Login</string>
+    <string name="archive_created">Arsip Dibuat</string>
+    <string name="extraction_completed">Ekstraksi Lengkap</string>
+    <string name="archive_updated">Arsip Diperbarui</string>
+    <string name="compression_completed">Kompresi Lengkap</string>
+    <string name="zstd_compression_level_format">Tingkat Kompresi ZSTD: %d</string>
 </resources>
