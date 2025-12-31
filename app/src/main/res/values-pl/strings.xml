@@ -155,4 +155,19 @@
     <string name="please_wait">Oczekuję..</string>
     <string name="file_does_not_exist">File nie istnieje</string>
     <string name="select">Wybierz</string>
+    <string name="automatic_threads">Maximum Threads</string>
+    <string name="automatic_threads_subtitle">Maksymalny procesor dla najszybszych prędkości</string>
+    <string name="automatic_threads_warning">Warning (ang.). Użycie wszystkich rdzeni CPU. Device może być nieodpowiedzialna podczas operacji archiwalnych.</string>
+    <string name="solid_compression_subtitle">Poprawność wielu małych plików, ale czas ekstrakcji wzrasta</string>
+    <string name="destination">Generalny</string>
+    <string name="security">Security</string>
+    <string name="specify_custom_thread_count">Specyfikacja formatu liczbowego</string>
+    <string name="min_split_size_error">Minimum split size to 64KB</string>
+    <string name="success">Sukces</string>
+    <string name="error">Error</string>
+    <string name="archive_created">Archiwum</string>
+    <string name="extraction_completed">Extraction (ang.)</string>
+    <string name="archive_updated">Archiwum</string>
+    <string name="compression_completed">Compression Completed (ang.)</string>
+    <string name="zstd_compression_level_format">ZSTD Compression Level: (ang.)</string>
 </resources>
