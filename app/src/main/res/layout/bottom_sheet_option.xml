@@ -105,45 +105,41 @@
             android:layout_marginTop="5dp"
             android:layout_marginEnd="16dp"/>
 
-        <HorizontalScrollView
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:scrollIndicators="none"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
-            android:fillViewport="true"
-            android:scrollbars="none">
+            android:orientation="horizontal">
 
-            <LinearLayout
-               android:layout_width="wrap_content"
-               android:layout_height="wrap_content"
-               android:orientation="horizontal">
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnPreviewArchive"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginTop="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="20dp"
+                android:maxLines="1"
+                android:text="@string/preview_archive"
+                android:ellipsize="end"
+                android:visibility="gone"
+                app:cornerRadius="10dp" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnPreviewArchive"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginEnd="16dp"
-                    android:layout_marginBottom="20dp"
-                    android:text="@string/preview_archive"
-                    android:visibility="gone"
-                    app:cornerRadius="10dp" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnOpenWith"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/open_with"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
-                    android:layout_marginBottom="20dp"
-                    android:layout_marginTop="16dp"
-                    app:cornerRadius="10dp"/>
-           </LinearLayout>
-        </HorizontalScrollView>
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnOpenWith"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/open_with"
+                android:ellipsize="end"
+                android:maxLines="1"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_marginBottom="20dp"
+                android:layout_marginTop="16dp"
+                app:cornerRadius="10dp"/>
+       </LinearLayout>
 
         <TextView
             android:id="@+id/lowStorageWarning"
@@ -195,7 +191,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="50dp"
-            android:layout_marginBottom="10dp"/>
+            android:layout_marginBottom="10dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnDelete"
