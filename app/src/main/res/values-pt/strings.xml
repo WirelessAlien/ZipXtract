@@ -170,4 +170,5 @@
     <string name="archive_updated">Arquivo Atualizado</string>
     <string name="compression_completed">Compressão concluída</string>
     <string name="zstd_compression_level_format">Nível de compressão ZSTD: %d</string>
+    <string name="compression_settings">Configurações de Compressão</string>
 </resources>
