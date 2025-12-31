@@ -170,4 +170,5 @@
     <string name="archive_updated">Archiwum</string>
     <string name="compression_completed">Compression Completed (ang.)</string>
     <string name="zstd_compression_level_format">ZSTD Compression Level: (ang.)</string>
+    <string name="compression_settings">Ustawienia kompresji</string>
 </resources>
