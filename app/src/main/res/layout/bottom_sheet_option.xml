@@ -4,11 +4,6 @@
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <com.google.android.material.bottomsheet.BottomSheetDragHandleView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"/>
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -19,7 +14,7 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="50dp"
+            android:layout_marginTop="40dp"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp">
 
@@ -32,9 +27,8 @@
                 android:alpha="0.7"
                 android:text="TextView"
                 android:textSize="12sp"
-                android:layout_marginStart="10dp"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toEndOf="@id/fileSize" />
+                app:layout_constraintEnd_toEndOf="parent"/>
 
             <TextView
                 android:id="@+id/fileSize"
@@ -75,40 +69,13 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
-                android:layout_marginEnd="8dp"
                 android:text="TextView"
                 android:textSize="15sp"
-                android:ellipsize="middle"
+                android:ellipsize="marquee"
                 android:maxLines="1"
                 app:layout_constraintStart_toEndOf="@+id/cardView"
-                app:layout_constraintEnd_toStartOf="@+id/btnFileInfo"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <ImageButton
-                android:id="@+id/btnFileInfo"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginEnd="5dp"
-                android:src="@drawable/ic_info"
-                android:contentDescription="@string/file_info"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                app:layout_constraintEnd_toStartOf="@id/btnShare"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:tint="?attr/colorOnSurface" />
-
-            <ImageButton
-                android:id="@+id/btnShare"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginEnd="0dp"
-                android:src="@drawable/ic_share"
-                android:contentDescription="@string/share_file"
-                android:background="?attr/selectableItemBackgroundBorderless"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:tint="?attr/colorOnSurface" />
+                app:layout_constraintTop_toTopOf="parent" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <com.google.android.material.divider.MaterialDivider
@@ -118,41 +85,61 @@
             android:layout_marginTop="5dp"
             android:layout_marginEnd="16dp"/>
 
-        <LinearLayout
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:orientation="horizontal">
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnPreviewArchive"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginTop="16dp"
-                android:layout_marginEnd="16dp"
-                android:layout_marginBottom="20dp"
-                android:maxLines="1"
-                android:text="@string/preview_archive"
-                android:ellipsize="end"
-                android:visibility="gone"
-                app:cornerRadius="10dp" />
+            android:layout_marginStart="14dp"
+            android:layout_marginEnd="12dp"
+            android:layout_marginTop="10dp">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnOpenWith"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/open_with"
-                android:ellipsize="end"
-                android:maxLines="1"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_marginBottom="20dp"
-                android:layout_marginTop="16dp"
-                app:cornerRadius="10dp"/>
-       </LinearLayout>
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_alignParentStart="true"
+                android:text="@string/open_with" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnDelete"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
+                android:layout_alignParentEnd="true"
+                android:backgroundTint="?attr/colorErrorContainer"
+                app:iconTint="?attr/colorError"
+                app:icon="@drawable/ic_delete_forever"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnShare"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toEndOf="@id/btnOpenWith"
+                style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
+                app:icon="@drawable/ic_share"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnFileInfo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toEndOf="@id/btnShare"
+                style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
+                app:icon="@drawable/ic_info"/>
+        </RelativeLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnPreviewArchive"
+            style="@style/Widget.Material3.Button.ElevatedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginStart="16dp"
+            android:elevation="0dp"
+            android:maxLines="1"
+            android:visibility="gone"
+            android:text="@string/preview_archive"
+            android:ellipsize="end"/>
 
         <TextView
             android:id="@+id/lowStorageWarning"
@@ -171,7 +158,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="20dp"
             app:boxCornerRadiusTopStart="10dp"
             app:boxCornerRadiusTopEnd="10dp"
             app:boxCornerRadiusBottomStart="10dp"
@@ -197,28 +184,8 @@
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
             android:layout_marginTop="20dp"
-            app:cornerRadius="10dp"
+            android:maxLines="1"
+            android:ellipsize="end"
             android:text="@string/extract" />
-
-        <com.google.android.material.divider.MaterialDivider
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="50dp"
-            android:layout_marginBottom="10dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"/>
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnDelete"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:cornerRadius="10dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="20dp"
-            android:text="@string/delete"
-            app:strokeColor="?attr/colorError"
-            android:textColor="?attr/colorError" />
     </LinearLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
