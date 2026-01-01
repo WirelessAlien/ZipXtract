@@ -1418,6 +1418,19 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             bottomSheetDialog.dismiss()
         }
 
+        binding.btnShare.setOnClickListener {
+            val uri = FileProvider.getUriForFile(requireContext().applicationContext, "${BuildConfig.APPLICATION_ID}.provider", file)
+            val mime: String = getMimeType(uri.toString())
+
+            val intent = Intent(Intent.ACTION_SEND)
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            intent.type = mime
+            intent.putExtra(Intent.EXTRA_STREAM, uri)
+
+            startActivity(Intent.createChooser(intent, getString(R.string.share_file)))
+            bottomSheetDialog.dismiss()
+        }
+
         binding.btnDelete.setOnClickListener {
             MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
                 .setTitle(getString(R.string.confirm_delete))
@@ -1613,6 +1626,19 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
         binding.btnFileInfo.setOnClickListener {
             showFileInfo(file)
+            bottomSheetDialog.dismiss()
+        }
+
+        binding.btnShare.setOnClickListener {
+            val uri = FileProvider.getUriForFile(requireContext().applicationContext, "${BuildConfig.APPLICATION_ID}.provider", file)
+            val mime: String = getMimeType(uri.toString())
+
+            val intent = Intent(Intent.ACTION_SEND)
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            intent.type = mime
+            intent.putExtra(Intent.EXTRA_STREAM, uri)
+
+            startActivity(Intent.createChooser(intent, getString(R.string.share_file)))
             bottomSheetDialog.dismiss()
         }
 

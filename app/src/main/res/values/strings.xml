@@ -23,6 +23,7 @@
     <!-- General strings -->
     <string name="folder">Folder</string>
     <string name="share">Share App Link</string>
+    <string name="share_file">Share</string>
     <string name="privacy_policy">Privacy Policy</string>
     <string name="source_code">Source Code</string>
     <string name="license">License</string>
