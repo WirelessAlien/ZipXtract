@@ -83,6 +83,7 @@ import com.wirelessalien.zipxtract.helper.ChecksumUtils
 import com.wirelessalien.zipxtract.helper.EncryptionCheckHelper
 import com.wirelessalien.zipxtract.helper.FileOperationsDao
 import com.wirelessalien.zipxtract.helper.MultipartArchiveHelper
+import com.wirelessalien.zipxtract.helper.PathUtils
 import com.wirelessalien.zipxtract.model.FileItem
 import com.wirelessalien.zipxtract.service.DeleteFilesService
 import com.wirelessalien.zipxtract.service.ExtractArchiveService
@@ -590,12 +591,15 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
             override fun afterTextChanged(s: Editable?) {
+                val path = s.toString()
+                binding.outputPathDisplay.text = PathUtils.formatPath(path, requireContext())
+
                 storageCheckJob?.cancel()
                 storageCheckJob = lifecycleScope.launch {
                     delay(1000)
                     checkStorageForExtraction(
                         binding.lowStorageWarning,
-                        s.toString(),
+                        path,
                         file.length(),
                         buttons,
                         defaultColor
@@ -618,12 +622,14 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
         }
 
         binding.outputPathInput.setText(defaultPath)
+        binding.outputPathDisplay.text = PathUtils.formatPath(defaultPath, requireContext())
 
         binding.outputPathLayout.setEndIconOnClickListener {
             val pathPicker = PathPickerFragment.newInstance()
             pathPicker.setPathPickerListener(object : PathPickerFragment.PathPickerListener {
                 override fun onPathSelected(path: String) {
                     binding.outputPathInput.setText(path)
+                    binding.outputPathDisplay.text = PathUtils.formatPath(path, requireContext())
                 }
             })
             pathPicker.show(parentFragmentManager, "path_picker")
