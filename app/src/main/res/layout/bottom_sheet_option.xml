@@ -71,7 +71,7 @@
                 android:layout_marginStart="10dp"
                 android:text="TextView"
                 android:textSize="15sp"
-                android:ellipsize="marquee"
+                android:ellipsize="middle"
                 android:maxLines="1"
                 app:layout_constraintStart_toEndOf="@+id/cardView"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -85,54 +85,62 @@
             android:layout_marginTop="5dp"
             android:layout_marginEnd="16dp"/>
 
-        <RelativeLayout
+        <HorizontalScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="14dp"
+            android:scrollbars="none"
+            android:scrollIndicators="none"
+            android:layout_marginStart="16dp"
             android:layout_marginEnd="12dp"
+            android:layout_marginBottom="30dp"
+            android:fillViewport="true"
             android:layout_marginTop="10dp">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnOpenWith"
+            <RelativeLayout
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                style="@style/Widget.Material3.Button.TonalButton"
-                android:layout_alignParentStart="true"
-                android:text="@string/open_with" />
+                android:layout_height="wrap_content">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnDelete"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
-                android:layout_alignParentEnd="true"
-                android:backgroundTint="?attr/colorErrorContainer"
-                app:iconTint="?attr/colorError"
-                app:icon="@drawable/ic_delete_forever"/>
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnOpenWith"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_alignParentStart="true"
+                    android:text="@string/open_with" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnShare"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_toEndOf="@id/btnOpenWith"
-                style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
-                app:icon="@drawable/ic_share"/>
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnDelete"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
+                    android:layout_alignParentEnd="true"
+                    android:backgroundTint="?attr/colorErrorContainer"
+                    app:iconTint="?attr/colorError"
+                    app:icon="@drawable/ic_delete_forever"/>
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnFileInfo"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_toEndOf="@id/btnShare"
-                style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
-                app:icon="@drawable/ic_info"/>
-        </RelativeLayout>
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnShare"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_toEndOf="@id/btnOpenWith"
+                    style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
+                    app:icon="@drawable/ic_share"/>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnFileInfo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_toEndOf="@id/btnShare"
+                    style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
+                    app:icon="@drawable/ic_info"/>
+            </RelativeLayout>
+        </HorizontalScrollView>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnPreviewArchive"
-            style="@style/Widget.Material3.Button.ElevatedButton"
+            style="@style/Widget.Material3.Button.OutlinedButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
             android:layout_marginEnd="16dp"
             android:layout_marginStart="16dp"
             android:elevation="0dp"
@@ -158,7 +166,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="16dp"
             app:boxCornerRadiusTopStart="10dp"
             app:boxCornerRadiusTopEnd="10dp"
             app:boxCornerRadiusBottomStart="10dp"
@@ -184,6 +192,7 @@
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
             android:layout_marginTop="20dp"
+            android:layout_marginBottom="20dp"
             android:maxLines="1"
             android:ellipsize="end"
             android:text="@string/extract" />
