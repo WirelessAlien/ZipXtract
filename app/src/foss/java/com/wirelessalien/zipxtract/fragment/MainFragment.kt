@@ -1812,17 +1812,15 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
     private fun showFileInfo(file: File) {
         val binding = DialogFileInfoBinding.inflate(LayoutInflater.from(requireContext()))
+        val bottomSheetDialog = BottomSheetDialog(requireContext())
+        bottomSheetDialog.setContentView(binding.root)
 
-        binding.fileName.text = Editable.Factory.getInstance().newEditable(file.name)
-        binding.filePath.text = Editable.Factory.getInstance().newEditable(file.absolutePath)
+        binding.fileName.text = file.name
+        binding.filePath.text = file.absolutePath
         val fileSizeText = bytesToString(file.length())
-        binding.fileSize.text = Editable.Factory.getInstance().newEditable(fileSizeText)
+        binding.fileSize.text = fileSizeText
         val dateFormat = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT, Locale.getDefault())
-        binding.lastModified.text = Editable.Factory.getInstance().newEditable(dateFormat.format(Date(file.lastModified())))
-
-        binding.md5Checksum.keyListener = null
-        binding.sha1Checksum.keyListener = null
-        binding.sha256Checksum.keyListener = null
+        binding.lastModified.text = dateFormat.format(Date(file.lastModified()))
 
         val clipboardManager = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         binding.fileName.setOnLongClickListener {
@@ -1830,6 +1828,12 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             clipboardManager.setPrimaryClip(clip)
             Toast.makeText(requireContext(), getString(R.string.copied_to_clipboard), Toast.LENGTH_SHORT).show()
             true
+        }
+
+        binding.btnCopyPath.setOnClickListener {
+            val clip = ClipData.newPlainText("File Path", file.absolutePath)
+            clipboardManager.setPrimaryClip(clip)
+            Toast.makeText(requireContext(), getString(R.string.copied_to_clipboard), Toast.LENGTH_SHORT).show()
         }
 
         binding.filePath.setOnLongClickListener {
@@ -1860,18 +1864,13 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             true
         }
 
-        val dialog = MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
-            .setView(binding.root)
-            .setTitle(getString(R.string.file_info))
-            .create()
-
         binding.okButton.setOnClickListener {
-            dialog.dismiss()
+            bottomSheetDialog.dismiss()
         }
 
         ChecksumUtils.calculateChecksums(file, binding, lifecycleScope, requireContext())
 
-        dialog.show()
+        bottomSheetDialog.show()
     }
 
     private fun bytesToString(bytes: Long): String {
