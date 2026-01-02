@@ -401,6 +401,8 @@ class ZipOptionDialogFragment : DialogFragment() {
             chip.id = index
             if (name == "NONE") {
                 chip.isChecked = true
+                passwordInput.isEnabled = false
+                confirmPasswordInput.isEnabled = false
             }
             encryptionMethodChipGroup.addView(chip)
         }
