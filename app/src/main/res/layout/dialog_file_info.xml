@@ -20,20 +20,14 @@
     android:layout_height="wrap_content"
     android:scrollIndicators="none"
     android:scrollbars="none"
-    android:layout_marginTop="20dp"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="30dp">
-
-        <TextView
-            android:text="@string/name"
-            style="@style/TextAppearance.Material3.LabelMedium"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+        android:layout_marginTop="25dp"
+        android:padding="24dp">
 
         <TextView
             android:id="@+id/file_name"
@@ -41,8 +35,21 @@
             android:layout_height="wrap_content"
             style="@style/TextAppearance.Material3.BodyLarge"
             android:textStyle="bold"
+            android:layout_marginBottom="2dp"
+            android:textIsSelectable="true"/>
+
+        <TextView
+            android:id="@+id/file_size"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/TextAppearance.Material3.BodyMedium"
             android:layout_marginBottom="16dp"
             android:textIsSelectable="true"/>
+
+        <com.google.android.material.divider.MaterialDivider
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"/>
 
         <TextView
             android:text="@string/file_path"
@@ -74,20 +81,6 @@
                 android:contentDescription="@string/copy_text"
                 app:tint="?attr/colorControlNormal" />
         </LinearLayout>
-
-        <TextView
-            android:text="@string/file_size"
-            style="@style/TextAppearance.Material3.LabelMedium"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-
-        <TextView
-            android:id="@+id/file_size"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            style="@style/TextAppearance.Material3.BodyMedium"
-            android:layout_marginBottom="16dp"
-            android:textIsSelectable="true"/>
 
         <TextView
             android:text="@string/last_modified"

@@ -20,6 +20,7 @@
 
 <resources>
     <color name="md_theme_primary_90">#1A37618E</color>
+    <color name="gen_90">#1A1A1A</color>
     <color name="md_theme_primary">#A1CAFD</color>
     <color name="md_theme_onPrimary">#003259</color>
     <color name="md_theme_primaryContainer">#1A4975</color>

@@ -4,7 +4,10 @@
     android:id="@+id/linear_layout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="1dp"
+    android:layout_marginStart="11dp"
+    android:layout_marginEnd="11dp"
+    android:background="@drawable/item_background"
+    android:layout_marginBottom="4dp"
     android:orientation="vertical">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -14,29 +17,20 @@
         android:layout_marginEnd="5dp">
 
         <TextView
-            android:id="@+id/file_date"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="5dp"
-            android:gravity="center_vertical"
-            android:alpha="0.7"
-            android:layout_marginBottom="5dp"
-            android:text="TextView"
-            android:textSize="12sp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
-
-        <TextView
             android:id="@+id/file_size"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="15dp"
+            android:layout_marginEnd="5dp"
             android:layout_marginBottom="5dp"
             android:gravity="center_vertical"
             android:alpha="0.7"
             android:text="TextView"
             android:textSize="12sp"
+            android:ellipsize="end"
+            android:maxLines="1"
             app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/card_view" />
 
         <ImageView

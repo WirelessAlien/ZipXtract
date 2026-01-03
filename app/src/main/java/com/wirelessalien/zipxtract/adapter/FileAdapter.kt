@@ -20,11 +20,15 @@ package com.wirelessalien.zipxtract.adapter
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.res.ColorStateList
 import android.icu.text.DateFormat
 import android.util.SparseBooleanArray
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.content.ContextCompat
 import androidx.core.util.size
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
@@ -168,16 +172,18 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
         binding.fileName.text = file.name
 
         val dateFormat =
-            DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT, Locale.getDefault())
-        binding.fileDate.text = dateFormat.format(Date(fileItem.lastModified))
+            DateFormat.getDateInstance(DateFormat.MEDIUM, Locale.getDefault())
+        val dateString = dateFormat.format(Date(fileItem.lastModified))
 
         if (fileItem.isDirectory) {
             binding.fileIcon.setImageResource(R.drawable.ic_folder)
-            binding.fileSize.text = context.getString(R.string.folder)
+            val folderString = context.getString(R.string.folder)
+            binding.fileSize.text = String.format("%s \u2022 %s", folderString, dateString)
             binding.fileIcon.visibility = View.VISIBLE
             binding.fileExtension.visibility = View.GONE
         } else {
-            binding.fileSize.text = bytesToString(fileItem.size)
+            val sizeString = bytesToString(fileItem.size)
+            binding.fileSize.text = String.format("%s \u2022 %s", sizeString, dateString)
 
             val imageLoadingOptions = RequestOptions()
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
@@ -222,10 +228,24 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
 
         if (selectedItems.get(position, false)) {
             binding.checkIcon.visibility = View.VISIBLE
-            binding.linearLayout.setBackgroundColor(context.getColor(R.color.md_theme_primary_90))
+
+            val typedValue = TypedValue()
+            context.theme.resolveAttribute(
+                com.google.android.material.R.attr.colorSurfaceContainerLowest,
+                typedValue,
+                true
+            )
+
+            val color = if (typedValue.type in TypedValue.TYPE_FIRST_COLOR_INT..TypedValue.TYPE_LAST_COLOR_INT) {
+                typedValue.data
+            } else {
+                ContextCompat.getColor(context, typedValue.resourceId)
+            }
+
+            binding.linearLayout.backgroundTintList = ColorStateList.valueOf(color)
         } else {
             binding.checkIcon.visibility = View.GONE
-            binding.linearLayout.setBackgroundColor(context.getColor(R.color.md_theme_surface))
+            binding.linearLayout.background = AppCompatResources.getDrawable(context, R.drawable.item_background)
         }
     }
 

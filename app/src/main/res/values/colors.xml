@@ -21,6 +21,7 @@
 <resources>
 
     <color name="md_theme_primary_90">#1A37618E</color>
+    <color name="gen_90">#E6E6E6</color>
     <color name="md_theme_primary">#37618E</color>
     <color name="md_theme_onPrimary">#FFFFFF</color>
     <color name="md_theme_primaryContainer">#D2E4FF</color>
