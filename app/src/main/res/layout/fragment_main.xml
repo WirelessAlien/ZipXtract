@@ -53,6 +53,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/storageInfoLayout"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
             android:scrollIndicators="none"
             android:scrollbars="none">
 
@@ -66,12 +68,10 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     style="@style/Widget.MaterialComponents.Chip.Choice"
-                    android:layout_marginStart="16dp"
                     android:elevation="0dp"
                     android:clickable="true"
                     android:checkable="false"
-                    app:chipIconVisible="true"
-                    app:chipIcon="@drawable/ic_change"
+                    app:chipIconVisible="false"
                     app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Full"
                     android:text="@string/storage"/>
 
@@ -109,8 +109,7 @@
                     android:id="@+id/chipGroupPath"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginEnd="16dp"
+                    android:layout_marginStart="8dp"
                     android:orientation="horizontal"
                     app:singleLine="true"/>
             </LinearLayout>
@@ -177,7 +176,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_below="@id/horizontalScrollView"
-            android:layout_marginTop="5dp"
+            android:layout_marginTop="3dp"
             android:orientation="vertical"
             android:visibility="gone">
 
@@ -185,11 +184,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
-                <include layout="@layout/shimmer_placeholder_item" />
-                <include layout="@layout/shimmer_placeholder_item" />
-                <include layout="@layout/shimmer_placeholder_item" />
-                <include layout="@layout/shimmer_placeholder_item" />
-                <include layout="@layout/shimmer_placeholder_item" />
                 <include layout="@layout/shimmer_placeholder_item" />
                 <include layout="@layout/shimmer_placeholder_item" />
                 <include layout="@layout/shimmer_placeholder_item" />

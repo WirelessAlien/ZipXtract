@@ -20,53 +20,35 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="4dp"
-    android:layout_marginStart="2dp"
-    android:layout_marginEnd="2dp"
+    android:layout_marginStart="16dp"
+    android:layout_marginEnd="16dp"
     android:orientation="vertical">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
-        android:layout_marginEnd="10dp">
-
-        <View
-            android:id="@+id/file_date"
-            android:layout_width="50dp"
-            android:layout_height="10dp"
-            android:layout_marginEnd="5dp"
-            android:layout_marginBottom="5dp"
-            android:background="@android:color/darker_gray"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+        android:layout_marginStart="3dp"
+        android:layout_marginEnd="3dp">
 
         <View
             android:id="@+id/file_size"
-            android:layout_width="30dp"
+            android:layout_width="100dp"
             android:layout_height="10dp"
             android:layout_marginStart="15dp"
             android:layout_marginBottom="5dp"
-            android:background="@android:color/darker_gray"
+            android:background="@drawable/item_background_2"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toEndOf="@+id/card_view" />
 
-        <com.google.android.material.card.MaterialCardView
+        <View
             android:id="@+id/card_view"
-            style="@style/Widget.Material3.CardView.Filled"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_margin="5dp"
-            android:elevation="0dp"
-            app:cardCornerRadius="10dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <View
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:background="@android:color/darker_gray" />
-        </com.google.android.material.card.MaterialCardView>
+            app:layout_constraintTop_toTopOf="parent"
+            android:background="@drawable/item_background_2" />
 
         <View
             android:id="@+id/file_name"
@@ -75,7 +57,7 @@
             android:layout_marginStart="15dp"
             android:layout_marginTop="5dp"
             android:layout_marginEnd="5dp"
-            android:background="@android:color/darker_gray"
+            android:background="@drawable/item_background_2"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/card_view"
             app:layout_constraintTop_toTopOf="parent" />
