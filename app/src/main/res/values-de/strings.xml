@@ -152,7 +152,7 @@
     <string name="low_storage_warning">Warnung: Niedriger Speicherplatz! Verfügbar: %1$s</string>
     <string name="low_storage_warning_dynamic">Niedriger Speicherplatz! %1$s verfügbar, gib mindestens ~%2$s frei. Möglicherweise wird mehr Speicher benötigt, je nach Archivformat.</string>
     <string name="please_wait">Bitte warten…</string>
-    <string name="compare">Vergleich</string>
+    <string name="compare">Vergleichen</string>
     <string name="file_does_not_exist">Datei existiert nicht</string>
     <string name="select">Auswählen</string>
     <string name="automatic_threads">Maximale Threads</string>
