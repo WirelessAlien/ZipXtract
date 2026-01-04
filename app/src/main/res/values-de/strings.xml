@@ -160,7 +160,7 @@
     <string name="automatic_threads_warning">Warnung: Benutzt alle CPU-Kerne. Das Gerät kann während der Komprimierung einfrieren.</string>
     <string name="solid_compression_subtitle">Verbessert das Verhältnis für viele kleine Dateien, erhöht allerdings die Extraktionszeit</string>
     <string name="security">Sicherheit</string>
-    <string name="specify_custom_thread_count">Gib die Anzahl benutzerdefinierter Threads an</string>
+    <string name="specify_custom_thread_count">Geben Sie benutzerdefinierte Thread count an</string>
     <string name="min_split_size_error">Minimale Teilgröße ist 64KB</string>
     <string name="success">Erfolg</string>
     <string name="error">Fehler</string>
