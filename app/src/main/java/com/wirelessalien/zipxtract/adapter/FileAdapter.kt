@@ -246,6 +246,7 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
         } else {
             binding.checkIcon.visibility = View.GONE
             binding.linearLayout.background = AppCompatResources.getDrawable(context, R.drawable.item_background)
+            binding.linearLayout.backgroundTintList = null
         }
     }
 

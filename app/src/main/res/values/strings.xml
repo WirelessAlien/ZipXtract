@@ -237,4 +237,5 @@
     <string name="md5" translatable="false">MD5</string>
     <string name="sha1" translatable="false">SHA-1</string>
     <string name="sha256" translatable="false">SHA-256</string>
+    <string name="change_unc" translatable="false">\u2699</string>
 </resources>

@@ -970,7 +970,8 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
                 override fun onDestroyActionMode(mode: ActionMode?) {
                     actionMode = null
-//                    clearSelection()
+                    selectedFiles.clear()
+                    adapter.clearSelection()
                 }
             })
         }

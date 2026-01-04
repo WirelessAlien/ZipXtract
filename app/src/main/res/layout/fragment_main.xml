@@ -73,7 +73,7 @@
                     android:checkable="false"
                     app:chipIconVisible="false"
                     app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Full"
-                    android:text="@string/storage"/>
+                    android:text="@string/change_unc"/>
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/internalStorageChip"
