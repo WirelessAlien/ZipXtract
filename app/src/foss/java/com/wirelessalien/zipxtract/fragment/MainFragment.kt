@@ -980,11 +980,11 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     }
 
     private fun deleteSelectedFiles() {
+        val filesToDelete = selectedFiles.map { it.absolutePath }
         MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
             .setTitle(getString(R.string.confirm_delete))
             .setMessage(getString(R.string.confirm_delete_message))
             .setPositiveButton(getString(R.string.delete)) { _, _ ->
-                val filesToDelete = selectedFiles.map { it.absolutePath }
                 val jobId = fileOperationsDao.addFilesForJob(filesToDelete)
                 val intent = Intent(requireContext(), DeleteFilesService::class.java).apply {
                     putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
