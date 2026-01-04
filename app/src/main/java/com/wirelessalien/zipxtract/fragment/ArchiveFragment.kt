@@ -57,6 +57,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.chip.Chip
@@ -221,7 +222,7 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
 
         (activity as AppCompatActivity).setSupportActionBar(binding.toolbar)
         fileOperationsDao = FileOperationsDao(requireContext())
-        sharedPreferences = requireActivity().getPreferences(Context.MODE_PRIVATE)
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
         sortBy = SortBy.valueOf(
             sharedPreferences.getString("sortBy", SortBy.SORT_BY_NAME.name)
                 ?: SortBy.SORT_BY_NAME.name
@@ -414,6 +415,7 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
 
     private fun getArchiveFiles(query: String? = null, extension: String? = null): ArrayList<FileItem> {
         val archiveFiles = ArrayList<FileItem>()
+        val showHiddenFiles = sharedPreferences.getBoolean("show_hidden_files", false)
         val uri = MediaStore.Files.getContentUri("external")
         val projection = arrayOf(
             MediaStore.Files.FileColumns.DATA,
@@ -463,6 +465,9 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
                     val path = cursor.getString(dataColumn)
                     if (path != null) {
                         val file = File(path)
+
+                        if (!showHiddenFiles && file.name.startsWith(".")) continue
+
                         if (file.isFile && archiveExtensions.contains(file.extension.lowercase())) {
                             archiveFiles.add(FileItem.fromFile(file))
                         }
