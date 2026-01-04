@@ -130,6 +130,8 @@
     <string name="extract_path_summary">Modify the default extract folder. \nDefault is \"parent folder\" or Internal Storage/ZipXtract (for \"Open With\" menu extracted archive)</string>
     <string name="fast_search">Fast Search</string>
     <string name="fast_search_summary">Use Android\'s media index for faster search</string>
+    <string name="show_hidden_files">Show hidden files</string>
+    <string name="show_hidden_files_summary">Show files starting with a dot</string>
 
     <!-- ZIP archive options -->
     <string name="create_zip">Archive ZIP</string>

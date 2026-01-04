@@ -36,6 +36,13 @@
         android:defaultValue="false"
         android:icon="@drawable/ic_search"/>
 
+    <SwitchPreferenceCompat
+        android:key="show_hidden_files"
+        android:title="@string/show_hidden_files"
+        android:summary="@string/show_hidden_files_summary"
+        android:defaultValue="false"
+        android:icon="@drawable/ic_folder"/>
+
     <PreferenceCategory>
 
         <Preference

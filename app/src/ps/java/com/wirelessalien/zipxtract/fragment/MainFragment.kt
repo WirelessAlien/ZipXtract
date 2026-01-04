@@ -899,47 +899,17 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                             true
                         }
                         R.id.m_archive_7z -> {
-                            val fragmentManager = parentFragmentManager
-                            val newFragment = SevenZOptionDialogFragment.newInstance(adapter)
-
-                            // Show the fragment fullscreen.
-                            val transaction = fragmentManager.beginTransaction()
-                            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-                            transaction.add(android.R.id.content, newFragment)
-                                .addToBackStack(null)
-                                .commit()
-
-                            actionMode?.finish() // Destroy the action mode
+                            show7zOptionsDialog()
                             true
                         }
 
                         R.id.m_archive_zip -> {
-                            val fragmentManager = parentFragmentManager
-                            val newFragment = ZipOptionDialogFragment.newInstance(adapter)
-
-                            // Show the fragment fullscreen.
-                            val transaction = fragmentManager.beginTransaction()
-                            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-                            transaction.add(android.R.id.content, newFragment)
-                                .addToBackStack(null)
-                                .commit()
-
-                            actionMode?.finish() // Destroy the action mode
+                            showZipOptionsDialog()
                             true
                         }
 
                         R.id.m_archive_tar -> {
-                            val fragmentManager = parentFragmentManager
-                            val newFragment = TarOptionsDialogFragment.newInstance(adapter)
-
-                            // Show the fragment fullscreen.
-                            val transaction = fragmentManager.beginTransaction()
-                            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-                            transaction.add(android.R.id.content, newFragment)
-                                .addToBackStack(null)
-                                .commit()
-
-                            actionMode?.finish() // Destroy the action mode
+                            showTarOptionsDialog()
                             true
                         }
 
@@ -1960,6 +1930,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     private suspend fun getFiles(): ArrayList<FileItem> = withContext(Dispatchers.IO) {
         val files = ArrayList<FileItem>()
         val directories = ArrayList<FileItem>()
+        val showHiddenFiles = sharedPreferences.getBoolean("show_hidden_files", false)
 
         val directory = File(currentPath ?: Environment.getExternalStorageDirectory().absolutePath)
 
@@ -1978,6 +1949,8 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 Files.newDirectoryStream(directory.toPath()).use { directoryStream ->
                     for (path in directoryStream) {
                         val file = path.toFile()
+                        if (!showHiddenFiles && file.name.startsWith(".")) continue
+
                         if (file.isDirectory) {
                             directories.add(FileItem.fromFile(file))
                         } else {
@@ -1987,10 +1960,12 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
-                // Fallback if  error
+                // Fallback if error
                 val fileList = directory.listFiles()
                 if (fileList != null) {
                     for (file in fileList) {
+                        if (!showHiddenFiles && file.name.startsWith(".")) continue
+
                         if (file.isDirectory) {
                             directories.add(FileItem.fromFile(file))
                         } else {
@@ -2003,6 +1978,8 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             val fileList = directory.listFiles()
             if (fileList != null) {
                 for (file in fileList) {
+                    if (!showHiddenFiles && file.name.startsWith(".")) continue
+
                     if (file.isDirectory) {
                         directories.add(FileItem.fromFile(file))
                     } else {
