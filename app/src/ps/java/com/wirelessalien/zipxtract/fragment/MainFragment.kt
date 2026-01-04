@@ -1152,7 +1152,13 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         if (processEventsJob?.isActive != true) {
             processEventsJob = lifecycleScope.launch(Dispatchers.Main) {
                 delay(500)
-                processPendingEvents()
+                while (isActive) {
+                    val hasEvents = synchronized(pendingFileEvents) {
+                        pendingFileEvents.isNotEmpty()
+                    }
+                    if (!hasEvents) break
+                    processPendingEvents()
+                }
             }
         }
     }
