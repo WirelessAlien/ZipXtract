@@ -220,7 +220,6 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        (activity as AppCompatActivity).setSupportActionBar(binding.toolbar)
         fileOperationsDao = FileOperationsDao(requireContext())
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
         sortBy = SortBy.valueOf(

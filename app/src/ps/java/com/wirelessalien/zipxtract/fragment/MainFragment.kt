@@ -345,8 +345,6 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         sortBy = SortBy.valueOf(sharedPreferences.getString("sortBy", SortBy.SORT_BY_NAME.name) ?: SortBy.SORT_BY_NAME.name)
         sortAscending = sharedPreferences.getBoolean("sortAscending", true)
 
-        (activity as AppCompatActivity).setSupportActionBar(binding.toolbar)
-
         fileOperationsDao = FileOperationsDao(requireContext())
         adapter = FileAdapter(requireContext(), this, ArrayList())
         adapter.setOnItemClickListener(this)
@@ -650,7 +648,13 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             unselectAllFiles()
         }
         fileLoadingJob?.cancel()
+        stopFileObserver()
+        processEventsJob?.cancel()
+        synchronized(pendingFileEvents) {
+            pendingFileEvents.clear()
+        }
         currentPath = path
+        startFileObserver()
         updateCurrentPathChip()
         updateAdapterWithFullList()
         updateStorageInfo(path)

@@ -82,22 +82,25 @@ class MainActivity : AppCompatActivity() {
             crashLogFile.delete()
         }
 
-        binding.bottomNav.setOnItemSelectedListener { item ->
-            when (item.itemId) {
-                R.id.home -> {
-                    loadFragment(MainFragment())
-                    true
+        setSupportActionBar(binding.toolbar)
+
+        binding.tabLayout.addTab(binding.tabLayout.newTab().setText(R.string.home))
+        binding.tabLayout.addTab(binding.tabLayout.newTab().setText(R.string.archive))
+
+        binding.tabLayout.addOnTabSelectedListener(object : com.google.android.material.tabs.TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: com.google.android.material.tabs.TabLayout.Tab) {
+                when (tab.position) {
+                    0 -> loadFragment(MainFragment())
+                    1 -> loadFragment(ArchiveFragment())
                 }
-                R.id.archive -> {
-                    loadFragment(ArchiveFragment())
-                    true
-                }
-                else -> false
             }
-        }
+
+            override fun onTabUnselected(tab: com.google.android.material.tabs.TabLayout.Tab) {}
+            override fun onTabReselected(tab: com.google.android.material.tabs.TabLayout.Tab) {}
+        })
 
         if (savedInstanceState == null) {
-            binding.bottomNav.selectedItemId = R.id.home
+            loadFragment(MainFragment())
         }
 
         handleIntent()
@@ -116,7 +119,7 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
                     loadFragment(mainFragment)
-                    binding.bottomNav.selectedItemId = R.id.home
+                    binding.tabLayout.getTabAt(0)?.select()
                 }
             }
             ACTION_OPEN_DIRECTORY -> {
