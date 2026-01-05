@@ -2,21 +2,12 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-
-    <item
-        android:id="@+id/menu_low_storage"
-        android:icon="@drawable/ic_warning"
-        android:title="@string/storage"
-        android:visible="false"
-        android:orderInCategory="2"
-        app:showAsAction="ifRoom" />
-
     <item
         android:id="@+id/menu_search"
         android:icon="@drawable/ic_search"
         android:title="@string/search"
         android:orderInCategory="1"
-        app:actionViewClass="androidx.appcompat.widget.SearchView"
+        app:actionViewClass="com.wirelessalien.zipxtract.CustomSearchView"
         app:showAsAction="always" />
 
     <item
@@ -57,4 +48,3 @@
         android:title="@string/action_settings"
         app:showAsAction="never" />
 </menu>
-

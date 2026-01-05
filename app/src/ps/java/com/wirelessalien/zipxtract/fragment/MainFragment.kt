@@ -194,9 +194,6 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     private var searchJob: Job? = null
     private lateinit var fileOperationsDao: FileOperationsDao
 
-    private var lowStorageMenuItem: MenuItem? = null
-    private var currentStorageInfoText: String? = null
-    private var currentStorageProgress: Int = 0
     private var isLowStorage: Boolean = false
 
     private val pendingFileEvents = mutableListOf<Pair<Int, File>>()
@@ -361,9 +358,6 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
                 menuInflater.inflate(R.menu.menu_main, menu)
 
-                lowStorageMenuItem = menu.findItem(R.id.menu_low_storage)
-                lowStorageMenuItem?.isVisible = isLowStorage
-
                 val searchItem = menu.findItem(R.id.menu_search)
                 searchView = searchItem?.actionView as SearchView?
 
@@ -390,9 +384,6 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 sharedPreferences.edit {
                     when (menuItem.itemId) {
-                        R.id.menu_low_storage -> {
-                            showStorageInfoDialog()
-                        }
                         R.id.menu_sort_by_name -> {
                             sortBy = SortBy.SORT_BY_NAME
                             putString("sortBy", sortBy.name)
@@ -538,6 +529,14 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         val directoryPath = arguments?.getString(ARG_DIRECTORY_PATH)
         if (directoryPath != null) {
             navigateToPath(directoryPath)
+        }
+
+        binding.storageWarningText.setOnClickListener {
+            try {
+                startActivity(Intent(Settings.ACTION_INTERNAL_STORAGE_SETTINGS))
+            } catch (e: Exception) {
+                Toast.makeText(requireContext(), getString(R.string.general_error_msg), Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -686,16 +685,16 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 val totalSizeStr = android.text.format.Formatter.formatFileSize(requireContext(), totalSize)
                 val availableSizeStr = android.text.format.Formatter.formatFileSize(requireContext(), availableSize)
 
-                val infoText = getString(R.string.storage_info_format, availableSizeStr, totalSizeStr)
-
-                // Store for dialog
-                currentStorageInfoText = infoText
-                currentStorageProgress = progress
                 isLowStorage = availablePercentage < 10
 
                 withContext(Dispatchers.Main) {
                     if (isAdded) {
-                        lowStorageMenuItem?.isVisible = isLowStorage
+                        if (isLowStorage) {
+                            binding.storageWarningText.text = "\u26A0 " + getString(R.string.storage_info_format, availableSizeStr, totalSizeStr)
+                            binding.storageWarningText.visibility = View.VISIBLE
+                        } else {
+                            binding.storageWarningText.visibility = View.GONE
+                        }
                     }
                 }
             } catch (e: Exception) {
@@ -703,36 +702,11 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 isLowStorage = false
                 withContext(Dispatchers.Main) {
                     if (isAdded) {
-                        lowStorageMenuItem?.isVisible = false
+                        binding.storageWarningText.visibility = View.GONE
                     }
                 }
             }
         }
-    }
-
-    private fun showStorageInfoDialog() {
-        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_storage_info, null)
-        val infoText = dialogView.findViewById<TextView>(R.id.storageInfoText)
-        val progressBar = dialogView.findViewById<LinearProgressIndicator>(R.id.storageProgressBar)
-        val btnView = dialogView.findViewById<View>(R.id.btnViewStorage)
-
-        infoText.text = currentStorageInfoText
-        progressBar.progress = currentStorageProgress
-
-        val dialog = MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
-            .setView(dialogView)
-            .create()
-
-        btnView.setOnClickListener {
-            try {
-                startActivity(Intent(Settings.ACTION_INTERNAL_STORAGE_SETTINGS))
-            } catch (e: Exception) {
-                Toast.makeText(requireContext(), getString(R.string.general_error_msg), Toast.LENGTH_SHORT).show()
-            }
-            dialog.dismiss()
-        }
-
-        dialog.show()
     }
 
     private fun showExtendedFabs() {

@@ -34,11 +34,25 @@
             android:visibility="gone"
             android:layout_marginBottom="4dp"/>
 
+        <TextView
+            android:id="@+id/storageWarningText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/progressBar"
+            android:layout_marginTop="4dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:gravity="center"
+            android:textColor="?attr/colorError"
+            android:visibility="gone"
+            tools:text="\u26A0 Available: 1.2 GB / Total: 128 GB"
+            tools:visibility="visible"/>
+
         <HorizontalScrollView
             android:id="@+id/horizontalScrollView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/progressBar"
+            android:layout_below="@id/storageWarningText"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
             android:scrollIndicators="none"
