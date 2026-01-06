@@ -1,0 +1,5 @@
+Improve UI of archive dialog, extraction dialog, file info dialog and file list
+Improve extraction flow (the app will auto detect multipart archives from now on)
+Improve notification display
+Add file search history
+Update localizations of bg, de, ru, uk, zh-Hans
