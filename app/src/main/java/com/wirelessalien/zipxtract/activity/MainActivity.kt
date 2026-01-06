@@ -21,18 +21,30 @@ package com.wirelessalien.zipxtract.activity
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.core.view.WindowCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
+import androidx.lifecycle.Lifecycle
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.search.SearchView
 import com.wirelessalien.zipxtract.R
+import com.wirelessalien.zipxtract.adapter.SearchHistoryAdapter
 import com.wirelessalien.zipxtract.constant.ServiceConstants
 import com.wirelessalien.zipxtract.databinding.ActivityMainBinding
 import com.wirelessalien.zipxtract.databinding.DialogCrashLogBinding
 import com.wirelessalien.zipxtract.fragment.ArchiveFragment
 import com.wirelessalien.zipxtract.fragment.MainFragment
+import com.wirelessalien.zipxtract.helper.SearchHistoryManager
+import com.wirelessalien.zipxtract.helper.Searchable
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
@@ -42,12 +54,53 @@ import java.io.IOException
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
+    private lateinit var searchHistoryManager: SearchHistoryManager
+    private lateinit var searchHistoryAdapter: SearchHistoryAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         WindowCompat.setDecorFitsSystemWindows(window, false)
+
+        searchHistoryManager = SearchHistoryManager(this)
+        setupSearchView()
+
+        val menuHost: MenuHost = this
+        menuHost.addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                // Menu inflated by fragments
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                return if (menuItem.itemId == R.id.menu_search) {
+                    binding.searchView.show()
+                    true
+                } else {
+                    false
+                }
+            }
+        }, this, Lifecycle.State.RESUMED)
+
+        val callback = object : OnBackPressedCallback(false) {
+            override fun handleOnBackPressed() {
+                binding.searchView.hide()
+            }
+        }
+
+        onBackPressedDispatcher.addCallback(this, callback)
+
+        binding.searchView.addTransitionListener { _, _, newState ->
+            if (newState === SearchView.TransitionState.SHOWING) {
+                callback.isEnabled = true
+            } else if (newState === SearchView.TransitionState.HIDING) {
+                callback.isEnabled = false
+                val fragment = supportFragmentManager.findFragmentById(R.id.container)
+                if (fragment is Searchable) {
+                    fragment.onSearch("")
+                }
+            }
+        }
 
         val fileName = "Crash_Log.txt"
         val crashLogFile = File(cacheDir, fileName)
@@ -104,6 +157,52 @@ class MainActivity : AppCompatActivity() {
         }
 
         handleIntent()
+    }
+
+    private fun setupSearchView() {
+        binding.searchView.setupWithSearchBar(null)
+
+        binding.searchHistoryRecyclerView.layoutManager = LinearLayoutManager(this)
+        searchHistoryAdapter = SearchHistoryAdapter(
+            searchHistoryManager.getHistory(),
+            onItemClick = { query ->
+                binding.searchView.setText(query)
+                performSearch(query)
+            },
+            onDeleteClick = { query ->
+                searchHistoryManager.removeHistory(query)
+                searchHistoryAdapter.updateList(searchHistoryManager.getHistory())
+            }
+        )
+        binding.searchHistoryRecyclerView.adapter = searchHistoryAdapter
+
+        binding.searchView
+            .editText
+            .setOnEditorActionListener { v, _, _ ->
+                val query = v.text.toString()
+                performSearch(query)
+                true
+            }
+
+        binding.searchView.addTransitionListener { _, _, newState ->
+            if (newState == SearchView.TransitionState.SHOWN) {
+                searchHistoryAdapter.updateList(searchHistoryManager.getHistory())
+            } else if (newState == SearchView.TransitionState.HIDDEN) {
+                binding.searchView.setText("")
+            }
+        }
+    }
+
+    private fun performSearch(query: String) {
+        if (query.isNotBlank()) {
+            searchHistoryManager.addHistory(query)
+            binding.searchView.hide()
+            
+            val fragment = supportFragmentManager.findFragmentById(R.id.container)
+            if (fragment is Searchable) {
+                fragment.onSearch(query)
+            }
+        }
     }
 
     private fun handleIntent() {

@@ -7,7 +7,6 @@
         android:icon="@drawable/ic_search"
         android:title="@string/search"
         android:orderInCategory="1"
-        app:actionViewClass="com.wirelessalien.zipxtract.CustomSearchView"
         app:showAsAction="always" />
 
     <item

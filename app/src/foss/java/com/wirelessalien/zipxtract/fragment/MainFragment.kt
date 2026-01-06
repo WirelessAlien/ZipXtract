@@ -60,7 +60,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
-import androidx.appcompat.widget.SearchView
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
@@ -114,6 +113,7 @@ import com.wirelessalien.zipxtract.helper.EncryptionCheckHelper
 import com.wirelessalien.zipxtract.helper.FileOperationsDao
 import com.wirelessalien.zipxtract.helper.MultipartArchiveHelper
 import com.wirelessalien.zipxtract.helper.PathUtils
+import com.wirelessalien.zipxtract.helper.Searchable
 import com.wirelessalien.zipxtract.helper.StorageHelper
 import com.wirelessalien.zipxtract.model.FileItem
 import com.wirelessalien.zipxtract.service.Archive7zService
@@ -156,7 +156,7 @@ import java.util.Date
 import java.util.Locale
 import kotlin.coroutines.cancellation.CancellationException
 
-class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.OnFileLongClickListener {
+class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.OnFileLongClickListener, Searchable {
 
     enum class SortBy {
         SORT_BY_NAME, SORT_BY_SIZE, SORT_BY_MODIFIED, SORT_BY_EXTENSION
@@ -172,10 +172,8 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     var actionMode: ActionMode? = null
     private val selectedFiles = mutableListOf<File>()
     private var fileObserver: FileObserver? = null
-    private var searchView: SearchView? = null
     private var isObserving: Boolean = false
     private var searchHandler: Handler? = Handler(Looper.getMainLooper())
-    private var searchRunnable: Runnable? = null
     private lateinit var eProgressDialog: AlertDialog
     private lateinit var aProgressDialog: AlertDialog
     private lateinit var aProgressText: TextView
@@ -193,6 +191,10 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     private lateinit var fileOperationsDao: FileOperationsDao
 
     private var isLowStorage: Boolean = false
+
+    override fun onSearch(query: String) {
+        searchFiles(query)
+    }
 
     private val pendingFileEvents = mutableListOf<Pair<Int, File>>()
     private var processEventsJob: Job? = null
@@ -355,31 +357,10 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         menuHost.addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
                 menuInflater.inflate(R.menu.menu_main, menu)
-
-                val searchItem = menu.findItem(R.id.menu_search)
-                searchView = searchItem?.actionView as SearchView?
-
-                // Configure the search view
-                searchView?.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-                    override fun onQueryTextSubmit(query: String?): Boolean {
-                        // Perform search when the user submits the query
-                        searchFiles(query)
-                        return true
-                    }
-
-                    override fun onQueryTextChange(newText: String?): Boolean {
-                        // Perform search as the user types with a delay
-                        searchRunnable?.let { searchHandler?.removeCallbacks(it) }
-                        searchRunnable = Runnable {
-                            searchFiles(newText)
-                        }
-                        searchHandler?.postDelayed(searchRunnable!!, 200)
-                        return true
-                    }
-                })
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                var isHandled = true
                 sharedPreferences.edit {
                     when (menuItem.itemId) {
                         R.id.menu_sort_by_name -> {
@@ -422,9 +403,10 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                             val intent = Intent(requireContext(), SettingsActivity::class.java)
                             startActivity(intent)
                         }
+                        else -> isHandled = false
                     }
                 }
-                return true
+                return isHandled
             }
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
 

@@ -45,14 +45,6 @@
             <include layout="@layout/shimmer_placeholder_item" />
             <include layout="@layout/shimmer_placeholder_item" />
             <include layout="@layout/shimmer_placeholder_item" />
-            <include layout="@layout/shimmer_placeholder_item" />
-            <include layout="@layout/shimmer_placeholder_item" />
-            <include layout="@layout/shimmer_placeholder_item" />
-            <include layout="@layout/shimmer_placeholder_item" />
-            <include layout="@layout/shimmer_placeholder_item" />
-            <include layout="@layout/shimmer_placeholder_item" />
-            <include layout="@layout/shimmer_placeholder_item" />
-            <include layout="@layout/shimmer_placeholder_item" />
         </LinearLayout>
     </com.facebook.shimmer.ShimmerFrameLayout>
 

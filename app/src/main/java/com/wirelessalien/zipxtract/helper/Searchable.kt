@@ -15,21 +15,8 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.wirelessalien.zipxtract
+package com.wirelessalien.zipxtract.helper
 
-import android.content.Context
-import android.util.AttributeSet
-import android.view.View
-import androidx.appcompat.widget.SearchView
-
-class CustomSearchView @JvmOverloads constructor(
-    context: Context,
-    attrs: AttributeSet? = null,
-    defStyleAttr: Int = androidx.appcompat.R.attr.searchViewStyle
-) : SearchView(context, attrs, defStyleAttr) {
-
-    init {
-        val searchPlate = findViewById<View>(androidx.appcompat.R.id.search_plate)
-        searchPlate?.background = null
-    }
+interface Searchable {
+    fun onSearch(query: String)
 }
