@@ -56,6 +56,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var searchHistoryManager: SearchHistoryManager
     private lateinit var searchHistoryAdapter: SearchHistoryAdapter
+    private var isSearchSubmitted = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -96,7 +97,7 @@ class MainActivity : AppCompatActivity() {
             } else if (newState === SearchView.TransitionState.HIDING) {
                 callback.isEnabled = false
                 val fragment = supportFragmentManager.findFragmentById(R.id.container)
-                if (fragment is Searchable) {
+                if (fragment is Searchable && !isSearchSubmitted) {
                     fragment.onSearch("")
                 }
             }
@@ -187,6 +188,13 @@ class MainActivity : AppCompatActivity() {
         binding.searchView.addTransitionListener { _, _, newState ->
             if (newState == SearchView.TransitionState.SHOWN) {
                 searchHistoryAdapter.updateList(searchHistoryManager.getHistory())
+                val fragment = supportFragmentManager.findFragmentById(R.id.container)
+                if (fragment is Searchable) {
+                    val currentQuery = fragment.getCurrentSearchQuery()
+                    if (!currentQuery.isNullOrEmpty()) {
+                        binding.searchView.setText(currentQuery)
+                    }
+                }
             } else if (newState == SearchView.TransitionState.HIDDEN) {
                 binding.searchView.setText("")
             }
@@ -196,12 +204,14 @@ class MainActivity : AppCompatActivity() {
     private fun performSearch(query: String) {
         if (query.isNotBlank()) {
             searchHistoryManager.addHistory(query)
+            isSearchSubmitted = true
             binding.searchView.hide()
             
             val fragment = supportFragmentManager.findFragmentById(R.id.container)
             if (fragment is Searchable) {
                 fragment.onSearch(query)
             }
+            isSearchSubmitted = false
         }
     }
 

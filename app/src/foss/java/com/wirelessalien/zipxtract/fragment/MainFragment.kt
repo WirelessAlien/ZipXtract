@@ -196,6 +196,10 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         searchFiles(query)
     }
 
+    override fun getCurrentSearchQuery(): String? {
+        return if (isSearchActive) currentQuery else null
+    }
+
     private val pendingFileEvents = mutableListOf<Pair<Int, File>>()
     private var processEventsJob: Job? = null
 
@@ -2155,6 +2159,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             return
         }
 
+        fileLoadingJob?.cancel()
         binding.shimmerViewContainer.startShimmer()
         binding.shimmerViewContainer.visibility = View.VISIBLE
         binding.recyclerView.visibility = View.GONE

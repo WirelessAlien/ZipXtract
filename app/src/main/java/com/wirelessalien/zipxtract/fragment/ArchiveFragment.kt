@@ -142,9 +142,14 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
     private var sortBy: SortBy = SortBy.SORT_BY_NAME
     private var sortAscending: Boolean = true
     private lateinit var sharedPreferences: SharedPreferences
+    private var currentQuery: String? = null
 
     override fun onSearch(query: String) {
         searchFiles(query)
+    }
+
+    override fun getCurrentSearchQuery(): String? {
+        return if (isSearchActive) currentQuery else null
     }
 
     private val extractionReceiver = object : BroadcastReceiver() {
@@ -361,6 +366,7 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
 
     private fun searchFiles(query: String?) {
         isSearchActive = !query.isNullOrEmpty()
+        currentQuery = query
 
         binding.shimmerViewContainer.startShimmer()
         binding.shimmerViewContainer.visibility = View.VISIBLE
