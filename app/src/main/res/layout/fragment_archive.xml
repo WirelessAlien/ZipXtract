@@ -64,6 +64,8 @@
         <HorizontalScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
             android:scrollbars="none">
 
             <com.google.android.material.chip.ChipGroup
@@ -71,9 +73,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:singleLine="true"
-                app:singleSelection="true"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"/>
+                app:singleSelection="true" />
         </HorizontalScrollView>
 
         <androidx.swiperefreshlayout.widget.SwipeRefreshLayout

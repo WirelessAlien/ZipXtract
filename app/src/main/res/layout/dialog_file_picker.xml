@@ -48,7 +48,6 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
                 app:icon="@drawable/ic_add"
-                app:cornerRadius="10dp"
                 android:visibility="gone"
                 style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"/>
         </RelativeLayout>
@@ -57,30 +56,27 @@
             android:id="@+id/horizontalScrollView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
             android:scrollIndicators="none"
             android:scrollbars="none">
 
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
                 android:orientation="horizontal">
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/externalStorageChip"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    style="@style/Widget.Material3.Chip.Suggestion.Elevated"
-                    android:elevation="4dp"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:elevation="0dp"
                     android:clickable="true"
                     android:checkable="false"
-                    android:visibility="gone"
-                    android:layout_marginEnd="8dp"
-                    app:chipIconVisible="true"
-                    app:chipIcon="@drawable/ic_change"
-                    app:chipCornerRadius="8dp"
-                    android:text="@string/storage"/>
+                    app:chipIconVisible="false"
+                    app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Full"
+                    android:text="@string/change_unc"/>
 
                 <com.google.android.material.chip.ChipGroup
                     android:id="@+id/chipGroupPath"
@@ -151,7 +147,6 @@
                 style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:cornerRadius="10dp"
                 android:layout_centerVertical="true"
                 app:icon="@drawable/ic_close"/>
 
@@ -162,8 +157,7 @@
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
                 android:layout_toEndOf="@id/btnCancel"
-                android:text="@string/add"
-                app:cornerRadius="10dp" />
+                android:text="@string/add" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/fabBack"
@@ -172,7 +166,6 @@
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
                 style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
-                app:cornerRadius="10dp"
                 app:icon="@drawable/ic_arrow_back"/>
         </RelativeLayout>
     </LinearLayout>

@@ -2123,7 +2123,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                     withContext(Dispatchers.Main) {
                         warningTextView.text = warningText
                         warningTextView.visibility = View.VISIBLE
-                        val errorColor = MaterialColors.getColor(warningTextView, com.google.android.material.R.attr.colorOnError)
+                        val errorColor = MaterialColors.getColor(warningTextView, androidx.appcompat.R.attr.colorError)
                         viewsDefaultColors?.keys?.forEach { view ->
                             if (view is Chip) {
                                 view.chipBackgroundColor = android.content.res.ColorStateList.valueOf(errorColor)

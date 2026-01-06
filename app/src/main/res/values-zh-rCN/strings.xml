@@ -1,28 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  ~  Copyright (C) 2023  WirelessAlien <https://github.com/WirelessAlien>
-  ~
-  ~     This program is free software: you can redistribute it and/or modify
-  ~     it under the terms of the GNU General Public License as published by
-  ~     the Free Software Foundation, either version 3 of the License, or
-  ~     any later version.
-  ~
-  ~     This program is distributed in the hope that it will be useful,
-  ~     but WITHOUT ANY WARRANTY; without even the implied warranty of
-  ~     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  ~     GNU General Public License for more details.
-  ~
-  ~     You should have received a copy of the GNU General Public License
-  ~     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-  -->
-
 <resources>
     <string name="compression_method">压缩方式</string>
     <string name="copied_to_clipboard">已复制到剪贴板</string>
     <string name="settings_info_text">文件的默认加密方法是 AES，它提供了高级别的安全性。但是，请注意，AES 加密可能非常耗时，尤其是在低端设备上。 \n \n对于设备性能较弱的用户，可以使用ZIP_STANDARD等替代方案。但是，请注意，此方法不提供与 AES 相同的安全级别。 \n \n如果安全性是您最关心的问题，我们强烈建议您使用 AES，尽管它的处理时间较长。</string>
     <string name="folder">文件夹</string>
     <string name="no_file_selected">未选择文件</string>
-    <string name="compression_level">压缩等级</string>
+    <string name="compression_level">压缩级别</string>
     <string name="liberapay">Liberapay</string>
     <string name="no_password">无密码</string>
     <string name="ok">好</string>
@@ -53,11 +36,11 @@
     <string name="about">关于</string>
     <string name="home">首页</string>
     <string name="root_access_summary">允许访问根目录</string>
-    <string name="internal_storage">内部储存</string>
+    <string name="internal_storage">内部存储空间</string>
     <string name="root">根目录</string>
     <string name="directory_empty">空文件夹</string>
     <string name="paste">粘贴</string>
-    <string name="storage">储存</string>
+    <string name="storage">存储</string>
     <string name="archive">压缩</string>
     <string name="show_hide_selected_files">显示/隐藏所选文件</string>
     <string name="background">后台</string>
@@ -73,7 +56,7 @@
     <string name="multi_part_extract">分卷解压：</string>
     <string name="copy_text">复制</string>
     <string name="info_tip">有用的小技巧</string>
-    <string name="info_tip_description">● 长按文件和文件夹，或单击文件、文件夹图标选择它们进行压缩。\n\n● 单击文件显示选择解压选项的解压菜单。\n\n● 使用操作系统“Open With”菜单解压的文件默认存放在内部储存/ZipXtract 中。 在应用设置中可加以修改。\n\n● 应用压缩或解压文件后的默认位置是文件的上级目录。 可以在应用设置中更改位置。</string>
+    <string name="info_tip_description">● 长按文件和文件夹，或点击文件、文件夹图标选择它们进行压缩。\n\n● 点击文件显示选择解压选项的解压菜单。\n\n● 使用操作系统“打开方式”菜单解压的文件默认存放在内部存储空间/ZipXtract 中。可在应用设置中修改。\n\n● 应用内压缩或解压文件后的默认位置是文件的上级目录。可在应用设置中更改。</string>
     <string name="crash_log">崩溃日志</string>
     <string name="move">移动到</string>
     <string name="copy_to">复制到</string>
@@ -92,7 +75,7 @@
     <string name="extract_path">解压文件的文件夹</string>
     <string name="archive_path">压缩文件的文件夹</string>
     <string name="archive_path_summary">修改默认解压目录。\n默认为“上级目录”</string>
-    <string name="extract_path_summary">修改默认解压目录。\n默认为“上级目录”或内部储存/ZipXtract(对使用“Open With\"菜单解压的压缩文件)</string>
+    <string name="extract_path_summary">修改默认解压目录。\n默认为“上级目录”或内部存储空间/ZipXtract（针对通过“打开方式”菜单中解压的压缩文件）</string>
     <string name="compression_success">压缩成功</string>
     <string name="tar_creation_success">TAR 压缩文件创建成功</string>
     <string name="file_deleted">已删除</string>
@@ -103,7 +86,7 @@
     <string name="unsupported_compression_format">此压缩格式不支持。</string>
     <string name="access_denied">访问被拒</string>
     <string name="no_files_to_archive">没有选中要压缩的文件</string>
-    <string name="sd_card_not_available">未检测到 SD 卡或外部储存</string>
+    <string name="sd_card_not_available">未检测到 SD 卡或外部存储设备</string>
     <string name="copying_files">复制…</string>
     <string name="moving_files">移动…</string>
     <string name="delete_ongoing">删除…</string>
@@ -160,4 +143,32 @@
     <string name="invalid_archive_type">无效压缩文件类型</string>
     <string name="updating_archive">更新压缩文件…</string>
     <string name="update_archive_service">更新压缩文件</string>
+    <string name="select_directory">选择目录…</string>
+    <string name="output_path">输出路径</string>
+    <string name="no_match">无匹配项</string>
+    <string name="refresh">刷新</string>
+    <string name="refreshed">已刷新</string>
+    <string name="storage_info_format">可用空间：%1$s / 总计：%2$s</string>
+    <string name="low_storage_warning">警告：存储空间不足！可用空间：%1$s</string>
+    <string name="low_storage_warning_dynamic">存储空间不足！可用空间为 %1$s，请至少释放约 %2$s。根据压缩文件格式，可能需要更多空间。</string>
+    <string name="please_wait">请稍候…</string>
+    <string name="compare">比较</string>
+    <string name="file_does_not_exist">文件不存在</string>
+    <string name="select">选择</string>
+    <string name="success">成功</string>
+    <string name="error">错误</string>
+    <string name="destination">常规</string>
+    <string name="security">安全</string>
+    <string name="compression_settings">压缩设置</string>
+    <string name="extraction_completed">解压完成</string>
+    <string name="compression_completed">压缩完成</string>
+    <string name="zstd_compression_level_format">ZSTD 压缩级别：%d</string>
+    <string name="automatic_threads">最大线程数</string>
+    <string name="automatic_threads_subtitle">使用最大 CPU 获取最快速度</string>
+    <string name="automatic_threads_warning">警告：使用所有 CPU 核心。在压缩过程中，设备可能会无响应。</string>
+    <string name="solid_compression_subtitle">提高许多小文件的压缩比，但解压时间会增加</string>
+    <string name="specify_custom_thread_count">指定自定义线程数</string>
+    <string name="min_split_size_error">最小分割大小为 64KB</string>
+    <string name="archive_created">创建了压缩文件</string>
+    <string name="archive_updated">更新了压缩文件</string>
 </resources>

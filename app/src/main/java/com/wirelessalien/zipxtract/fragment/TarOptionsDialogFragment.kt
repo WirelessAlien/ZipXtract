@@ -143,7 +143,7 @@ class TarOptionsDialogFragment : DialogFragment() {
                     withContext(Dispatchers.Main) {
                         warningTextView.text = warningText
                         warningTextView.visibility = View.VISIBLE
-                        val errorColor = MaterialColors.getColor(warningTextView, com.google.android.material.R.attr.colorOnError)
+                        val errorColor = MaterialColors.getColor(warningTextView, androidx.appcompat.R.attr.colorError)
                         okButton?.backgroundTintList = android.content.res.ColorStateList.valueOf(errorColor)
                     }
                 } else {
@@ -169,39 +169,26 @@ class TarOptionsDialogFragment : DialogFragment() {
         }
 
         filePathAdapter = FilePathAdapter(selectedFilePaths) { filePath ->
-            if (!launchedWithFilePaths) {
-                val position = selectedFilePaths.indexOf(filePath)
-                if (position != -1) {
-                    selectedFilePaths.removeAt(position)
-                    filePathAdapter.removeFilePath(filePath)
-                    filePathAdapter.notifyItemRemoved(position)
-                    filePathAdapter.notifyItemRangeChanged(position, selectedFilePaths.size)
+            val position = selectedFilePaths.indexOf(filePath)
+            if (position != -1) {
+                selectedFilePaths.removeAt(position)
+                filePathAdapter.removeFilePath(filePath)
+                filePathAdapter.notifyItemRemoved(position)
+                filePathAdapter.notifyItemRangeChanged(position, selectedFilePaths.size)
 
-                    if (selectedFilePaths.isEmpty()) {
-                        Toast.makeText(
-                            requireContext(),
-                            R.string.no_files_to_archive,
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        dismiss()
-                    }
+                if (selectedFilePaths.isEmpty()) {
+                    Toast.makeText(
+                        requireContext(),
+                        R.string.no_files_to_archive,
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    dismiss()
                 }
-            } else {
-                Toast.makeText(
-                    requireContext(),
-                    getString(R.string.file_list_is_fixed_for_this_operation),
-                    Toast.LENGTH_SHORT
-                ).show()
             }
         }
 
         binding.filePathsRv.layoutManager = LinearLayoutManager(context)
         binding.filePathsRv.adapter = filePathAdapter
-
-        if (launchedWithFilePaths) {
-            binding.filePathsRv.visibility = View.GONE
-            binding.toggleFileViewBtn.visibility = View.GONE
-        }
 
         binding.toggleFileViewBtn.setOnClickListener {
             if (binding.filePathsRv.isGone) {

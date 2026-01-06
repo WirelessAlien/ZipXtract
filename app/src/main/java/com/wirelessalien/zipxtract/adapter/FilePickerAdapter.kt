@@ -63,7 +63,6 @@ class FilePickerAdapter(
     }
 
     private var onItemClickListener: OnItemClickListener? = null
-    private var selectedItemPosition = -1
 
     private val selectedItems = SparseBooleanArray()
 
@@ -74,20 +73,6 @@ class FilePickerAdapter(
             selectedItems.put(position, true)
         }
         notifyItemChanged(position)
-    }
-
-    fun selectAll() {
-        for (i in filteredFiles.indices) {
-            if (!filteredFiles[i].isDirectory) {
-                selectedItems.put(i, true)
-            }
-        }
-        notifyDataSetChanged()
-    }
-
-    fun deselectAll() {
-        selectedItems.clear()
-        notifyDataSetChanged()
     }
 
     inner class ViewHolder(val binding: ItemFileBinding) : RecyclerView.ViewHolder(binding.root), View.OnClickListener {

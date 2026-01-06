@@ -1036,7 +1036,7 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
                     withContext(Dispatchers.Main) {
                         warningTextView.text = warningText
                         warningTextView.visibility = View.VISIBLE
-                        val errorColor = MaterialColors.getColor(warningTextView, com.google.android.material.R.attr.colorOnError)
+                        val errorColor = MaterialColors.getColor(warningTextView, androidx.appcompat.R.attr.colorError)
                         buttons?.forEach { it.backgroundTintList = android.content.res.ColorStateList.valueOf(errorColor) }
                     }
                 } else {

@@ -42,6 +42,7 @@
                 android:layout_marginBottom="16dp"
                 android:layout_marginTop="16dp"
                 android:text="@string/create_zip"
+                android:layout_gravity="center"
                 android:textSize="20sp"
                 android:textStyle="bold" />
 
@@ -58,18 +59,18 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/low_storage_warning"
-                android:textColor="@android:color/holo_red_dark"
+                android:textColor="?attr/colorError"
                 android:layout_marginBottom="8dp"
                 android:visibility="gone"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/toggleFileViewBtn"
-                style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
                 android:text="@string/show_hide_selected_files"
-                app:cornerRadius="10dp" />
+                android:elevation="0dp"
+                style="@style/Widget.Material3.Button.ElevatedButton"/>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/filePathsRv"

@@ -24,8 +24,7 @@
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:fitsSystemWindows="true">
+        android:layout_height="wrap_content">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
@@ -54,6 +53,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/progressBar"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
             android:scrollIndicators="none"
             android:scrollbars="none">
 
@@ -61,8 +62,6 @@
                 android:id="@+id/chipGroupPath"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="11dp"
-                android:layout_marginEnd="16dp"
                 android:orientation="horizontal"
                 app:singleLine="true" />
         </HorizontalScrollView>
@@ -91,7 +90,6 @@
             android:layout_toStartOf="@id/fab_back"
             android:layout_marginEnd="10dp"
             style="@style/Widget.Material3.Button.TonalButton"
-            app:cornerRadius="10dp"
             app:icon="@drawable/ic_add"
             android:text="@string/add"/>
 
@@ -100,7 +98,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
-            app:cornerRadius="10dp"
             android:layout_alignParentEnd="true"
             app:icon="@drawable/ic_arrow_back"/>
     </RelativeLayout>
