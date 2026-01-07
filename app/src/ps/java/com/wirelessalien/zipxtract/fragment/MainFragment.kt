@@ -39,7 +39,6 @@ import android.os.FileObserver.DELETE_SELF
 import android.os.FileObserver.MODIFY
 import android.os.FileObserver.MOVED_FROM
 import android.os.FileObserver.MOVED_TO
-import android.os.FileObserver.MOVE_SELF
 import android.os.Handler
 import android.os.Looper
 import android.os.StatFs
@@ -110,11 +109,13 @@ import com.wirelessalien.zipxtract.databinding.PasswordInputDialogBinding
 import com.wirelessalien.zipxtract.databinding.ProgressDialogArchiveBinding
 import com.wirelessalien.zipxtract.databinding.ProgressDialogExtractBinding
 import com.wirelessalien.zipxtract.helper.ChecksumUtils
+import com.wirelessalien.zipxtract.helper.EncryptionCheckHelper
 import com.wirelessalien.zipxtract.helper.FileOperationsDao
 import com.wirelessalien.zipxtract.helper.MultipartArchiveHelper
 import com.wirelessalien.zipxtract.helper.PathUtils
 import com.wirelessalien.zipxtract.helper.Searchable
 import com.wirelessalien.zipxtract.helper.StorageHelper
+import com.wirelessalien.zipxtract.model.FileItem
 import com.wirelessalien.zipxtract.service.Archive7zService
 import com.wirelessalien.zipxtract.service.ArchiveSplitZipService
 import com.wirelessalien.zipxtract.service.ArchiveTarService
@@ -126,18 +127,16 @@ import com.wirelessalien.zipxtract.service.ExtractArchiveService
 import com.wirelessalien.zipxtract.service.ExtractCsArchiveService
 import com.wirelessalien.zipxtract.service.ExtractMultipart7zService
 import com.wirelessalien.zipxtract.service.ExtractMultipartZipService
-import com.wirelessalien.zipxtract.model.FileItem
 import com.wirelessalien.zipxtract.service.ExtractRarService
 import com.wirelessalien.zipxtract.viewmodel.FileOperationViewModel
-import com.wirelessalien.zipxtract.helper.EncryptionCheckHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.Runnable
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -153,7 +152,6 @@ import net.lingala.zip4j.model.enums.EncryptionMethod
 import org.apache.commons.compress.compressors.CompressorStreamFactory
 import java.io.File
 import java.nio.file.Files
-import java.nio.file.attribute.BasicFileAttributes
 import java.util.Date
 import java.util.Locale
 import kotlin.coroutines.cancellation.CancellationException
@@ -505,8 +503,15 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         }
 
         binding.swipeRefreshLayout.setOnRefreshListener {
-            updateAdapterWithFullList()
+            updateStorageInfo(currentPath ?: Environment.getExternalStorageDirectory().absolutePath)
+            if (isSearchActive) {
+                searchFiles(currentQuery)
+            } else {
+                updateAdapterWithFullList()
+            }
         }
+
+        checkAndShowDonationFragment()
 
         updateCurrentPathChip()
 
@@ -1597,6 +1602,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 bottomSheetDialog.dismiss()
             }
         }
+
         binding.btnFileInfo.setOnClickListener {
             showFileInfo(file)
             bottomSheetDialog.dismiss()

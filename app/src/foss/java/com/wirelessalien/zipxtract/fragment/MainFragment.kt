@@ -503,7 +503,12 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         }
 
         binding.swipeRefreshLayout.setOnRefreshListener {
-            updateAdapterWithFullList()
+            updateStorageInfo(currentPath ?: Environment.getExternalStorageDirectory().absolutePath)
+            if (isSearchActive) {
+                searchFiles(currentQuery)
+            } else {
+                updateAdapterWithFullList()
+            }
         }
 
         checkAndShowDonationFragment()

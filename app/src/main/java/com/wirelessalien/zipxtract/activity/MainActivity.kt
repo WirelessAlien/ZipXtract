@@ -85,7 +85,15 @@ class MainActivity : AppCompatActivity() {
 
         val callback = object : OnBackPressedCallback(false) {
             override fun handleOnBackPressed() {
-                binding.searchView.hide()
+                if (binding.searchView.isShowing) {
+                    binding.searchView.hide()
+                } else {
+                    val fragment = supportFragmentManager.findFragmentById(R.id.container)
+                    if (fragment is Searchable && !fragment.getCurrentSearchQuery().isNullOrEmpty()) {
+                        fragment.onSearch("")
+                        isEnabled = false
+                    }
+                }
             }
         }
 
@@ -95,10 +103,14 @@ class MainActivity : AppCompatActivity() {
             if (newState === SearchView.TransitionState.SHOWING) {
                 callback.isEnabled = true
             } else if (newState === SearchView.TransitionState.HIDING) {
-                callback.isEnabled = false
-                val fragment = supportFragmentManager.findFragmentById(R.id.container)
-                if (fragment is Searchable && !isSearchSubmitted) {
-                    fragment.onSearch("")
+                if (isSearchSubmitted) {
+                    callback.isEnabled = true
+                } else {
+                    callback.isEnabled = false
+                    val fragment = supportFragmentManager.findFragmentById(R.id.container)
+                    if (fragment is Searchable) {
+                        fragment.onSearch("")
+                    }
                 }
             }
         }
