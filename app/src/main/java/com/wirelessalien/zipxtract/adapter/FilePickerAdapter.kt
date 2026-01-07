@@ -167,7 +167,7 @@ class FilePickerAdapter(
 
             val typedValue = TypedValue()
             context.theme.resolveAttribute(
-                com.google.android.material.R.attr.colorSurfaceContainerLowest,
+                com.google.android.material.R.attr.colorSurfaceContainerHighest,
                 typedValue,
                 true
             )
@@ -181,7 +181,7 @@ class FilePickerAdapter(
             binding.linearLayout.backgroundTintList = ColorStateList.valueOf(color)
         } else {
             binding.checkIcon.visibility = View.GONE
-            binding.linearLayout.background = AppCompatResources.getDrawable(context, R.drawable.item_background)
+            binding.linearLayout.background = AppCompatResources.getDrawable(context, R.drawable.item_background_3)
             binding.linearLayout.backgroundTintList = null
         }
     }
