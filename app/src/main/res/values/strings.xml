@@ -31,6 +31,9 @@
     <string name="about">About</string>
     <string name="grant_access">Grant Access</string>
     <string name="storage_access_permission_text">This app requires access to your device storage for proper functionality. Please grant the necessary permissions.</string>
+    <string name="storage_access_title">Storage Access Needed</string>
+    <string name="storage_access_description">ZipXtract requires permission to access your device\'s storage to find, extract, and organize your files effectively.</string>
+    <string name="storage_safety_text">Your files are safe. This app has no internet permission, so data cannot be uploaded to external servers.</string>
     <string name="sd_card">SD Card</string>
     <string name="root_access">Root access</string>
     <string name="root_access_summary">Enable root directory access</string>

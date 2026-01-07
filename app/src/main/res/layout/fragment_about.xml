@@ -86,7 +86,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/donate"
-        app:cornerRadius="10dp"
         style="@style/Widget.Material3.Button.TonalButton"
         android:layout_marginTop="20dp" />
 
@@ -95,7 +94,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/share"
-        app:cornerRadius="10dp"
         style="@style/Widget.Material3.Button.TonalButton"
         android:layout_marginTop="20dp" />
 
@@ -106,6 +104,4 @@
         android:text="@string/privacy_policy"
         android:textColor="?attr/colorPrimary"
         android:paddingTop="16dp" />
-
-
 </LinearLayout>

@@ -25,6 +25,6 @@
         android:layout_width="match_parent"
         android:layout_height="200dp"
         android:ellipsize="end"
-        android:padding="16dp"
+        android:padding="24dp"
         android:textSize="14sp" />
 </LinearLayout>

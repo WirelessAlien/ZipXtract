@@ -16,40 +16,78 @@
   -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
+    android:gravity="center"
     android:fitsSystemWindows="true">
+
+    <TextView
+        android:id="@+id/tv_storage_access_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/storage_access_title"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:textColor="?attr/colorOnSurface"
+        android:layout_marginBottom="16dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"/>
 
     <TextView
         android:id="@+id/tv_permission_message"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:text="@string/storage_access_permission_text"
+        android:text="@string/storage_access_description"
         android:textSize="16sp"
-        android:layout_margin="16dp"/>
+        android:gravity="center"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:layout_marginBottom="32dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"/>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_grant_access"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/grant_access"
+        android:paddingVertical="12dp"
+        app:icon="@drawable/ic_folder"
+        app:iconGravity="textStart"
+        style="@style/Widget.Material3.Button.TonalButton"
+        android:layout_marginBottom="24dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"/>
+
+    <TextView
+        android:id="@+id/tv_safety_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:text="@string/grant_access"
-        app:cornerRadius="10dp"
-        style="@style/Widget.Material3.Button.TonalButton"
-        android:layout_margin="16dp"/>
+        android:text="@string/storage_safety_text"
+        android:textSize="14sp"
+        android:gravity="center_vertical"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        app:drawableStartCompat="@drawable/ic_security"
+        android:drawablePadding="8dp"
+        android:layout_marginBottom="24dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"/>
 
     <TextView
         android:id="@+id/tv_privacy_policy"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/privacy_policy"
-        android:layout_gravity="center"
         android:textColor="@color/md_theme_primary"
-        android:textSize="14sp"
+        android:textSize="16sp"
         android:clickable="true"
-        android:layout_margin="16dp"
-        android:focusable="true"/>
+        android:focusable="true"
+        android:background="?attr/selectableItemBackground"
+        android:padding="8dp"
+        app:fontFamily="sans-serif-medium"
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"/>
 </LinearLayout>

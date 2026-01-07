@@ -17,15 +17,7 @@
   -->
 
 <resources>
-    <!-- dialog style -->
-    <style name="MaterialDialog" parent="@style/ThemeOverlay.Material3.MaterialAlertDialog">
-        <item name="shapeAppearanceOverlay">@style/ShapeAppearanceOverlay.ZipXtract.Dialog.Rounded</item>
-    </style>
-
-    <style name="ShapeAppearanceOverlay.ZipXtract.Dialog.Rounded" parent="">
-        <item name="cornerFamily">rounded</item>
-            <item name="cornerSize">10dp</item>
-    </style>
+    <style name="MaterialDialog" parent="@style/ThemeOverlay.Material3.MaterialAlertDialog"/>
 
     <style name="AppTheme.Transparent" parent="AppTheme">
         <item name="android:windowIsTranslucent">true</item>

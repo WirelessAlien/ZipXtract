@@ -38,7 +38,6 @@
         android:layout_height="wrap_content"
         app:icon="@drawable/ic_liberapay"
         style="@style/Widget.Material3.Button.TonalButton"
-        app:cornerRadius="10dp"
         android:text="@string/liberapay" />
 
     <com.google.android.material.button.MaterialButton
@@ -48,7 +47,6 @@
         android:layout_marginTop="10dp"
         app:icon="@drawable/ic_github"
         style="@style/Widget.Material3.Button.TonalButton"
-        app:cornerRadius="10dp"
         android:text="Github Sponsor" />
 
     <com.google.android.material.button.MaterialButton
@@ -58,7 +56,6 @@
         android:layout_marginTop="10dp"
         app:icon="@drawable/paypal_icon"
         style="@style/Widget.Material3.Button.TonalButton"
-        app:cornerRadius="10dp"
         android:text="PayPal" />
 
     <com.google.android.material.button.MaterialButton
@@ -68,6 +65,5 @@
         android:layout_marginTop="10dp"
         app:icon="@drawable/kofi_icon"
         style="@style/Widget.Material3.Button.TonalButton"
-        app:cornerRadius="10dp"
         android:text="Ko-fi" />
 </LinearLayout>

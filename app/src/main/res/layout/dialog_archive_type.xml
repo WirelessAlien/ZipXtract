@@ -20,15 +20,13 @@
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="24dp">
 
     <com.google.android.material.chip.ChipGroup
         android:id="@+id/chipGroupArchiveTypes"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:singleSelection="true"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
         app:chipSpacingHorizontal="8dp"
         app:chipSpacingVertical="8dp"/>
 </LinearLayout>
