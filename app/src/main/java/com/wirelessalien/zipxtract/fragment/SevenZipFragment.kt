@@ -24,13 +24,17 @@ import android.content.IntentFilter
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
+import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.chip.Chip
@@ -115,11 +119,11 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
         super.onViewCreated(view, savedInstanceState)
 
         fileOperationsDao = FileOperationsDao(requireContext())
-        (activity as AppCompatActivity).setSupportActionBar(binding.toolbar)
-        (activity as AppCompatActivity).supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        binding.toolbar.setNavigationOnClickListener {
-            handleBackNavigation()
-        }
+
+        val activity = activity as AppCompatActivity
+        activity.supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        activity.supportActionBar?.title = File(archivePath ?: "Archive").name
+        activity.findViewById<View>(R.id.tabLayout)?.visibility = View.GONE
 
         binding.fabBack.setOnClickListener {
             handleBackNavigation()
@@ -130,8 +134,6 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
         adapter.setOnFileLongClickListener(this)
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerView.adapter = adapter
-
-        binding.toolbar.title = File(archivePath ?: "Archive").name
 
         try {
             val randomAccessFile = RandomAccessFile(archivePath, "r")
@@ -156,6 +158,22 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
             filePicker.show(parentFragmentManager, "file_picker")
         }
         updateCurrentPathChip()
+
+        val menuHost: MenuHost = requireActivity()
+        menuHost.addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                // No menu items to add for now
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                return if (menuItem.itemId == android.R.id.home) {
+                    handleBackNavigation()
+                    true
+                } else {
+                    false
+                }
+            }
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
     private fun updateCurrentPathChip() {
@@ -328,6 +346,10 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
     override fun onDestroyView() {
         super.onDestroyView()
         LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(updateReceiver)
+        val activity = activity as? AppCompatActivity
+        activity?.findViewById<View>(R.id.tabLayout)?.visibility = View.VISIBLE
+        activity?.supportActionBar?.setDisplayHomeAsUpEnabled(false)
+        activity?.supportActionBar?.title = getString(R.string.app_name)
     }
 
     override fun onDestroy() {
