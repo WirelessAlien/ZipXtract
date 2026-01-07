@@ -511,8 +511,6 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             }
         }
 
-        checkAndShowDonationFragment()
-
         updateCurrentPathChip()
 
         handleOpenWithIntent()
@@ -2191,6 +2189,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                             text = e.message ?: getString(R.string.general_error_msg)
                             visibility = View.VISIBLE
                         }
+                        binding.swipeRefreshLayout.isRefreshing = false
                     }
                 }
                 .collect { files ->
@@ -2199,6 +2198,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                         binding.shimmerViewContainer.stopShimmer()
                         binding.shimmerViewContainer.visibility = View.GONE
                         binding.recyclerView.visibility = View.VISIBLE
+                        binding.swipeRefreshLayout.isRefreshing = false
                     }
                 }
         }
