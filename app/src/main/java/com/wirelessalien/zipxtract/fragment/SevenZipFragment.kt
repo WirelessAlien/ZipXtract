@@ -30,11 +30,9 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
+import androidx.fragment.app.Fragment
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetDialog
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.chip.Chip
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.wirelessalien.zipxtract.R
@@ -52,7 +50,7 @@ import java.io.File
 import java.io.RandomAccessFile
 import java.util.Date
 
-class SevenZipFragment : BottomSheetDialogFragment(), ArchiveItemAdapter.OnItemClickListener, FilePickerFragment.FilePickerListener, ArchiveItemAdapter.OnFileLongClickListener {
+class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, FilePickerFragment.FilePickerListener, ArchiveItemAdapter.OnFileLongClickListener {
 
     private var actionMode: ActionMode? = null
 
@@ -116,22 +114,12 @@ class SevenZipFragment : BottomSheetDialogFragment(), ArchiveItemAdapter.OnItemC
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        dialog?.setOnShowListener {
-            val bottomSheetDialog = it as BottomSheetDialog
-            val bottomSheet = bottomSheetDialog.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
-            bottomSheet?.let { sheet ->
-                val behavior = BottomSheetBehavior.from(sheet)
-                sheet.layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
-                behavior.state = BottomSheetBehavior.STATE_EXPANDED
-                behavior.isDraggable = false
-            }
-        }
-
         fileOperationsDao = FileOperationsDao(requireContext())
+        (activity as AppCompatActivity).setSupportActionBar(binding.toolbar)
+        (activity as AppCompatActivity).supportActionBar?.setDisplayHomeAsUpEnabled(true)
         binding.toolbar.setNavigationOnClickListener {
             handleBackNavigation()
         }
-        binding.toolbar.setNavigationIcon(R.drawable.ic_close)
 
         binding.fabBack.setOnClickListener {
             handleBackNavigation()
@@ -333,7 +321,7 @@ class SevenZipFragment : BottomSheetDialogFragment(), ArchiveItemAdapter.OnItemC
             currentPath = currentPath.substringBeforeLast('/', "")
             loadArchiveItems(currentPath)
         } else {
-            dismiss()
+            parentFragmentManager.popBackStack()
         }
     }
 

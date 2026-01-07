@@ -1590,7 +1590,10 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             binding.btnPreviewArchive.visibility = View.VISIBLE
             binding.btnPreviewArchive.setOnClickListener {
                 val fragment = SevenZipFragment.newInstance(file.absolutePath)
-                fragment.show(parentFragmentManager, "seven_zip_preview")
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.container, fragment)
+                    .addToBackStack(null)
+                    .commit()
                 bottomSheetDialog.dismiss()
             }
         }
