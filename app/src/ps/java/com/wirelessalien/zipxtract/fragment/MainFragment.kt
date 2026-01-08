@@ -2065,6 +2065,14 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                         }
                         adapter.updateFilesAndFilter(fullFileList, currentQuery)
                         binding.swipeRefreshLayout.isRefreshing = false
+
+                        val highlightFilePath = arguments?.getString(ARG_HIGHLIGHT_FILE_PATH)
+                        if (highlightFilePath != null) {
+                            highlightFile(highlightFilePath)
+                            arguments?.remove(ARG_HIGHLIGHT_FILE_PATH)
+                        } else {
+                            adapter.clearHighlight()
+                        }
                     }
                 } catch (e: Exception) {
                     if (e is CancellationException) throw e
@@ -2265,9 +2273,36 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         emit(results.toList())
     }.distinctUntilChanged { old, new -> old.size == new.size }
 
+    fun navigateToPathAndHighlight(directoryPath: String, highlightFilePath: String) {
+        if (directoryPath == currentPath) {
+            highlightFile(highlightFilePath)
+        } else {
+            val fragment = MainFragment().apply {
+                arguments = Bundle().apply {
+                    putString(ARG_DIRECTORY_PATH, directoryPath)
+                    putString(ARG_HIGHLIGHT_FILE_PATH, highlightFilePath)
+                }
+            }
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.container, fragment)
+                .addToBackStack(null)
+                .commit()
+        }
+    }
+
+    private fun highlightFile(filePath: String) {
+        val position = adapter.files.indexOfFirst { it.file.absolutePath == filePath }
+        if (position != -1) {
+            binding.recyclerView.scrollToPosition(position)
+            val fileItem = adapter.files[position]
+            adapter.highlightFile(fileItem.file)
+        }
+    }
+
     companion object {
         const val ARG_JOB_ID = "com.wirelessalien.zipxtract.ARG_JOB_ID"
         const val ARG_ARCHIVE_TYPE = "com.wirelessalien.zipxtract.ARG_ARCHIVE_TYPE"
         const val ARG_DIRECTORY_PATH = "com.wirelessalien.zipxtract.ARG_DIRECTORY_PATH"
+        const val ARG_HIGHLIGHT_FILE_PATH = "com.wirelessalien.zipxtract.ARG_HIGHLIGHT_FILE_PATH"
     }
 }

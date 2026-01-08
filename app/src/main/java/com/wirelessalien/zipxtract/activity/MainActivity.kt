@@ -21,6 +21,10 @@ package com.wirelessalien.zipxtract.activity
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.os.Bundle
+import android.os.Environment
+import android.provider.MediaStore
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
@@ -33,11 +37,12 @@ import androidx.core.view.WindowCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.search.SearchView
 import com.wirelessalien.zipxtract.R
-import com.wirelessalien.zipxtract.adapter.SearchHistoryAdapter
+import com.wirelessalien.zipxtract.adapter.QuickSearchResultAdapter
 import com.wirelessalien.zipxtract.constant.ServiceConstants
 import com.wirelessalien.zipxtract.databinding.ActivityMainBinding
 import com.wirelessalien.zipxtract.databinding.DialogCrashLogBinding
@@ -45,6 +50,13 @@ import com.wirelessalien.zipxtract.fragment.ArchiveFragment
 import com.wirelessalien.zipxtract.fragment.MainFragment
 import com.wirelessalien.zipxtract.helper.SearchHistoryManager
 import com.wirelessalien.zipxtract.helper.Searchable
+import com.wirelessalien.zipxtract.model.FileItem
+import com.wirelessalien.zipxtract.helper.StorageHelper
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
@@ -55,8 +67,9 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var searchHistoryManager: SearchHistoryManager
-    private lateinit var searchHistoryAdapter: SearchHistoryAdapter
+    private lateinit var quickSearchResultAdapter: QuickSearchResultAdapter
     private var isSearchSubmitted = false
+    private var searchJob: Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -176,18 +189,27 @@ class MainActivity : AppCompatActivity() {
         binding.searchView.setupWithSearchBar(null)
 
         binding.searchHistoryRecyclerView.layoutManager = LinearLayoutManager(this)
-        searchHistoryAdapter = SearchHistoryAdapter(
-            searchHistoryManager.getHistory(),
-            onItemClick = { query ->
-                binding.searchView.setText(query)
-                performSearch(query)
+        quickSearchResultAdapter = QuickSearchResultAdapter(
+            mutableListOf(),
+            onItemClick = { item ->
+                when (item) {
+                    is QuickSearchResultAdapter.SearchResultItem.HistoryItem -> {
+                        binding.searchView.setText(item.query)
+                        performSearch(item.query)
+                    }
+                    is QuickSearchResultAdapter.SearchResultItem.FileResultItem -> {
+                        navigateToFile(item.fileItem)
+                    }
+                }
             },
-            onDeleteClick = { query ->
+            onDeleteHistoryClick = { query ->
                 searchHistoryManager.removeHistory(query)
-                searchHistoryAdapter.updateList(searchHistoryManager.getHistory())
+                refreshHistory()
             }
         )
-        binding.searchHistoryRecyclerView.adapter = searchHistoryAdapter
+        binding.searchHistoryRecyclerView.adapter = quickSearchResultAdapter
+
+        refreshHistory()
 
         binding.searchView
             .editText
@@ -197,19 +219,116 @@ class MainActivity : AppCompatActivity() {
                 true
             }
 
+        binding.searchView.editText.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                val query = s.toString()
+                if (query.isNotEmpty()) {
+                    performFastSearch(query)
+                } else {
+                    searchJob?.cancel()
+                    refreshHistory()
+                }
+            }
+
+            override fun afterTextChanged(s: Editable?) {}
+        })
+
         binding.searchView.addTransitionListener { _, _, newState ->
             if (newState == SearchView.TransitionState.SHOWN) {
-                searchHistoryAdapter.updateList(searchHistoryManager.getHistory())
                 val fragment = supportFragmentManager.findFragmentById(R.id.container)
                 if (fragment is Searchable) {
                     val currentQuery = fragment.getCurrentSearchQuery()
                     if (!currentQuery.isNullOrEmpty()) {
                         binding.searchView.setText(currentQuery)
+                    } else {
+                        refreshHistory()
                     }
+                } else {
+                    refreshHistory()
                 }
             } else if (newState == SearchView.TransitionState.HIDDEN) {
                 binding.searchView.setText("")
             }
+        }
+    }
+
+    private fun refreshHistory() {
+        val historyItems = searchHistoryManager.getHistory().map {
+            QuickSearchResultAdapter.SearchResultItem.HistoryItem(it)
+        }
+        quickSearchResultAdapter.updateList(historyItems)
+    }
+
+    private fun performFastSearch(query: String) {
+        searchJob?.cancel()
+        searchJob = lifecycleScope.launch(Dispatchers.IO) {
+            val results = mutableListOf<FileItem>()
+            val projection = arrayOf(
+                MediaStore.Files.FileColumns.DATA,
+                MediaStore.Files.FileColumns.DISPLAY_NAME
+            )
+            val selection = "${MediaStore.Files.FileColumns.DISPLAY_NAME} LIKE ?"
+            val selectionArgs = arrayOf("%$query%")
+            val sortOrder = "${MediaStore.Files.FileColumns.DISPLAY_NAME} ASC"
+
+            val queryUri = MediaStore.Files.getContentUri("external")
+            val excludedPath1 = Environment.getExternalStorageDirectory().absolutePath + "/Android"
+            val sdCardPath = StorageHelper.getSdCardPath(this@MainActivity)
+            val excludedPath2 = if (sdCardPath != null) "$sdCardPath/Android" else null
+
+            try {
+                contentResolver.query(
+                    queryUri,
+                    projection,
+                    selection,
+                    selectionArgs,
+                    sortOrder
+                )?.use { cursor ->
+                    val dataColumn = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DATA)
+
+                    while (cursor.moveToNext() && isActive) {
+                        val filePath = cursor.getString(dataColumn)
+
+                        if (filePath.startsWith(excludedPath1) || (excludedPath2 != null && filePath.startsWith(excludedPath2))) {
+                            continue
+                        }
+
+                        val file = File(filePath)
+                        if (file.exists() && !file.name.startsWith(".")) {
+                            results.add(FileItem.fromFile(file))
+                            // To keep it responsive, limit to 50.
+                            if (results.size >= 50) break
+                        }
+                    }
+                }
+            } catch (_: Exception) {
+            }
+
+            withContext(Dispatchers.Main) {
+                val resultItems = results.map { QuickSearchResultAdapter.SearchResultItem.FileResultItem(it) }
+                quickSearchResultAdapter.updateList(resultItems)
+            }
+        }
+    }
+
+    private fun navigateToFile(fileItem: FileItem) {
+        binding.searchView.hide()
+        val parentPath = fileItem.file.parent ?: return
+
+        val fragment = supportFragmentManager.findFragmentById(R.id.container)
+        if (fragment is MainFragment) {
+            fragment.navigateToPathAndHighlight(parentPath, fileItem.file.absolutePath)
+        } else {
+            val mainFragment = MainFragment().apply {
+                arguments = Bundle().apply {
+                    putString(MainFragment.ARG_DIRECTORY_PATH, parentPath)
+                    putString(MainFragment.ARG_HIGHLIGHT_FILE_PATH, fileItem.file.absolutePath)
+                }
+            }
+            loadFragment(mainFragment)
+            binding.tabLayout.getTabAt(0)?.select()
         }
     }
 
@@ -218,7 +337,7 @@ class MainActivity : AppCompatActivity() {
             searchHistoryManager.addHistory(query)
             isSearchSubmitted = true
             binding.searchView.hide()
-            
+
             val fragment = supportFragmentManager.findFragmentById(R.id.container)
             if (fragment is Searchable) {
                 fragment.onSearch(query)

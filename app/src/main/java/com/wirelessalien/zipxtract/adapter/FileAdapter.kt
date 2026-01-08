@@ -61,6 +61,19 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
     private var onFileLongClickListener: OnFileLongClickListener? = null
 
     private val selectedItems = SparseBooleanArray()
+    private var highlightedFile: File? = null
+
+    fun highlightFile(file: File) {
+        highlightedFile = file
+        notifyDataSetChanged()
+    }
+
+    fun clearHighlight() {
+        if (highlightedFile != null) {
+            highlightedFile = null
+            notifyDataSetChanged()
+        }
+    }
 
     fun toggleSelection(position: Int) {
         val fileItem = filteredFiles[position]
@@ -243,6 +256,26 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
             }
 
             binding.linearLayout.backgroundTintList = ColorStateList.valueOf(color)
+        } else if (file == highlightedFile) {
+            binding.checkIcon.visibility = View.GONE
+
+            val typedValue = TypedValue()
+            context.theme.resolveAttribute(
+                androidx.appcompat.R.attr.colorPrimary,
+                typedValue,
+                true
+            )
+            val colorPrimary = if (typedValue.type in TypedValue.TYPE_FIRST_COLOR_INT..TypedValue.TYPE_LAST_COLOR_INT) {
+                typedValue.data
+            } else {
+                ContextCompat.getColor(context, typedValue.resourceId)
+            }
+
+            // 20% opacity to colorPrimary
+            val highlightedColor = androidx.core.graphics.ColorUtils.setAlphaComponent(colorPrimary, 51)
+
+            binding.linearLayout.background = AppCompatResources.getDrawable(context, R.drawable.item_background)
+            binding.linearLayout.backgroundTintList = ColorStateList.valueOf(highlightedColor)
         } else {
             binding.checkIcon.visibility = View.GONE
             binding.linearLayout.background = AppCompatResources.getDrawable(context, R.drawable.item_background)
