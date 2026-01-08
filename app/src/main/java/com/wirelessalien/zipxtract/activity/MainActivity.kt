@@ -274,9 +274,6 @@ class MainActivity : AppCompatActivity() {
             val sortOrder = "${MediaStore.Files.FileColumns.DISPLAY_NAME} ASC"
 
             val queryUri = MediaStore.Files.getContentUri("external")
-            val excludedPath1 = Environment.getExternalStorageDirectory().absolutePath + "/Android"
-            val sdCardPath = StorageHelper.getSdCardPath(this@MainActivity)
-            val excludedPath2 = if (sdCardPath != null) "$sdCardPath/Android" else null
 
             try {
                 contentResolver.query(
@@ -291,7 +288,7 @@ class MainActivity : AppCompatActivity() {
                     while (cursor.moveToNext() && isActive) {
                         val filePath = cursor.getString(dataColumn)
 
-                        if (filePath.startsWith(excludedPath1) || (excludedPath2 != null && filePath.startsWith(excludedPath2))) {
+                        if (filePath == null || StorageHelper.isAndroidDataDir(filePath, this@MainActivity)) {
                             continue
                         }
 

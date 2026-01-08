@@ -30,8 +30,6 @@ import android.icu.text.DateFormat
 import android.media.MediaScannerConnection
 import android.os.Bundle
 import android.os.Environment
-import android.os.Handler
-import android.os.Looper
 import android.os.StatFs
 import android.provider.MediaStore
 import android.text.Editable
@@ -46,7 +44,6 @@ import android.webkit.MimeTypeMap
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.content.edit
@@ -85,6 +82,7 @@ import com.wirelessalien.zipxtract.helper.FileOperationsDao
 import com.wirelessalien.zipxtract.helper.MultipartArchiveHelper
 import com.wirelessalien.zipxtract.helper.PathUtils
 import com.wirelessalien.zipxtract.helper.Searchable
+import com.wirelessalien.zipxtract.helper.StorageHelper
 import com.wirelessalien.zipxtract.model.FileItem
 import com.wirelessalien.zipxtract.service.DeleteFilesService
 import com.wirelessalien.zipxtract.service.ExtractArchiveService
@@ -406,6 +404,7 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
         val archiveFiles = ArrayList<FileItem>()
         val showHiddenFiles = sharedPreferences.getBoolean("show_hidden_files", false)
         val uri = MediaStore.Files.getContentUri("external")
+        val context = requireContext()
         val projection = arrayOf(
             MediaStore.Files.FileColumns.DATA,
         )
@@ -442,7 +441,7 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
         val sortOrder = "$sortOrderColumn $sortDirection"
 
         try {
-            requireContext().contentResolver.query(
+            context.contentResolver.query(
                 uri,
                 projection,
                 finalSelection,
@@ -452,6 +451,11 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
                 val dataColumn = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DATA)
                 while (cursor.moveToNext()) {
                     val path = cursor.getString(dataColumn)
+
+                    if (path != null && StorageHelper.isAndroidDataDir(path, context)) {
+                        continue
+                    }
+
                     if (path != null) {
                         val file = File(path)
 

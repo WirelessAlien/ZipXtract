@@ -2164,22 +2164,23 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         adapter.updateFilesAndFilter(ArrayList(), currentQuery)
 
         val fastSearchEnabled = sharedPreferences.getBoolean("fast_search", false)
+        val context = requireContext()
 
         // Cancel previous search if any
         searchJob?.cancel()
 
         searchJob = coroutineScope.launch {
             val searchFlow = if (fastSearchEnabled) {
-                searchFilesWithMediaStore(query)
+                searchFilesWithMediaStore(query, context)
             } else {
                 val basePath = Environment.getExternalStorageDirectory().absolutePath
-                val sdCardPath = StorageHelper.getSdCardPath(requireContext())
+                val sdCardPath = StorageHelper.getSdCardPath(context)
                 val searchPath = if (currentPath?.startsWith(sdCardPath ?: "") == true) {
                     sdCardPath ?: basePath
                 } else {
                     basePath
                 }
-                searchAllFiles(File(searchPath), query)
+                searchAllFiles(File(searchPath), query, context)
             }
 
             searchFlow
@@ -2207,7 +2208,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         }
     }
 
-    private fun searchAllFiles(directory: File, query: String): Flow<List<FileItem>> = flow {
+    private fun searchAllFiles(directory: File, query: String, context: Context): Flow<List<FileItem>> = flow {
         val results = mutableListOf<FileItem>()
         val showHiddenFiles = sharedPreferences.getBoolean("show_hidden_files", false)
         var lastEmitTime = 0L
@@ -2216,11 +2217,24 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             val files = dir.listFiles() ?: return
 
             for (file in files) {
+                val filePath = file.absolutePath
+                if (StorageHelper.isAndroidDataDir(filePath, context)) {
+                    continue
+                }
+
                 if (!showHiddenFiles && file.name.startsWith(".")) continue
 
                 if (!currentCoroutineContext().isActive) return
 
                 if (file.isDirectory) {
+                    if (file.name.contains(query, true)) {
+                        results.add(FileItem.fromFile(file))
+                        val currentTime = System.currentTimeMillis()
+                        if (currentTime - lastEmitTime > 300) {
+                            emit(results.toList())
+                            lastEmitTime = currentTime
+                        }
+                    }
                     searchRecursively(file)
                 } else if (file.name.contains(query, true)) {
                     results.add(FileItem.fromFile(file))
@@ -2237,7 +2251,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         emit(results.toList())
     }.distinctUntilChanged { old, new -> old.size == new.size }
 
-    private fun searchFilesWithMediaStore(query: String): Flow<List<FileItem>> = flow {
+    private fun searchFilesWithMediaStore(query: String, context: Context): Flow<List<FileItem>> = flow {
         val results = mutableListOf<FileItem>()
         val showHiddenFiles = sharedPreferences.getBoolean("show_hidden_files", false)
         val projection = arrayOf(
@@ -2251,7 +2265,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         val queryUri = MediaStore.Files.getContentUri("external")
 
         try {
-            requireActivity().contentResolver.query(
+            context.contentResolver.query(
                 queryUri,
                 projection,
                 selection,
@@ -2264,6 +2278,11 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                     if (!currentCoroutineContext().isActive) break
 
                     val filePath = cursor.getString(dataColumn)
+
+                    if (filePath == null || StorageHelper.isAndroidDataDir(filePath, context)) {
+                        continue
+                    }
+
                     val file = File(filePath)
 
                     if (!showHiddenFiles && file.name.startsWith(".")) continue

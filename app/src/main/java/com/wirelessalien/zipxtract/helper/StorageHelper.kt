@@ -54,4 +54,16 @@ object StorageHelper {
         }
         return null
     }
+
+    fun isAndroidDataDir(path: String, context: Context): Boolean {
+        val excludedPath1 = Environment.getExternalStorageDirectory().absolutePath + "/Android"
+        if (path == excludedPath1 || path.startsWith("$excludedPath1/")) return true
+
+        val sdCardPath = getSdCardPath(context)
+        if (sdCardPath != null) {
+            val excludedPath2 = "$sdCardPath/Android"
+            if (path == excludedPath2 || path.startsWith("$excludedPath2/")) return true
+        }
+        return false
+    }
 }
