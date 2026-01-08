@@ -414,7 +414,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             }
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
-        currentPath = arguments?.getString("path")
+        currentPath = arguments?.getString("path") ?: arguments?.getString(ARG_DIRECTORY_PATH)
         searchHandler = Handler(Looper.getMainLooper())
 
         lifecycleScope.launch {
@@ -514,11 +514,6 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         updateCurrentPathChip()
 
         handleOpenWithIntent()
-
-        val directoryPath = arguments?.getString(ARG_DIRECTORY_PATH)
-        if (directoryPath != null) {
-            navigateToPath(directoryPath)
-        }
 
         binding.storageWarningText.setOnClickListener {
             try {
@@ -635,20 +630,15 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     }
 
     private fun navigateToPath(path: String) {
-        if (isAdded) {
-            unselectAllFiles()
+        val fragment = MainFragment().apply {
+            arguments = Bundle().apply {
+                putString("path", path)
+            }
         }
-        fileLoadingJob?.cancel()
-        stopFileObserver()
-        processEventsJob?.cancel()
-        synchronized(pendingFileEvents) {
-            pendingFileEvents.clear()
-        }
-        currentPath = path
-        startFileObserver()
-        updateCurrentPathChip()
-        updateAdapterWithFullList()
-        updateStorageInfo(path)
+        parentFragmentManager.beginTransaction()
+            .replace(R.id.container, fragment)
+            .addToBackStack(null)
+            .commit()
     }
 
     private fun updateStorageInfo(path: String) {
@@ -666,9 +656,9 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 val stat = StatFs(rootPath)
                 val totalSize = stat.totalBytes
                 val availableSize = stat.availableBytes
-                val usedSize = totalSize - availableSize
+//                val usedSize = totalSize - availableSize
 
-                val progress = if (totalSize > 0) ((usedSize.toDouble() / totalSize) * 100).toInt() else 0
+//                val progress = if (totalSize > 0) ((usedSize.toDouble() / totalSize) * 100).toInt() else 0
                 val availablePercentage = if (totalSize > 0) ((availableSize.toDouble() / totalSize) * 100).toInt() else 0
 
                 val totalSizeStr = android.text.format.Formatter.formatFileSize(requireContext(), totalSize)
@@ -860,16 +850,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 return
             }
             if (file.isDirectory) {
-                val fragment = MainFragment().apply {
-                    arguments = Bundle().apply {
-                        putString("path", file.absolutePath)
-                    }
-                }
-                parentFragmentManager.beginTransaction()
-                    .replace(R.id.container, fragment)
-                    .addToBackStack(null)
-                    .commit()
-
+                navigateToPath(file.absolutePath)
             } else {
                 if (file.extension.equals("tar", ignoreCase = true)) {
                     showCompressorArchiveDialog(filePath, file)
@@ -1224,16 +1205,19 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
 
     private fun stopFileObserver() {
-        // Stop the file observer when the activity is destroyed
         fileObserver?.stopWatching()
         isObserving = false
+    }
+
+    override fun onPause() {
+        super.onPause()
+        stopFileObserver()
     }
 
     override fun onDestroy() {
         super.onDestroy()
         fileLoadingJob?.cancel()
         coroutineScope.cancel()
-        stopFileObserver()
         LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(extractionReceiver)
     }
 
