@@ -102,8 +102,10 @@ import com.wirelessalien.zipxtract.constant.ServiceConstants
 import com.wirelessalien.zipxtract.constant.ServiceConstants.EXTRA_DESTINATION_PATH
 import com.wirelessalien.zipxtract.databinding.BottomSheetCompressorArchiveBinding
 import com.wirelessalien.zipxtract.databinding.BottomSheetOptionBinding
+import com.wirelessalien.zipxtract.databinding.BottomSheetStorageSelectionBinding
 import com.wirelessalien.zipxtract.databinding.DialogFileInfoBinding
 import com.wirelessalien.zipxtract.databinding.FragmentMainBinding
+import com.wirelessalien.zipxtract.databinding.ItemStorageSelectionBinding
 import com.wirelessalien.zipxtract.databinding.LayoutPermissionRequestBinding
 import com.wirelessalien.zipxtract.databinding.PasswordInputDialogBinding
 import com.wirelessalien.zipxtract.databinding.ProgressDialogArchiveBinding
@@ -433,33 +435,23 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             initRecyclerView()
         }
 
-        val sdCardPath = StorageHelper.getSdCardPath(requireContext())
-        if (sdCardPath != null) {
-            binding.externalStorageChip.visibility = View.VISIBLE
-            binding.externalStorageChip.setOnClickListener {
-                val currentPathToCheck = currentPath ?: Environment.getExternalStorageDirectory().absolutePath
-                val basePath = Environment.getExternalStorageDirectory().absolutePath
-                if (currentPathToCheck.startsWith(basePath) && !currentPathToCheck.startsWith(sdCardPath)) {
-                    parentFragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
-                    val fragment = MainFragment().apply {
-                        arguments = Bundle().apply {
-                            putString("path", sdCardPath)
-                        }
-                    }
-                    parentFragmentManager.beginTransaction()
-                        .replace(R.id.container, fragment)
-                        .commit()
-                } else if (currentPathToCheck.startsWith(sdCardPath) && !currentPathToCheck.startsWith(basePath)) {
-                    parentFragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
-                    val fragment = MainFragment().apply {
-                        arguments = Bundle().apply {
-                            putString("path", basePath)
-                        }
-                    }
-                    parentFragmentManager.beginTransaction()
-                        .replace(R.id.container, fragment)
-                        .commit()
-                }
+        binding.internalStorageChip.setOnLongClickListener {
+            showStorageSelectionBottomSheet()
+            true
+        }
+
+        binding.internalStorageChip.setOnClickListener {
+            val sdCardPath = StorageHelper.getSdCardPath(requireContext())
+            val basePath = Environment.getExternalStorageDirectory().absolutePath
+            val currentPathToCheck = currentPath ?: basePath
+
+            val targetPath = if (sdCardPath != null && currentPathToCheck.startsWith(sdCardPath)) {
+                sdCardPath
+            } else {
+                basePath
+            }
+            if (currentPathToCheck != targetPath) {
+                navigateToPath(targetPath)
             }
         }
 
@@ -598,6 +590,14 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         val currentPath = currentPath ?: basePath
         val isSdCard = sdCardPath != null && currentPath.startsWith(sdCardPath)
 
+        // Update internalStorageChip text based on current root
+        if (isSdCard) {
+            binding.internalStorageChip.text = sdCardString
+        } else {
+            binding.internalStorageChip.text = internalStorage
+        }
+        binding.internalStorageChip.isChipIconVisible = true
+
         val displayPath = when {
             currentPath.startsWith(basePath) -> currentPath.replace(basePath, internalStorage)
             isSdCard -> currentPath.replace(sdCardPath, sdCardString)
@@ -609,16 +609,18 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         var pathAccumulator = ""
 
         for ((index, part) in displayPath.withIndex()) {
-            val chip = LayoutInflater.from(requireContext()).inflate(R.layout.custom_chip, binding.chipGroupPath, false) as Chip
-            chip.text = part
-
             if (index == 0) {
                 if (part == internalStorage) pathAccumulator = basePath
                 else if (part == sdCardString && isSdCard) pathAccumulator = sdCardPath
                 else pathAccumulator = "/$part"
+
+                continue
             } else {
                 pathAccumulator = if (pathAccumulator.endsWith("/")) "$pathAccumulator$part" else "$pathAccumulator/$part"
             }
+
+            val chip = LayoutInflater.from(requireContext()).inflate(R.layout.custom_chip, binding.chipGroupPath, false) as Chip
+            chip.text = part
 
             val finalPathForChip = pathAccumulator
 
@@ -626,6 +628,92 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 navigateToPath(finalPathForChip)
             }
             binding.chipGroupPath.addView(chip)
+        }
+    }
+
+    private fun showStorageSelectionBottomSheet() {
+        val binding = BottomSheetStorageSelectionBinding.inflate(layoutInflater)
+        val bottomSheetDialog = BottomSheetDialog(requireContext())
+        bottomSheetDialog.setContentView(binding.root)
+
+        val internalPath = Environment.getExternalStorageDirectory().absolutePath
+        val sdCardPath = StorageHelper.getSdCardPath(requireContext())
+        val currentPath = currentPath ?: internalPath
+
+        // Internal Storage Item
+        configureStorageItem(
+            binding.internalStorageItem,
+            internalPath,
+            getString(R.string.internal_storage),
+            R.drawable.ic_mobile,
+            currentPath.startsWith(internalPath) && (sdCardPath == null || !currentPath.startsWith(sdCardPath))
+        ) {
+            parentFragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+            navigateToPath(internalPath)
+            bottomSheetDialog.dismiss()
+        }
+
+        // SD Card Item
+        if (sdCardPath != null) {
+            binding.sdCardItem.root.visibility = View.VISIBLE
+            configureStorageItem(
+                binding.sdCardItem,
+                sdCardPath,
+                getString(R.string.sd_card),
+                R.drawable.ic_sd_card,
+                currentPath.startsWith(sdCardPath)
+            ) {
+                parentFragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                navigateToPath(sdCardPath)
+                bottomSheetDialog.dismiss()
+            }
+        } else {
+            binding.sdCardItem.root.visibility = View.GONE
+        }
+
+        bottomSheetDialog.show()
+    }
+
+    private fun configureStorageItem(
+        itemBinding: ItemStorageSelectionBinding,
+        path: String,
+        title: String,
+        iconRes: Int,
+        isSelected: Boolean,
+        onClick: () -> Unit
+    ) {
+        itemBinding.title.text = title
+        itemBinding.icon.setImageResource(iconRes)
+        itemBinding.root.setOnClickListener { onClick() }
+
+        // Highlight if selected
+        if (isSelected) {
+            val colorSurfaceVariant = MaterialColors.getColor(itemBinding.root, com.google.android.material.R.attr.colorSurfaceVariant)
+            itemBinding.cardView.setCardBackgroundColor(colorSurfaceVariant)
+        } else {
+            itemBinding.cardView.setCardBackgroundColor(android.graphics.Color.TRANSPARENT)
+        }
+
+        // Calculate storage stats
+        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val stat = StatFs(path)
+                val totalBytes = stat.totalBytes
+                val availableBytes = stat.availableBytes
+                val usedBytes = totalBytes - availableBytes
+
+                val totalSizeStr = android.text.format.Formatter.formatFileSize(requireContext(), totalBytes)
+                val availableSizeStr = android.text.format.Formatter.formatFileSize(requireContext(), availableBytes)
+
+                val progress = if (totalBytes > 0) ((usedBytes.toDouble() / totalBytes) * 100).toInt() else 0
+
+                withContext(Dispatchers.Main) {
+                    itemBinding.progressBar.progress = progress
+                    itemBinding.stats.text = getString(R.string.storage_info_format, availableSizeStr, totalSizeStr)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 

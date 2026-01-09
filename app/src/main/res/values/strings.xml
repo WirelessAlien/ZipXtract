@@ -104,11 +104,13 @@
     <string name="wrong_password">Wrong password</string>
     <string name="error_too_many_parts">This would generate %1$d parts</string>
     <string name="file_already_exists">File already exists</string>
+    <string name="select_storage">Select Storage</string>
     <string name="select_archive_type_title">Select archive type</string>
     <string name="add_folder_confirmation_title">Add current folder?</string>
     <string name="add_folder_confirmation_message">Do you want to add the folder \'%1$s\' to the archive?</string>
     <string name="split_parts_number_req">Allow more than 100 split parts</string>
     <string name="compare">Compare</string>
+    <string name="zstd_compression_level_format">ZSTD Compression Level: %d</string>
 
     <!-- Menu items -->
     <string name="move">Move to</string>
@@ -237,7 +239,6 @@
     <string name="gzip" translatable="false">GZIP</string>
     <string name="liberapay" translatable="false">Liberapay</string>
     <string name="author_wirelessalien" translatable="false">Author: Abhilash</string>
-    <string name="zstd_compression_level_format">ZSTD Compression Level: %d</string>
     <string name="zstd" translatable="false">ZSTD</string>
     <string name="md5" translatable="false">MD5</string>
     <string name="sha1" translatable="false">SHA-1</string>

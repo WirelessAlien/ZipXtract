@@ -62,19 +62,8 @@
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
                 android:orientation="horizontal">
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/externalStorageChip"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    style="@style/Widget.MaterialComponents.Chip.Choice"
-                    android:elevation="0dp"
-                    android:clickable="true"
-                    android:checkable="false"
-                    app:chipIconVisible="false"
-                    app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Full"
-                    android:text="@string/change_unc"/>
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/internalStorageChip"
@@ -82,29 +71,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/internal_storage"
-                    android:layout_marginStart="5dp"
+                    android:checkable="false"
                     app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Full"
-                    android:visibility="gone" />
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/sdCardChip"
-                    style="@style/Widget.MaterialComponents.Chip.Choice"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/sd_card"
-                    android:layout_marginStart="3dp"
-                    app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Full"
-                    android:visibility="gone" />
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/rootChip"
-                    style="@style/Widget.MaterialComponents.Chip.Choice"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/root"
-                    app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Full"
-                    android:layout_marginStart="3dp"
-                    android:visibility="gone" />
+                    android:visibility="visible" />
 
                 <com.google.android.material.chip.ChipGroup
                     android:id="@+id/chipGroupPath"
