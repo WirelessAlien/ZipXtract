@@ -64,14 +64,23 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
     private var highlightedFile: File? = null
 
     fun highlightFile(file: File) {
+        val previousHighlighted = highlightedFile
         highlightedFile = file
-        notifyDataSetChanged()
+
+        if (previousHighlighted != null) {
+            val oldIndex = filteredFiles.indexOfFirst { it.file == previousHighlighted }
+            if (oldIndex != -1) notifyItemChanged(oldIndex)
+        }
+
+        val newIndex = filteredFiles.indexOfFirst { it.file == file }
+        if (newIndex != -1) notifyItemChanged(newIndex)
     }
 
     fun clearHighlight() {
         if (highlightedFile != null) {
+            val oldIndex = filteredFiles.indexOfFirst { it.file == highlightedFile }
             highlightedFile = null
-            notifyDataSetChanged()
+            if (oldIndex != -1) notifyItemChanged(oldIndex)
         }
     }
 

@@ -2298,7 +2298,8 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
     fun navigateToPathAndHighlight(directoryPath: String, highlightFilePath: String) {
         if (directoryPath == currentPath) {
-            highlightFile(highlightFilePath)
+            arguments?.putString(ARG_HIGHLIGHT_FILE_PATH, highlightFilePath)
+            onSearch("")
         } else {
             val fragment = MainFragment().apply {
                 arguments = Bundle().apply {
@@ -2316,7 +2317,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     private fun highlightFile(filePath: String) {
         val position = adapter.files.indexOfFirst { it.file.absolutePath == filePath }
         if (position != -1) {
-            binding.recyclerView.scrollToPosition(position)
+            (binding.recyclerView.layoutManager as? LinearLayoutManager)?.scrollToPositionWithOffset(position, 0)
             val fileItem = adapter.files[position]
             adapter.highlightFile(fileItem.file)
         }
