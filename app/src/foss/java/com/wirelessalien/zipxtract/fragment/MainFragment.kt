@@ -650,7 +650,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             R.drawable.ic_mobile,
             currentPath.startsWith(internalPath) && (sdCardPath == null || !currentPath.startsWith(sdCardPath))
         ) {
-            parentFragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+            parentFragmentManager.popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
             navigateToPath(internalPath)
             bottomSheetDialog.dismiss()
         }
@@ -665,7 +665,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 R.drawable.ic_sd_card,
                 currentPath.startsWith(sdCardPath)
             ) {
-                parentFragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                parentFragmentManager.popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
                 navigateToPath(sdCardPath)
                 bottomSheetDialog.dismiss()
             }
