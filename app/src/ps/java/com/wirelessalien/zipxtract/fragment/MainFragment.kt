@@ -1315,6 +1315,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 //            updateAdapterWithFullList()
             startFileObserver()
         }
+        requireActivity().invalidateMenu()
     }
 
     private fun showCompressorArchiveDialog(filePath: String, file: File) {
