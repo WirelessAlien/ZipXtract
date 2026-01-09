@@ -1929,7 +1929,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         ContextCompat.startForegroundService(requireContext(), intent)
     }
 
-    private suspend fun getFiles(): ArrayList<FileItem> = withContext(Dispatchers.IO) {
+    private suspend fun getFiles(): ArrayList<FileItem>? = withContext(Dispatchers.IO) {
         val files = ArrayList<FileItem>()
         val directories = ArrayList<FileItem>()
         val showHiddenFiles = sharedPreferences.getBoolean("show_hidden_files", false)
@@ -1943,7 +1943,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 binding.recyclerView.visibility = View.GONE
                 binding.emptyFolderLayout.visibility = View.GONE
             }
-            return@withContext files
+            return@withContext null
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -2069,12 +2069,16 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                     withContext(Dispatchers.Main) {
                         binding.shimmerViewContainer.stopShimmer()
                         binding.shimmerViewContainer.visibility = View.GONE
-                        if (fullFileList.isEmpty()) {
-                            binding.emptyFolderLayout.visibility = View.VISIBLE
+                        if (fullFileList != null) {
+                            if (fullFileList.isEmpty()) {
+                                binding.emptyFolderLayout.visibility = View.VISIBLE
+                            } else {
+                                binding.recyclerView.visibility = View.VISIBLE
+                            }
+                            adapter.updateFilesAndFilter(fullFileList, currentQuery)
                         } else {
-                            binding.recyclerView.visibility = View.VISIBLE
+                            adapter.updateFilesAndFilter(ArrayList(), currentQuery)
                         }
-                        adapter.updateFilesAndFilter(fullFileList, currentQuery)
                         binding.swipeRefreshLayout.isRefreshing = false
 
                         val highlightFilePath = arguments?.getString(ARG_HIGHLIGHT_FILE_PATH)
