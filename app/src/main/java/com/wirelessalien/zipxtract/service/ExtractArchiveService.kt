@@ -403,13 +403,17 @@ class ExtractArchiveService : Service() {
                         while (entry != 0L) {
                             val entryPath = getEntryPath(entry)
                             val outputFile = File(destinationDir, entryPath)
-                            val lastModifiedTime = ArchiveEntry.mtime(entry)
+                            val lastModifiedTime = if (ArchiveEntry.mtimeIsSet(entry)) {
+                                ArchiveEntry.mtime(entry) * 1000
+                            } else {
+                                System.currentTimeMillis()
+                            }
 
                             outputFile.parentFile?.mkdirs()
 
                             if (entryPath.endsWith("/")) {
                                 outputFile.mkdirs()
-                                directories.add(DirectoryInfo(outputFile.path, lastModifiedTime * 1000))
+                                directories.add(DirectoryInfo(outputFile.path, lastModifiedTime))
                             } else {
                                 BufferedOutputStream(outputFile.outputStream()).use { outputStream ->
                                     val readBuffer = ByteBuffer.allocateDirect(DEFAULT_BUFFER_SIZE)
@@ -427,7 +431,7 @@ class ExtractArchiveService : Service() {
                                         outputStream.write(bytes)
                                     }
                                 }
-                                outputFile.setLastModified(lastModifiedTime * 1000)
+                                outputFile.setLastModified(lastModifiedTime)
                             }
                             entry = Archive.readNextHeader(archive)
                         }
@@ -535,7 +539,8 @@ class ExtractArchiveService : Service() {
                     val outputFile = File(destinationDir, entry.name)
                     if (entry.isDirectory) {
                         outputFile.mkdirs()
-                        directories.add(DirectoryInfo(outputFile.path, entry.modTime.time))
+                        val lastModified = if (entry.modTime.time > 0) entry.modTime.time else System.currentTimeMillis()
+                        directories.add(DirectoryInfo(outputFile.path, lastModified))
                     } else {
                         outputFile.parentFile?.mkdirs()
                         FileOutputStream(outputFile).use { output ->
@@ -553,7 +558,9 @@ class ExtractArchiveService : Service() {
                                 }
                             }
                         }
-                        outputFile.setLastModified(entry.modTime.time)
+                        if (entry.modTime.time > 0) {
+                            outputFile.setLastModified(entry.modTime.time)
+                        }
 
                     }
                     entry = tarInput.nextEntry
@@ -632,7 +639,8 @@ class ExtractArchiveService : Service() {
             for (fileHeader in zipFile.fileHeaders) {
                 if (fileHeader.isDirectory) {
                     val directoryPath = File(destinationDir, fileHeader.fileName).path
-                    directories.add(DirectoryInfo(directoryPath, fileHeader.lastModifiedTimeEpoch))
+                    val lastModified = if (fileHeader.lastModifiedTime > 0) fileHeader.lastModifiedTimeEpoch else System.currentTimeMillis()
+                    directories.add(DirectoryInfo(directoryPath, lastModified))
                 }
             }
             zipFile.extractAll(destinationDir.absolutePath)
@@ -757,7 +765,7 @@ class ExtractArchiveService : Service() {
                                     this.currentFileIndex,
                                     PropID.LAST_MODIFICATION_TIME
                                 ) as? Date
-                            if (modTime != null) {
+                            if (modTime != null && modTime.time > 0) {
                                 this.currentUnpackedFile!!.setLastModified(modTime.time)
                             }
                         }
@@ -794,9 +802,8 @@ class ExtractArchiveService : Service() {
 
             if (isDir) {
                 this.currentUnpackedFile!!.mkdirs()
-                val lastModified =
-                    (inArchive.getProperty(p0, PropID.LAST_MODIFICATION_TIME) as? Date)?.time
-                        ?: System.currentTimeMillis()
+                val modTime = (inArchive.getProperty(p0, PropID.LAST_MODIFICATION_TIME) as? Date)?.time
+                val lastModified = if (modTime != null && modTime > 0) modTime else System.currentTimeMillis()
                 directories.add(DirectoryInfo(this.currentUnpackedFile!!.path, lastModified))
             } else {
                 try {

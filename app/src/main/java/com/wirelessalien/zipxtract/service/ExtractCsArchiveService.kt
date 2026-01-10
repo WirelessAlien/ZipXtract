@@ -257,7 +257,8 @@ class ExtractCsArchiveService : Service() {
                     val outputFile = File(destinationDir, entry.name)
                     if (entry.isDirectory) {
                         outputFile.mkdirs()
-                        directories.add(DirectoryInfo(outputFile.path, entry.lastModifiedDate.time))
+                        val lastModified = if (entry.lastModifiedDate.time > 0) entry.lastModifiedDate.time else System.currentTimeMillis()
+                        directories.add(DirectoryInfo(outputFile.path, lastModified))
                     } else {
                         outputFile.parentFile?.mkdirs()
                         FileOutputStream(outputFile).use { output ->
@@ -275,7 +276,9 @@ class ExtractCsArchiveService : Service() {
                                 }
                             }
                         }
-                        outputFile.setLastModified(entry.lastModifiedDate.time)
+                        if (entry.lastModifiedDate.time > 0) {
+                            outputFile.setLastModified(entry.lastModifiedDate.time)
+                        }
                     }
                     entry = tarInput.nextEntry
                 }

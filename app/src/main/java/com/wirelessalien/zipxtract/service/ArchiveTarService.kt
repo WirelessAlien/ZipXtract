@@ -340,7 +340,8 @@ class ArchiveTarService : Service() {
                 item.dataSize = file.length()
                 item.propertyPath = relativePath
                 item.propertyIsDir = file.isDirectory
-                item.propertyLastModificationTime = Date(file.lastModified())
+                val lastModified = file.lastModified()
+                item.propertyLastModificationTime = Date(if (lastModified > 0) lastModified else System.currentTimeMillis())
 
                 return item
             }
