@@ -102,7 +102,7 @@ class ArchiveItemAdapter(
 
         binding.fileName.text = item.path.substringAfterLast('/')
 
-        val dateFormat = DateFormat.getDateInstance(DateFormat.SHORT, Locale.getDefault())
+        val dateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM, Locale.getDefault())
         val dateString = item.lastModified?.let { dateFormat.format(it) } ?: ""
 
         if (item.isDirectory) {
