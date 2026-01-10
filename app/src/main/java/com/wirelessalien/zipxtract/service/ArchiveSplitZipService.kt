@@ -47,6 +47,7 @@ import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_PROGRESS
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.PREFERENCE_ARCHIVE_DIR_PATH
 import com.wirelessalien.zipxtract.constant.ServiceConstants
 import com.wirelessalien.zipxtract.helper.FileOperationsDao
+import com.wirelessalien.zipxtract.helper.FileUtils.getAllFiles
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -60,8 +61,6 @@ import net.lingala.zip4j.model.enums.CompressionMethod
 import net.lingala.zip4j.model.enums.EncryptionMethod
 import net.lingala.zip4j.progress.ProgressMonitor
 import java.io.File
-import java.nio.file.Files
-import java.nio.file.StandardCopyOption
 
 class ArchiveSplitZipService : Service() {
 
@@ -257,39 +256,12 @@ class ArchiveSplitZipService : Service() {
             progressMonitor = zipFile.progressMonitor
 
             try {
-                val tempDir = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    Files.createTempDirectory("tempArchive").toFile()
-                } else {
-                    val tempDir = File(cacheDir, "tempArchive")
-                    tempDir.mkdirs()
-                    tempDir
-                }
-                val renamedTempDir = File(tempDir.parent, archiveName)
-                tempDir.renameTo(renamedTempDir)
-
-                selectedFiles.forEach { filePath ->
-                    val file = File(filePath)
-                    val destFile = File(renamedTempDir, file.relativeTo(baseDirectory!!).path)
-                    if (file.isDirectory) {
-                        destFile.mkdirs()
-                        file.copyRecursively(destFile, overwrite = true)
-                    } else {
-                        destFile.parentFile?.mkdirs()
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            Files.copy(file.toPath(), destFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
-                        } else {
-                            file.inputStream().use { input ->
-                                destFile.outputStream().use { output ->
-                                    input.copyTo(output)
-                                }
-                            }
-                        }
-                    }
-
-                    destFile.setLastModified(file.lastModified())
+                if (baseDirectory != null) {
+                    zipParameters.defaultFolderPath = baseDirectory.absolutePath
                 }
 
-                zipFile.createSplitZipFileFromFolder(renamedTempDir, zipParameters, true, splitSize)
+                val filesToAdd = getAllFiles(selectedFiles.map { File(it) })
+                zipFile.createSplitZipFile(filesToAdd, zipParameters, true, splitSize)
 
                 var lastProgress = -1
                 while (!progressMonitor!!.state.equals(ProgressMonitor.State.READY)) {
@@ -312,8 +284,6 @@ class ArchiveSplitZipService : Service() {
                     sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, progressMonitor!!.result))
                 }
 
-                renamedTempDir.deleteRecursively()
-
             } catch (e: ZipException) {
                 e.printStackTrace()
                 showErrorNotification(e.message ?: getString(R.string.general_error_msg))
@@ -324,8 +294,6 @@ class ArchiveSplitZipService : Service() {
             e.printStackTrace()
             showErrorNotification(e.message ?: getString(R.string.general_error_msg))
             sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message))
-        } finally {
-            filesDir.deleteRecursively()
         }
     }
 

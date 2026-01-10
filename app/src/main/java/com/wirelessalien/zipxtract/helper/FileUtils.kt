@@ -194,4 +194,20 @@ object FileUtils {
         }
         return 1
     }
+
+    fun getAllFiles(files: List<File>): List<File> {
+        val allFiles = ArrayList<File>()
+        files.forEach { file ->
+            if (file.isDirectory) {
+                file.walk().forEach {
+                    allFiles.add(it)
+                }
+            } else {
+                if (file.exists()) {
+                    allFiles.add(file)
+                }
+            }
+        }
+        return allFiles.distinct()
+    }
 }
