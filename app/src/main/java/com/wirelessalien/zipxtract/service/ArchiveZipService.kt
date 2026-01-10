@@ -277,32 +277,7 @@ class ArchiveZipService : Service() {
                     val destFile = File(renamedTempDir, file.relativeTo(baseDirectory!!).path)
                     if (file.isDirectory) {
                         destFile.mkdirs()
-                        val dirsToSetTime = mutableListOf<Pair<File, Long>>()
-                        file.walk().forEach { source ->
-                            val target = File(destFile, source.relativeTo(file).path)
-                            if (source.isDirectory) {
-                                target.mkdirs()
-                                val lastModified = source.lastModified()
-                                dirsToSetTime.add(target to (if (lastModified > 0) lastModified else System.currentTimeMillis()))
-                            } else {
-                                target.parentFile?.mkdirs()
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                    Files.copy(source.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING)
-                                } else {
-                                    source.inputStream().use { input ->
-                                        target.outputStream().use { output ->
-                                            input.copyTo(output)
-                                        }
-                                    }
-                                }
-                                val lastModified = source.lastModified()
-                                target.setLastModified(if (lastModified > 0) lastModified else System.currentTimeMillis())
-                            }
-                        }
-                        dirsToSetTime.reverse()
-                        dirsToSetTime.forEach { (dir, time) ->
-                            dir.setLastModified(time)
-                        }
+                        file.copyRecursively(destFile, overwrite = true)
                     } else {
                         destFile.parentFile?.mkdirs()
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -314,9 +289,9 @@ class ArchiveZipService : Service() {
                                 }
                             }
                         }
-                        val lastModified = file.lastModified()
-                        destFile.setLastModified(if (lastModified > 0) lastModified else System.currentTimeMillis())
                     }
+
+                    destFile.setLastModified(file.lastModified())
                 }
 
                 zipFile.addFolder(renamedTempDir, zipParameters)
