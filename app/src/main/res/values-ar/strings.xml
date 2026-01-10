@@ -129,7 +129,6 @@
     <string name="error_too_many_parts">This would generate %1$d parts</string>
     <string name="select_archive_type_title">نوع المحفوظات المختارة</string>
     <string name="add_folder_confirmation_title">أضف الملف الحالي؟?</string>
-    <string name="add_folder_confirmation_message">هل تريد إضافة الملف إلى المحفوظات؟?</string>
     <string name="split_parts_number_req">السماح بأكثر من 100 جزء مقسم</string>
     <string name="fast_search">البحث السريع</string>
     <string name="fast_search_summary">استخدام الرقم القياسي لوسائط الإعلام أندرويد للبحث السريع</string>

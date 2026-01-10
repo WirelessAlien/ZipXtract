@@ -134,7 +134,6 @@ import com.wirelessalien.zipxtract.viewmodel.FileOperationViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.Runnable
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.currentCoroutineContext
@@ -185,7 +184,6 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     private lateinit var eProgressBar: LinearProgressIndicator
     private lateinit var aProgressBar: LinearProgressIndicator
     private lateinit var binding: FragmentMainBinding
-    private val handler = Handler(Looper.getMainLooper())
     private var fileLoadingJob: Job? = null
     private val coroutineScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     private var storageInfoJob: Job? = null
@@ -206,33 +204,12 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     private var processEventsJob: Job? = null
 
 
-    private val updateProgressRunnable = object : Runnable {
-        override fun run() {
-            if (aProgressBar.progress >= 100) {
-                aProgressBar.progress = 70
-            } else {
-                aProgressBar.progress += 1
-            }
-            aProgressText.text = getString(R.string.compressing_progress, aProgressBar.progress)
-            handler.postDelayed(this, 1000)
-
-            if (eProgressBar.progress >= 100) {
-                eProgressBar.progress = 70
-            } else {
-                eProgressBar.progress += 1
-            }
-            eProgressText.text = getString(R.string.extracting_progress, eProgressBar.progress)
-            handler.postDelayed(this, 1000)
-        }
-    }
-
     private val extractionReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (!isAdded) return
 
             when (intent?.action) {
                 ACTION_EXTRACTION_COMPLETE -> {
-                    handler.removeCallbacks(updateProgressRunnable)
                     val dirPath = intent.getStringExtra(EXTRA_DIR_PATH)
                     Log.d("MainFragment", "onReceive: $dirPath")
                     if (dirPath != null) {
@@ -246,11 +223,12 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                     }
                     unselectAllFiles()
                     eProgressDialog.dismiss()
+                    eProgressBar.isIndeterminate = false
                 }
                 ACTION_EXTRACTION_ERROR -> {
-                    handler.removeCallbacks(updateProgressRunnable)
                     unselectAllFiles()
                     eProgressDialog.dismiss()
+                    eProgressBar.isIndeterminate = false
                     val errorMessage = intent.getStringExtra(EXTRA_ERROR_MESSAGE)
                     Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show()
                 }
@@ -258,16 +236,13 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                     val progress = intent.getIntExtra(EXTRA_PROGRESS, 0)
                     updateProgressBar(progress)
                     if (progress == 100) {
-                        eProgressBar.progress = 80
-                        eProgressText.text = getString(R.string.extracting_progress, 80)
-                        handler.post(updateProgressRunnable)
+                        eProgressBar.isIndeterminate = true
                     } else {
                         eProgressBar.progress = progress
                         eProgressText.text = getString(R.string.extracting_progress, progress)
                     }
                 }
                 ACTION_ARCHIVE_COMPLETE -> {
-                    handler.removeCallbacks(updateProgressRunnable)
                     val dirPath = intent.getStringExtra(EXTRA_DIR_PATH)
                     if (dirPath != null) {
                         Snackbar.make(binding.root, getString(R.string.open_folder), Snackbar.LENGTH_LONG)
@@ -280,11 +255,12 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                     }
                     unselectAllFiles()
                     aProgressDialog.dismiss()
+                    aProgressBar.isIndeterminate = false
                 }
                 ACTION_ARCHIVE_ERROR -> {
-                    handler.removeCallbacks(updateProgressRunnable)
                     unselectAllFiles()
                     aProgressDialog.dismiss()
+                    aProgressBar.isIndeterminate = false
                     val errorMessage = intent.getStringExtra(EXTRA_ERROR_MESSAGE)
                     Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show()
                 }
@@ -292,9 +268,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                     val progress = intent.getIntExtra(EXTRA_PROGRESS, 0)
                     updateProgressBar(progress)
                     if (progress == 100) {
-                        aProgressBar.progress = 80
-                        aProgressText.text = getString(R.string.compressing_progress, 80)
-                        handler.post(updateProgressRunnable)
+                        aProgressBar.isIndeterminate = true
                     } else {
                         aProgressBar.progress = progress
                         aProgressText.text = getString(R.string.compressing_progress, progress)
@@ -451,7 +425,18 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 basePath
             }
             if (currentPathToCheck != targetPath) {
-                navigateToPath(targetPath)
+                if (parentFragmentManager.backStackEntryCount > 0) {
+                    val firstEntry = parentFragmentManager.getBackStackEntryAt(0)
+                    parentFragmentManager.popBackStackImmediate(firstEntry.id, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                }
+                val fragment = MainFragment().apply {
+                    arguments = Bundle().apply {
+                        putString("path", targetPath)
+                    }
+                }
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.container, fragment)
+                    .commit()
             }
         }
 
@@ -2039,13 +2024,16 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             try {
                 Files.newDirectoryStream(directory.toPath()).use { directoryStream ->
                     for (path in directoryStream) {
-                        val file = path.toFile()
-                        if (!showHiddenFiles && file.name.startsWith(".")) continue
-
-                        if (file.isDirectory) {
-                            directories.add(FileItem.fromFile(file))
-                        } else {
-                            files.add(FileItem.fromFile(file))
+                        // Use fromPath
+                        try {
+                            val item = FileItem.fromPath(path)
+                            if (!showHiddenFiles && item.file.name.startsWith(".")) continue
+                            if (item.isDirectory) directories.add(item) else files.add(item)
+                        } catch (e: Exception) {
+                            // fallback to file
+                            val file = path.toFile()
+                            if (!showHiddenFiles && file.name.startsWith(".")) continue
+                            if (file.isDirectory) directories.add(FileItem.fromFile(file)) else files.add(FileItem.fromFile(file))
                         }
                     }
                 }

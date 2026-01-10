@@ -24,6 +24,7 @@ import android.os.Environment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.PopupMenu
 import androidx.appcompat.view.ActionMode
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -118,22 +119,55 @@ class PathPickerFragment : BottomSheetDialogFragment(), FilePickerAdapter.OnItem
             dismiss()
         }
 
-        val sdCardPath = StorageHelper.getSdCardPath(requireContext())
-        if (sdCardPath != null) {
-            binding.externalStorageChip.visibility = View.VISIBLE
-            binding.externalStorageChip.setOnClickListener {
-                val currentPathToCheck = currentPath
-                val basePath = Environment.getExternalStorageDirectory().absolutePath
-                if (currentPathToCheck.startsWith(basePath) && !currentPathToCheck.startsWith(sdCardPath)) {
-                    loadFiles(sdCardPath)
-                } else if (currentPathToCheck.startsWith(sdCardPath) && !currentPathToCheck.startsWith(basePath)) {
-                    loadFiles(basePath)
-                }
+        binding.storageChip.setOnLongClickListener {
+            showStoragePopupMenu(it)
+            true
+        }
+
+        binding.storageChip.setOnClickListener {
+            val sdCardPath = StorageHelper.getSdCardPath(requireContext())
+            val basePath = Environment.getExternalStorageDirectory().absolutePath
+            val currentPathToCheck = currentPath
+
+            val targetPath = if (sdCardPath != null && currentPathToCheck.startsWith(sdCardPath)) {
+                sdCardPath
+            } else {
+                basePath
+            }
+            if (currentPathToCheck != targetPath) {
+                loadFiles(targetPath)
             }
         }
 
         loadFiles(currentPath)
         updateCurrentPathChip()
+    }
+
+    private fun showStoragePopupMenu(view: View) {
+        val popup = PopupMenu(requireContext(), view)
+        val internalStorage = getString(R.string.internal_storage)
+        val sdCardString = getString(R.string.sd_card)
+        val sdCardPath = StorageHelper.getSdCardPath(requireContext())
+
+        popup.menu.add(0, 1, 0, internalStorage)
+        if (sdCardPath != null) {
+            popup.menu.add(0, 2, 1, sdCardString)
+        }
+
+        popup.setOnMenuItemClickListener { menuItem ->
+            when (menuItem.itemId) {
+                1 -> {
+                    loadFiles(Environment.getExternalStorageDirectory().absolutePath)
+                    true
+                }
+                2 -> {
+                    if (sdCardPath != null) loadFiles(sdCardPath)
+                    true
+                }
+                else -> false
+            }
+        }
+        popup.show()
     }
 
     private fun updateCurrentPathChip() {
@@ -142,6 +176,14 @@ class PathPickerFragment : BottomSheetDialogFragment(), FilePickerAdapter.OnItem
         val sdCardPath = StorageHelper.getSdCardPath(requireContext())
         val basePath = Environment.getExternalStorageDirectory().absolutePath
         val isSdCard = sdCardPath != null && currentPath.startsWith(sdCardPath)
+
+        // Update storageChip text based on current root
+        if (isSdCard) {
+            binding.storageChip.text = sdCardString
+        } else {
+            binding.storageChip.text = internalStorage
+        }
+        binding.storageChip.isChipIconVisible = true
 
         val displayPath = when {
             currentPath.startsWith(basePath) -> currentPath.replace(basePath, internalStorage)
@@ -154,16 +196,18 @@ class PathPickerFragment : BottomSheetDialogFragment(), FilePickerAdapter.OnItem
         var pathAccumulator = ""
 
         for ((index, part) in displayPath.withIndex()) {
-            val chip = LayoutInflater.from(requireContext()).inflate(R.layout.custom_chip, binding.chipGroupPath, false) as Chip
-            chip.text = part
-
             if (index == 0) {
                 if (part == internalStorage) pathAccumulator = basePath
                 else if (part == sdCardString && isSdCard) pathAccumulator = sdCardPath
                 else pathAccumulator = "/$part"
+
+                continue
             } else {
                 pathAccumulator = if (pathAccumulator.endsWith("/")) "$pathAccumulator$part" else "$pathAccumulator/$part"
             }
+
+            val chip = LayoutInflater.from(requireContext()).inflate(R.layout.custom_chip, binding.chipGroupPath, false) as Chip
+            chip.text = part
 
             val finalPathForChip = pathAccumulator
 

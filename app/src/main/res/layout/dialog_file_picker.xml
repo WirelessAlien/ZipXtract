@@ -67,16 +67,15 @@
                 android:orientation="horizontal">
 
                 <com.google.android.material.chip.Chip
-                    android:id="@+id/externalStorageChip"
+                    android:id="@+id/storageChip"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    style="@style/Widget.MaterialComponents.Chip.Choice"
-                    android:elevation="0dp"
+                    android:text="@string/internal_storage"
                     android:clickable="true"
                     android:checkable="false"
-                    app:chipIconVisible="false"
                     app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Full"
-                    android:text="@string/change_unc"/>
+                    android:visibility="visible" />
 
                 <com.google.android.material.chip.ChipGroup
                     android:id="@+id/chipGroupPath"

@@ -125,7 +125,6 @@
     <string name="add">Add</string>
     <string name="directory_selection_disabled">Folder seçilebilir, içindeki dosyaları seçin.</string>
     <string name="select_file">Dosyayı seçin..</string>
-    <string name="select_files">Add ([X5X)</string>
     <string name="donate_desc">ZipXtract faydalı bulursanız, lütfen gelişimini desteklemeyi düşünün:</string>
     <string name="error_too_many_parts">Bu %1$d parçaları üretecektir</string>
     <string name="select_archive_type_title">Arşiv türü seçin</string>
