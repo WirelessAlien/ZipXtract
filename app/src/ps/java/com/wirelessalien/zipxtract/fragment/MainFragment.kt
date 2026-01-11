@@ -1309,8 +1309,13 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     override fun onResume() {
         super.onResume()
         if (checkStoragePermissions()) {
-//            updateAdapterWithFullList()
-            startFileObserver()
+            if (binding.root.childCount > 0 && binding.root.getChildAt(0).id == R.id.permission_request_root) {
+                // If permission layout is shown, but permission is granted (user came back from settings)
+                requireActivity().recreate()
+            } else {
+//              updateAdapterWithFullList()
+                startFileObserver()
+            }
         }
         requireActivity().invalidateMenu()
     }

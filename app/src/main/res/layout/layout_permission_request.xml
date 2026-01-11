@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?><!--
+<?xml version="1.0" encoding="utf-8"?>
+<!--
   ~  Copyright (C) 2023  WirelessAlien <https://github.com/WirelessAlien>
   ~
   ~     This program is free software: you can redistribute it and/or modify
@@ -17,10 +18,12 @@
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/permission_request_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:gravity="center"
+    android:layout_gravity="center"
+    android:orientation="vertical"
     android:fitsSystemWindows="true">
 
     <TextView
@@ -28,6 +31,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/storage_access_title"
+        android:layout_gravity="center"
         android:textSize="22sp"
         android:textStyle="bold"
         android:gravity="center"
@@ -44,7 +48,7 @@
         android:textSize="16sp"
         android:gravity="center"
         android:textColor="?attr/colorOnSurfaceVariant"
-        android:layout_marginBottom="32dp"
+        android:layout_marginBottom="24dp"
         android:layout_marginStart="24dp"
         android:layout_marginEnd="24dp"/>
 
@@ -56,8 +60,9 @@
         android:paddingVertical="12dp"
         app:icon="@drawable/ic_folder"
         app:iconGravity="textStart"
+        android:layout_gravity="center"
         style="@style/Widget.Material3.Button.TonalButton"
-        android:layout_marginBottom="24dp"
+        android:layout_marginBottom="16dp"
         android:layout_marginStart="24dp"
         android:layout_marginEnd="24dp"/>
 
@@ -67,11 +72,11 @@
         android:layout_height="wrap_content"
         android:text="@string/storage_safety_text"
         android:textSize="14sp"
-        android:gravity="center_vertical"
+        android:layout_gravity="center"
         android:textColor="?attr/colorOnSurfaceVariant"
         app:drawableStartCompat="@drawable/ic_security"
         android:drawablePadding="8dp"
-        android:layout_marginBottom="24dp"
+        android:layout_marginBottom="16dp"
         android:layout_marginStart="24dp"
         android:layout_marginEnd="24dp"/>
 
@@ -87,7 +92,8 @@
         android:background="?attr/selectableItemBackground"
         android:padding="8dp"
         app:fontFamily="sans-serif-medium"
-        android:layout_marginTop="16dp"
+        android:layout_gravity="center"
+        android:layout_marginBottom="32dp"
         android:layout_marginStart="24dp"
         android:layout_marginEnd="24dp"/>
 </LinearLayout>
