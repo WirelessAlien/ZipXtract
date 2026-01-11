@@ -214,6 +214,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                     Log.d("MainFragment", "onReceive: $dirPath")
                     if (dirPath != null) {
                         Snackbar.make(binding.root, getString(R.string.open_folder), Snackbar.LENGTH_LONG)
+                            .setAnchorView(binding.mainFab)
                             .setAction(getString(R.string.ok)) {
                                 navigateToPath(dirPath)
                             }
@@ -246,6 +247,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                     val dirPath = intent.getStringExtra(EXTRA_DIR_PATH)
                     if (dirPath != null) {
                         Snackbar.make(binding.root, getString(R.string.open_folder), Snackbar.LENGTH_LONG)
+                            .setAnchorView(binding.mainFab)
                             .setAction(getString(R.string.ok)) {
                                 navigateToPath(dirPath)
                             }
