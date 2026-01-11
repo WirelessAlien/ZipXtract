@@ -1276,6 +1276,16 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         }
 
         adapter.updateFilesAndFilter(updatedFiles, currentQuery)
+
+        withContext(Dispatchers.Main) {
+            if (updatedFiles.isEmpty()) {
+                binding.emptyFolderLayout.visibility = View.VISIBLE
+                binding.recyclerView.visibility = View.GONE
+            } else {
+                binding.emptyFolderLayout.visibility = View.GONE
+                binding.recyclerView.visibility = View.VISIBLE
+            }
+        }
     }
 
 
