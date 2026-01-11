@@ -38,10 +38,14 @@ import com.wirelessalien.zipxtract.constant.ServiceConstants
 import com.wirelessalien.zipxtract.databinding.DialogArchiveTypeBinding
 import com.wirelessalien.zipxtract.databinding.DialogCrashLogBinding
 import com.wirelessalien.zipxtract.databinding.PasswordInputOpenWithBinding
+import com.wirelessalien.zipxtract.helper.EncryptionCheckHelper
 import com.wirelessalien.zipxtract.helper.FileOperationsDao
 import com.wirelessalien.zipxtract.helper.FileUtils
+import com.wirelessalien.zipxtract.helper.MultipartArchiveHelper
 import com.wirelessalien.zipxtract.service.ExtractArchiveService
 import com.wirelessalien.zipxtract.service.ExtractCsArchiveService
+import com.wirelessalien.zipxtract.service.ExtractMultipart7zService
+import com.wirelessalien.zipxtract.service.ExtractMultipartZipService
 import com.wirelessalien.zipxtract.service.ExtractRarService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -154,34 +158,81 @@ class OpenWithActivity : AppCompatActivity() {
 
         lifecycleScope.launch(Dispatchers.IO) {
             val filePath = getRealPathFromURI(uri, this@OpenWithActivity)
-
-            var isEncrypted = true
-            var isZip = false
+            withContext(Dispatchers.Main) {
+                progressDialog.dismiss()
+            }
 
             if (filePath != null) {
                 val file = File(filePath)
-                if (file.extension.equals("zip", ignoreCase = true)) {
-                    isZip = true
-                    try {
-                        net.lingala.zip4j.ZipFile(file).use { zipFile ->
-                            isEncrypted = zipFile.isEncrypted
-                        }
-                    } catch (e: Exception) {
-                        // isEncrypted remains true
-                    }
-                }
-            }
+                val fileExtension = file.name.split('.').takeLast(2).joinToString(".").lowercase()
+                val supportedExtensions = listOf("tar.bz2", "tar.gz", "tar.lz4", "tar.lzma", "tar.sz", "tar.xz", "tar.zstd", "tar.zst")
 
-            withContext(Dispatchers.Main) {
-                progressDialog.dismiss()
-                if (filePath != null) {
-                    if (isZip && !isEncrypted) {
-                        handleFileExtraction(filePath, null)
+                if (supportedExtensions.any { fileExtension.endsWith(it) }) {
+                    withContext(Dispatchers.Main) {
+                        startExtractionCsService(filePath)
                         finish()
-                    } else {
-                        showPasswordInputDialog(filePath)
                     }
                 } else {
+                    withContext(Dispatchers.Main) {
+                        if (file.extension.equals("tar", ignoreCase = true)) {
+                            startExtractionService(filePath, null)
+                            finish()
+                        } else {
+                            val loadingDialog = MaterialAlertDialogBuilder(this@OpenWithActivity, R.style.MaterialDialog)
+                                .setMessage(getString(R.string.please_wait))
+                                .setCancelable(false)
+                                .create()
+                            loadingDialog.show()
+
+                            lifecycleScope.launch(Dispatchers.IO) {
+                                val isMultipartZip = MultipartArchiveHelper.isMultipartZip(file)
+                                val isMultipart7z = MultipartArchiveHelper.isMultipart7z(file)
+                                val isMultipartRar = MultipartArchiveHelper.isMultipartRar(file)
+                                val isEncrypted = EncryptionCheckHelper.isEncrypted(file)
+
+                                withContext(Dispatchers.Main) {
+                                    loadingDialog.dismiss()
+                                    if (isMultipartZip) {
+                                        if (isEncrypted) showPasswordInputMultiZipDialog(filePath)
+                                        else {
+                                            startMultiZipExtractionService(filePath, null)
+                                            finish()
+                                        }
+                                    } else if (isMultipart7z) {
+                                        if (isEncrypted) showPasswordInputMulti7zDialog(filePath)
+                                        else {
+                                            startMulti7zExtractionService(filePath, null)
+                                            finish()
+                                        }
+                                    } else if (isMultipartRar) {
+                                        if (isEncrypted) showPasswordInputMultiRarDialog(filePath)
+                                        else {
+                                            startRarExtractionService(filePath, null)
+                                            finish()
+                                        }
+                                    } else {
+                                        if (file.extension.equals("rar", ignoreCase = true)) {
+                                            if (isEncrypted) showPasswordInputMultiRarDialog(filePath)
+                                            else {
+                                                startRarExtractionService(filePath, null)
+                                                finish()
+                                            }
+                                        } else {
+                                            if (isEncrypted) {
+                                                showPasswordInputDialog(filePath)
+                                            } else {
+                                                startExtractionService(filePath, null)
+                                                finish()
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                withContext(Dispatchers.Main) {
                     Toast.makeText(this@OpenWithActivity, getString(R.string.no_file_selected), Toast.LENGTH_SHORT).show()
                     finish()
                 }
@@ -395,6 +446,92 @@ class OpenWithActivity : AppCompatActivity() {
     private fun startRarExtractionService(file: String, password: String?) {
         val jobId = fileOperationsDao.addFilesForJob(listOf(file))
         val intent = Intent(this, ExtractRarService::class.java).apply {
+            putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
+            putExtra(ServiceConstants.EXTRA_PASSWORD, password)
+            putExtra(ServiceConstants.EXTRA_USE_APP_NAME_DIR, true)
+        }
+        ContextCompat.startForegroundService(this, intent)
+    }
+
+    private fun showPasswordInputMultiRarDialog(filePath: String) {
+        val dialogBinding = PasswordInputOpenWithBinding.inflate(layoutInflater)
+        val passwordEditText = dialogBinding.passwordInput
+
+        MaterialAlertDialogBuilder(this, R.style.MaterialDialog)
+            .setTitle(getString(R.string.enter_password))
+            .setView(dialogBinding.root)
+            .setPositiveButton(getString(R.string.ok)) { _, _ ->
+                val password = passwordEditText.text.toString()
+                startRarExtractionService(filePath, password)
+                finish()
+            }
+            .setNegativeButton(getString(R.string.no_password)) { _, _ ->
+                startRarExtractionService(filePath, null)
+                finish()
+            }
+            .setOnDismissListener {
+                finish()
+            }
+            .show()
+    }
+
+    private fun showPasswordInputMultiZipDialog(filePath: String) {
+        val dialogBinding = PasswordInputOpenWithBinding.inflate(layoutInflater)
+        val passwordEditText = dialogBinding.passwordInput
+
+        MaterialAlertDialogBuilder(this, R.style.MaterialDialog)
+            .setTitle(getString(R.string.enter_password))
+            .setView(dialogBinding.root)
+            .setPositiveButton(getString(R.string.ok)) { _, _ ->
+                val password = passwordEditText.text.toString()
+                startMultiZipExtractionService(filePath, password)
+                finish()
+            }
+            .setNegativeButton(getString(R.string.no_password)) { _, _ ->
+                startMultiZipExtractionService(filePath, null)
+                finish()
+            }
+            .setOnDismissListener {
+                finish()
+            }
+            .show()
+    }
+
+    private fun showPasswordInputMulti7zDialog(filePath: String) {
+        val dialogBinding = PasswordInputOpenWithBinding.inflate(layoutInflater)
+        val passwordEditText = dialogBinding.passwordInput
+
+        MaterialAlertDialogBuilder(this, R.style.MaterialDialog)
+            .setTitle(getString(R.string.enter_password))
+            .setView(dialogBinding.root)
+            .setPositiveButton(getString(R.string.ok)) { _, _ ->
+                val password = passwordEditText.text.toString()
+                startMulti7zExtractionService(filePath, password)
+                finish()
+            }
+            .setNegativeButton(getString(R.string.no_password)) { _, _ ->
+                startMulti7zExtractionService(filePath, null)
+                finish()
+            }
+            .setOnDismissListener {
+                finish()
+            }
+            .show()
+    }
+
+    private fun startMultiZipExtractionService(file: String, password: String?) {
+        val jobId = fileOperationsDao.addFilesForJob(listOf(file))
+        val intent = Intent(this, ExtractMultipartZipService::class.java).apply {
+            putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
+            putExtra(ServiceConstants.EXTRA_PASSWORD, password)
+            putExtra(ServiceConstants.EXTRA_USE_APP_NAME_DIR, true)
+        }
+        ContextCompat.startForegroundService(this, intent)
+    }
+
+    private fun startMulti7zExtractionService(file: String, password: String?) {
+        val jobId = fileOperationsDao.addFilesForJob(listOf(file))
+        val intent = Intent(this, ExtractMultipart7zService::class.java).apply {
             putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
             putExtra(ServiceConstants.EXTRA_PASSWORD, password)
             putExtra(ServiceConstants.EXTRA_USE_APP_NAME_DIR, true)
