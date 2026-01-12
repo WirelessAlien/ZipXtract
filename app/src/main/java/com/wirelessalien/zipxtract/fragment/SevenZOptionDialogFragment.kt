@@ -120,7 +120,8 @@ class SevenZOptionDialogFragment : DialogFragment() {
         path: String,
         requiredSize: Long,
         okButton: View? = null,
-        defaultColor: android.content.res.ColorStateList? = null
+        defaultColor: android.content.res.ColorStateList? = null,
+        defaultTextColor: android.content.res.ColorStateList? = null
     ) {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
@@ -144,13 +145,18 @@ class SevenZOptionDialogFragment : DialogFragment() {
                         warningTextView.text = warningText
                         warningTextView.visibility = View.VISIBLE
                         val errorColor = MaterialColors.getColor(warningTextView, androidx.appcompat.R.attr.colorError)
+                        val onErrorColor = MaterialColors.getColor(warningTextView, com.google.android.material.R.attr.colorOnError)
                         okButton?.backgroundTintList = android.content.res.ColorStateList.valueOf(errorColor)
+                        (okButton as? TextView)?.setTextColor(onErrorColor)
                     }
                 } else {
                     withContext(Dispatchers.Main) {
                         warningTextView.visibility = View.GONE
                         if (defaultColor != null) {
                             okButton?.backgroundTintList = defaultColor
+                        }
+                        if (defaultTextColor != null) {
+                            (okButton as? TextView)?.setTextColor(defaultTextColor)
                         }
                     }
                 }
@@ -217,13 +223,14 @@ class SevenZOptionDialogFragment : DialogFragment() {
         }
 
         val defaultColor = binding.okButton.backgroundTintList
+        val defaultTextColor = binding.okButton.textColors
         var totalSize = 0L
 
         lifecycleScope.launch {
             totalSize = withContext(Dispatchers.IO) {
                 selectedFilePaths.sumOf { File(it).length() }
             }
-            checkStorageForArchive(binding.lowStorageWarning, parentPath, totalSize, binding.okButton, defaultColor)
+            checkStorageForArchive(binding.lowStorageWarning, parentPath, totalSize, binding.okButton, defaultColor, defaultTextColor)
         }
 
         var storageCheckJob: Job? = null
@@ -241,7 +248,8 @@ class SevenZOptionDialogFragment : DialogFragment() {
                         path,
                         totalSize,
                         binding.okButton,
-                        defaultColor
+                        defaultColor,
+                        defaultTextColor
                     )
                 }
             }

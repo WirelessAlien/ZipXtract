@@ -1337,12 +1337,16 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         val defaultColors = buttons.associateWith { view ->
             if (view is Chip) view.chipBackgroundColor else view.backgroundTintList
         }
+        val defaultTextColors = buttons.associateWith { view ->
+            if (view is Chip) view.textColors else (view as? TextView)?.textColors
+        }
 
         checkStorageForOperation(
             binding.lowStorageWarning,
             file.parent ?: Environment.getExternalStorageDirectory().absolutePath,
             file.length(),
-            defaultColors
+            defaultColors,
+            defaultTextColors
         )
 
         var storageCheckJob: Job? = null
@@ -1359,7 +1363,8 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                         binding.lowStorageWarning,
                         path,
                         file.length(),
-                        defaultColors
+                        defaultColors,
+                        defaultTextColors
                     )
                 }
             }
@@ -1533,12 +1538,14 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         val buttons: List<View> = listOf(binding.btnExtract)
 
         val defaultColors = buttons.associateWith { it.backgroundTintList }
+        val defaultTextColors = buttons.associateWith { (it as? TextView)?.textColors }
 
         checkStorageForOperation(
             binding.lowStorageWarning,
             file.parent ?: Environment.getExternalStorageDirectory().absolutePath,
             file.length(),
-            defaultColors
+            defaultColors,
+            defaultTextColors
         )
 
         var storageCheckJob: Job? = null
@@ -1555,7 +1562,8 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                         binding.lowStorageWarning,
                         path,
                         file.length(),
-                        defaultColors
+                        defaultColors,
+                        defaultTextColors
                     )
                 }
             }
@@ -2192,7 +2200,8 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         warningTextView: TextView,
         path: String,
         requiredSize: Long,
-        viewsDefaultColors: Map<View, android.content.res.ColorStateList?>? = null
+        viewsDefaultColors: Map<View, android.content.res.ColorStateList?>? = null,
+        viewsDefaultTextColors: Map<View, android.content.res.ColorStateList?>? = null
     ) {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
@@ -2208,11 +2217,14 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                         warningTextView.text = warningText
                         warningTextView.visibility = View.VISIBLE
                         val errorColor = MaterialColors.getColor(warningTextView, androidx.appcompat.R.attr.colorError)
+                        val onErrorColor = MaterialColors.getColor(warningTextView, com.google.android.material.R.attr.colorOnError)
                         viewsDefaultColors?.keys?.forEach { view ->
                             if (view is Chip) {
                                 view.chipBackgroundColor = android.content.res.ColorStateList.valueOf(errorColor)
+                                view.setTextColor(onErrorColor)
                             } else {
                                 view.backgroundTintList = android.content.res.ColorStateList.valueOf(errorColor)
+                                (view as? TextView)?.setTextColor(onErrorColor)
                             }
                         }
                     }
@@ -2224,6 +2236,11 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                                 view.chipBackgroundColor = color
                             } else {
                                 view.backgroundTintList = color
+                            }
+                        }
+                        viewsDefaultTextColors?.forEach { (view, color) ->
+                            if (color != null) {
+                                (view as? TextView)?.setTextColor(color)
                             }
                         }
                     }

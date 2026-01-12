@@ -575,13 +575,15 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
         val buttons = listOf(binding.btnExtract)
 
         val defaultColor = binding.btnExtract.backgroundTintList
+        val defaultTextColor = binding.btnExtract.textColors
 
         checkStorageForExtraction(
             binding.lowStorageWarning,
             file.parent ?: Environment.getExternalStorageDirectory().absolutePath,
             file.length(),
             buttons,
-            defaultColor
+            defaultColor,
+            defaultTextColor
         )
 
         var storageCheckJob: Job? = null
@@ -600,7 +602,8 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
                         path,
                         file.length(),
                         buttons,
-                        defaultColor
+                        defaultColor,
+                        defaultTextColor
                     )
                 }
             }
@@ -1025,7 +1028,8 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
         path: String,
         requiredSize: Long,
         buttons: List<View>? = null,
-        defaultColor: android.content.res.ColorStateList? = null
+        defaultColor: android.content.res.ColorStateList? = null,
+        defaultTextColor: android.content.res.ColorStateList? = null
     ) {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
@@ -1041,13 +1045,20 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
                         warningTextView.text = warningText
                         warningTextView.visibility = View.VISIBLE
                         val errorColor = MaterialColors.getColor(warningTextView, androidx.appcompat.R.attr.colorError)
-                        buttons?.forEach { it.backgroundTintList = android.content.res.ColorStateList.valueOf(errorColor) }
+                        val onErrorColor = MaterialColors.getColor(warningTextView, com.google.android.material.R.attr.colorOnError)
+                        buttons?.forEach {
+                            it.backgroundTintList = android.content.res.ColorStateList.valueOf(errorColor)
+                            (it as? TextView)?.setTextColor(onErrorColor)
+                        }
                     }
                 } else {
                     withContext(Dispatchers.Main) {
                         warningTextView.visibility = View.GONE
                         if (defaultColor != null) {
                             buttons?.forEach { it.backgroundTintList = defaultColor }
+                        }
+                        if (defaultTextColor != null) {
+                            buttons?.forEach { (it as? TextView)?.setTextColor(defaultTextColor) }
                         }
                     }
                 }
