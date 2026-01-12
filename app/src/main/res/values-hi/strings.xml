@@ -175,4 +175,13 @@
     <string name="compression_completed">संपीड़न पूर्ण</string>
     <string name="zstd_compression_level_format">ZSTD संपीड़न स्तर: %d</string>
     <string name="compression_settings">संपीड़न सेटिंग्स</string>
+    <string name="share_file">शेयर</string>
+    <string name="storage_access_title">भंडारण की जरूरत</string>
+    <string name="storage_access_description">ZipXtract को आपके डिवाइस के स्टोरेज को खोजने, निकालने और व्यवस्थित करने की अनुमति की आवश्यकता होती है।।</string>
+    <string name="storage_safety_text">आपकी फाइलें सुरक्षित हैं। इस ऐप में कोई इंटरनेट अनुमति नहीं है, इसलिए डेटा को बाहरी सर्वर पर अपलोड नहीं किया जा सकता है।।</string>
+    <string name="available_storage_format">%1$s उपलब्ध</string>
+    <string name="total_storage_format">कुल: %1$s</string>
+    <string name="select_storage">संग्रहण चुनें</string>
+    <string name="show_hidden_files">छिपी हुई फ़ाइलें दिखाएं</string>
+    <string name="show_hidden_files_summary">एक डॉट के साथ शुरू होने वाली फ़ाइलों को दिखाएं</string>
 </resources>
