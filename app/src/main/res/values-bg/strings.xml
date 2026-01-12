@@ -171,4 +171,13 @@
     <string name="archive_updated">Архивът е актуализиран</string>
     <string name="compression_completed">Компресията е завършена</string>
     <string name="zstd_compression_level_format">Ниво на компресия на ZSTD: %d</string>
+    <string name="share_file">Споделяне</string>
+    <string name="storage_access_title">Необходим е достъп до хранилището</string>
+    <string name="storage_access_description">ZipXtract изисква разрешение за достъп до хранилището на вашето устройство, за да намира, извлича и организира ефективно вашите файлове.</string>
+    <string name="storage_safety_text">Вашите файлове са в безопасност. Това приложение няма разрешение за достъп до интернет, така че данните не могат да бъдат качвани на външни сървъри.</string>
+    <string name="available_storage_format">Налични са %1$s</string>
+    <string name="total_storage_format">Общо: %1$s</string>
+    <string name="select_storage">Изберете място за съхранение</string>
+    <string name="show_hidden_files">Показване на скрити файлове</string>
+    <string name="show_hidden_files_summary">Показване на файлове, започващи с точка</string>
 </resources>
