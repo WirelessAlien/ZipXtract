@@ -171,4 +171,9 @@
     <string name="min_split_size_error">最小分割大小为 64KB</string>
     <string name="archive_created">创建了压缩文件</string>
     <string name="archive_updated">更新了压缩文件</string>
+    <string name="share_file">分享</string>
+    <string name="select_storage">选择存储空间</string>
+    <string name="show_hidden_files">显示隐藏文件</string>
+    <string name="show_hidden_files_summary">显示以点开头的文件</string>
+    <string name="total_storage_format">总计：%1$s</string>
 </resources>
