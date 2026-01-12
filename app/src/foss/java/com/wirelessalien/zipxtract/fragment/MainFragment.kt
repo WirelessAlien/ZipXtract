@@ -2258,6 +2258,8 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         binding.shimmerViewContainer.startShimmer()
         binding.shimmerViewContainer.visibility = View.VISIBLE
         binding.recyclerView.visibility = View.GONE
+        binding.emptyFolderLayout.visibility = View.GONE
+        binding.statusTextView.visibility = View.GONE
 
         adapter.updateFilesAndFilter(ArrayList(), currentQuery)
 
@@ -2300,6 +2302,8 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                         binding.shimmerViewContainer.stopShimmer()
                         binding.shimmerViewContainer.visibility = View.GONE
                         binding.recyclerView.visibility = View.VISIBLE
+                        binding.emptyFolderLayout.visibility = View.GONE
+                        binding.statusTextView.visibility = View.GONE
                         binding.swipeRefreshLayout.isRefreshing = false
                     }
                 }
