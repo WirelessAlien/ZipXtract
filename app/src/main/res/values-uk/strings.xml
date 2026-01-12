@@ -175,4 +175,13 @@
     <string name="compression_completed">Стиснення завершено</string>
     <string name="zstd_compression_level_format">Рівень стиснення ZSTD: %d</string>
     <string name="compression_settings">Налаштування стиснення</string>
+    <string name="share_file">Поділитися</string>
+    <string name="storage_access_title">Доступ до зберігання</string>
+    <string name="storage_access_description">ZipXtract вимагає дозволу на доступ до сховища вашого пристрою, щоб знайти, витягувати та організувати ваші файли ефективно.</string>
+    <string name="storage_safety_text">Ваші файли безпечні. Цей додаток не має дозволу на Інтернет, тому дані не можуть бути завантажені на зовнішні сервери.</string>
+    <string name="available_storage_format">%1$s Доступно</string>
+    <string name="total_storage_format">Разом: %1$s</string>
+    <string name="select_storage">Виберіть зберігання</string>
+    <string name="show_hidden_files">Показати приховані файли</string>
+    <string name="show_hidden_files_summary">Показати файли з точки зору</string>
 </resources>
