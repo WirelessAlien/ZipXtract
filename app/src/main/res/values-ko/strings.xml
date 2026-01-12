@@ -170,4 +170,13 @@
     <string name="archive_updated">Archive 업데이트</string>
     <string name="compression_completed">압축 완료</string>
     <string name="zstd_compression_level_format">ZSTD 압축 수준: %d</string>
+    <string name="share_file">지원하다</string>
+    <string name="storage_access_title">관련 상품</string>
+    <string name="storage_access_description">ZipXtract는 장치의 저장에 접근 권한을 요구하고, 추출하고, 효과적으로 파일을 구성합니다.</string>
+    <string name="storage_safety_text">당신의 파일은 안전합니다. 이 응용 프로그램은 인터넷 권한이 없습니다, 그래서 데이터는 외부 서버에 업로드 할 수 없습니다.</string>
+    <string name="available_storage_format">%1$s 사용 가능</string>
+    <string name="total_storage_format">합계: %1$s</string>
+    <string name="select_storage">선택 저장</string>
+    <string name="show_hidden_files">숨겨진 파일 표시</string>
+    <string name="show_hidden_files_summary">Dot로 시작하는 파일 보기</string>
 </resources>
