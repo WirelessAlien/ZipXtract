@@ -170,4 +170,13 @@
     <string name="archive_updated">تحديث المحفوظات</string>
     <string name="compression_completed">إكمال الضغط</string>
     <string name="zstd_compression_level_format">ZSTD Compression Level: %d</string>
+    <string name="share_file">Share</string>
+    <string name="storage_access_title">الوصول إلى التخزين</string>
+    <string name="storage_access_description">(زبكرو) يتطلب الإذن بالدخول إلى مخزن جهازك لإيجاد ملفاتك وإخراجها وتنظيمها بفعالية.</string>
+    <string name="storage_safety_text">ملفاتك آمنة هذا التطبيق ليس له ترخيص على الإنترنت لذا لا يمكن تحميل البيانات على الخواديم الخارجية.</string>
+    <string name="available_storage_format">%1$s Available</string>
+    <string name="total_storage_format">المجموع: [X7]</string>
+    <string name="select_storage">سرقة مختارة</string>
+    <string name="show_hidden_files">تظهر الملفات الخفية</string>
+    <string name="show_hidden_files_summary">تظهر الملفات بدءا من نقطة</string>
 </resources>
