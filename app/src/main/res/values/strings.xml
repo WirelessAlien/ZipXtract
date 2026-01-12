@@ -23,6 +23,7 @@
     <!-- General strings -->
     <string name="folder">Folder</string>
     <string name="share">Share App Link</string>
+    <string name="share_file">Share</string>
     <string name="privacy_policy">Privacy Policy</string>
     <string name="source_code">Source Code</string>
     <string name="license">License</string>
@@ -30,6 +31,9 @@
     <string name="about">About</string>
     <string name="grant_access">Grant Access</string>
     <string name="storage_access_permission_text">This app requires access to your device storage for proper functionality. Please grant the necessary permissions.</string>
+    <string name="storage_access_title">Storage Access Needed</string>
+    <string name="storage_access_description">ZipXtract requires permission to access your device\'s storage to find, extract, and organize your files effectively.</string>
+    <string name="storage_safety_text">Your files are safe. This app has no internet permission, so data cannot be uploaded to external servers.</string>
     <string name="sd_card">SD Card</string>
     <string name="root_access">Root access</string>
     <string name="root_access_summary">Enable root directory access</string>
@@ -57,6 +61,8 @@
     <string name="refresh">Refresh</string>
     <string name="refreshed">Refreshed</string>
     <string name="storage_info_format">Available: %1$s / Total: %2$s</string>
+    <string name="available_storage_format">%1$s Available</string>
+    <string name="total_storage_format">Total: %1$s</string>
     <string name="low_storage_warning">Warning: Low storage space! Available: %1$s</string>
     <string name="low_storage_warning_dynamic">Low storage! %1$s available, Free up at least ~%2$s. Additional space maybe needed based on the archive format.</string>
 
@@ -98,11 +104,13 @@
     <string name="wrong_password">Wrong password</string>
     <string name="error_too_many_parts">This would generate %1$d parts</string>
     <string name="file_already_exists">File already exists</string>
+    <string name="select_storage">Select Storage</string>
     <string name="select_archive_type_title">Select archive type</string>
     <string name="add_folder_confirmation_title">Add current folder?</string>
     <string name="add_folder_confirmation_message">Do you want to add the folder \'%1$s\' to the archive?</string>
     <string name="split_parts_number_req">Allow more than 100 split parts</string>
     <string name="compare">Compare</string>
+    <string name="zstd_compression_level_format">ZSTD Compression Level: %d</string>
 
     <!-- Menu items -->
     <string name="move">Move to</string>
@@ -127,6 +135,8 @@
     <string name="extract_path_summary">Modify the default extract folder. \nDefault is \"parent folder\" or Internal Storage/ZipXtract (for \"Open With\" menu extracted archive)</string>
     <string name="fast_search">Fast Search</string>
     <string name="fast_search_summary">Use Android\'s media index for faster search</string>
+    <string name="show_hidden_files">Show hidden files</string>
+    <string name="show_hidden_files_summary">Show files starting with a dot</string>
 
     <!-- ZIP archive options -->
     <string name="create_zip">Archive ZIP</string>
@@ -229,9 +239,9 @@
     <string name="gzip" translatable="false">GZIP</string>
     <string name="liberapay" translatable="false">Liberapay</string>
     <string name="author_wirelessalien" translatable="false">Author: Abhilash</string>
-    <string name="zstd_compression_level_format">ZSTD Compression Level: %d</string>
     <string name="zstd" translatable="false">ZSTD</string>
     <string name="md5" translatable="false">MD5</string>
     <string name="sha1" translatable="false">SHA-1</string>
     <string name="sha256" translatable="false">SHA-256</string>
+    <string name="change_unc" translatable="false">\u2699</string>
 </resources>
