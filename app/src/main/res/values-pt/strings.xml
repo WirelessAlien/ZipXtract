@@ -171,4 +171,13 @@
     <string name="compression_completed">Compressão concluída</string>
     <string name="zstd_compression_level_format">Nível de compressão ZSTD: %d</string>
     <string name="compression_settings">Configurações de Compressão</string>
+    <string name="share_file">Compartilhar</string>
+    <string name="storage_access_title">Acesso ao armazenamento necessário</string>
+    <string name="storage_access_description">O ZipXtract requer permissão para acessar o armazenamento do seu dispositivo para encontrar, extrair e organizar seus arquivos de forma eficaz.</string>
+    <string name="storage_safety_text">Os seus ficheiros estão seguros. Este aplicativo não tem permissão de internet, então os dados não podem ser enviados para servidores externos.</string>
+    <string name="available_storage_format">%1$s Disponível</string>
+    <string name="total_storage_format">Total: %1$s</string>
+    <string name="select_storage">Selecione o armazenamento</string>
+    <string name="show_hidden_files">Mostrar arquivos ocultos</string>
+    <string name="show_hidden_files_summary">Mostrar arquivos começando com um ponto</string>
 </resources>
