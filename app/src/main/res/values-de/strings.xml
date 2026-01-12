@@ -171,4 +171,13 @@
     <string name="zstd_compression_level_format">ZSTD Kompressionslevel: %d</string>
     <string name="destination">Allgemein</string>
     <string name="compression_settings">Komprimierungseinstellungen</string>
+    <string name="share_file">Anteil</string>
+    <string name="storage_access_title">Speicherzugriff erforderlich</string>
+    <string name="storage_access_description">ZipXtract erfordert die Erlaubnis, auf den Speicher Ihres Geräts zugreifen, um Ihre Dateien effektiv zu finden, zu extrahieren und zu organisieren.</string>
+    <string name="storage_safety_text">Ihre Dateien sind sicher. Diese App hat keine Internetberechtigung, so dass Daten nicht auf externe Server hochgeladen werden können.</string>
+    <string name="available_storage_format">%1$s Verfügbar</string>
+    <string name="total_storage_format">Gesamt: %1$s</string>
+    <string name="select_storage">Wählen Sie Speicher</string>
+    <string name="show_hidden_files">Versteckte Dateien anzeigen</string>
+    <string name="show_hidden_files_summary">Dateien anzeigen, die mit einem Punkt beginnen</string>
 </resources>
