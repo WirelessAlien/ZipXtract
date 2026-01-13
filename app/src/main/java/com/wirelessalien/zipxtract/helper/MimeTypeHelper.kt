@@ -37,7 +37,7 @@ object MimeTypeHelper {
         "xslt", "com", "exe", "bat", "dll", "pyc", "pyo", "rb", "sh", "tcl", "css", "csv", "html",
         "htm", "shtml", "md", "markdown", "mml", "asc", "txt", "text", "pot", "brf", "srt",
         "vcf", "vcard", "wml", "wmls", "c++", "cpp", "cxx", "cc", "h++", "hpp", "hxx", "hh", "c",
-        "java", "pl", "pm", "py", "sh",
+        "java", "pl", "pm", "py", "sh", "kt",
 
         // Images
         "gif", "ief", "jp2", "jpg2", "jpeg", "jpg", "jpe", "jpm", "jpx", "jpf", "pcx", "png",
