@@ -73,6 +73,8 @@ import net.sf.sevenzipjbinding.PropID
 import net.sf.sevenzipjbinding.SevenZip
 import net.sf.sevenzipjbinding.SevenZipException
 import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream
+import org.apache.commons.compress.archivers.ArchiveInputStream
+import org.apache.commons.compress.archivers.ArchiveStreamFactory
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import java.io.BufferedInputStream
@@ -216,7 +218,6 @@ class ExtractArchiveService : Service() {
         }
 
         try {
-            val inStream = RandomAccessFileInStream(RandomAccessFile(file, "r"))
             val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
             val extractPath = sharedPreferences.getString(PREFERENCE_EXTRACT_DIR_PATH, null)
 
@@ -258,51 +259,39 @@ class ExtractArchiveService : Service() {
                 counter++
             }
 
-            try {
-                val inArchive = SevenZip.openInArchive(archiveFormat, inStream, OpenCallback(password))
-                destinationDir.mkdirs()
-
-                try {
-                    val extractCallback = ExtractCallback(inArchive, destinationDir, password)
-                    inArchive.extract(null, false, extractCallback)
-
-                    if (extractCallback.hasError) {
-                        // Error already handled in callback
-                    } else if (extractCallback.hasUnsupportedMethod) {
-                        tryLibArchiveAndroid(file, destinationDir)
-                    } else {
-                        FileUtils.setLastModifiedTime(extractCallback.directories)
-                        scanForNewFiles(destinationDir)
-                        showCompletionNotification(destinationDir)
-                        sendLocalBroadcast(Intent(ACTION_EXTRACTION_COMPLETE).putExtra(EXTRA_DIR_PATH, destinationDir.absolutePath))
-                    }
-                } catch (e: SevenZipException) {
-                    if (e.message == "Cancelled") {
-                        // Cancelled by user, do nothing
-                    } else if (e.message == "WrongPasswordDetected") {
-                        // Error already handled in callback
-                    } else {
-                        e.printStackTrace()
-                        showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-                        sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message ?: getString(R.string.general_error_msg)))
-                    }
-                } finally {
-                    inArchive.close()
-                }
-            } catch (e: SevenZipException) {
-                if (e.message == "Cancelled") {
-                    // Cancelled by user, do nothing
-                } else {
-                    e.printStackTrace()
-                    showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-                    sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message ?: getString(R.string.general_error_msg)))
-                }
-            } finally {
-                inStream.close()
+            var success = trySevenZip(file, destinationDir, password)
+            if (success) {
                 if (useAppNameDir) {
                     filesDir.deleteRecursively()
                 }
+                return
             }
+
+            success = tryLibArchiveAndroid(file, destinationDir)
+            if (success) {
+                if (useAppNameDir) {
+                    filesDir.deleteRecursively()
+                }
+                return
+            }
+
+            success = tryApacheCommonsCompress(file, destinationDir)
+            if (success) {
+                if (useAppNameDir) {
+                    filesDir.deleteRecursively()
+                }
+                return
+            }
+
+            showErrorNotification(getString(R.string.general_error_msg))
+            sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(EXTRA_ERROR_MESSAGE, getString(R.string.general_error_msg)))
+            if (useAppNameDir) {
+                filesDir.deleteRecursively()
+            }
+
+        } catch (e: CancellationException) {
+            // Operation cancelled, stop service
+            stopForegroundService()
         } catch (e: Exception) {
             e.printStackTrace()
             showErrorNotification(e.message ?: getString(R.string.general_error_msg))
@@ -310,7 +299,56 @@ class ExtractArchiveService : Service() {
         }
     }
 
-    private fun tryLibArchiveAndroid(file: File, destinationDir: File) {
+    private fun trySevenZip(file: File, destinationDir: File, password: String?): Boolean {
+        var inStream: RandomAccessFileInStream? = null
+        try {
+            inStream = RandomAccessFileInStream(RandomAccessFile(file, "r"))
+            val inArchive = SevenZip.openInArchive(archiveFormat, inStream, OpenCallback(password))
+            destinationDir.mkdirs()
+
+            try {
+                val extractCallback = ExtractCallback(inArchive, destinationDir, password)
+                inArchive.extract(null, false, extractCallback)
+
+                if (extractCallback.hasError) {
+                    return false
+                } else if (extractCallback.hasUnsupportedMethod) {
+                    return false
+                } else {
+                    FileUtils.setLastModifiedTime(extractCallback.directories)
+                    scanForNewFiles(destinationDir)
+                    showCompletionNotification(destinationDir)
+                    sendLocalBroadcast(Intent(ACTION_EXTRACTION_COMPLETE).putExtra(EXTRA_DIR_PATH, destinationDir.absolutePath))
+                    return true
+                }
+            } catch (e: SevenZipException) {
+                if (e.message == "Cancelled") {
+                    throw CancellationException("Cancelled")
+                } else if (e.message == "WrongPasswordDetected") {
+                    throw FatalExtractionException(getString(R.string.wrong_password))
+                }
+                e.printStackTrace()
+                return false
+            } finally {
+                inArchive.close()
+            }
+        } catch (e: FatalExtractionException) {
+            throw e
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return false
+        } finally {
+            try {
+                inStream?.close()
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    private fun tryLibArchiveAndroid(file: File, destinationDir: File): Boolean {
         try {
             val totalBytes = file.length()
             var bytesProcessed = 0L
@@ -353,6 +391,11 @@ class ExtractArchiveService : Service() {
                                         }
                                         buffer.flip()
                                         return buffer
+                                    } catch (e: IOException) {
+                                        if (e.message == "Cancelled") {
+                                            throw e
+                                        }
+                                        Log.e("ExtractArchiveService", "Read error", e)
                                     } catch (e: Exception) {
                                         Log.e("ExtractArchiveService", "Read error", e)
                                     }
@@ -403,6 +446,10 @@ class ExtractArchiveService : Service() {
                         while (entry != 0L) {
                             val entryPath = getEntryPath(entry)
                             val outputFile = File(destinationDir, entryPath)
+                            if (!outputFile.canonicalPath.startsWith(destinationDir.canonicalPath)) {
+                                throw IOException("Zip Slip detected: $entryPath")
+                            }
+
                             val lastModifiedTime = if (ArchiveEntry.mtimeIsSet(entry)) {
                                 ArchiveEntry.mtime(entry) * 1000
                             } else {
@@ -442,20 +489,15 @@ class ExtractArchiveService : Service() {
                             Intent(ACTION_EXTRACTION_COMPLETE)
                                 .putExtra(EXTRA_DIR_PATH, destinationDir.absolutePath)
                         )
+                        return true
                     } catch (e: Exception) {
-                        if (e.message == "Cancelled") {
-                            // Cancelled
+                        if (e.message == "Cancelled" || (e is IOException && e.message == "Cancelled")) {
+                            throw CancellationException("Cancelled")
                         } else {
                             e.printStackTrace()
-                            val errorMessage = e.message ?: getString(R.string.general_error_msg)
-                            showErrorNotification(errorMessage)
-                            sendLocalBroadcast(
-                                Intent(ACTION_EXTRACTION_ERROR).putExtra(
-                                    EXTRA_ERROR_MESSAGE,
-                                    errorMessage
-                                )
-                            )
+                            // Fallback
                         }
+                        return false
                     } finally {
                         if (archive != 0L) {
                             Archive.free(archive)
@@ -465,9 +507,61 @@ class ExtractArchiveService : Service() {
             }
         } catch (e: Exception) {
             e.printStackTrace()
-            val errorMessage = e.message ?: getString(R.string.general_error_msg)
-            showErrorNotification(errorMessage)
-            sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(EXTRA_ERROR_MESSAGE, errorMessage))
+            return false
+        }
+    }
+
+    private fun tryApacheCommonsCompress(file: File, destinationDir: File): Boolean {
+        try {
+            BufferedInputStream(FileInputStream(file)).use { bis ->
+                val ais: ArchiveInputStream<out org.apache.commons.compress.archivers.ArchiveEntry> = ArchiveStreamFactory().createArchiveInputStream(bis)
+                ais.use { input ->
+                    val directories = mutableListOf<DirectoryInfo>()
+                    var entry = input.nextEntry
+                    while (entry != null) {
+                        if (!input.canReadEntryData(entry)) {
+                            entry = input.nextEntry
+                            continue
+                        }
+                        val outputFile = File(destinationDir, entry.name)
+                        if (!outputFile.canonicalPath.startsWith(destinationDir.canonicalPath)) {
+                            throw IOException("Zip Slip detected: ${entry.name}")
+                        }
+
+                        if (entry.isDirectory) {
+                            outputFile.mkdirs()
+                            val lastModified = if (entry.lastModifiedDate.time > 0) entry.lastModifiedDate.time else System.currentTimeMillis()
+                            directories.add(DirectoryInfo(outputFile.path, lastModified))
+                        } else {
+                            outputFile.parentFile?.mkdirs()
+                            FileOutputStream(outputFile).use { output ->
+                                val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+                                var n: Int
+                                while (input.read(buffer).also { n = it } != -1) {
+                                    if (extractionJob?.isActive == false) {
+                                        throw CancellationException("Cancelled")
+                                    }
+                                    output.write(buffer, 0, n)
+                                }
+                            }
+                            if (entry.lastModifiedDate.time > 0) {
+                                outputFile.setLastModified(entry.lastModifiedDate.time)
+                            }
+                        }
+                        entry = input.nextEntry
+                    }
+                    FileUtils.setLastModifiedTime(directories)
+                    scanForNewFiles(destinationDir)
+                    showCompletionNotification(destinationDir)
+                    sendLocalBroadcast(Intent(ACTION_EXTRACTION_COMPLETE).putExtra(EXTRA_DIR_PATH, destinationDir.absolutePath))
+                    return true
+                }
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return false
         }
     }
 
@@ -575,7 +669,8 @@ class ExtractArchiveService : Service() {
                 // Cancelled
             } else {
                 e.printStackTrace()
-                tryLibArchiveAndroid(file, destinationDir)
+                if (tryLibArchiveAndroid(file, destinationDir)) return
+                if (tryApacheCommonsCompress(file, destinationDir)) return
                 if (extractionJob?.isActive == false) return
                 showErrorNotification(e.message ?: getString(R.string.general_error_msg))
                 sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message ?: getString(R.string.general_error_msg)))
@@ -584,6 +679,7 @@ class ExtractArchiveService : Service() {
     }
 
     private fun extractZipArchive(file: File, password: String?, useAppNameDir: Boolean, destinationPath: String?) {
+        var destinationDir: File? = null
         try {
             val zipFile = ZipFile(file)
 
@@ -623,27 +719,28 @@ class ExtractArchiveService : Service() {
 
             val baseFileName = file.name.substring(0, file.name.lastIndexOf('.'))
             var newFileName = baseFileName
-            var destinationDir = File(parentDir, newFileName)
+            var finalDestinationDir = File(parentDir, newFileName)
             var counter = 1
 
-            while (destinationDir.exists()) {
+            while (finalDestinationDir.exists()) {
                 newFileName = "$baseFileName ($counter)"
-                destinationDir = File(parentDir, newFileName)
+                finalDestinationDir = File(parentDir, newFileName)
                 counter++
             }
+            destinationDir = finalDestinationDir
 
-            destinationDir.mkdirs()
+            finalDestinationDir.mkdirs()
 
             zipFile.isRunInThread = true
             val directories = mutableListOf<DirectoryInfo>()
             for (fileHeader in zipFile.fileHeaders) {
                 if (fileHeader.isDirectory) {
-                    val directoryPath = File(destinationDir, fileHeader.fileName).path
+                    val directoryPath = File(finalDestinationDir, fileHeader.fileName).path
                     val lastModified = if (fileHeader.lastModifiedTime > 0) fileHeader.lastModifiedTimeEpoch else System.currentTimeMillis()
                     directories.add(DirectoryInfo(directoryPath, lastModified))
                 }
             }
-            zipFile.extractAll(destinationDir.absolutePath)
+            zipFile.extractAll(finalDestinationDir.absolutePath)
 
             progressMonitor = zipFile.progressMonitor
             var lastProgress = -1
@@ -662,9 +759,9 @@ class ExtractArchiveService : Service() {
                 // Do nothing
             } else if (progressMonitor!!.result == ProgressMonitor.Result.SUCCESS) {
                 FileUtils.setLastModifiedTime(directories)
-                scanForNewFiles(destinationDir)
-                showCompletionNotification(destinationDir)
-                sendLocalBroadcast(Intent(ACTION_EXTRACTION_COMPLETE).putExtra(EXTRA_DIR_PATH, destinationDir.absolutePath))
+                scanForNewFiles(finalDestinationDir)
+                showCompletionNotification(finalDestinationDir)
+                sendLocalBroadcast(Intent(ACTION_EXTRACTION_COMPLETE).putExtra(EXTRA_DIR_PATH, finalDestinationDir.absolutePath))
 
                 if (useAppNameDir) {
                     filesDir.deleteRecursively()
@@ -682,12 +779,14 @@ class ExtractArchiveService : Service() {
 
         } catch (e: ZipException) {
             e.printStackTrace()
+            if (e.type == ZipException.Type.UNKNOWN_COMPRESSION_METHOD && destinationDir != null) {
+                if (tryLibArchiveAndroid(file, destinationDir)) return
+                if (tryApacheCommonsCompress(file, destinationDir)) return
+            }
+
             val errorMessage = when (e.type) {
                 ZipException.Type.WRONG_PASSWORD -> getString(R.string.wrong_password)
-                ZipException.Type.UNKNOWN_COMPRESSION_METHOD -> {
-                    tryLibArchiveAndroid(file, File(Environment.getExternalStorageDirectory().absolutePath))
-                    return
-                }
+                ZipException.Type.UNKNOWN_COMPRESSION_METHOD -> getString(R.string.general_error_msg)
                 ZipException.Type.UNSUPPORTED_ENCRYPTION -> getString(R.string.general_error_msg)
                 else -> e.message ?: getString(R.string.general_error_msg)
             }
@@ -732,13 +831,7 @@ class ExtractArchiveService : Service() {
                 ExtractOperationResult.WRONG_PASSWORD -> {
                     hasError = true
                     if (!errorBroadcasted) {
-                        showErrorNotification(getString(R.string.wrong_password))
-                        sendLocalBroadcast(
-                            Intent(ACTION_EXTRACTION_ERROR).putExtra(
-                                EXTRA_ERROR_MESSAGE,
-                                getString(R.string.wrong_password)
-                            )
-                        )
+
                         errorBroadcasted = true
                     }
                     throw SevenZipException("WrongPasswordDetected")
@@ -746,13 +839,7 @@ class ExtractArchiveService : Service() {
                 ExtractOperationResult.DATAERROR, ExtractOperationResult.CRCERROR, ExtractOperationResult.UNAVAILABLE, ExtractOperationResult.HEADERS_ERROR, ExtractOperationResult.UNEXPECTED_END, ExtractOperationResult.UNKNOWN_OPERATION_RESULT -> {
                     hasError = true
                     if (!errorBroadcasted) {
-                        showErrorNotification(getString(R.string.general_error_msg))
-                        sendLocalBroadcast(
-                            Intent(ACTION_EXTRACTION_ERROR).putExtra(
-                                EXTRA_ERROR_MESSAGE,
-                                getString(R.string.general_error_msg)
-                            )
-                        )
+
                         errorBroadcasted = true
                     }
                 }
@@ -780,13 +867,7 @@ class ExtractArchiveService : Service() {
                 else -> {
                     hasError = true
                     if (!errorBroadcasted) {
-                        showErrorNotification(getString(R.string.general_error_msg))
-                        sendLocalBroadcast(
-                            Intent(ACTION_EXTRACTION_ERROR).putExtra(
-                                EXTRA_ERROR_MESSAGE,
-                                getString(R.string.general_error_msg)
-                            )
-                        )
+
                         errorBroadcasted = true
                     }
                 }
@@ -915,4 +996,8 @@ class ExtractArchiveService : Service() {
             MediaScannerConnection.scanFile(this, paths, null, null)
         }
     }
+
+    private class FatalExtractionException(message: String) : Exception(message)
+
+    private class CancellationException(message: String) : Exception(message)
 }
