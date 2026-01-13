@@ -113,6 +113,7 @@ import com.wirelessalien.zipxtract.databinding.ProgressDialogExtractBinding
 import com.wirelessalien.zipxtract.helper.ChecksumUtils
 import com.wirelessalien.zipxtract.helper.EncryptionCheckHelper
 import com.wirelessalien.zipxtract.helper.FileOperationsDao
+import com.wirelessalien.zipxtract.helper.MimeTypeHelper
 import com.wirelessalien.zipxtract.helper.MultipartArchiveHelper
 import com.wirelessalien.zipxtract.helper.PathUtils
 import com.wirelessalien.zipxtract.helper.Searchable
@@ -1546,18 +1547,29 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         val bottomSheetDialog = BottomSheetDialog(requireContext())
         bottomSheetDialog.setContentView(binding.root)
 
+        val isNonArchive = MimeTypeHelper.isNonArchive(file)
+
+        if (isNonArchive) {
+            binding.btnExtract.visibility = View.GONE
+            binding.outputPathLayout.visibility = View.GONE
+            binding.outputPathDisplay.visibility = View.GONE
+            binding.lowStorageWarning.visibility = View.GONE
+        }
+
         val buttons: List<View> = listOf(binding.btnExtract)
 
         val defaultColors = buttons.associateWith { it.backgroundTintList }
         val defaultTextColors = buttons.associateWith { (it as? TextView)?.textColors }
 
-        checkStorageForOperation(
-            binding.lowStorageWarning,
-            file.parent ?: Environment.getExternalStorageDirectory().absolutePath,
-            file.length(),
-            defaultColors,
-            defaultTextColors
-        )
+        if (!isNonArchive) {
+            checkStorageForOperation(
+                binding.lowStorageWarning,
+                file.parent ?: Environment.getExternalStorageDirectory().absolutePath,
+                file.length(),
+                defaultColors,
+                defaultTextColors
+            )
+        }
 
         var storageCheckJob: Job? = null
         binding.outputPathInput.addTextChangedListener(object : TextWatcher {
@@ -1566,16 +1578,18 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             override fun afterTextChanged(s: Editable?) {
                 val path = s.toString()
                 binding.outputPathDisplay.text = PathUtils.formatPath(path, requireContext())
-                storageCheckJob?.cancel()
-                storageCheckJob = lifecycleScope.launch {
-                    delay(1000)
-                    checkStorageForOperation(
-                        binding.lowStorageWarning,
-                        path,
-                        file.length(),
-                        defaultColors,
-                        defaultTextColors
-                    )
+                if (!isNonArchive) {
+                    storageCheckJob?.cancel()
+                    storageCheckJob = lifecycleScope.launch {
+                        delay(1000)
+                        checkStorageForOperation(
+                            binding.lowStorageWarning,
+                            path,
+                            file.length(),
+                            defaultColors,
+                            defaultTextColors
+                        )
+                    }
                 }
             }
         })
@@ -1596,15 +1610,17 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         binding.outputPathInput.setText(defaultPath)
         binding.outputPathDisplay.text = PathUtils.formatPath(defaultPath, requireContext())
 
-        binding.outputPathLayout.setEndIconOnClickListener {
-            val pathPicker = PathPickerFragment.newInstance()
-            pathPicker.setPathPickerListener(object : PathPickerFragment.PathPickerListener {
-                override fun onPathSelected(path: String) {
-                    binding.outputPathInput.setText(path)
-                    binding.outputPathDisplay.text = PathUtils.formatPath(path, requireContext())
-                }
-            })
-            pathPicker.show(parentFragmentManager, "path_picker")
+        if (!isNonArchive) {
+            binding.outputPathLayout.setEndIconOnClickListener {
+                val pathPicker = PathPickerFragment.newInstance()
+                pathPicker.setPathPickerListener(object : PathPickerFragment.PathPickerListener {
+                    override fun onPathSelected(path: String) {
+                        binding.outputPathInput.setText(path)
+                        binding.outputPathDisplay.text = PathUtils.formatPath(path, requireContext())
+                    }
+                })
+                pathPicker.show(parentFragmentManager, "path_picker")
+            }
         }
 
         binding.fileExtension.text = if (file.extension.isNotEmpty()) {
