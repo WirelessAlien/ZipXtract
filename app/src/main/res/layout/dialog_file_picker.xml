@@ -33,15 +33,16 @@
             android:layout_marginEnd="16dp"
             android:layout_marginTop="10dp">
 
-            <com.google.android.material.button.MaterialButton
+            <ImageButton
                 android:id="@+id/btnBackTop"
-                style="@style/Widget.Material3.Button.IconButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:layout_alignParentStart="true"
                 android:layout_centerVertical="true"
                 android:layout_marginStart="-16dp"
-                app:icon="@drawable/ic_arrow_back_default" />
+                android:src="@drawable/ic_arrow_back_default"
+                app:tint="?attr/colorOnSurface" />
 
             <TextView
                 android:layout_width="wrap_content"
