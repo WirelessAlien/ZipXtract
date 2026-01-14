@@ -24,7 +24,6 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="16dp"
         android:orientation="vertical">
 
         <RelativeLayout
@@ -32,7 +31,6 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
-            android:layout_marginBottom="11dp"
             android:layout_marginTop="10dp">
 
             <com.google.android.material.button.MaterialButton
@@ -42,7 +40,6 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentStart="true"
                 android:layout_centerVertical="true"
-                android:layout_marginEnd="8dp"
                 android:layout_marginStart="-16dp"
                 app:icon="@drawable/ic_arrow_back_default" />
 
@@ -86,6 +83,7 @@
                     android:text="@string/internal_storage"
                     android:clickable="true"
                     android:checkable="false"
+                    android:layout_marginEnd="8dp"
                     app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Full"
                     android:visibility="visible" />
 

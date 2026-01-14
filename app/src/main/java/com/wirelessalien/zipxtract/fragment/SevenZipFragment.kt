@@ -132,8 +132,8 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
             }
         })
 
-        binding.fabBack.setOnClickListener {
-            handleBackNavigation()
+        binding.cancelBtn.setOnClickListener {
+            parentFragmentManager.popBackStack()
         }
 
         adapter = ArchiveItemAdapter(requireContext(), emptyList())
