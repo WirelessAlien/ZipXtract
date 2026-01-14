@@ -20,6 +20,7 @@ package com.wirelessalien.zipxtract.activity
 import android.os.Bundle
 import android.view.MenuItem
 import androidx.activity.OnBackPressedCallback
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.databinding.ActivitySettingsBinding
@@ -32,6 +33,7 @@ class SettingsActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         binding = ActivitySettingsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 

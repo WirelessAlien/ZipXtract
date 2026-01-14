@@ -17,7 +17,6 @@
 
 package com.wirelessalien.zipxtract.fragment
 
-import android.app.Dialog
 import android.content.SharedPreferences
 import android.os.Build
 import android.os.Bundle
@@ -28,7 +27,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
 import androidx.appcompat.view.ActionMode
-import androidx.core.view.WindowCompat
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -73,14 +71,6 @@ class PathPickerFragment : BottomSheetDialogFragment(), FilePickerAdapter.OnItem
     private lateinit var adapter: FilePickerAdapter
     private var currentPath: String = Environment.getExternalStorageDirectory().absolutePath
     private var listener: PathPickerListener? = null
-
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val dialog = super.onCreateDialog(savedInstanceState)
-        dialog.window?.let { window ->
-            WindowCompat.setDecorFitsSystemWindows(window, false)
-        }
-        return dialog
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,

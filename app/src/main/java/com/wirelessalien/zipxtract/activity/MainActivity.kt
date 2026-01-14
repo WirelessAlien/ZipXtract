@@ -21,7 +21,6 @@ package com.wirelessalien.zipxtract.activity
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.os.Bundle
-import android.os.Environment
 import android.provider.MediaStore
 import android.text.Editable
 import android.text.TextWatcher
@@ -30,10 +29,10 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
-import androidx.core.view.WindowCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
 import androidx.lifecycle.Lifecycle
@@ -50,8 +49,8 @@ import com.wirelessalien.zipxtract.fragment.ArchiveFragment
 import com.wirelessalien.zipxtract.fragment.MainFragment
 import com.wirelessalien.zipxtract.helper.SearchHistoryManager
 import com.wirelessalien.zipxtract.helper.Searchable
-import com.wirelessalien.zipxtract.model.FileItem
 import com.wirelessalien.zipxtract.helper.StorageHelper
+import com.wirelessalien.zipxtract.model.FileItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
@@ -73,9 +72,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        WindowCompat.setDecorFitsSystemWindows(window, false)
 
         searchHistoryManager = SearchHistoryManager(this)
         setupSearchView()

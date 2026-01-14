@@ -52,14 +52,16 @@
                 android:layout_centerVertical="true"
                 android:textAppearance="@style/TextAppearance.Material3.TitleLarge"/>
 
-            <com.google.android.material.button.MaterialButton
+            <ImageButton
                 android:id="@+id/btnAddFolder"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
                 android:layout_alignParentEnd="true"
-                app:icon="@drawable/ic_add"
-                android:visibility="gone"
-                style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"/>
+                android:layout_centerVertical="true"
+                android:src="@drawable/ic_add"
+                app:tint="?attr/colorOnSurface"
+                />
         </RelativeLayout>
 
         <HorizontalScrollView
