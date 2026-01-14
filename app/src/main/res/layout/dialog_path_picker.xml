@@ -35,10 +35,22 @@
             android:layout_marginBottom="11dp"
             android:layout_marginTop="10dp">
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnBackTop"
+                style="@style/Widget.Material3.Button.IconButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="8dp"
+                android:layout_marginStart="-16dp"
+                app:icon="@drawable/ic_arrow_back_default" />
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/select_directory"
+                android:layout_toEndOf="@id/btnBackTop"
                 android:layout_centerVertical="true"
                 android:textAppearance="@style/TextAppearance.Material3.TitleLarge"/>
 
@@ -135,11 +147,12 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnCancel"
-                style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
+                style="@style/Widget.Material3.Button.TextButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
-                app:icon="@drawable/ic_close"/>
+                android:layout_toStartOf="@id/btnSelect"
+                android:text="@string/cancel"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSelect"
@@ -147,17 +160,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
-                android:layout_toEndOf="@id/btnCancel"
-                android:text="@string/select" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/fabBack"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"
-                style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
-                app:icon="@drawable/ic_arrow_back"/>
+                android:text="@string/select" />
         </RelativeLayout>
     </LinearLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
