@@ -108,7 +108,7 @@ class FilePickerAdapter(
         binding.fileName.text = file.name
 
         val dateFormat =
-            DateFormat.getDateInstance(DateFormat.SHORT, Locale.getDefault())
+            DateFormat.getDateInstance(DateFormat.MEDIUM, Locale.getDefault())
         val dateString = dateFormat.format(Date(getFileTimeOfCreation(file)))
 
         if (file.isDirectory) {
