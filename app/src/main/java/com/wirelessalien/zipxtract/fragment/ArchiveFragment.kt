@@ -580,7 +580,11 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
     private fun showBottomSheetOptions(filePaths: String, file: File) {
         val binding = BottomSheetOptionBinding.inflate(layoutInflater)
         val bottomSheetDialog = BottomSheetDialog(requireContext())
-        bottomSheetDialog.window?.let { WindowCompat.enableEdgeToEdge(it) }
+        bottomSheetDialog.window?.let { window ->
+            WindowCompat.setDecorFitsSystemWindows(window, false)
+            window.statusBarColor = android.graphics.Color.TRANSPARENT
+            window.navigationBarColor = android.graphics.Color.TRANSPARENT
+        }
         bottomSheetDialog.setContentView(binding.root)
 
         val buttons = listOf(binding.btnExtract)
@@ -932,7 +936,11 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
     private fun showFileInfo(file: File) {
         val binding = DialogFileInfoBinding.inflate(LayoutInflater.from(requireContext()))
         val bottomSheetDialog = BottomSheetDialog(requireContext())
-        bottomSheetDialog.window?.let { WindowCompat.enableEdgeToEdge(it) }
+        bottomSheetDialog.window?.let { window ->
+            WindowCompat.setDecorFitsSystemWindows(window, false)
+            window.statusBarColor = android.graphics.Color.TRANSPARENT
+            window.navigationBarColor = android.graphics.Color.TRANSPARENT
+        }
         bottomSheetDialog.setContentView(binding.root)
 
         binding.fileName.text = file.name

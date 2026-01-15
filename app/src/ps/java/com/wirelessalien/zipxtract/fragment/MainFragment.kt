@@ -647,7 +647,11 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     private fun showStorageSelectionBottomSheet() {
         val binding = BottomSheetStorageSelectionBinding.inflate(layoutInflater)
         val bottomSheetDialog = BottomSheetDialog(requireContext())
-        bottomSheetDialog.window?.let { WindowCompat.enableEdgeToEdge(it) }
+        bottomSheetDialog.window?.let { window ->
+            WindowCompat.setDecorFitsSystemWindows(window, false)
+            window.statusBarColor = android.graphics.Color.TRANSPARENT
+            window.navigationBarColor = android.graphics.Color.TRANSPARENT
+        }
         bottomSheetDialog.setContentView(binding.root)
 
         val internalPath = Environment.getExternalStorageDirectory().absolutePath
@@ -1350,7 +1354,11 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     private fun showCompressorArchiveDialog(filePath: String, file: File) {
         val binding = BottomSheetCompressorArchiveBinding.inflate(layoutInflater)
         val bottomSheetDialog = BottomSheetDialog(requireContext())
-        bottomSheetDialog.window?.let { WindowCompat.enableEdgeToEdge(it) }
+        bottomSheetDialog.window?.let { window ->
+            WindowCompat.setDecorFitsSystemWindows(window, false)
+            window.statusBarColor = android.graphics.Color.TRANSPARENT
+            window.navigationBarColor = android.graphics.Color.TRANSPARENT
+        }
         bottomSheetDialog.setContentView(binding.root)
 
         val buttons: List<View> = listOf(
@@ -1561,7 +1569,11 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     private fun showBottomSheetOptions(filePaths: String, file: File) {
         val binding = BottomSheetOptionBinding.inflate(layoutInflater)
         val bottomSheetDialog = BottomSheetDialog(requireContext())
-        bottomSheetDialog.window?.let { WindowCompat.enableEdgeToEdge(it) }
+        bottomSheetDialog.window?.let { window ->
+            WindowCompat.setDecorFitsSystemWindows(window, false)
+            window.statusBarColor = android.graphics.Color.TRANSPARENT
+            window.navigationBarColor = android.graphics.Color.TRANSPARENT
+        }
         bottomSheetDialog.setContentView(binding.root)
 
         val isNonArchive = MimeTypeHelper.isNonArchive(file)
@@ -1908,7 +1920,11 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     private fun showFileInfo(file: File) {
         val binding = DialogFileInfoBinding.inflate(LayoutInflater.from(requireContext()))
         val bottomSheetDialog = BottomSheetDialog(requireContext())
-        bottomSheetDialog.window?.let { WindowCompat.enableEdgeToEdge(it) }
+        bottomSheetDialog.window?.let { window ->
+            WindowCompat.setDecorFitsSystemWindows(window, false)
+            window.statusBarColor = android.graphics.Color.TRANSPARENT
+            window.navigationBarColor = android.graphics.Color.TRANSPARENT
+        }
         bottomSheetDialog.setContentView(binding.root)
 
         binding.fileName.text = file.name
