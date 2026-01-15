@@ -151,6 +151,17 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
             windowInsets
         }
 
+        val initialFabMarginBottom = (binding.fabAddFile.layoutParams as ViewGroup.MarginLayoutParams).bottomMargin
+        val initialFabMarginRight = (binding.fabAddFile.layoutParams as ViewGroup.MarginLayoutParams).rightMargin
+        ViewCompat.setOnApplyWindowInsetsListener(binding.fabAddFile) { v, windowInsets ->
+            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.layoutParams = (v.layoutParams as ViewGroup.MarginLayoutParams).apply {
+                bottomMargin = initialFabMarginBottom + insets.bottom
+                rightMargin = initialFabMarginRight + insets.right
+            }
+            windowInsets
+        }
+
         try {
             val randomAccessFile = RandomAccessFile(archivePath, "r")
             inArchive = SevenZip.openInArchive(null, RandomAccessFileInStream(randomAccessFile))
