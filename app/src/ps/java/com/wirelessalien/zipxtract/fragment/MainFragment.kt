@@ -67,6 +67,11 @@ import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updateLayoutParams
+import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
@@ -335,6 +340,26 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         adapter.setOnItemClickListener(this)
         adapter.setOnFileLongClickListener(this)
         binding.recyclerView.adapter = adapter
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.recyclerView) { v, windowInsets ->
+            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.updatePadding(bottom = insets.bottom)
+            windowInsets
+        }
+
+        val fabs = listOf(binding.mainFab, binding.pasteFab, binding.createZipFab, binding.create7zFab, binding.createTarFab)
+        fabs.forEach { fab ->
+            val initialMarginBottom = (fab.layoutParams as ViewGroup.MarginLayoutParams).bottomMargin
+            val initialMarginRight = (fab.layoutParams as ViewGroup.MarginLayoutParams).rightMargin
+            ViewCompat.setOnApplyWindowInsetsListener(fab) { v, windowInsets ->
+                val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+                v.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                    bottomMargin = initialMarginBottom + insets.bottom
+                    rightMargin = initialMarginRight + insets.right
+                }
+                windowInsets
+            }
+        }
 
         val menuHost: MenuHost = requireActivity()
         menuHost.addMenuProvider(object : MenuProvider {
@@ -622,6 +647,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     private fun showStorageSelectionBottomSheet() {
         val binding = BottomSheetStorageSelectionBinding.inflate(layoutInflater)
         val bottomSheetDialog = BottomSheetDialog(requireContext())
+        bottomSheetDialog.window?.let { WindowCompat.enableEdgeToEdge(it) }
         bottomSheetDialog.setContentView(binding.root)
 
         val internalPath = Environment.getExternalStorageDirectory().absolutePath
@@ -1324,6 +1350,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     private fun showCompressorArchiveDialog(filePath: String, file: File) {
         val binding = BottomSheetCompressorArchiveBinding.inflate(layoutInflater)
         val bottomSheetDialog = BottomSheetDialog(requireContext())
+        bottomSheetDialog.window?.let { WindowCompat.enableEdgeToEdge(it) }
         bottomSheetDialog.setContentView(binding.root)
 
         val buttons: List<View> = listOf(
@@ -1534,6 +1561,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     private fun showBottomSheetOptions(filePaths: String, file: File) {
         val binding = BottomSheetOptionBinding.inflate(layoutInflater)
         val bottomSheetDialog = BottomSheetDialog(requireContext())
+        bottomSheetDialog.window?.let { WindowCompat.enableEdgeToEdge(it) }
         bottomSheetDialog.setContentView(binding.root)
 
         val isNonArchive = MimeTypeHelper.isNonArchive(file)
@@ -1880,6 +1908,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     private fun showFileInfo(file: File) {
         val binding = DialogFileInfoBinding.inflate(LayoutInflater.from(requireContext()))
         val bottomSheetDialog = BottomSheetDialog(requireContext())
+        bottomSheetDialog.window?.let { WindowCompat.enableEdgeToEdge(it) }
         bottomSheetDialog.setContentView(binding.root)
 
         binding.fileName.text = file.name

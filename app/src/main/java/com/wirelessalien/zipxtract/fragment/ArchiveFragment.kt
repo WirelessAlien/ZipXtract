@@ -49,6 +49,10 @@ import androidx.core.content.FileProvider
 import androidx.core.content.edit
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -236,6 +240,12 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
         adapter = FileAdapter(requireContext(), null, ArrayList())
         adapter.setOnItemClickListener(this)
         binding.recyclerView.adapter = adapter
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.recyclerView) { v, windowInsets ->
+            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.updatePadding(bottom = insets.bottom)
+            windowInsets
+        }
 
         val menuHost: MenuHost = requireActivity()
         menuHost.addMenuProvider(object : MenuProvider {
@@ -570,6 +580,7 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
     private fun showBottomSheetOptions(filePaths: String, file: File) {
         val binding = BottomSheetOptionBinding.inflate(layoutInflater)
         val bottomSheetDialog = BottomSheetDialog(requireContext())
+        bottomSheetDialog.window?.let { WindowCompat.enableEdgeToEdge(it) }
         bottomSheetDialog.setContentView(binding.root)
 
         val buttons = listOf(binding.btnExtract)
@@ -921,6 +932,7 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
     private fun showFileInfo(file: File) {
         val binding = DialogFileInfoBinding.inflate(LayoutInflater.from(requireContext()))
         val bottomSheetDialog = BottomSheetDialog(requireContext())
+        bottomSheetDialog.window?.let { WindowCompat.enableEdgeToEdge(it) }
         bottomSheetDialog.setContentView(binding.root)
 
         binding.fileName.text = file.name
