@@ -65,6 +65,11 @@
     <string name="total_storage_format">Total: %1$s</string>
     <string name="low_storage_warning">Warning: Low storage space! Available: %1$s</string>
     <string name="low_storage_warning_dynamic">Low storage! %1$s available, Free up at least ~%2$s. Additional space maybe needed based on the archive format.</string>
+    <string name="rename_t">Rename</string>
+    <plurals name="folder_items">
+        <item quantity="one">%d item</item>
+        <item quantity="other">%d items</item>
+    </plurals>
 
 
     <!-- Bottom navigation -->
