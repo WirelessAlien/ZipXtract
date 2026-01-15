@@ -160,6 +160,7 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
 
             when (intent?.action) {
                 BroadcastConstants.ACTION_EXTRACTION_COMPLETE -> {
+                    binding.linearProgressBar.visibility = View.GONE
                     eProgressDialog.dismiss()
                     val dirPath = intent.getStringExtra(BroadcastConstants.EXTRA_DIR_PATH)
 
@@ -183,6 +184,7 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
                 }
 
                 BroadcastConstants.ACTION_EXTRACTION_ERROR -> {
+                    binding.linearProgressBar.visibility = View.GONE
                     eProgressDialog.dismiss()
                     val errorMessage = intent.getStringExtra(BroadcastConstants.EXTRA_ERROR_MESSAGE)
                     Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show()

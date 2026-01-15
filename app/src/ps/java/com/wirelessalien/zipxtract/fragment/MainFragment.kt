@@ -216,6 +216,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
             when (intent?.action) {
                 ACTION_EXTRACTION_COMPLETE -> {
+                    binding.progressBar.visibility = View.GONE
                     val dirPath = intent.getStringExtra(EXTRA_DIR_PATH)
                     Log.d("MainFragment", "onReceive: $dirPath")
                     if (dirPath != null) {
@@ -233,6 +234,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                     eProgressBar.isIndeterminate = false
                 }
                 ACTION_EXTRACTION_ERROR -> {
+                    binding.progressBar.visibility = View.GONE
                     unselectAllFiles()
                     eProgressDialog.dismiss()
                     eProgressBar.isIndeterminate = false
@@ -250,6 +252,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                     }
                 }
                 ACTION_ARCHIVE_COMPLETE -> {
+                    binding.progressBar.visibility = View.GONE
                     val dirPath = intent.getStringExtra(EXTRA_DIR_PATH)
                     if (dirPath != null) {
                         Snackbar.make(binding.root, getString(R.string.open_folder), Snackbar.LENGTH_LONG)
@@ -266,6 +269,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                     aProgressBar.isIndeterminate = false
                 }
                 ACTION_ARCHIVE_ERROR -> {
+                    binding.progressBar.visibility = View.GONE
                     unselectAllFiles()
                     aProgressDialog.dismiss()
                     aProgressBar.isIndeterminate = false
