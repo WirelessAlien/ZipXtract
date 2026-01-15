@@ -34,6 +34,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
@@ -141,6 +144,12 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
         adapter.setOnFileLongClickListener(this)
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerView.adapter = adapter
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.recyclerView) { v, windowInsets ->
+            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.updatePadding(bottom = insets.bottom)
+            windowInsets
+        }
 
         try {
             val randomAccessFile = RandomAccessFile(archivePath, "r")

@@ -21,8 +21,12 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import android.os.Bundle
+import android.view.View
 import androidx.core.content.edit
 import androidx.core.net.toUri
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import androidx.fragment.app.FragmentTransaction
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
@@ -31,6 +35,16 @@ import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.preference.LongClickablePreference
 
 class SettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeListener {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        listView.clipToPadding = false
+        ViewCompat.setOnApplyWindowInsetsListener(listView) { v, windowInsets ->
+            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.updatePadding(bottom = insets.bottom)
+            windowInsets
+        }
+    }
+
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.preference, rootKey)
 
