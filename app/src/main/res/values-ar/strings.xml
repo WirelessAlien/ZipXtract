@@ -137,7 +137,6 @@
     <string name="archive_updated_successfully">تحديث المحفوظات بنجاح</string>
     <string name="error_no_file_information_provided">لم تقدم أي معلومات عن الملفات.</string>
     <string name="error_updating_archive">تحديث السجلات</string>
-    <string name="error_opening_archive">Error opening archive: %1$s</string>
     <string name="no_valid_files_found_to_archive">لم يعثر على ملفات صالحة للمحفوظات.</string>
     <string name="invalid_archive_type">محفوظات غير صالحة</string>
     <string name="updating_archive">محفوظات متطورة..</string>
@@ -152,7 +151,6 @@
     <string name="low_storage_warning">تحذير: مساحة تخزين منخفضة! المتاحة: %1$s</string>
     <string name="low_storage_warning_dynamic">مساحة تخزين منخفضة! %1$s متاحة، أفرغ مساحة لا تقل عن ~%2$s. قد تكون هناك حاجة إلى مساحة إضافية بناءً على تنسيق الأرشيف.</string>
     <string name="please_wait">من فضلك انتظر…</string>
-    <string name="compare">Compare</string>
     <string name="file_does_not_exist">الملف لا وجود له</string>
     <string name="automatic_threads">الحد الأقصى للخيوط</string>
     <string name="automatic_threads_subtitle">استخدام الحد الأقصى للوحدة في أسرع سرعة</string>
@@ -169,7 +167,6 @@
     <string name="extraction_completed">الإنجاز</string>
     <string name="archive_updated">تحديث المحفوظات</string>
     <string name="compression_completed">إكمال الضغط</string>
-    <string name="zstd_compression_level_format">ZSTD Compression Level: %d</string>
     <string name="share_file">شارك</string>
     <string name="storage_access_title">الوصول إلى التخزين مطلوب</string>
     <string name="storage_access_description">يتطلب ZipXtract إذنًا للوصول إلى تخزين جهازك للعثور على ملفاتك واستخراجها وتنظيمها بفعالية.</string>

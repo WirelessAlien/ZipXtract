@@ -70,7 +70,7 @@ class DonationFragment : DialogFragment() {
     override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
         preference.edit()
-            .putInt("donation_dialog_version", 2)
+            .putInt("donation_dialog_version1", 2)
             .apply()
     }
 }

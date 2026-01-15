@@ -19,7 +19,7 @@
     <string name="copied_to_clipboard">Copiado para a área de transferência</string>
     <string name="permission_denied">Permissão recusada</string>
     <string name="cancel">Cancelar</string>
-    <string name="extraction_failed">Falha ao extrair: %1$s</string>
+    <string name="extraction_failed">Falha ao extrair</string>
     <string name="no_password">Sem palavra-passe</string>
     <string name="extraction_success">Ficheiro extraído com sucesso</string>
     <string name="sevenz_creation_success">Ficheiro 7z criado com sucesso</string>

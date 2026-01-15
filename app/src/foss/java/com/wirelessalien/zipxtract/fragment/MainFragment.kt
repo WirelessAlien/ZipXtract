@@ -1148,7 +1148,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     }
 
     private fun checkAndShowDonationFragment() {
-        val savedVersionPreference = sharedPreferences.getInt("donation_dialog_version", 1)
+        val savedVersionPreference = sharedPreferences.getInt("donation_dialog_version1", 1)
 
         if (checkStoragePermissions() && savedVersionPreference == 1) {
             val donationFragment = DonationFragment()

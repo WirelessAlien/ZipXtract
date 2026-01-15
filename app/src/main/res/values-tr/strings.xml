@@ -159,7 +159,6 @@
     <string name="automatic_threads_subtitle">En hızlı hızlar için maksimum CPU kullanın</string>
     <string name="automatic_threads_warning">Uyarı: Tüm CPU çekirdeklerini kullanın. Cihaz arşiv işlemi sırasında sorumlu olabilir.</string>
     <string name="solid_compression_subtitle">Birçok küçük dosyalar için oranı geliştirir, ancak zaman ayırın</string>
-    <string name="destination">General</string>
     <string name="security">Güvenlik Güvenliği</string>
     <string name="specify_custom_thread_count">Özel thread count</string>
     <string name="min_split_size_error">Asgari bölünme boyutu 64KB</string>
@@ -171,7 +170,6 @@
     <string name="compression_completed">Tamamlandı</string>
     <string name="zstd_compression_level_format">ZSTD Promosyon Düzeyi: %d</string>
     <string name="compression_settings">Sıkıştırma Ayarları</string>
-    <string name="share_file">Share</string>
     <string name="storage_access_title">Depolama Access Needed</string>
     <string name="storage_access_description">ZipXtract, dosyalarınızı etkili bir şekilde bulmak, çıkarmak ve organize etmek için cihazınızın depolamasına erişmek için izin gerektirir.</string>
     <string name="storage_safety_text">Dosyalarınız güvenlidir. Bu uygulama internet izni yoktur, bu nedenle veriler dış sunuculara yüklenemez.</string>
