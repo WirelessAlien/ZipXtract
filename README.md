@@ -15,7 +15,7 @@ ZipXtract is a fully open-source Android application designed for comprehensive 
 ## Key Features
 
 ### Comprehensive Extraction Capabilities
-*   **Wide Format Support:** RAR (including RAR5 and multi-volume), ZIP (password-protected and split), TAR, BZ2, GZ, ZST, 7z (password-protected and multi-volume), XZ, JAR, and more.
+*   **Wide Format Support:** RAR (including RAR5 and multi-volume), ZIP (password-protected and split), 7z (password-protected and multi-volume), TAR, GZ, BZ2, XZ, ZST, ISO, CAB, DEB, RPM, DMG, WIM, CHM, LZ4, Brotli (BR), Lzip, JAR, and many more.
 *   **Encrypted Archives:** Handles password-protected ZIP and 7z files.
 *   **Multi-Volume Archives:** Seamlessly extracts multi-volume RAR and 7z archives.
 *   **Split Archives:** Support for extracting split ZIP files.
