@@ -184,4 +184,11 @@
     <string name="select_storage">Виберіть сховище</string>
     <string name="show_hidden_files">Показати приховані файли</string>
     <string name="show_hidden_files_summary">Показати файли, що починаються з крапки</string>
+    <string name="rename_t">Ім\'я</string>
+    <plurals name="folder_items">
+        <item quantity="one"></item>
+        <item quantity="few">%d елементи</item>
+        <item quantity="many">%d елементи</item>
+        <item quantity="other">%d елементи</item>
+    </plurals>
 </resources>
