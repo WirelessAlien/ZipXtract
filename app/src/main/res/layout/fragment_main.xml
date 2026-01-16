@@ -65,16 +65,6 @@
                 android:layout_marginTop="4dp"
                 android:orientation="horizontal">
 
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/internalStorageChip"
-                    style="@style/Widget.MaterialComponents.Chip.Choice"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/internal_storage"
-                    android:checkable="false"
-                    app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Full"
-                    android:visibility="visible" />
-
                 <com.google.android.material.chip.ChipGroup
                     android:id="@+id/chipGroupPath"
                     android:layout_width="wrap_content"

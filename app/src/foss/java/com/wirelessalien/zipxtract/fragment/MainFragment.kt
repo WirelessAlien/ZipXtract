@@ -441,37 +441,6 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             initRecyclerView()
         }
 
-        binding.internalStorageChip.setOnLongClickListener {
-            showStorageSelectionBottomSheet()
-            true
-        }
-
-        binding.internalStorageChip.setOnClickListener {
-            val sdCardPath = StorageHelper.getSdCardPath(requireContext())
-            val basePath = Environment.getExternalStorageDirectory().absolutePath
-            val currentPathToCheck = currentPath ?: basePath
-
-            val targetPath = if (sdCardPath != null && currentPathToCheck.startsWith(sdCardPath)) {
-                sdCardPath
-            } else {
-                basePath
-            }
-            if (currentPathToCheck != targetPath) {
-                if (parentFragmentManager.backStackEntryCount > 0) {
-                    val firstEntry = parentFragmentManager.getBackStackEntryAt(0)
-                    parentFragmentManager.popBackStackImmediate(firstEntry.id, FragmentManager.POP_BACK_STACK_INCLUSIVE)
-                }
-                val fragment = MainFragment().apply {
-                    arguments = Bundle().apply {
-                        putString("path", targetPath)
-                    }
-                }
-                parentFragmentManager.beginTransaction()
-                    .replace(R.id.container, fragment)
-                    .commit()
-            }
-        }
-
         updateStorageInfo(currentPath ?: Environment.getExternalStorageDirectory().absolutePath)
         startFileObserver()
 
@@ -609,17 +578,9 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         val currentPath = currentPath ?: basePath
         val isSdCard = sdCardPath != null && currentPath.startsWith(sdCardPath)
 
-        // Update internalStorageChip text based on current root
-        if (isSdCard) {
-            binding.internalStorageChip.text = sdCardString
-        } else {
-            binding.internalStorageChip.text = internalStorage
-        }
-        binding.internalStorageChip.isChipIconVisible = true
-
         val displayPath = when {
             currentPath.startsWith(basePath) -> currentPath.replace(basePath, internalStorage)
-            isSdCard -> currentPath.replace(sdCardPath, sdCardString)
+            isSdCard -> currentPath.replace(sdCardPath!!, sdCardString)
             else -> currentPath
         }.split("/").filter { it.isNotEmpty() }
 
@@ -630,10 +591,8 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         for ((index, part) in displayPath.withIndex()) {
             if (index == 0) {
                 if (part == internalStorage) pathAccumulator = basePath
-                else if (part == sdCardString && isSdCard) pathAccumulator = sdCardPath
+                else if (part == sdCardString && isSdCard) pathAccumulator = sdCardPath!!
                 else pathAccumulator = "/$part"
-
-                continue
             } else {
                 pathAccumulator = if (pathAccumulator.endsWith("/")) "$pathAccumulator$part" else "$pathAccumulator/$part"
             }
@@ -641,12 +600,32 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             val chip = LayoutInflater.from(requireContext()).inflate(R.layout.custom_chip, binding.chipGroupPath, false) as Chip
             chip.text = part
 
+            if (index == 0) {
+                chip.isChipIconVisible = false
+                chip.setOnLongClickListener {
+                    showStorageSelectionBottomSheet()
+                    true
+                }
+            }
+
             val finalPathForChip = pathAccumulator
 
             chip.setOnClickListener {
-                navigateToPath(finalPathForChip)
+                if (index == 0) {
+                    val currentPathToCheck = currentPath
+                    val targetPath = if (isSdCard) sdCardPath!! else basePath
+
+                    if (currentPathToCheck != targetPath) {
+                        navigateToPath(targetPath)
+                    }
+                } else {
+                    navigateToPath(finalPathForChip)
+                }
             }
             binding.chipGroupPath.addView(chip)
+        }
+        binding.horizontalScrollView.post {
+            binding.horizontalScrollView.fullScroll(View.FOCUS_RIGHT)
         }
     }
 
