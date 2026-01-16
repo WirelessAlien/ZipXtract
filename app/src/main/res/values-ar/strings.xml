@@ -179,4 +179,13 @@
     <string name="select_storage">حدّد التخزين</string>
     <string name="show_hidden_files">أظهر الملفات المخفية</string>
     <string name="show_hidden_files_summary">أظهر الملفات التي تبدأ بنقطة</string>
+    <string name="rename_t">الاسم</string>
+    <plurals name="folder_items">
+        <item quantity="zero">%d items</item>
+        <item quantity="one">%d item</item>
+        <item quantity="two">%d items</item>
+        <item quantity="few">%d items</item>
+        <item quantity="many"></item>
+        <item quantity="other">%d items</item>
+    </plurals>
 </resources>
