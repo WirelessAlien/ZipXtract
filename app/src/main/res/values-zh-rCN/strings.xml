@@ -180,4 +180,8 @@
     <string name="storage_access_description">ZipXtract 需要获得访问设备存储空间的权限，才能有效地查找、提取和整理文件。</string>
     <string name="storage_safety_text">你的文件是安全的。此应用没有互联网权限，因此数据无法上传到外部服务器。</string>
     <string name="available_storage_format">有 %1$s 可用</string>
+    <string name="rename_t">姓名</string>
+    <plurals name="folder_items">
+        <item quantity="other">%d项</item>
+    </plurals>
 </resources>
