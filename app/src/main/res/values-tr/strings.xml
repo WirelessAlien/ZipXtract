@@ -180,4 +180,9 @@
     <string name="select_storage">Storage Seç</string>
     <string name="show_hidden_files">Gizli dosyaları göster</string>
     <string name="show_hidden_files_summary">Show files start with a dott</string>
+    <string name="rename_t">Rename</string>
+    <plurals name="folder_items">
+        <item quantity="one">%d item</item>
+        <item quantity="other">%d öğeleri</item>
+    </plurals>
 </resources>
