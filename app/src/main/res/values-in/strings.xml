@@ -184,4 +184,8 @@
     <string name="select_storage">Pilih Penyimpanan</string>
     <string name="show_hidden_files">Tampilkan file tersembunyi</string>
     <string name="show_hidden_files_summary">Tampilkan file dimulai dengan titik</string>
+    <string name="rename_t">Login</string>
+    <plurals name="folder_items">
+        <item quantity="other">%d Artikel</item>
+    </plurals>
 </resources>
