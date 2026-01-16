@@ -184,4 +184,10 @@
     <string name="select_storage">Seleccionar almacenamiento</string>
     <string name="show_hidden_files">Mostrar archivos ocultos</string>
     <string name="show_hidden_files_summary">Mostrar archivos empezando con un punto</string>
+    <string name="rename_t">Rename</string>
+    <plurals name="folder_items">
+        <item quantity="one">%d item</item>
+        <item quantity="many"></item>
+        <item quantity="other">%d items</item>
+    </plurals>
 </resources>
