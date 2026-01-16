@@ -180,4 +180,10 @@
     <string name="select_storage">Selecione o armazenamento</string>
     <string name="show_hidden_files">Mostrar arquivos ocultos</string>
     <string name="show_hidden_files_summary">Mostrar arquivos começando com um ponto</string>
+    <string name="rename_t">Renomear</string>
+    <plurals name="folder_items">
+        <item quantity="one">%d itens</item>
+        <item quantity="many"></item>
+        <item quantity="other">%d itens</item>
+    </plurals>
 </resources>
