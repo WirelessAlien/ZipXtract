@@ -323,11 +323,12 @@ class CompressCsArchiveService : Service() {
             }
         }
 
-        var outputFile = File(parentDir, "${file.name}.$format")
+        val extension = if (format == ZSTD_FORMAT) "zst" else format
+        var outputFile = File(parentDir, "${file.name}.$extension")
         var counter = 1
 
         while (outputFile.exists()) {
-            outputFile = File(parentDir, "($counter)${file.name}.$format")
+            outputFile = File(parentDir, "($counter)${file.name}.$extension")
             counter++
         }
 
