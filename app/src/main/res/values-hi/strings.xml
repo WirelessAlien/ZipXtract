@@ -184,4 +184,9 @@
     <string name="select_storage">संग्रहण चुनें</string>
     <string name="show_hidden_files">छिपी हुई फ़ाइलें दिखाएं</string>
     <string name="show_hidden_files_summary">एक डॉट के साथ शुरू होने वाली फ़ाइलों को दिखाएं</string>
+    <string name="rename_t">नाम बदलें</string>
+    <plurals name="folder_items">
+        <item quantity="one">%d आइटम</item>
+        <item quantity="other">%d आइटम</item>
+    </plurals>
 </resources>
