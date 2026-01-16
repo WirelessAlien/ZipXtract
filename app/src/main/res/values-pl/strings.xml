@@ -180,4 +180,11 @@
     <string name="select_storage">Strona internetowa</string>
     <string name="show_hidden_files">Udostępniać</string>
     <string name="show_hidden_files_summary">Pliki zaczynające się z kropką</string>
+    <string name="rename_t">Rename</string>
+    <plurals name="folder_items">
+        <item quantity="one">(X0X) przedmiot</item>
+        <item quantity="few">(X0X) przedmioty</item>
+        <item quantity="many">(X0X) przedmioty</item>
+        <item quantity="other">(X0X) przedmioty</item>
+    </plurals>
 </resources>
