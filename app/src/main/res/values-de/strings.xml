@@ -180,4 +180,9 @@
     <string name="select_storage">Wählen Sie Speicher</string>
     <string name="show_hidden_files">Versteckte Dateien anzeigen</string>
     <string name="show_hidden_files_summary">Dateien anzeigen, die mit einem Punkt beginnen</string>
+    <string name="rename_t">Name</string>
+    <plurals name="folder_items">
+        <item quantity="one">%d Artikel</item>
+        <item quantity="other">%d Artikel</item>
+    </plurals>
 </resources>
