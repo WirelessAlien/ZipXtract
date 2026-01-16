@@ -184,4 +184,11 @@
     <string name="select_storage">Выберите хранилище</string>
     <string name="show_hidden_files">Показать скрытые файлы</string>
     <string name="show_hidden_files_summary">Показать файлы, начиная с точки</string>
+    <string name="rename_t">Переименовать</string>
+    <plurals name="folder_items">
+        <item quantity="one"></item>
+        <item quantity="few">%d</item>
+        <item quantity="many">%d</item>
+        <item quantity="other">%d</item>
+    </plurals>
 </resources>
