@@ -138,7 +138,7 @@
     <string name="split_parts_number_req">Дозволити більше 100 розщеплених частин</string>
     <string name="fast_search">Швидкий пошук</string>
     <string name="fast_search_summary">Використовуйте медіа індекс Android для швидкого пошуку</string>
-    <string name="file_list_is_fixed_for_this_operation">Список файлів для цієї операції фіксовано.</string>
+    <string name="file_list_is_fixed_for_this_operation">Перелік файлів фіксується для цієї операції.</string>
     <string name="archive_updated_successfully">Архів успішно оновлено</string>
     <string name="error_no_file_information_provided">Помилка: Інформація про файл не надана.</string>
     <string name="error_updating_archive">Помилка оновлення архіву</string>
