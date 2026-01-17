@@ -28,11 +28,6 @@
 <li>Create split ZIP archives.</li>
 </ul>
 
-<blockquote>
-<p><strong>NOTE:</strong><br />
-The F-Droid version does not include RAR extraction and 7z compression features due to licensing restrictions. For the complete version, please use the GitHub or IzzyOnDroid releases.</p>
-</blockquote>
-
 <h2>Usage Tip</h2>
 <p>General tips for archive extraction and archive creation:</p>
 <ul>
