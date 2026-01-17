@@ -1,1 +1,1 @@
-ZipXtract dapat membuat dan mengekstrak berkas arsip
+Aplikasi Android open-source untuk mengekstrak dan membuat berbagai format arsip seperti ZIP, RAR, 7z, dan lainnya
