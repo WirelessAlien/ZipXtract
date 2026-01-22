@@ -43,16 +43,17 @@ import com.wirelessalien.zipxtract.adapter.FileAdapter
 import com.wirelessalien.zipxtract.adapter.FilePathAdapter
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.PREFERENCE_ARCHIVE_DIR_PATH
 import com.wirelessalien.zipxtract.databinding.TarOptionDialogBinding
-import com.wirelessalien.zipxtract.helper.FileOperationsDao
 import com.wirelessalien.zipxtract.helper.FileUtils
 import com.wirelessalien.zipxtract.helper.PathUtils
 import com.wirelessalien.zipxtract.viewmodel.ArchiveCreationViewModel
+import com.wirelessalien.zipxtract.viewmodel.MainViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import androidx.fragment.app.activityViewModels
 
 class TarOptionsDialogFragment : DialogFragment() {
 
@@ -63,16 +64,15 @@ class TarOptionsDialogFragment : DialogFragment() {
     private var launchedWithFilePaths = false
     private var selectedCompressionFormat: String = "TAR_ONLY"
     private var jobId: String? = null
-    private lateinit var fileOperationsDao: FileOperationsDao
     private val viewModel: ArchiveCreationViewModel by viewModels()
+    private val mainViewModel: MainViewModel by activityViewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        fileOperationsDao = FileOperationsDao(requireContext())
         arguments?.let {
             jobId = it.getString(ARG_JOB_ID)
             if (jobId != null) {
-                selectedFilePaths = fileOperationsDao.getFilesForJob(jobId!!).toMutableList()
+                selectedFilePaths = mainViewModel.getFilesForJob(jobId!!).toMutableList()
                 launchedWithFilePaths = true
             }
         }
@@ -279,9 +279,7 @@ class TarOptionsDialogFragment : DialogFragment() {
             val destinationPath = binding.outputPathInput.text.toString()
             val zstdCompressionLevel = binding.zstdCompressionLevelSlider.value.toInt()
 
-            val mainFragment =
-                parentFragmentManager.findFragmentById(R.id.container) as? MainFragment
-            mainFragment?.startArchiveTarService(
+            mainViewModel.startArchiveTarService(
                 selectedFilePaths,
                 archiveName,
                 selectedCompressionFormat,

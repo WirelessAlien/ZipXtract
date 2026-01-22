@@ -23,6 +23,7 @@ import android.os.Build
 import android.os.Environment
 import android.os.StatFs
 import android.provider.MediaStore
+import com.wirelessalien.zipxtract.helper.FileOperationsDao
 import com.wirelessalien.zipxtract.helper.StorageHelper
 import com.wirelessalien.zipxtract.model.FileItem
 import kotlinx.coroutines.currentCoroutineContext
@@ -33,6 +34,24 @@ import java.io.File
 import java.nio.file.Files
 
 class FileRepository(private val context: Context, private val sharedPreferences: SharedPreferences) {
+
+    private val fileOperationsDao by lazy { FileOperationsDao(context) }
+
+    fun addFilesForJob(files: List<String>): String {
+        return fileOperationsDao.addFilesForJob(files)
+    }
+
+    fun addFilePairsForJob(files: List<Pair<String, String?>>): String {
+        return fileOperationsDao.addFilePairsForJob(files)
+    }
+
+    fun getFilesForJob(jobId: String): List<String> {
+        return fileOperationsDao.getFilesForJob(jobId)
+    }
+
+    fun deleteFilesForJob(jobId: String) {
+        fileOperationsDao.deleteFilesForJob(jobId)
+    }
 
     fun getFiles(currentPath: String?, sortBy: String, sortAscending: Boolean, onlyDirectories: Boolean = false): List<FileItem>? {
         val files = ArrayList<FileItem>()

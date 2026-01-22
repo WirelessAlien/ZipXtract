@@ -28,6 +28,7 @@ import android.provider.OpenableColumns
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
@@ -39,14 +40,9 @@ import com.wirelessalien.zipxtract.databinding.DialogArchiveTypeBinding
 import com.wirelessalien.zipxtract.databinding.DialogCrashLogBinding
 import com.wirelessalien.zipxtract.databinding.PasswordInputOpenWithBinding
 import com.wirelessalien.zipxtract.helper.EncryptionCheckHelper
-import com.wirelessalien.zipxtract.helper.FileOperationsDao
 import com.wirelessalien.zipxtract.helper.FileUtils
 import com.wirelessalien.zipxtract.helper.MultipartArchiveHelper
-import com.wirelessalien.zipxtract.service.ExtractArchiveService
-import com.wirelessalien.zipxtract.service.ExtractCsArchiveService
-import com.wirelessalien.zipxtract.service.ExtractMultipart7zService
-import com.wirelessalien.zipxtract.service.ExtractMultipartZipService
-import com.wirelessalien.zipxtract.service.ExtractRarService
+import com.wirelessalien.zipxtract.viewmodel.OpenWithViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -59,11 +55,10 @@ import java.io.InputStream
 
 class OpenWithActivity : AppCompatActivity() {
 
-    private lateinit var fileOperationsDao: FileOperationsDao
+    private val viewModel: OpenWithViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        fileOperationsDao = FileOperationsDao(this)
 
         handleCrashLog()
 
@@ -169,13 +164,13 @@ class OpenWithActivity : AppCompatActivity() {
 
                 if (supportedExtensions.any { fileExtension.endsWith(it) }) {
                     withContext(Dispatchers.Main) {
-                        startExtractionCsService(filePath)
+                        viewModel.startExtractionCsService(filePath)
                         finish()
                     }
                 } else {
                     withContext(Dispatchers.Main) {
                         if (file.extension.equals("tar", ignoreCase = true)) {
-                            startExtractionService(filePath, null)
+                            viewModel.startExtractionService(filePath, null)
                             finish()
                         } else {
                             val loadingDialog = MaterialAlertDialogBuilder(this@OpenWithActivity, R.style.MaterialDialog)
@@ -195,33 +190,33 @@ class OpenWithActivity : AppCompatActivity() {
                                     if (isMultipartZip) {
                                         if (isEncrypted) showPasswordInputMultiZipDialog(filePath)
                                         else {
-                                            startMultiZipExtractionService(filePath, null)
+                                            viewModel.startMultiZipExtractionService(filePath, null)
                                             finish()
                                         }
                                     } else if (isMultipart7z) {
                                         if (isEncrypted) showPasswordInputMulti7zDialog(filePath)
                                         else {
-                                            startMulti7zExtractionService(filePath, null)
+                                            viewModel.startMulti7zExtractionService(filePath, null)
                                             finish()
                                         }
                                     } else if (isMultipartRar) {
                                         if (isEncrypted) showPasswordInputMultiRarDialog(filePath)
                                         else {
-                                            startRarExtractionService(filePath, null)
+                                            viewModel.startRarExtractionService(filePath, null)
                                             finish()
                                         }
                                     } else {
                                         if (file.extension.equals("rar", ignoreCase = true)) {
                                             if (isEncrypted) showPasswordInputMultiRarDialog(filePath)
                                             else {
-                                                startRarExtractionService(filePath, null)
+                                                viewModel.startRarExtractionService(filePath, null)
                                                 finish()
                                             }
                                         } else {
                                             if (isEncrypted) {
                                                 showPasswordInputDialog(filePath)
                                             } else {
-                                                startExtractionService(filePath, null)
+                                                viewModel.startExtractionService(filePath, null)
                                                 finish()
                                             }
                                         }
@@ -312,7 +307,7 @@ class OpenWithActivity : AppCompatActivity() {
                 if (selectedChipId != View.NO_ID) {
                     val selectedChip = chipGroup.findViewById<Chip>(selectedChipId)
                     val selectedType = selectedChip.text.toString()
-                    val jobId = fileOperationsDao.addFilesForJob(filePaths)
+                    val jobId = viewModel.addFilesForJob(filePaths)
                     val mainActivityIntent = Intent(this, MainActivity::class.java).apply {
                         action = MainActivity.ACTION_CREATE_ARCHIVE
                         putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
@@ -356,13 +351,13 @@ class OpenWithActivity : AppCompatActivity() {
 
         when {
             supportedExtensions.any { fileExtension.endsWith(it) } -> {
-                startExtractionCsService(filePath)
+                viewModel.startExtractionCsService(filePath)
             }
             File(filePath).extension == "rar" -> {
-                startRarExtractionService(filePath, password)
+                viewModel.startRarExtractionService(filePath, password)
             }
             else -> {
-                startExtractionService(filePath, password)
+                viewModel.startExtractionService(filePath, password)
             }
         }
     }
@@ -424,35 +419,6 @@ class OpenWithActivity : AppCompatActivity() {
         return copiedPaths
     }
 
-    private fun startExtractionService(file: String, password: String?) {
-        val jobId = fileOperationsDao.addFilesForJob(listOf(file))
-        val intent = Intent(this, ExtractArchiveService::class.java).apply {
-            putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
-            putExtra(ServiceConstants.EXTRA_PASSWORD, password)
-            putExtra(ServiceConstants.EXTRA_USE_APP_NAME_DIR, true)
-        }
-        ContextCompat.startForegroundService(this, intent)
-    }
-
-    private fun startExtractionCsService(file: String) {
-        val jobId = fileOperationsDao.addFilesForJob(listOf(file))
-        val intent = Intent(this, ExtractCsArchiveService::class.java).apply {
-            putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
-            putExtra(ServiceConstants.EXTRA_USE_APP_NAME_DIR, true)
-        }
-        ContextCompat.startForegroundService(this, intent)
-    }
-
-    private fun startRarExtractionService(file: String, password: String?) {
-        val jobId = fileOperationsDao.addFilesForJob(listOf(file))
-        val intent = Intent(this, ExtractRarService::class.java).apply {
-            putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
-            putExtra(ServiceConstants.EXTRA_PASSWORD, password)
-            putExtra(ServiceConstants.EXTRA_USE_APP_NAME_DIR, true)
-        }
-        ContextCompat.startForegroundService(this, intent)
-    }
-
     private fun showPasswordInputMultiRarDialog(filePath: String) {
         val dialogBinding = PasswordInputOpenWithBinding.inflate(layoutInflater)
         val passwordEditText = dialogBinding.passwordInput
@@ -462,11 +428,11 @@ class OpenWithActivity : AppCompatActivity() {
             .setView(dialogBinding.root)
             .setPositiveButton(getString(R.string.ok)) { _, _ ->
                 val password = passwordEditText.text.toString()
-                startRarExtractionService(filePath, password)
+                viewModel.startRarExtractionService(filePath, password)
                 finish()
             }
             .setNegativeButton(getString(R.string.no_password)) { _, _ ->
-                startRarExtractionService(filePath, null)
+                viewModel.startRarExtractionService(filePath, null)
                 finish()
             }
             .setOnDismissListener {
@@ -484,11 +450,11 @@ class OpenWithActivity : AppCompatActivity() {
             .setView(dialogBinding.root)
             .setPositiveButton(getString(R.string.ok)) { _, _ ->
                 val password = passwordEditText.text.toString()
-                startMultiZipExtractionService(filePath, password)
+                viewModel.startMultiZipExtractionService(filePath, password)
                 finish()
             }
             .setNegativeButton(getString(R.string.no_password)) { _, _ ->
-                startMultiZipExtractionService(filePath, null)
+                viewModel.startMultiZipExtractionService(filePath, null)
                 finish()
             }
             .setOnDismissListener {
@@ -506,36 +472,16 @@ class OpenWithActivity : AppCompatActivity() {
             .setView(dialogBinding.root)
             .setPositiveButton(getString(R.string.ok)) { _, _ ->
                 val password = passwordEditText.text.toString()
-                startMulti7zExtractionService(filePath, password)
+                viewModel.startMulti7zExtractionService(filePath, password)
                 finish()
             }
             .setNegativeButton(getString(R.string.no_password)) { _, _ ->
-                startMulti7zExtractionService(filePath, null)
+                viewModel.startMulti7zExtractionService(filePath, null)
                 finish()
             }
             .setOnDismissListener {
                 finish()
             }
             .show()
-    }
-
-    private fun startMultiZipExtractionService(file: String, password: String?) {
-        val jobId = fileOperationsDao.addFilesForJob(listOf(file))
-        val intent = Intent(this, ExtractMultipartZipService::class.java).apply {
-            putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
-            putExtra(ServiceConstants.EXTRA_PASSWORD, password)
-            putExtra(ServiceConstants.EXTRA_USE_APP_NAME_DIR, true)
-        }
-        ContextCompat.startForegroundService(this, intent)
-    }
-
-    private fun startMulti7zExtractionService(file: String, password: String?) {
-        val jobId = fileOperationsDao.addFilesForJob(listOf(file))
-        val intent = Intent(this, ExtractMultipart7zService::class.java).apply {
-            putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
-            putExtra(ServiceConstants.EXTRA_PASSWORD, password)
-            putExtra(ServiceConstants.EXTRA_USE_APP_NAME_DIR, true)
-        }
-        ContextCompat.startForegroundService(this, intent)
     }
 }

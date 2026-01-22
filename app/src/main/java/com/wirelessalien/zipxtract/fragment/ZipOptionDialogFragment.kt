@@ -46,10 +46,10 @@ import com.wirelessalien.zipxtract.adapter.FileAdapter
 import com.wirelessalien.zipxtract.adapter.FilePathAdapter
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.PREFERENCE_ARCHIVE_DIR_PATH
 import com.wirelessalien.zipxtract.databinding.ZipOptionDialogBinding
-import com.wirelessalien.zipxtract.helper.FileOperationsDao
 import com.wirelessalien.zipxtract.helper.FileUtils
 import com.wirelessalien.zipxtract.helper.PathUtils
 import com.wirelessalien.zipxtract.viewmodel.ArchiveCreationViewModel
+import com.wirelessalien.zipxtract.viewmodel.MainViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -60,6 +60,7 @@ import net.lingala.zip4j.model.enums.CompressionLevel
 import net.lingala.zip4j.model.enums.CompressionMethod
 import net.lingala.zip4j.model.enums.EncryptionMethod
 import java.io.File
+import androidx.fragment.app.activityViewModels
 
 class ZipOptionDialogFragment : DialogFragment() {
 
@@ -69,17 +70,16 @@ class ZipOptionDialogFragment : DialogFragment() {
     private lateinit var filePathAdapter: FilePathAdapter
     private var launchedWithFilePaths = false
     private var jobId: String? = null
-    private lateinit var fileOperationsDao: FileOperationsDao
     private val viewModel: ArchiveCreationViewModel by viewModels()
+    private val mainViewModel: MainViewModel by activityViewModels()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        fileOperationsDao = FileOperationsDao(requireContext())
         arguments?.let {
             jobId = it.getString(ARG_JOB_ID)
             if (jobId != null) {
-                selectedFilePaths = fileOperationsDao.getFilesForJob(jobId!!).toMutableList()
+                selectedFilePaths = mainViewModel.getFilesForJob(jobId!!).toMutableList()
                 launchedWithFilePaths = true
             }
         }
@@ -385,10 +385,6 @@ class ZipOptionDialogFragment : DialogFragment() {
             encryptionStrengthChipGroup.addView(chip)
         }
 
-        val mainFragment =
-            parentFragmentManager.findFragmentById(com.wirelessalien.zipxtract.R.id.container) as? MainFragment
-                ?: return
-
         binding.okButton.setOnClickListener {
             val archiveName = zipNameEditText.text.toString().ifBlank { defaultName }
             val password = passwordInput.text.toString()
@@ -437,7 +433,7 @@ class ZipOptionDialogFragment : DialogFragment() {
 
             val splitSizeText = splitSizeInput.text.toString().toLongOrNull() ?: 64L
             val splitSizeUnit = splitSizeUnitAutoComplete.text.toString()
-            val splitZipSize = mainFragment.convertToBytes(splitSizeText, splitSizeUnit)
+            val splitZipSize = mainViewModel.convertToBytes(splitSizeText, splitSizeUnit)
 
             if (isSplitZip && splitZipSize < 65536) {
                 splitSizeInput.error = getString(com.wirelessalien.zipxtract.R.string.min_split_size_error)
@@ -446,7 +442,7 @@ class ZipOptionDialogFragment : DialogFragment() {
             val destinationPath = binding.outputPathInput.text.toString()
 
             if (!isSplitZip) {
-                mainFragment.startZipService(
+                mainViewModel.startZipService(
                     archiveName,
                     password,
                     selectedCompressionMethod,
@@ -465,7 +461,7 @@ class ZipOptionDialogFragment : DialogFragment() {
                 val selectedFilesSize = withContext(Dispatchers.IO) {
                     selectedFilePaths.sumOf { File(it).length() }
                 }
-                val partsCount = mainFragment.getMultiZipPartsCount(selectedFilesSize, splitZipSize)
+                val partsCount = mainViewModel.getMultiZipPartsCount(selectedFilesSize, splitZipSize)
                 if (partsCount > MAX_MULTI_ZIP_PARTS) {
                     splitSizeInput.error = getString(
                         com.wirelessalien.zipxtract.R.string.error_too_many_parts,
@@ -480,7 +476,7 @@ class ZipOptionDialogFragment : DialogFragment() {
                     binding.overrideLimitCheckbox.visibility = View.GONE
                 }
 
-                mainFragment.startSplitZipService(
+                mainViewModel.startSplitZipService(
                     archiveName,
                     password,
                     selectedCompressionMethod,

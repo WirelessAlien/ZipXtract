@@ -18,19 +18,41 @@
 package com.wirelessalien.zipxtract.viewmodel
 
 import android.app.Application
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.preference.PreferenceManager
+import com.wirelessalien.zipxtract.constant.BroadcastConstants
+import com.wirelessalien.zipxtract.constant.ServiceConstants
 import com.wirelessalien.zipxtract.model.FileItem
 import com.wirelessalien.zipxtract.repository.ArchiveRepository
+import com.wirelessalien.zipxtract.service.ExtractArchiveService
+import com.wirelessalien.zipxtract.service.ExtractCsArchiveService
+import com.wirelessalien.zipxtract.service.ExtractMultipart7zService
+import com.wirelessalien.zipxtract.service.ExtractMultipartZipService
+import com.wirelessalien.zipxtract.service.ExtractRarService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class ArchiveViewModel(application: Application) : AndroidViewModel(application) {
+
+    sealed class OperationEvent {
+        data class Progress(val progress: Int) : OperationEvent()
+        data class Complete(val path: String?) : OperationEvent()
+        data class Error(val message: String?) : OperationEvent()
+    }
 
     private val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(application)
     private val repository = ArchiveRepository(application, sharedPreferences)
@@ -44,8 +66,46 @@ class ArchiveViewModel(application: Application) : AndroidViewModel(application)
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
+    private val _operationEvent = MutableSharedFlow<OperationEvent>()
+    val operationEvent: SharedFlow<OperationEvent> = _operationEvent.asSharedFlow()
+
     private var currentQuery: String? = null
     private var searchJob: Job? = null
+
+    private val broadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            viewModelScope.launch {
+                when (intent?.action) {
+                    BroadcastConstants.ACTION_EXTRACTION_PROGRESS -> {
+                        val progress = intent.getIntExtra(BroadcastConstants.EXTRA_PROGRESS, 0)
+                        _operationEvent.emit(OperationEvent.Progress(progress))
+                    }
+                    BroadcastConstants.ACTION_EXTRACTION_COMPLETE -> {
+                        val dirPath = intent.getStringExtra(BroadcastConstants.EXTRA_DIR_PATH)
+                        _operationEvent.emit(OperationEvent.Complete(dirPath))
+                    }
+                    BroadcastConstants.ACTION_EXTRACTION_ERROR -> {
+                        val errorMessage = intent.getStringExtra(BroadcastConstants.EXTRA_ERROR_MESSAGE)
+                        _operationEvent.emit(OperationEvent.Error(errorMessage))
+                    }
+                }
+            }
+        }
+    }
+
+    init {
+        val filter = IntentFilter().apply {
+            addAction(BroadcastConstants.ACTION_EXTRACTION_COMPLETE)
+            addAction(BroadcastConstants.ACTION_EXTRACTION_ERROR)
+            addAction(BroadcastConstants.ACTION_EXTRACTION_PROGRESS)
+        }
+        LocalBroadcastManager.getInstance(application).registerReceiver(broadcastReceiver, filter)
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        LocalBroadcastManager.getInstance(getApplication()).unregisterReceiver(broadcastReceiver)
+    }
 
     fun loadArchiveFiles(extension: String?, sortBy: String, sortAscending: Boolean) {
         currentQuery = null
@@ -80,5 +140,54 @@ class ArchiveViewModel(application: Application) : AndroidViewModel(application)
                  _isLoading.value = false
              }
         }
+    }
+
+    fun startExtractionService(file: String, password: String?, destinationPath: String?) {
+        val jobId = repository.addFilesForJob(listOf(file))
+        val intent = Intent(getApplication(), ExtractArchiveService::class.java).apply {
+            putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
+            putExtra(ServiceConstants.EXTRA_PASSWORD, password)
+            putExtra(ServiceConstants.EXTRA_DESTINATION_PATH, destinationPath)
+        }
+        ContextCompat.startForegroundService(getApplication(), intent)
+    }
+
+    fun startExtractionCsService(file: String, destinationPath: String?) {
+        val jobId = repository.addFilesForJob(listOf(file))
+        val intent = Intent(getApplication(), ExtractCsArchiveService::class.java).apply {
+            putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
+            putExtra(ServiceConstants.EXTRA_DESTINATION_PATH, destinationPath)
+        }
+        ContextCompat.startForegroundService(getApplication(), intent)
+    }
+
+    fun startRarExtractionService(file: String, password: String?, destinationPath: String?) {
+        val jobId = repository.addFilesForJob(listOf(file))
+        val intent = Intent(getApplication(), ExtractRarService::class.java).apply {
+            putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
+            putExtra(ServiceConstants.EXTRA_PASSWORD, password)
+            putExtra(ServiceConstants.EXTRA_DESTINATION_PATH, destinationPath)
+        }
+        ContextCompat.startForegroundService(getApplication(), intent)
+    }
+
+    fun startMulti7zExtractionService(file: String, password: String?, destinationPath: String?) {
+        val jobId = repository.addFilesForJob(listOf(file))
+        val intent = Intent(getApplication(), ExtractMultipart7zService::class.java).apply {
+            putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
+            putExtra(ServiceConstants.EXTRA_PASSWORD, password)
+            putExtra(ServiceConstants.EXTRA_DESTINATION_PATH, destinationPath)
+        }
+        ContextCompat.startForegroundService(getApplication(), intent)
+    }
+
+    fun startMultiZipExtractionService(file: String, password: String?, destinationPath: String?) {
+        val jobId = repository.addFilesForJob(listOf(file))
+        val intent = Intent(getApplication(), ExtractMultipartZipService::class.java).apply {
+            putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
+            putExtra(ServiceConstants.EXTRA_PASSWORD, password)
+            putExtra(ServiceConstants.EXTRA_DESTINATION_PATH, destinationPath)
+        }
+        ContextCompat.startForegroundService(getApplication(), intent)
     }
 }

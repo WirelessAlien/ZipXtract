@@ -20,11 +20,18 @@ package com.wirelessalien.zipxtract.repository
 import android.content.Context
 import android.content.SharedPreferences
 import android.provider.MediaStore
+import com.wirelessalien.zipxtract.helper.FileOperationsDao
 import com.wirelessalien.zipxtract.helper.StorageHelper
 import com.wirelessalien.zipxtract.model.FileItem
 import java.io.File
 
 class ArchiveRepository(private val context: Context, private val sharedPreferences: SharedPreferences) {
+
+    private val fileOperationsDao by lazy { FileOperationsDao(context) }
+
+    fun addFilesForJob(files: List<String>): String {
+        return fileOperationsDao.addFilesForJob(files)
+    }
 
     private val archiveExtensions = listOf(
         "rar",

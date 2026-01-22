@@ -17,10 +17,6 @@
 
 package com.wirelessalien.zipxtract.fragment
 
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
@@ -42,17 +38,12 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.chip.Chip
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.adapter.ArchiveItemAdapter
-import com.wirelessalien.zipxtract.constant.BroadcastConstants
-import com.wirelessalien.zipxtract.constant.ServiceConstants
 import com.wirelessalien.zipxtract.databinding.FragmentSevenZipBinding
-import com.wirelessalien.zipxtract.helper.FileOperationsDao
-import com.wirelessalien.zipxtract.service.Update7zService
 import com.wirelessalien.zipxtract.viewmodel.SevenZipViewModel
 import kotlinx.coroutines.launch
 import java.io.File
@@ -70,32 +61,9 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
     )
 
     private lateinit var binding: FragmentSevenZipBinding
-    private lateinit var fileOperationsDao: FileOperationsDao
     private var archivePath: String? = null
     private lateinit var adapter: ArchiveItemAdapter
     private val viewModel: SevenZipViewModel by viewModels()
-
-    private val updateReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            when (intent?.action) {
-                BroadcastConstants.ACTION_ARCHIVE_PROGRESS -> {
-                    val progress = intent.getIntExtra(BroadcastConstants.EXTRA_PROGRESS, 0)
-                    binding.progressBar.progress = progress
-                }
-                BroadcastConstants.ACTION_ARCHIVE_COMPLETE -> {
-                    binding.progressBar.visibility = View.GONE
-                    Toast.makeText(requireContext(),
-                        getString(R.string.archive_updated_successfully), Toast.LENGTH_SHORT).show()
-                    viewModel.reloadArchive()
-                }
-                BroadcastConstants.ACTION_ARCHIVE_ERROR -> {
-                    binding.progressBar.visibility = View.GONE
-                    Toast.makeText(requireContext(),
-                        getString(R.string.error_updating_archive), Toast.LENGTH_SHORT).show()
-                }
-            }
-        }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -114,8 +82,6 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        fileOperationsDao = FileOperationsDao(requireContext())
 
         val activity = activity as AppCompatActivity
         activity.supportActionBar?.setDisplayHomeAsUpEnabled(true)
@@ -175,15 +141,28 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
                         }
                     }
                 }
+                launch {
+                    viewModel.operationEvent.collect { event ->
+                        when(event) {
+                            is SevenZipViewModel.OperationEvent.Progress -> {
+                                binding.progressBar.progress = event.progress
+                            }
+                            is SevenZipViewModel.OperationEvent.Complete -> {
+                                binding.progressBar.visibility = View.GONE
+                                Toast.makeText(requireContext(),
+                                    getString(R.string.archive_updated_successfully), Toast.LENGTH_SHORT).show()
+                                viewModel.reloadArchive()
+                            }
+                            is SevenZipViewModel.OperationEvent.Error -> {
+                                binding.progressBar.visibility = View.GONE
+                                Toast.makeText(requireContext(),
+                                    getString(R.string.error_updating_archive), Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
+                }
             }
         }
-
-        val filter = IntentFilter().apply {
-            addAction(BroadcastConstants.ACTION_ARCHIVE_COMPLETE)
-            addAction(BroadcastConstants.ACTION_ARCHIVE_ERROR)
-            addAction(BroadcastConstants.ACTION_ARCHIVE_PROGRESS)
-        }
-        LocalBroadcastManager.getInstance(requireContext()).registerReceiver(updateReceiver, filter)
 
         binding.fabAddFile.setOnClickListener {
             val filePicker = FilePickerFragment.newInstance()
@@ -297,12 +276,7 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
                             binding.progressBar.visibility = View.VISIBLE
                             val selectedItems = adapter.getSelectedItems()
                             val pathsToRemove = selectedItems.map { it.path }
-                            val jobId = fileOperationsDao.addFilesForJob(pathsToRemove)
-                            val intent = Intent(requireContext(), Update7zService::class.java).apply {
-                                putExtra(ServiceConstants.EXTRA_ARCHIVE_PATH, archivePath)
-                                putExtra(ServiceConstants.EXTRA_ITEMS_TO_REMOVE_JOB_ID, jobId)
-                            }
-                            requireContext().startService(intent)
+                            viewModel.removeFilesFromArchive(pathsToRemove)
                             mode?.finish()
                         }
                         .show()
@@ -320,15 +294,7 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
 
     override fun onFilesSelected(files: List<File>) {
         binding.progressBar.visibility = View.VISIBLE
-        val currentPath = viewModel.currentPath
-        val filePairs = files.map { it.absolutePath to (if (currentPath.isEmpty()) it.name else "$currentPath/${it.name}") }
-        val jobId = fileOperationsDao.addFilePairsForJob(filePairs)
-
-        val intent = Intent(requireContext(), Update7zService::class.java).apply {
-            putExtra(ServiceConstants.EXTRA_ARCHIVE_PATH, archivePath)
-            putExtra(ServiceConstants.EXTRA_ITEMS_TO_ADD_JOB_ID, jobId)
-        }
-        requireContext().startService(intent)
+        viewModel.addFilesToArchive(files)
     }
 
     private fun handleBackNavigation() {
@@ -343,7 +309,6 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
 
     override fun onDestroyView() {
         super.onDestroyView()
-        LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(updateReceiver)
         val activity = activity as? AppCompatActivity
         activity?.findViewById<View>(R.id.tabLayout)?.visibility = View.VISIBLE
         activity?.supportActionBar?.setDisplayHomeAsUpEnabled(false)

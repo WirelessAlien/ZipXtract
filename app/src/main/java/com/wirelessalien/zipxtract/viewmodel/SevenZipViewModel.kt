@@ -18,12 +18,26 @@
 package com.wirelessalien.zipxtract.viewmodel
 
 import android.app.Application
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import androidx.preference.PreferenceManager
+import com.wirelessalien.zipxtract.constant.BroadcastConstants
+import com.wirelessalien.zipxtract.constant.ServiceConstants
 import com.wirelessalien.zipxtract.fragment.SevenZipFragment
+import com.wirelessalien.zipxtract.repository.FileRepository
+import com.wirelessalien.zipxtract.service.Update7zService
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -31,10 +45,20 @@ import net.sf.sevenzipjbinding.IInArchive
 import net.sf.sevenzipjbinding.PropID
 import net.sf.sevenzipjbinding.SevenZip
 import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream
+import java.io.File
 import java.io.RandomAccessFile
 import java.util.Date
 
 class SevenZipViewModel(application: Application) : AndroidViewModel(application) {
+
+    sealed class OperationEvent {
+        data class Progress(val progress: Int) : OperationEvent()
+        object Complete : OperationEvent()
+        object Error : OperationEvent()
+    }
+
+    private val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(application)
+    private val repository = FileRepository(application, sharedPreferences)
 
     private val _archiveItems = MutableStateFlow<List<SevenZipFragment.ArchiveItem>>(emptyList())
     val archiveItems: StateFlow<List<SevenZipFragment.ArchiveItem>> = _archiveItems.asStateFlow()
@@ -42,9 +66,47 @@ class SevenZipViewModel(application: Application) : AndroidViewModel(application
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
+    private val _operationEvent = MutableSharedFlow<OperationEvent>()
+    val operationEvent: SharedFlow<OperationEvent> = _operationEvent.asSharedFlow()
+
     private var inArchive: IInArchive? = null
     var archivePath: String? = null
     var currentPath: String = ""
+
+    private val broadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            viewModelScope.launch {
+                when (intent?.action) {
+                    BroadcastConstants.ACTION_ARCHIVE_PROGRESS -> {
+                        val progress = intent.getIntExtra(BroadcastConstants.EXTRA_PROGRESS, 0)
+                        _operationEvent.emit(OperationEvent.Progress(progress))
+                    }
+                    BroadcastConstants.ACTION_ARCHIVE_COMPLETE -> {
+                        _operationEvent.emit(OperationEvent.Complete)
+                        reloadArchive()
+                    }
+                    BroadcastConstants.ACTION_ARCHIVE_ERROR -> {
+                        _operationEvent.emit(OperationEvent.Error)
+                    }
+                }
+            }
+        }
+    }
+
+    init {
+        val filter = IntentFilter().apply {
+            addAction(BroadcastConstants.ACTION_ARCHIVE_COMPLETE)
+            addAction(BroadcastConstants.ACTION_ARCHIVE_ERROR)
+            addAction(BroadcastConstants.ACTION_ARCHIVE_PROGRESS)
+        }
+        LocalBroadcastManager.getInstance(application).registerReceiver(broadcastReceiver, filter)
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        LocalBroadcastManager.getInstance(getApplication()).unregisterReceiver(broadcastReceiver)
+        closeArchive()
+    }
 
     fun openArchive(path: String) {
         archivePath = path
@@ -113,8 +175,25 @@ class SevenZipViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
-    override fun onCleared() {
-        super.onCleared()
-        closeArchive()
+    fun addFilesToArchive(files: List<File>) {
+        val currentPath = currentPath
+        val filePairs = files.map { it.absolutePath to (if (currentPath.isEmpty()) it.name else "$currentPath/${it.name}") }
+        
+        val jobId = repository.addFilePairsForJob(filePairs)
+
+        val intent = Intent(getApplication(), Update7zService::class.java).apply {
+            putExtra(ServiceConstants.EXTRA_ARCHIVE_PATH, archivePath)
+            putExtra(ServiceConstants.EXTRA_ITEMS_TO_ADD_JOB_ID, jobId)
+        }
+        ContextCompat.startForegroundService(getApplication(), intent)
+    }
+
+    fun removeFilesFromArchive(pathsToRemove: List<String>) {
+        val jobId = repository.addFilesForJob(pathsToRemove)
+        val intent = Intent(getApplication(), Update7zService::class.java).apply {
+            putExtra(ServiceConstants.EXTRA_ARCHIVE_PATH, archivePath)
+            putExtra(ServiceConstants.EXTRA_ITEMS_TO_REMOVE_JOB_ID, jobId)
+        }
+        ContextCompat.startForegroundService(getApplication(), intent)
     }
 }

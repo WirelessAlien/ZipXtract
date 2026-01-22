@@ -44,16 +44,17 @@ import com.wirelessalien.zipxtract.adapter.FileAdapter
 import com.wirelessalien.zipxtract.adapter.FilePathAdapter
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.PREFERENCE_ARCHIVE_DIR_PATH
 import com.wirelessalien.zipxtract.databinding.SevenZOptionDialogBinding
-import com.wirelessalien.zipxtract.helper.FileOperationsDao
 import com.wirelessalien.zipxtract.helper.FileUtils
 import com.wirelessalien.zipxtract.helper.PathUtils
 import com.wirelessalien.zipxtract.viewmodel.ArchiveCreationViewModel
+import com.wirelessalien.zipxtract.viewmodel.MainViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import androidx.fragment.app.activityViewModels
 
 class SevenZOptionDialogFragment : DialogFragment() {
 
@@ -63,16 +64,15 @@ class SevenZOptionDialogFragment : DialogFragment() {
     private lateinit var filePathAdapter: FilePathAdapter
     private var launchedWithFilePaths = false
     private var jobId: String? = null
-    private lateinit var fileOperationsDao: FileOperationsDao
     private val viewModel: ArchiveCreationViewModel by viewModels()
+    private val mainViewModel: MainViewModel by activityViewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        fileOperationsDao = FileOperationsDao(requireContext())
         arguments?.let {
             jobId = it.getString(ARG_JOB_ID)
             if (jobId != null) {
-                selectedFilePaths = fileOperationsDao.getFilesForJob(jobId!!).toMutableList()
+                selectedFilePaths = mainViewModel.getFilesForJob(jobId!!).toMutableList()
                 launchedWithFilePaths = true
             }
         }
@@ -277,8 +277,6 @@ class SevenZOptionDialogFragment : DialogFragment() {
             }
         }
 
-        val mainFragment = parentFragmentManager.findFragmentById(R.id.container) as? MainFragment
-
         binding.okButton.setOnClickListener {
             val archiveName = binding.archiveNameEditText.text.toString().ifBlank { defaultName }
             val password = binding.passwordEditText.text.toString()
@@ -306,7 +304,7 @@ class SevenZOptionDialogFragment : DialogFragment() {
 
             val destinationPath = binding.outputPathInput.text.toString()
 
-            mainFragment?.startSevenZService(
+            mainViewModel.startSevenZService(
                 password.ifBlank { null },
                 archiveName,
                 compressionLevel,
