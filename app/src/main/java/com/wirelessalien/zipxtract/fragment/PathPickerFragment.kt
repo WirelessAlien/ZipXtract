@@ -36,21 +36,18 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.chip.Chip
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.adapter.FilePickerAdapter
 import com.wirelessalien.zipxtract.databinding.DialogPathPickerBinding
 import com.wirelessalien.zipxtract.helper.StorageHelper
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
+import com.wirelessalien.zipxtract.viewmodel.PickerViewModel
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.io.File
-import java.nio.file.Files
-import java.nio.file.attribute.BasicFileAttributes
 
 class PathPickerFragment : BottomSheetDialogFragment(), FilePickerAdapter.OnItemClickListener,
     FilePickerAdapter.ActionModeProvider {
@@ -64,8 +61,7 @@ class PathPickerFragment : BottomSheetDialogFragment(), FilePickerAdapter.OnItem
     private lateinit var sharedPreferences: SharedPreferences
     private var sortBy: SortBy = SortBy.SORT_BY_NAME
     private var sortAscending: Boolean = true
-    private var fileLoadingJob: Job? = null
-    private val coroutineScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+    private val viewModel: PickerViewModel by viewModels()
 
     interface PathPickerListener {
         fun onPathSelected(path: String)
@@ -136,6 +132,29 @@ class PathPickerFragment : BottomSheetDialogFragment(), FilePickerAdapter.OnItem
             }
             if (currentPathToCheck != targetPath) {
                 loadFiles(targetPath)
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    viewModel.files.collect { files ->
+                        adapter.updateFilesAndFilter(ArrayList(files.map { it.file }))
+                    }
+                }
+                launch {
+                    viewModel.isLoading.collect { isLoading ->
+                        if (isLoading) {
+                            binding.shimmerViewContainer.startShimmer()
+                            binding.shimmerViewContainer.visibility = View.VISIBLE
+                            binding.recyclerView.visibility = View.GONE
+                        } else {
+                            binding.shimmerViewContainer.stopShimmer()
+                            binding.shimmerViewContainer.visibility = View.GONE
+                            binding.recyclerView.visibility = View.VISIBLE
+                        }
+                    }
+                }
             }
         }
 
@@ -243,80 +262,10 @@ class PathPickerFragment : BottomSheetDialogFragment(), FilePickerAdapter.OnItem
         }
     }
 
-    private fun getFileTimeOfCreation(file: File): Long {
-        return if (file.exists()) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                val attr = Files.readAttributes(file.toPath(), BasicFileAttributes::class.java)
-                attr.lastModifiedTime().toMillis()
-            } else {
-                file.lastModified()
-            }
-        } else {
-            0L
-        }
-    }
-
     private fun loadFiles(path: String) {
-        fileLoadingJob?.cancel()
-
         currentPath = path
         updateCurrentPathChip()
-
-        binding.shimmerViewContainer.startShimmer()
-        binding.shimmerViewContainer.visibility = View.VISIBLE
-        binding.recyclerView.visibility = View.GONE
-
-        fileLoadingJob = coroutineScope.launch {
-            val combinedList = withContext(Dispatchers.IO) {
-                val file = File(path)
-                val fileList = file.listFiles()?.toList() ?: emptyList()
-
-                val directories = ArrayList<File>()
-
-                fileList.forEach { f ->
-                    if (f.isDirectory) {
-                        directories.add(f)
-                    }
-                }
-
-                // Sort files based on current criteria
-                when (sortBy) {
-                    SortBy.SORT_BY_NAME -> {
-                        directories.sortBy { it.name }
-                    }
-
-                    SortBy.SORT_BY_SIZE -> {
-                        directories.sortBy { it.length() }
-                    }
-
-                    SortBy.SORT_BY_MODIFIED -> {
-                        directories.sortBy { getFileTimeOfCreation(it) }
-                    }
-
-                    SortBy.SORT_BY_EXTENSION -> {
-                        directories.sortBy { it.extension }
-                    }
-                }
-
-                if (!sortAscending) {
-                    directories.reverse()
-                }
-
-                directories
-            }
-
-//            if (path == Environment.getExternalStorageDirectory().absolutePath) {
-//                binding.btnAddFolder.visibility = View.GONE
-//            } else {
-//                binding.btnAddFolder.visibility = View.VISIBLE
-//            }
-
-            adapter.updateFilesAndFilter(combinedList)
-
-            binding.shimmerViewContainer.stopShimmer()
-            binding.shimmerViewContainer.visibility = View.GONE
-            binding.recyclerView.visibility = View.VISIBLE
-        }
+        viewModel.loadFiles(path, sortBy.name, sortAscending, onlyDirectories = true)
     }
 
     override fun onStart() {
@@ -339,8 +288,6 @@ class PathPickerFragment : BottomSheetDialogFragment(), FilePickerAdapter.OnItem
 
     override fun onDestroy() {
         super.onDestroy()
-        fileLoadingJob?.cancel()
-        coroutineScope.cancel()
     }
 
     override fun onItemClick(file: File, filePath: String) {

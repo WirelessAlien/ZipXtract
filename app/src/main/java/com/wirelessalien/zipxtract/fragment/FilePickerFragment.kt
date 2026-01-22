@@ -39,19 +39,16 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.chip.Chip
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.wirelessalien.zipxtract.R
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.wirelessalien.zipxtract.adapter.FilePickerAdapter
 import com.wirelessalien.zipxtract.databinding.DialogFilePickerBinding
 import com.wirelessalien.zipxtract.helper.StorageHelper
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
+import com.wirelessalien.zipxtract.viewmodel.PickerViewModel
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.io.File
-import java.nio.file.Files
-import java.nio.file.attribute.BasicFileAttributes
 
 class FilePickerFragment : BottomSheetDialogFragment(), FilePickerAdapter.OnItemClickListener, FilePickerAdapter.ActionModeProvider {
 
@@ -64,9 +61,7 @@ class FilePickerFragment : BottomSheetDialogFragment(), FilePickerAdapter.OnItem
     private lateinit var sharedPreferences: SharedPreferences
     private var sortBy: SortBy = SortBy.SORT_BY_NAME
     private var sortAscending: Boolean = true
-    private var fileLoadingJob: Job? = null
-    private val coroutineScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
-
+    private val viewModel: PickerViewModel by viewModels()
 
     interface FilePickerListener {
         fun onFilesSelected(files: List<File>)
@@ -150,6 +145,29 @@ class FilePickerFragment : BottomSheetDialogFragment(), FilePickerAdapter.OnItem
             }
             if (currentPathToCheck != targetPath) {
                 loadFiles(targetPath)
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    viewModel.files.collect { files ->
+                        adapter.updateFilesAndFilter(ArrayList(files.map { it.file }))
+                    }
+                }
+                launch {
+                    viewModel.isLoading.collect { isLoading ->
+                        if (isLoading) {
+                            binding.shimmerViewContainer.startShimmer()
+                            binding.shimmerViewContainer.visibility = View.VISIBLE
+                            binding.recyclerView.visibility = View.GONE
+                        } else {
+                            binding.shimmerViewContainer.stopShimmer()
+                            binding.shimmerViewContainer.visibility = View.GONE
+                            binding.recyclerView.visibility = View.VISIBLE
+                        }
+                    }
+                }
             }
         }
 
@@ -267,88 +285,16 @@ class FilePickerFragment : BottomSheetDialogFragment(), FilePickerAdapter.OnItem
         }
     }
 
-    private fun getFileTimeOfCreation(file: File): Long {
-        return if (file.exists()) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                val attr = Files.readAttributes(file.toPath(), BasicFileAttributes::class.java)
-                attr.lastModifiedTime().toMillis()
-            } else {
-                file.lastModified()
-            }
-        } else {
-            0L
-        }
-    }
-
     private fun loadFiles(path: String) {
-        fileLoadingJob?.cancel()
-
         currentPath = path
         updateCurrentPathChip()
+        viewModel.loadFiles(path, sortBy.name, sortAscending, onlyDirectories = false)
 
-        binding.shimmerViewContainer.startShimmer()
-        binding.shimmerViewContainer.visibility = View.VISIBLE
-        binding.recyclerView.visibility = View.GONE
-
-        fileLoadingJob = coroutineScope.launch {
-            val combinedList = withContext(Dispatchers.IO) {
-                val file = File(path)
-                val fileList = file.listFiles()?.toList() ?: emptyList()
-
-                val files = ArrayList<File>()
-                val directories = ArrayList<File>()
-
-                fileList.forEach { f ->
-                    if (f.isDirectory) {
-                        directories.add(f)
-                    } else {
-                        files.add(f)
-                    }
-                }
-
-                // Sort files based on current criteria
-                when (sortBy) {
-                    SortBy.SORT_BY_NAME -> {
-                        directories.sortBy { it.name }
-                        files.sortBy { it.name }
-                    }
-                    SortBy.SORT_BY_SIZE -> {
-                        directories.sortBy { it.length() }
-                        files.sortBy { it.length() }
-                    }
-                    SortBy.SORT_BY_MODIFIED -> {
-                        directories.sortBy { getFileTimeOfCreation(it) }
-                        files.sortBy { getFileTimeOfCreation(it) }
-                    }
-                    SortBy.SORT_BY_EXTENSION -> {
-                        directories.sortBy { it.extension }
-                        files.sortBy { it.extension }
-                    }
-                }
-
-                if (!sortAscending) {
-                    directories.reverse()
-                    files.reverse()
-                }
-
-                val resultList = ArrayList<File>()
-                resultList.addAll(directories)
-                resultList.addAll(files)
-                resultList
-            }
-
-            val sdCardPath = StorageHelper.getSdCardPath(requireContext())
-            if (path == Environment.getExternalStorageDirectory().absolutePath || (sdCardPath != null && path == sdCardPath)) {
-                binding.btnAddFolder.visibility = View.GONE
-            } else {
-                binding.btnAddFolder.visibility = View.VISIBLE
-            }
-
-            adapter.updateFilesAndFilter(combinedList)
-
-            binding.shimmerViewContainer.stopShimmer()
-            binding.shimmerViewContainer.visibility = View.GONE
-            binding.recyclerView.visibility = View.VISIBLE
+        val sdCardPath = StorageHelper.getSdCardPath(requireContext())
+        if (path == Environment.getExternalStorageDirectory().absolutePath || (sdCardPath != null && path == sdCardPath)) {
+            binding.btnAddFolder.visibility = View.GONE
+        } else {
+            binding.btnAddFolder.visibility = View.VISIBLE
         }
     }
 
@@ -371,8 +317,6 @@ class FilePickerFragment : BottomSheetDialogFragment(), FilePickerAdapter.OnItem
 
     override fun onDestroy() {
         super.onDestroy()
-        fileLoadingJob?.cancel()
-        coroutineScope.cancel()
     }
 
     override fun onItemClick(file: File, filePath: String) {

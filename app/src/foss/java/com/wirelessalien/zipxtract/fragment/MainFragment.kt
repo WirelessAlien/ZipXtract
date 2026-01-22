@@ -76,8 +76,10 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -137,6 +139,7 @@ import com.wirelessalien.zipxtract.service.ExtractMultipart7zService
 import com.wirelessalien.zipxtract.service.ExtractMultipartZipService
 import com.wirelessalien.zipxtract.service.ExtractRarService
 import com.wirelessalien.zipxtract.viewmodel.FileOperationViewModel
+import com.wirelessalien.zipxtract.viewmodel.MainViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -187,6 +190,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     private lateinit var eProgressText: TextView
     private var areFabsVisible: Boolean = false
     private val fileOperationViewModel: FileOperationViewModel by activityViewModels()
+    private val viewModel: MainViewModel by viewModels()
     private lateinit var eProgressBar: LinearProgressIndicator
     private lateinit var aProgressBar: LinearProgressIndicator
     private lateinit var binding: FragmentMainBinding
@@ -195,6 +199,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     private var storageInfoJob: Job? = null
     private var searchJob: Job? = null
     private lateinit var fileOperationsDao: FileOperationsDao
+    private var initialLoadDone = false
 
     private var isLowStorage: Boolean = false
 
@@ -435,10 +440,80 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             }
         }
 
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    viewModel.files.collect { files ->
+                        adapter.updateFilesAndFilter(files, currentQuery)
+                        binding.emptyFolderLayout.visibility = if (files.isEmpty() && !viewModel.isLoading.value) View.VISIBLE else View.GONE
+                        binding.recyclerView.visibility = if (files.isEmpty() && !viewModel.isLoading.value) View.GONE else View.VISIBLE
+                        
+                        val highlightFilePath = arguments?.getString(ARG_HIGHLIGHT_FILE_PATH)
+                        if (highlightFilePath != null && files.any { it.file.absolutePath == highlightFilePath }) {
+                            highlightFile(highlightFilePath)
+                            arguments?.remove(ARG_HIGHLIGHT_FILE_PATH)
+                        } else {
+                            if (highlightFilePath == null) adapter.clearHighlight()
+                        }
+                    }
+                }
+                launch {
+                    viewModel.storageInfo.collect { info ->
+                         if (info != null) {
+                             val totalSizeStr = android.text.format.Formatter.formatFileSize(requireContext(), info.totalSize)
+                             val availableSizeStr = android.text.format.Formatter.formatFileSize(requireContext(), info.availableSize)
+                             val availablePercentage = if (info.totalSize > 0) ((info.availableSize.toDouble() / info.totalSize) * 100).toInt() else 0
+                             isLowStorage = availablePercentage < 10
+                             
+                             if (isLowStorage) {
+                                binding.storageWarningText.text = "\u26A0 " + getString(R.string.storage_info_format, availableSizeStr, totalSizeStr)
+                                binding.storageWarningText.visibility = View.VISIBLE
+                             } else {
+                                binding.storageWarningText.visibility = View.GONE
+                             }
+                         }
+                    }
+                }
+                launch {
+                    viewModel.isLoading.collect { isLoading ->
+                        if (isLoading) {
+                            if (adapter.itemCount == 0) {
+                                binding.shimmerViewContainer.startShimmer()
+                                binding.shimmerViewContainer.visibility = View.VISIBLE
+                                binding.recyclerView.visibility = View.GONE
+                                binding.emptyFolderLayout.visibility = View.GONE
+                                binding.statusTextView.visibility = View.GONE
+                            }
+                        } else {
+                            binding.shimmerViewContainer.stopShimmer()
+                            binding.shimmerViewContainer.visibility = View.GONE
+                            binding.swipeRefreshLayout.isRefreshing = false
+                            if (adapter.itemCount > 0) {
+                                binding.recyclerView.visibility = View.VISIBLE
+                            }
+                        }
+                    }
+                }
+                launch {
+                    viewModel.error.collect { error ->
+                        if (error != null) {
+                            binding.statusTextView.text = error ?: getString(R.string.general_error_msg)
+                            binding.statusTextView.visibility = View.VISIBLE
+                            binding.recyclerView.visibility = View.GONE
+                        }
+                    }
+                }
+            }
+        }
+
         if (!checkStoragePermissions()) {
             showPermissionRequestLayout()
         } else {
             initRecyclerView()
+            if (viewModel.files.value.isEmpty()) {
+                updateAdapterWithFullList()
+                initialLoadDone = true
+            }
         }
 
         binding.internalStorageChip.setOnLongClickListener {
@@ -754,50 +829,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     }
 
     private fun updateStorageInfo(path: String) {
-        storageInfoJob?.cancel()
-        storageInfoJob = lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                // Determine which storage volume the path belongs to
-                val sdCardPath = StorageHelper.getSdCardPath(requireContext())
-                val rootPath = if (sdCardPath != null && path.startsWith(sdCardPath)) {
-                    sdCardPath
-                } else {
-                    Environment.getExternalStorageDirectory().absolutePath
-                }
-
-                val stat = StatFs(rootPath)
-                val totalSize = stat.totalBytes
-                val availableSize = stat.availableBytes
-//                val usedSize = totalSize - availableSize
-
-//                val progress = if (totalSize > 0) ((usedSize.toDouble() / totalSize) * 100).toInt() else 0
-                val availablePercentage = if (totalSize > 0) ((availableSize.toDouble() / totalSize) * 100).toInt() else 0
-
-                val totalSizeStr = android.text.format.Formatter.formatFileSize(requireContext(), totalSize)
-                val availableSizeStr = android.text.format.Formatter.formatFileSize(requireContext(), availableSize)
-
-                isLowStorage = availablePercentage < 10
-
-                withContext(Dispatchers.Main) {
-                    if (isAdded) {
-                        if (isLowStorage) {
-                            binding.storageWarningText.text = "\u26A0 " + getString(R.string.storage_info_format, availableSizeStr, totalSizeStr)
-                            binding.storageWarningText.visibility = View.VISIBLE
-                        } else {
-                            binding.storageWarningText.visibility = View.GONE
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                isLowStorage = false
-                withContext(Dispatchers.Main) {
-                    if (isAdded) {
-                        binding.storageWarningText.visibility = View.GONE
-                    }
-                }
-            }
-        }
+        viewModel.updateStorageInfo(path)
     }
 
     private fun showExtendedFabs() {
@@ -1198,8 +1230,6 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         adapter.setOnItemClickListener(this)
         adapter.setOnFileLongClickListener(this)
         binding.recyclerView.adapter = adapter
-        // Update the adapter with the initial file list
-        updateAdapterWithFullList()
     }
 
     private fun checkStoragePermissions(): Boolean {
@@ -1273,65 +1303,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         }
 
         if (events.isEmpty()) return
-
-        // Capture snapshot on Main thread
-        val snapshotFiles = ArrayList(adapter.files)
-
-        // Process in background
-        val updatedFiles = withContext(Dispatchers.IO) {
-            for ((event, file) in events) {
-                when {
-                    (event and CREATE) != 0 || (event and MOVED_TO) != 0 -> {
-                        val existingPosition = snapshotFiles.indexOfFirst { it.file.absolutePath == file.absolutePath }
-                        if (existingPosition != -1) {
-                            snapshotFiles[existingPosition] = FileItem.fromFile(file)
-                        } else {
-                            snapshotFiles.add(FileItem.fromFile(file))
-                        }
-                    }
-                    (event and DELETE) != 0 || (event and DELETE_SELF) != 0 || (event and MOVED_FROM) != 0 -> {
-                        val position = snapshotFiles.indexOfFirst { it.file.absolutePath == file.absolutePath }
-                        if (position != -1) {
-                            snapshotFiles.removeAt(position)
-                        }
-                    }
-                    (event and MODIFY) != 0 -> {
-                        val position = snapshotFiles.indexOfFirst { it.file.absolutePath == file.absolutePath }
-                        if (position != -1) {
-                            snapshotFiles[position] = FileItem.fromFile(file)
-                        }
-                    }
-                }
-            }
-
-            val comparator = when (sortBy) {
-                SortBy.SORT_BY_NAME -> compareBy { it.file.name }
-                SortBy.SORT_BY_SIZE -> compareBy { it.size }
-                SortBy.SORT_BY_MODIFIED -> compareBy { it.lastModified }
-                SortBy.SORT_BY_EXTENSION -> compareBy<FileItem> { it.file.extension }
-            }
-
-            val finalComparator = if (sortAscending) {
-                compareBy<FileItem> { !it.isDirectory }.then(comparator)
-            } else {
-                compareBy<FileItem> { !it.isDirectory }.then(comparator.reversed())
-            }
-
-            snapshotFiles.sortWith(finalComparator)
-            snapshotFiles
-        }
-
-        adapter.updateFilesAndFilter(updatedFiles, currentQuery)
-
-        withContext(Dispatchers.Main) {
-            if (updatedFiles.isEmpty()) {
-                binding.emptyFolderLayout.visibility = View.VISIBLE
-                binding.recyclerView.visibility = View.GONE
-            } else {
-                binding.emptyFolderLayout.visibility = View.GONE
-                binding.recyclerView.visibility = View.VISIBLE
-            }
-        }
+        viewModel.processFileEvents(events, sortBy.name, sortAscending)
     }
 
 
@@ -1359,7 +1331,10 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 // If permission layout is shown, but permission is granted (user came back from settings)
                 requireActivity().recreate()
             } else {
-//              updateAdapterWithFullList()
+                if (!initialLoadDone) {
+                    updateAdapterWithFullList()
+                }
+                initialLoadDone = false
                 startFileObserver()
             }
         }
@@ -2093,185 +2068,6 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         ContextCompat.startForegroundService(requireContext(), intent)
     }
 
-    private suspend fun getFiles(): ArrayList<FileItem>? = withContext(Dispatchers.IO) {
-        val files = ArrayList<FileItem>()
-        val directories = ArrayList<FileItem>()
-        val showHiddenFiles = sharedPreferences.getBoolean("show_hidden_files", false)
-
-        val directory = File(currentPath ?: Environment.getExternalStorageDirectory().absolutePath)
-
-        if (!directory.canRead()) {
-            withContext(Dispatchers.Main) {
-                binding.statusTextView.text = getString(R.string.access_denied)
-                binding.statusTextView.visibility = View.VISIBLE
-                binding.recyclerView.visibility = View.GONE
-                binding.emptyFolderLayout.visibility = View.GONE
-            }
-            return@withContext null
-        }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            try {
-                Files.newDirectoryStream(directory.toPath()).use { directoryStream ->
-                    for (path in directoryStream) {
-                        // Use fromPath
-                        try {
-                            val item = FileItem.fromPath(path)
-                            if (!showHiddenFiles && item.file.name.startsWith(".")) continue
-                            if (item.isDirectory) directories.add(item) else files.add(item)
-                        } catch (e: Exception) {
-                            // fallback to file
-                            val file = path.toFile()
-                            if (!showHiddenFiles && file.name.startsWith(".")) continue
-                            if (file.isDirectory) directories.add(FileItem.fromFile(file)) else files.add(FileItem.fromFile(file))
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                // Fallback if error
-                val fileList = directory.listFiles()
-                if (fileList != null) {
-                    for (file in fileList) {
-                        if (!showHiddenFiles && file.name.startsWith(".")) continue
-
-                        if (file.isDirectory) {
-                            directories.add(FileItem.fromFile(file))
-                        } else {
-                            files.add(FileItem.fromFile(file))
-                        }
-                    }
-                }
-            }
-        } else {
-            val fileList = directory.listFiles()
-            if (fileList != null) {
-                for (file in fileList) {
-                    if (!showHiddenFiles && file.name.startsWith(".")) continue
-
-                    if (file.isDirectory) {
-                        directories.add(FileItem.fromFile(file))
-                    } else {
-                        files.add(FileItem.fromFile(file))
-                    }
-                }
-            }
-        }
-
-        if (files.isEmpty() && directories.isEmpty()) {
-            withContext(Dispatchers.Main) {
-                binding.emptyFolderLayout.visibility = View.VISIBLE
-                binding.recyclerView.visibility = View.GONE
-                binding.statusTextView.visibility = View.GONE
-            }
-            return@withContext files
-        }
-
-        // Sort files based on current criteria
-        when (sortBy) {
-            SortBy.SORT_BY_NAME -> {
-                directories.sortBy { it.file.name }
-                files.sortBy { it.file.name }
-            }
-            SortBy.SORT_BY_SIZE -> {
-                directories.sortBy { it.size }
-                files.sortBy { it.size }
-            }
-            SortBy.SORT_BY_MODIFIED -> {
-                directories.sortBy { it.lastModified }
-                files.sortBy { it.lastModified }
-            }
-            SortBy.SORT_BY_EXTENSION -> {
-                directories.sortBy { it.file.extension }
-                files.sortBy { it.file.extension }
-            }
-        }
-
-        if (!sortAscending) {
-            directories.reverse()
-            files.reverse()
-        }
-
-        val combinedList = ArrayList<FileItem>()
-        combinedList.addAll(directories)
-        combinedList.addAll(files)
-
-        withContext(Dispatchers.Main) {
-            binding.statusTextView.visibility = View.GONE
-            binding.recyclerView.visibility = View.VISIBLE
-            binding.emptyFolderLayout.visibility = View.GONE
-        }
-
-        combinedList
-    }
-
-//    private fun getFileTimeOfCreation(file: File): Long {
-//        return if (file.exists()) {
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//                val attr = Files.readAttributes(file.toPath(), BasicFileAttributes::class.java)
-//                attr.lastModifiedTime().toMillis()
-//            } else {
-//                file.lastModified()
-//            }
-//        } else {
-//            0L
-//        }
-//    }
-
-    private fun updateAdapterWithFullList() {
-        if (!isSearchActive) {
-            adapter.updateFilesAndFilter(ArrayList(), currentQuery)
-            fileLoadingJob?.cancel()
-
-            binding.shimmerViewContainer.startShimmer()
-            binding.shimmerViewContainer.visibility = View.VISIBLE
-            binding.recyclerView.visibility = View.GONE
-            binding.emptyFolderLayout.visibility = View.GONE
-            binding.statusTextView.visibility = View.GONE
-
-            fileLoadingJob = coroutineScope.launch(Dispatchers.IO) {
-                try {
-                    val fullFileList = getFiles()
-
-                    withContext(Dispatchers.Main) {
-                        binding.shimmerViewContainer.stopShimmer()
-                        binding.shimmerViewContainer.visibility = View.GONE
-                        if (fullFileList != null) {
-                            if (fullFileList.isEmpty()) {
-                                binding.emptyFolderLayout.visibility = View.VISIBLE
-                            } else {
-                                binding.recyclerView.visibility = View.VISIBLE
-                            }
-                            adapter.updateFilesAndFilter(fullFileList, currentQuery)
-                        } else {
-                            adapter.updateFilesAndFilter(ArrayList(), currentQuery)
-                        }
-                        binding.swipeRefreshLayout.isRefreshing = false
-
-                        val highlightFilePath = arguments?.getString(ARG_HIGHLIGHT_FILE_PATH)
-                        if (highlightFilePath != null) {
-                            highlightFile(highlightFilePath)
-                            arguments?.remove(ARG_HIGHLIGHT_FILE_PATH)
-                        } else {
-                            adapter.clearHighlight()
-                        }
-                    }
-                } catch (e: Exception) {
-                    if (e is CancellationException) throw e
-                    withContext(Dispatchers.Main) {
-                        binding.shimmerViewContainer.stopShimmer()
-                        binding.shimmerViewContainer.visibility = View.GONE
-                        binding.statusTextView.apply {
-                            text = getString(R.string.general_error_msg)
-                            visibility = View.VISIBLE
-                        }
-                        binding.swipeRefreshLayout.isRefreshing = false
-                    }
-                }
-            }
-        }
-    }
-
     private fun checkStorageForOperation(
         warningTextView: TextView,
         path: String,
@@ -2330,162 +2126,9 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     private fun searchFiles(query: String?) {
         isSearchActive = !query.isNullOrEmpty()
         currentQuery = query
-
-        if (query.isNullOrEmpty()) {
-            updateAdapterWithFullList()
-            return
-        }
-
-        fileLoadingJob?.cancel()
-        binding.shimmerViewContainer.startShimmer()
-        binding.shimmerViewContainer.visibility = View.VISIBLE
-        binding.recyclerView.visibility = View.GONE
-        binding.emptyFolderLayout.visibility = View.GONE
-        binding.statusTextView.visibility = View.GONE
-
-        adapter.updateFilesAndFilter(ArrayList(), currentQuery)
-
         val fastSearchEnabled = sharedPreferences.getBoolean("fast_search", false)
-        val context = requireContext()
-
-        // Cancel previous search if any
-        searchJob?.cancel()
-
-        searchJob = coroutineScope.launch {
-            val searchFlow = if (fastSearchEnabled) {
-                searchFilesWithMediaStore(query, context)
-            } else {
-                val basePath = Environment.getExternalStorageDirectory().absolutePath
-                val sdCardPath = StorageHelper.getSdCardPath(context)
-                val searchPath = if (currentPath?.startsWith(sdCardPath ?: "") == true) {
-                    sdCardPath ?: basePath
-                } else {
-                    basePath
-                }
-                searchAllFiles(File(searchPath), query, context)
-            }
-
-            searchFlow
-                .flowOn(Dispatchers.IO)
-                .catch { e ->
-                    withContext(Dispatchers.Main) {
-                        binding.shimmerViewContainer.stopShimmer()
-                        binding.shimmerViewContainer.visibility = View.GONE
-                        binding.statusTextView.apply {
-                            text = e.message ?: getString(R.string.general_error_msg)
-                            visibility = View.VISIBLE
-                        }
-                        binding.swipeRefreshLayout.isRefreshing = false
-                    }
-                }
-                .collect { files ->
-                    withContext(Dispatchers.Main) {
-                        adapter.updateFilesAndFilter(ArrayList(files), currentQuery)
-                        binding.shimmerViewContainer.stopShimmer()
-                        binding.shimmerViewContainer.visibility = View.GONE
-                        binding.recyclerView.visibility = View.VISIBLE
-                        binding.emptyFolderLayout.visibility = View.GONE
-                        binding.statusTextView.visibility = View.GONE
-                        binding.swipeRefreshLayout.isRefreshing = false
-                    }
-                }
-        }
+        viewModel.searchFiles(query, fastSearchEnabled)
     }
-
-    private fun searchAllFiles(directory: File, query: String, context: Context): Flow<List<FileItem>> = flow {
-        val results = mutableListOf<FileItem>()
-        val showHiddenFiles = sharedPreferences.getBoolean("show_hidden_files", false)
-        var lastEmitTime = 0L
-
-        suspend fun searchRecursively(dir: File) {
-            val files = dir.listFiles() ?: return
-
-            for (file in files) {
-                val filePath = file.absolutePath
-                if (StorageHelper.isAndroidDataDir(filePath, context)) {
-                    continue
-                }
-
-                if (!showHiddenFiles && file.name.startsWith(".")) continue
-
-                if (!currentCoroutineContext().isActive) return
-
-                if (file.isDirectory) {
-                    if (file.name.contains(query, true)) {
-                        results.add(FileItem.fromFile(file))
-                        val currentTime = System.currentTimeMillis()
-                        if (currentTime - lastEmitTime > 300) {
-                            emit(results.toList())
-                            lastEmitTime = currentTime
-                        }
-                    }
-                    searchRecursively(file)
-                } else if (file.name.contains(query, true)) {
-                    results.add(FileItem.fromFile(file))
-                    val currentTime = System.currentTimeMillis()
-                    if (currentTime - lastEmitTime > 300) {
-                        emit(results.toList())
-                        lastEmitTime = currentTime
-                    }
-                }
-            }
-        }
-
-        searchRecursively(directory)
-        emit(results.toList())
-    }.distinctUntilChanged { old, new -> old.size == new.size }
-
-    private fun searchFilesWithMediaStore(query: String, context: Context): Flow<List<FileItem>> = flow {
-        val results = mutableListOf<FileItem>()
-        val showHiddenFiles = sharedPreferences.getBoolean("show_hidden_files", false)
-        val projection = arrayOf(
-            MediaStore.Files.FileColumns.DATA,
-            MediaStore.Files.FileColumns.DISPLAY_NAME
-        )
-        val selection = "${MediaStore.Files.FileColumns.DISPLAY_NAME} LIKE ?"
-        val selectionArgs = arrayOf("%$query%")
-        val sortOrder = "${MediaStore.Files.FileColumns.DISPLAY_NAME} ASC"
-
-        val queryUri = MediaStore.Files.getContentUri("external")
-
-        try {
-            context.contentResolver.query(
-                queryUri,
-                projection,
-                selection,
-                selectionArgs,
-                sortOrder
-            )?.use { cursor ->
-                val dataColumn = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DATA)
-                var lastEmitTime = 0L
-                while (cursor.moveToNext()) {
-                    if (!currentCoroutineContext().isActive) break
-
-                    val filePath = cursor.getString(dataColumn)
-
-                    if (filePath == null || StorageHelper.isAndroidDataDir(filePath, context)) {
-                        continue
-                    }
-
-                    val file = File(filePath)
-
-                    if (!showHiddenFiles && file.name.startsWith(".")) continue
-
-                    if (file.exists()) {
-                        results.add(FileItem.fromFile(file))
-                        val currentTime = System.currentTimeMillis()
-                        if (currentTime - lastEmitTime > 300) {
-                            emit(results.toList())
-                            lastEmitTime = currentTime
-                        }
-                    }
-                }
-            }
-        } catch (_: Exception) {
-            // exceptions
-        }
-        emit(results.toList())
-    }.distinctUntilChanged { old, new -> old.size == new.size }
 
     fun navigateToPathAndHighlight(directoryPath: String, highlightFilePath: String) {
         if (directoryPath == currentPath) {
@@ -2511,6 +2154,12 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             (binding.recyclerView.layoutManager as? LinearLayoutManager)?.scrollToPositionWithOffset(position, 0)
             val fileItem = adapter.files[position]
             adapter.highlightFile(fileItem.file)
+        }
+    }
+
+    private fun updateAdapterWithFullList() {
+        if (!isSearchActive) {
+            viewModel.loadFiles(currentPath, sortBy.name, sortAscending)
         }
     }
 

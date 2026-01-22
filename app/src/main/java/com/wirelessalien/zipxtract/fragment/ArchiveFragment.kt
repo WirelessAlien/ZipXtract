@@ -54,8 +54,10 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -94,6 +96,7 @@ import com.wirelessalien.zipxtract.service.ExtractCsArchiveService
 import com.wirelessalien.zipxtract.service.ExtractMultipart7zService
 import com.wirelessalien.zipxtract.service.ExtractMultipartZipService
 import com.wirelessalien.zipxtract.service.ExtractRarService
+import com.wirelessalien.zipxtract.viewmodel.ArchiveViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -113,21 +116,6 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
 
     private lateinit var binding: FragmentArchiveBinding
     private lateinit var adapter: FileAdapter
-    private val archiveExtensions = listOf(
-        "rar",
-        "r00",
-        "001",
-        "7z",
-        "7z.001",
-        "zip",
-        "tar",
-        "gz",
-        "bz2",
-        "xz",
-        "lz4",
-        "lzma",
-        "sz"
-    )
     private lateinit var eProgressDialog: AlertDialog
     private lateinit var progressText: TextView
     private lateinit var eProgressBar: LinearProgressIndicator
@@ -145,6 +133,8 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
     private var sortAscending: Boolean = true
     private lateinit var sharedPreferences: SharedPreferences
     private var currentQuery: String? = null
+    
+    private val viewModel: ArchiveViewModel by viewModels()
 
     override fun onSearch(query: String) {
         searchFiles(query)
@@ -313,9 +303,49 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
             .registerReceiver(extractionReceiver, filter)
 
         extractProgressDialog()
-        setupFilterChips()
+        
         viewLifecycleOwner.lifecycleScope.launch {
-            loadArchiveFiles(null)
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    viewModel.archiveFiles.collect { files ->
+                        adapter.updateFilesAndFilter(files)
+                        if (files.isEmpty() && !viewModel.isLoading.value) {
+                            binding.recyclerView.visibility = View.GONE
+                        } else {
+                            binding.recyclerView.visibility = View.VISIBLE
+                        }
+                    }
+                }
+                launch {
+                    viewModel.isLoading.collect { isLoading ->
+                        if (isLoading) {
+                            binding.shimmerViewContainer.startShimmer()
+                            binding.shimmerViewContainer.visibility = View.VISIBLE
+                            binding.recyclerView.visibility = View.GONE
+                        } else {
+                            binding.shimmerViewContainer.stopShimmer()
+                            binding.shimmerViewContainer.visibility = View.GONE
+                            binding.swipeRefreshLayout.isRefreshing = false
+                            if (adapter.itemCount > 0) {
+                                binding.recyclerView.visibility = View.VISIBLE
+                            }
+                        }
+                    }
+                }
+                launch {
+                    viewModel.error.collect { error ->
+                        if (error != null) {
+                            Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            }
+        }
+        
+        setupFilterChips()
+        
+        if (viewModel.archiveFiles.value.isEmpty()) {
+             viewModel.loadArchiveFiles(null, sortBy.name, sortAscending)
         }
 
         binding.swipeRefreshLayout.setOnRefreshListener {
@@ -348,150 +378,15 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
                 } else {
                     checkedChip.text.toString()
                 }
-                viewLifecycleOwner.lifecycleScope.launch {
-                    loadArchiveFiles(selectedExtension)
-                }
+                viewModel.loadArchiveFiles(selectedExtension, sortBy.name, sortAscending)
             }
-        }
-    }
-
-    private suspend fun loadArchiveFiles(extension: String?, showShimmer: Boolean = true) {
-        if (showShimmer) {
-            binding.shimmerViewContainer.startShimmer()
-            binding.shimmerViewContainer.visibility = View.VISIBLE
-            binding.recyclerView.visibility = View.GONE
-        }
-
-        val archiveFiles = withContext(Dispatchers.IO) {
-            getArchiveFiles(null, extension)
-        }
-        adapter.updateFilesAndFilter(archiveFiles)
-
-        if (showShimmer) {
-            binding.shimmerViewContainer.stopShimmer()
-            binding.shimmerViewContainer.visibility = View.GONE
-            binding.recyclerView.visibility = View.VISIBLE
         }
     }
 
     private fun searchFiles(query: String?) {
         isSearchActive = !query.isNullOrEmpty()
         currentQuery = query
-
-        binding.shimmerViewContainer.startShimmer()
-        binding.shimmerViewContainer.visibility = View.VISIBLE
-        binding.recyclerView.visibility = View.GONE
-
-        adapter.updateFilesAndFilter(ArrayList())
-
-        searchJob?.cancel()
-
-        searchJob = coroutineScope.launch {
-            searchAllFiles(query)
-                .flowOn(Dispatchers.IO)
-                .catch { e ->
-                    withContext(Dispatchers.Main) {
-                        binding.shimmerViewContainer.stopShimmer()
-                        binding.shimmerViewContainer.visibility = View.GONE
-                        Toast.makeText(requireContext(), e.message, Toast.LENGTH_SHORT).show()
-                    }
-                }
-                .collect { files ->
-                    withContext(Dispatchers.Main) {
-                        adapter.updateFilesAndFilter(ArrayList(files))
-                        binding.shimmerViewContainer.stopShimmer()
-                        binding.shimmerViewContainer.visibility = View.GONE
-                        binding.recyclerView.visibility = View.VISIBLE
-                    }
-                }
-        }
-    }
-
-    private fun searchAllFiles(query: String?): Flow<List<FileItem>> = flow {
-        val results = getArchiveFiles(query, null)
-        emit(results)
-    }
-
-    private fun getArchiveFiles(query: String? = null, extension: String? = null): ArrayList<FileItem> {
-        val archiveFiles = ArrayList<FileItem>()
-        val showHiddenFiles = sharedPreferences.getBoolean("show_hidden_files", false)
-        val uri = MediaStore.Files.getContentUri("external")
-        val context = requireContext()
-        val projection = arrayOf(
-            MediaStore.Files.FileColumns.DATA,
-        )
-
-        val selectionParts = mutableListOf<String>()
-        val selectionArgs = mutableListOf<String>()
-
-        if (extension != null) {
-            selectionParts.add("${MediaStore.Files.FileColumns.DATA} LIKE ?")
-            selectionArgs.add("%.$extension")
-        } else {
-            val extensionSelection = archiveExtensions.joinToString(" OR ") {
-                "${MediaStore.Files.FileColumns.DATA} LIKE ?"
-            }
-            selectionParts.add("($extensionSelection)")
-            selectionArgs.addAll(archiveExtensions.map { "%.$it" })
-        }
-
-        if (!query.isNullOrBlank()) {
-            selectionParts.add("${MediaStore.Files.FileColumns.DISPLAY_NAME} LIKE ?")
-            selectionArgs.add("%$query%")
-        }
-
-        val finalSelection = selectionParts.joinToString(" AND ")
-        val finalSelectionArgs = selectionArgs.toTypedArray()
-
-        val sortOrderColumn = when (sortBy) {
-            SortBy.SORT_BY_NAME -> MediaStore.Files.FileColumns.DISPLAY_NAME
-            SortBy.SORT_BY_SIZE -> MediaStore.Files.FileColumns.SIZE
-            SortBy.SORT_BY_MODIFIED -> MediaStore.Files.FileColumns.DATE_MODIFIED
-            SortBy.SORT_BY_EXTENSION -> MediaStore.Files.FileColumns.DISPLAY_NAME // Fallback for extension sort
-        }
-        val sortDirection = if (sortAscending) "ASC" else "DESC"
-        val sortOrder = "$sortOrderColumn $sortDirection"
-
-        try {
-            context.contentResolver.query(
-                uri,
-                projection,
-                finalSelection,
-                finalSelectionArgs,
-                sortOrder
-            )?.use { cursor ->
-                val dataColumn = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DATA)
-                while (cursor.moveToNext()) {
-                    val path = cursor.getString(dataColumn)
-
-                    if (path != null && StorageHelper.isAndroidDataDir(path, context)) {
-                        continue
-                    }
-
-                    if (path != null) {
-                        val file = File(path)
-
-                        if (!showHiddenFiles && file.name.startsWith(".")) continue
-
-                        if (file.isFile && archiveExtensions.contains(file.extension.lowercase())) {
-                            archiveFiles.add(FileItem.fromFile(file))
-                        }
-                    }
-                }
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-
-        if (sortBy == SortBy.SORT_BY_EXTENSION) {
-            if (sortAscending) {
-                archiveFiles.sortBy { it.file.extension }
-            } else {
-                archiveFiles.sortByDescending { it.file.extension }
-            }
-        }
-
-        return archiveFiles
+        viewModel.searchFiles(query, sortBy.name, sortAscending)
     }
 
     private fun scanStorageAndLoadFiles() {
@@ -510,17 +405,7 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
 
             activity?.runOnUiThread {
                 if (!isAdded || view == null) return@runOnUiThread
-
-                viewLifecycleOwner.lifecycleScope.launch {
-                    if (!isAdded) return@launch
-
-                    loadArchiveFiles(null, false)
-
-                    binding.shimmerViewContainer.stopShimmer()
-                    binding.shimmerViewContainer.visibility = View.GONE
-                    binding.recyclerView.visibility = View.VISIBLE
-                    binding.swipeRefreshLayout.isRefreshing = false
-                }
+                viewModel.loadArchiveFiles(null, sortBy.name, sortAscending)
             }
         }
     }
@@ -528,9 +413,7 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
 
     private fun updateAdapterWithFullList() {
         if (!isSearchActive) {
-            viewLifecycleOwner.lifecycleScope.launch {
-                loadArchiveFiles(null)
-            }
+            viewModel.loadArchiveFiles(null, sortBy.name, sortAscending)
         }
     }
 

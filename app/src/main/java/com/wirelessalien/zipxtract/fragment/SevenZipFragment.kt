@@ -38,7 +38,10 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.chip.Chip
@@ -50,12 +53,9 @@ import com.wirelessalien.zipxtract.constant.ServiceConstants
 import com.wirelessalien.zipxtract.databinding.FragmentSevenZipBinding
 import com.wirelessalien.zipxtract.helper.FileOperationsDao
 import com.wirelessalien.zipxtract.service.Update7zService
-import net.sf.sevenzipjbinding.IInArchive
-import net.sf.sevenzipjbinding.PropID
-import net.sf.sevenzipjbinding.SevenZip
-import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream
+import com.wirelessalien.zipxtract.viewmodel.SevenZipViewModel
+import kotlinx.coroutines.launch
 import java.io.File
-import java.io.RandomAccessFile
 import java.util.Date
 
 class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, FilePickerFragment.FilePickerListener, ArchiveItemAdapter.OnFileLongClickListener {
@@ -73,8 +73,8 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
     private lateinit var fileOperationsDao: FileOperationsDao
     private var archivePath: String? = null
     private lateinit var adapter: ArchiveItemAdapter
-    private var inArchive: IInArchive? = null
-    private var currentPath: String = ""
+    private val viewModel: SevenZipViewModel by viewModels()
+
     private val updateReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             when (intent?.action) {
@@ -86,14 +86,7 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
                     binding.progressBar.visibility = View.GONE
                     Toast.makeText(requireContext(),
                         getString(R.string.archive_updated_successfully), Toast.LENGTH_SHORT).show()
-                    try {
-                        inArchive?.close()
-                        val randomAccessFile = RandomAccessFile(archivePath, "r")
-                        inArchive = SevenZip.openInArchive(null, RandomAccessFileInStream(randomAccessFile))
-                        loadArchiveItems(currentPath)
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
+                    viewModel.reloadArchive()
                 }
                 BroadcastConstants.ACTION_ARCHIVE_ERROR -> {
                     binding.progressBar.visibility = View.GONE
@@ -162,14 +155,27 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
             windowInsets
         }
 
-        try {
-            val randomAccessFile = RandomAccessFile(archivePath, "r")
-            inArchive = SevenZip.openInArchive(null, RandomAccessFileInStream(randomAccessFile))
-            loadArchiveItems(currentPath)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            Toast.makeText(requireContext(),
-                getString(R.string.error_opening_archive, e.message), Toast.LENGTH_LONG).show()
+        if (viewModel.archiveItems.value.isEmpty() && archivePath != null) {
+            viewModel.openArchive(archivePath!!)
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    viewModel.archiveItems.collect { items ->
+                        adapter.updateItems(items)
+                        updateCurrentPathChip()
+                    }
+                }
+                launch {
+                    viewModel.error.collect { error ->
+                        if (error != null) {
+                            Toast.makeText(requireContext(),
+                                getString(R.string.error_opening_archive, error), Toast.LENGTH_LONG).show()
+                        }
+                    }
+                }
+            }
         }
 
         val filter = IntentFilter().apply {
@@ -205,14 +211,14 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
 
     private fun updateCurrentPathChip() {
         binding.chipGroupPath.removeAllViews()
-        val pathParts = currentPath.split("/").filter { it.isNotEmpty() }
+        val pathParts = viewModel.currentPath.split("/").filter { it.isNotEmpty() }
         var cumulativePath = ""
 
         // root chip
         val rootChip = LayoutInflater.from(requireContext()).inflate(R.layout.custom_chip, binding.chipGroupPath, false) as Chip
         rootChip.text = "/"
         rootChip.setOnClickListener {
-            loadArchiveItems("")
+            viewModel.loadArchiveItems("")
         }
         binding.chipGroupPath.addView(rootChip)
 
@@ -222,47 +228,10 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
             chip.text = part
             val pathToLoad = cumulativePath
             chip.setOnClickListener {
-                loadArchiveItems(pathToLoad)
+                viewModel.loadArchiveItems(pathToLoad)
             }
             binding.chipGroupPath.addView(chip)
         }
-    }
-
-    private fun loadArchiveItems(path: String) {
-        currentPath = path
-        updateCurrentPathChip()
-
-        val children = mutableMapOf<String, ArchiveItem>()
-
-        inArchive?.let {
-            val count = it.numberOfItems
-            for (i in 0 until count) {
-                val itemPath = it.getProperty(i, PropID.PATH) as String
-
-                if (itemPath.replace("\\", "/").let { p -> p.startsWith(currentPath) && p != currentPath && (currentPath.isEmpty() || p.substring(currentPath.length).removePrefix("/").isNotEmpty()) }) {
-                    val relativePath = itemPath.substring(currentPath.length).removePrefix("/")
-
-                    val separatorIndex = relativePath.indexOf('/')
-                    if (separatorIndex > -1) {
-                        // It's in a subdirectory. We only care about the subdirectory itself.
-                        val dirName = relativePath.substring(0, separatorIndex)
-                        val dirPath = if (currentPath.isEmpty()) dirName else "$currentPath/$dirName"
-                        if (!children.containsKey(dirPath)) {
-                            children[dirPath] = ArchiveItem(dirPath, true, 0, null)
-                        }
-                    } else {
-                        // It's a direct child file or an empty directory entry
-                        val isDirectory = it.getProperty(i, PropID.IS_FOLDER) as? Boolean ?: false
-                        val size = it.getProperty(i, PropID.SIZE) as? Long ?: 0L
-                        val lastModified = it.getProperty(i, PropID.LAST_MODIFICATION_TIME) as? Date
-                        if (!children.containsKey(itemPath)) {
-                            children[itemPath] = ArchiveItem(itemPath, isDirectory, size, lastModified)
-                        }
-                    }
-                }
-            }
-        }
-        adapter.updateItems(children.values.toList().sortedBy { it.path })
     }
 
     override fun onItemClick(item: ArchiveItem) {
@@ -275,7 +244,7 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
             }
         } else {
             if (item.isDirectory) {
-                loadArchiveItems(item.path)
+                viewModel.loadArchiveItems(item.path)
             } else {
                 // will add a confirmation dialog to remove the file
             }
@@ -351,6 +320,7 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
 
     override fun onFilesSelected(files: List<File>) {
         binding.progressBar.visibility = View.VISIBLE
+        val currentPath = viewModel.currentPath
         val filePairs = files.map { it.absolutePath to (if (currentPath.isEmpty()) it.name else "$currentPath/${it.name}") }
         val jobId = fileOperationsDao.addFilePairsForJob(filePairs)
 
@@ -362,9 +332,10 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
     }
 
     private fun handleBackNavigation() {
+        var currentPath = viewModel.currentPath
         if (currentPath.isNotEmpty()) {
             currentPath = currentPath.substringBeforeLast('/', "")
-            loadArchiveItems(currentPath)
+            viewModel.loadArchiveItems(currentPath)
         } else {
             parentFragmentManager.popBackStack()
         }
@@ -381,7 +352,6 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
 
     override fun onDestroy() {
         super.onDestroy()
-        inArchive?.close()
     }
 
     companion object {

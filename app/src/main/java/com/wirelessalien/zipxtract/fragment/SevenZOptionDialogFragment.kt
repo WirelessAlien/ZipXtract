@@ -32,7 +32,10 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.view.isGone
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.color.MaterialColors
@@ -44,10 +47,10 @@ import com.wirelessalien.zipxtract.databinding.SevenZOptionDialogBinding
 import com.wirelessalien.zipxtract.helper.FileOperationsDao
 import com.wirelessalien.zipxtract.helper.FileUtils
 import com.wirelessalien.zipxtract.helper.PathUtils
+import com.wirelessalien.zipxtract.viewmodel.ArchiveCreationViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -61,6 +64,7 @@ class SevenZOptionDialogFragment : DialogFragment() {
     private var launchedWithFilePaths = false
     private var jobId: String? = null
     private lateinit var fileOperationsDao: FileOperationsDao
+    private val viewModel: ArchiveCreationViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -112,57 +116,6 @@ class SevenZOptionDialogFragment : DialogFragment() {
             }
             binding.progressIndicator.visibility = View.GONE
             initializeUI()
-        }
-    }
-
-    private fun checkStorageForArchive(
-        warningTextView: TextView,
-        path: String,
-        requiredSize: Long,
-        okButton: View? = null,
-        defaultColor: android.content.res.ColorStateList? = null,
-        defaultTextColor: android.content.res.ColorStateList? = null
-    ) {
-        lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                val stat = StatFs(path)
-                val availableSize = stat.availableBytes
-                val safeRequiredSize = (requiredSize * 1.1).toLong()
-
-                if (availableSize < safeRequiredSize) {
-                    val availableSizeStr = android.text.format.Formatter.formatFileSize(
-                        requireContext(),
-                        availableSize
-                    )
-                    val requiredSizeStr =
-                        android.text.format.Formatter.formatFileSize(requireContext(), requiredSize)
-                    val warningText = getString(
-                        R.string.low_storage_warning_dynamic,
-                        availableSizeStr,
-                        requiredSizeStr
-                    )
-                    withContext(Dispatchers.Main) {
-                        warningTextView.text = warningText
-                        warningTextView.visibility = View.VISIBLE
-                        val errorColor = MaterialColors.getColor(warningTextView, androidx.appcompat.R.attr.colorError)
-                        val onErrorColor = MaterialColors.getColor(warningTextView, com.google.android.material.R.attr.colorOnError)
-                        okButton?.backgroundTintList = android.content.res.ColorStateList.valueOf(errorColor)
-                        (okButton as? TextView)?.setTextColor(onErrorColor)
-                    }
-                } else {
-                    withContext(Dispatchers.Main) {
-                        warningTextView.visibility = View.GONE
-                        if (defaultColor != null) {
-                            okButton?.backgroundTintList = defaultColor
-                        }
-                        if (defaultTextColor != null) {
-                            (okButton as? TextView)?.setTextColor(defaultTextColor)
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
         }
     }
 
@@ -224,34 +177,46 @@ class SevenZOptionDialogFragment : DialogFragment() {
 
         val defaultColor = binding.okButton.backgroundTintList
         val defaultTextColor = binding.okButton.textColors
-        var totalSize = 0L
 
-        lifecycleScope.launch {
-            totalSize = withContext(Dispatchers.IO) {
-                selectedFilePaths.sumOf { File(it).length() }
+        viewModel.calculateTotalSize(selectedFilePaths)
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    viewModel.storageWarning.collect { warning ->
+                        if (warning != null) {
+                            binding.lowStorageWarning.text = warning
+                            binding.lowStorageWarning.visibility = View.VISIBLE
+                            val errorColor = MaterialColors.getColor(binding.lowStorageWarning, androidx.appcompat.R.attr.colorError)
+                            val onErrorColor = MaterialColors.getColor(binding.lowStorageWarning, com.google.android.material.R.attr.colorOnError)
+                            binding.okButton.backgroundTintList = android.content.res.ColorStateList.valueOf(errorColor)
+                            (binding.okButton as? TextView)?.setTextColor(onErrorColor)
+                        } else {
+                            binding.lowStorageWarning.visibility = View.GONE
+                            if (defaultColor != null) {
+                                binding.okButton.backgroundTintList = defaultColor
+                            }
+                            if (defaultTextColor != null) {
+                                (binding.okButton as? TextView)?.setTextColor(defaultTextColor)
+                            }
+                        }
+                    }
+                }
+                launch {
+                    viewModel.totalSize.collect { size ->
+                        viewModel.checkStorageForArchive(parentPath, size)
+                    }
+                }
             }
-            checkStorageForArchive(binding.lowStorageWarning, parentPath, totalSize, binding.okButton, defaultColor, defaultTextColor)
         }
 
-        var storageCheckJob: Job? = null
         binding.outputPathInput.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
             override fun afterTextChanged(s: Editable?) {
                 val path = s.toString()
                 binding.outputPathDisplay.text = PathUtils.formatPath(path, requireContext())
-                storageCheckJob?.cancel()
-                storageCheckJob = lifecycleScope.launch {
-                    delay(1000)
-                    checkStorageForArchive(
-                        binding.lowStorageWarning,
-                        path,
-                        totalSize,
-                        binding.okButton,
-                        defaultColor,
-                        defaultTextColor
-                    )
-                }
+                viewModel.checkStorageForArchive(path, viewModel.totalSize.value)
             }
         })
 

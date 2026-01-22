@@ -30,6 +30,7 @@ import android.view.MenuItem
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
@@ -51,6 +52,7 @@ import com.wirelessalien.zipxtract.helper.SearchHistoryManager
 import com.wirelessalien.zipxtract.helper.Searchable
 import com.wirelessalien.zipxtract.helper.StorageHelper
 import com.wirelessalien.zipxtract.model.FileItem
+import com.wirelessalien.zipxtract.viewmodel.MainViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
@@ -69,12 +71,22 @@ class MainActivity : AppCompatActivity() {
     private lateinit var quickSearchResultAdapter: QuickSearchResultAdapter
     private var isSearchSubmitted = false
     private var searchJob: Job? = null
+    private val viewModel: MainViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        lifecycleScope.launch {
+            viewModel.quickSearchResults.collect { results ->
+                if (binding.searchView.text.toString().isNotEmpty()) {
+                    val resultItems = results.map { QuickSearchResultAdapter.SearchResultItem.FileResultItem(it) }
+                    quickSearchResultAdapter.updateList(resultItems)
+                }
+            }
+        }
 
         searchHistoryManager = SearchHistoryManager(this)
         setupSearchView()
@@ -224,9 +236,8 @@ class MainActivity : AppCompatActivity() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 val query = s.toString()
                 if (query.isNotEmpty()) {
-                    performFastSearch(query)
+                    viewModel.quickSearch(query)
                 } else {
-                    searchJob?.cancel()
                     refreshHistory()
                 }
             }
@@ -258,55 +269,6 @@ class MainActivity : AppCompatActivity() {
             QuickSearchResultAdapter.SearchResultItem.HistoryItem(it)
         }
         quickSearchResultAdapter.updateList(historyItems)
-    }
-
-    private fun performFastSearch(query: String) {
-        searchJob?.cancel()
-        searchJob = lifecycleScope.launch(Dispatchers.IO) {
-            val results = mutableListOf<FileItem>()
-            val projection = arrayOf(
-                MediaStore.Files.FileColumns.DATA,
-                MediaStore.Files.FileColumns.DISPLAY_NAME
-            )
-            val selection = "${MediaStore.Files.FileColumns.DISPLAY_NAME} LIKE ?"
-            val selectionArgs = arrayOf("%$query%")
-            val sortOrder = "${MediaStore.Files.FileColumns.DISPLAY_NAME} ASC"
-
-            val queryUri = MediaStore.Files.getContentUri("external")
-
-            try {
-                contentResolver.query(
-                    queryUri,
-                    projection,
-                    selection,
-                    selectionArgs,
-                    sortOrder
-                )?.use { cursor ->
-                    val dataColumn = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DATA)
-
-                    while (cursor.moveToNext() && isActive) {
-                        val filePath = cursor.getString(dataColumn)
-
-                        if (filePath == null || StorageHelper.isAndroidDataDir(filePath, this@MainActivity)) {
-                            continue
-                        }
-
-                        val file = File(filePath)
-                        if (file.exists() && !file.name.startsWith(".")) {
-                            results.add(FileItem.fromFile(file))
-                            // To keep it responsive, limit to 50.
-                            if (results.size >= 50) break
-                        }
-                    }
-                }
-            } catch (_: Exception) {
-            }
-
-            withContext(Dispatchers.Main) {
-                val resultItems = results.map { QuickSearchResultAdapter.SearchResultItem.FileResultItem(it) }
-                quickSearchResultAdapter.updateList(resultItems)
-            }
-        }
     }
 
     private fun navigateToFile(fileItem: FileItem) {
