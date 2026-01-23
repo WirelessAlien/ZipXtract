@@ -213,87 +213,6 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     private val pendingFileEvents = mutableListOf<Pair<Int, File>>()
     private var processEventsJob: Job? = null
 
-
-    private val extractionReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            if (!isAdded) return
-
-            when (intent?.action) {
-                ACTION_EXTRACTION_COMPLETE -> {
-                    binding.progressBar.visibility = View.GONE
-                    val dirPath = intent.getStringExtra(EXTRA_DIR_PATH)
-                    Log.d("MainFragment", "onReceive: $dirPath")
-                    if (dirPath != null) {
-                        Snackbar.make(binding.root, getString(R.string.open_folder), Snackbar.LENGTH_LONG)
-                            .setAnchorView(binding.mainFab)
-                            .setAction(getString(R.string.ok)) {
-                                navigateToPath(dirPath)
-                            }
-                            .show()
-                    } else {
-                        Toast.makeText(requireContext(), getString(R.string.extraction_success), Toast.LENGTH_SHORT).show()
-                    }
-                    unselectAllFiles()
-                    eProgressDialog.dismiss()
-                    eProgressBar.isIndeterminate = false
-                }
-                ACTION_EXTRACTION_ERROR -> {
-                    binding.progressBar.visibility = View.GONE
-                    unselectAllFiles()
-                    eProgressDialog.dismiss()
-                    eProgressBar.isIndeterminate = false
-                    val errorMessage = intent.getStringExtra(EXTRA_ERROR_MESSAGE)
-                    Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show()
-                }
-                ACTION_EXTRACTION_PROGRESS -> {
-                    val progress = intent.getIntExtra(EXTRA_PROGRESS, 0)
-                    updateProgressBar(progress)
-                    if (progress == 100) {
-                        eProgressBar.isIndeterminate = true
-                    } else {
-                        eProgressBar.progress = progress
-                        eProgressText.text = getString(R.string.extracting_progress, progress)
-                    }
-                }
-                ACTION_ARCHIVE_COMPLETE -> {
-                    binding.progressBar.visibility = View.GONE
-                    val dirPath = intent.getStringExtra(EXTRA_DIR_PATH)
-                    if (dirPath != null) {
-                        Snackbar.make(binding.root, getString(R.string.open_folder), Snackbar.LENGTH_LONG)
-                            .setAnchorView(binding.mainFab)
-                            .setAction(getString(R.string.ok)) {
-                                navigateToPath(dirPath)
-                            }
-                            .show()
-                    } else {
-                        Toast.makeText(requireContext(), getString(R.string.archive_success), Toast.LENGTH_SHORT).show()
-                    }
-                    unselectAllFiles()
-                    aProgressDialog.dismiss()
-                    aProgressBar.isIndeterminate = false
-                }
-                ACTION_ARCHIVE_ERROR -> {
-                    binding.progressBar.visibility = View.GONE
-                    unselectAllFiles()
-                    aProgressDialog.dismiss()
-                    aProgressBar.isIndeterminate = false
-                    val errorMessage = intent.getStringExtra(EXTRA_ERROR_MESSAGE)
-                    Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show()
-                }
-                ACTION_ARCHIVE_PROGRESS -> {
-                    val progress = intent.getIntExtra(EXTRA_PROGRESS, 0)
-                    updateProgressBar(progress)
-                    if (progress == 100) {
-                        aProgressBar.isIndeterminate = true
-                    } else {
-                        aProgressBar.progress = progress
-                        aProgressText.text = getString(R.string.compressing_progress, progress)
-                    }
-                }
-            }
-        }
-    }
-
     private val requestNotificationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
@@ -502,6 +421,83 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                         }
                     }
                 }
+                launch {
+                    viewModel.operationEvent.collect { event ->
+                        when(event) {
+                            is MainViewModel.OperationEvent.Start -> {
+                                if (event.type == "ARCHIVE") {
+                                    if (!aProgressDialog.isShowing) aProgressDialog.show()
+                                } else {
+                                    if (!eProgressDialog.isShowing) eProgressDialog.show()
+                                }
+                            }
+                            is MainViewModel.OperationEvent.Progress -> {
+                                updateProgressBar(event.progress)
+                                if (event.type == "ARCHIVE") {
+                                    if (!aProgressDialog.isShowing) aProgressDialog.show()
+                                    if (event.progress == 100) {
+                                        aProgressBar.isIndeterminate = true
+                                    } else {
+                                        aProgressBar.progress = event.progress
+                                        aProgressText.text = getString(R.string.compressing_progress, event.progress)
+                                    }
+                                } else {
+                                    if (!eProgressDialog.isShowing) eProgressDialog.show()
+                                    if (event.progress == 100) {
+                                        eProgressBar.isIndeterminate = true
+                                    } else {
+                                        eProgressBar.progress = event.progress
+                                        eProgressText.text = getString(R.string.extracting_progress, event.progress)
+                                    }
+                                }
+                            }
+                            is MainViewModel.OperationEvent.Complete -> {
+                                binding.progressBar.visibility = View.GONE
+                                if (event.type == "ARCHIVE") {
+                                    unselectAllFiles()
+                                    aProgressDialog.dismiss()
+                                    aProgressBar.isIndeterminate = false
+                                    if (event.path != null) {
+                                        Snackbar.make(binding.root, getString(R.string.open_folder), Snackbar.LENGTH_LONG)
+                                            .setAnchorView(binding.mainFab)
+                                            .setAction(getString(R.string.ok)) {
+                                                navigateToPath(event.path)
+                                            }
+                                            .show()
+                                    } else {
+                                        Toast.makeText(requireContext(), getString(R.string.archive_success), Toast.LENGTH_SHORT).show()
+                                    }
+                                } else {
+                                    unselectAllFiles()
+                                    eProgressDialog.dismiss()
+                                    eProgressBar.isIndeterminate = false
+                                    if (event.path != null) {
+                                        Snackbar.make(binding.root, getString(R.string.open_folder), Snackbar.LENGTH_LONG)
+                                            .setAnchorView(binding.mainFab)
+                                            .setAction(getString(R.string.ok)) {
+                                                navigateToPath(event.path)
+                                            }
+                                            .show()
+                                    } else {
+                                        Toast.makeText(requireContext(), getString(R.string.extraction_success), Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                            }
+                            is MainViewModel.OperationEvent.Error -> {
+                                binding.progressBar.visibility = View.GONE
+                                unselectAllFiles()
+                                if (event.type == "ARCHIVE") {
+                                    aProgressDialog.dismiss()
+                                    aProgressBar.isIndeterminate = false
+                                } else {
+                                    eProgressDialog.dismiss()
+                                    eProgressBar.isIndeterminate = false
+                                }
+                                Toast.makeText(requireContext(), event.message ?: getString(R.string.general_error_msg), Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -548,16 +544,6 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
         updateStorageInfo(currentPath ?: Environment.getExternalStorageDirectory().absolutePath)
         startFileObserver()
-
-        val filter = IntentFilter().apply {
-            addAction(ACTION_EXTRACTION_COMPLETE)
-            addAction(ACTION_EXTRACTION_ERROR)
-            addAction(ACTION_EXTRACTION_PROGRESS)
-            addAction(ACTION_ARCHIVE_COMPLETE)
-            addAction(ACTION_ARCHIVE_ERROR)
-            addAction(ACTION_ARCHIVE_PROGRESS)
-        }
-        ContextCompat.registerReceiver(requireContext(), extractionReceiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
 
         extractProgressDialog()
         archiveProgressDialog()
@@ -1320,7 +1306,6 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         super.onDestroy()
         fileLoadingJob?.cancel()
         coroutineScope.cancel()
-        requireContext().unregisterReceiver(extractionReceiver)
     }
 
     override fun onResume() {

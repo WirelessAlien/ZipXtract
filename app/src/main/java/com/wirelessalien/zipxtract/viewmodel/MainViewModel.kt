@@ -66,6 +66,7 @@ import java.util.ArrayList
 class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     sealed class OperationEvent {
+        data class Start(val type: String) : OperationEvent()
         data class Progress(val progress: Int, val type: String) : OperationEvent()
         data class Complete(val path: String?, val type: String) : OperationEvent()
         data class Error(val message: String?, val type: String) : OperationEvent()
@@ -235,6 +236,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun startCompressService(file: String, compressionFormat: String, destinationPath: String?) {
+        viewModelScope.launch {
+            _operationEvent.emit(OperationEvent.Start("ARCHIVE"))
+        }
         val jobId = repository.addFilesForJob(listOf(file))
         val intent = Intent(getApplication(), CompressCsArchiveService::class.java).apply {
             putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
@@ -245,6 +249,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun startArchiveTarService(file: List<String>, archiveName: String, compressionFormat: String, destinationPath: String? = null, compressionLevel: Int = 3) {
+        viewModelScope.launch {
+            _operationEvent.emit(OperationEvent.Start("ARCHIVE"))
+        }
         val jobId = repository.addFilesForJob(file)
         val intent = Intent(getApplication(), ArchiveTarService::class.java).apply {
             putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
@@ -273,6 +280,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun startSplitZipService(archiveName: String, password: String?, compressionMethod: CompressionMethod, compressionLevel: CompressionLevel, isEncrypted: Boolean, encryptionMethod: EncryptionMethod?, aesStrength: AesKeyStrength?, filesToArchive: List<String>, splitSize: Long?, destinationPath: String? = null) {
+        viewModelScope.launch {
+            _operationEvent.emit(OperationEvent.Start("ARCHIVE"))
+        }
         val jobId = repository.addFilesForJob(filesToArchive)
         val intent = Intent(getApplication(), ArchiveSplitZipService::class.java).apply {
             putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
@@ -304,6 +314,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun startExtractionService(file: String, password: String?, destinationPath: String?) {
+        viewModelScope.launch {
+            _operationEvent.emit(OperationEvent.Start("EXTRACT"))
+        }
         val jobId = repository.addFilesForJob(listOf(file))
         val intent = Intent(getApplication(), ExtractArchiveService::class.java).apply {
             putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
@@ -314,6 +327,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun startExtractionCsService(file: String, destinationPath: String?) {
+        viewModelScope.launch {
+            _operationEvent.emit(OperationEvent.Start("EXTRACT"))
+        }
         val jobId = repository.addFilesForJob(listOf(file))
         val intent = Intent(getApplication(), ExtractCsArchiveService::class.java).apply {
             putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
@@ -323,6 +339,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun startRarExtractionService(file: String, password: String?, destinationPath: String?) {
+        viewModelScope.launch {
+            _operationEvent.emit(OperationEvent.Start("EXTRACT"))
+        }
         val jobId = repository.addFilesForJob(listOf(file))
         val intent = Intent(getApplication(), ExtractRarService::class.java).apply {
             putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
@@ -333,6 +352,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun startMulti7zExtractionService(file: String, password: String?, destinationPath: String?) {
+        viewModelScope.launch {
+            _operationEvent.emit(OperationEvent.Start("EXTRACT"))
+        }
         val jobId = repository.addFilesForJob(listOf(file))
         val intent = Intent(getApplication(), ExtractMultipart7zService::class.java).apply {
             putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
@@ -343,6 +365,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun startMultiZipExtractionService(file: String, password: String?, destinationPath: String?) {
+        viewModelScope.launch {
+            _operationEvent.emit(OperationEvent.Start("EXTRACT"))
+        }
         val jobId = repository.addFilesForJob(listOf(file))
         val intent = Intent(getApplication(), ExtractMultipartZipService::class.java).apply {
             putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
