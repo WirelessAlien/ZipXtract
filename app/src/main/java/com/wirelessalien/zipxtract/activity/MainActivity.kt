@@ -20,6 +20,7 @@ package com.wirelessalien.zipxtract.activity
 
 import android.content.ClipData
 import android.content.ClipboardManager
+import android.content.Intent
 import android.os.Bundle
 import android.provider.MediaStore
 import android.text.Editable
@@ -31,13 +32,16 @@ import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.edit
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.chip.Chip
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.search.SearchView
 import com.wirelessalien.zipxtract.R
@@ -47,6 +51,7 @@ import com.wirelessalien.zipxtract.databinding.ActivityMainBinding
 import com.wirelessalien.zipxtract.databinding.DialogCrashLogBinding
 import com.wirelessalien.zipxtract.fragment.ArchiveFragment
 import com.wirelessalien.zipxtract.fragment.MainFragment
+import com.wirelessalien.zipxtract.helper.MimeTypeHelper
 import com.wirelessalien.zipxtract.helper.SearchHistoryManager
 import com.wirelessalien.zipxtract.helper.Searchable
 import com.wirelessalien.zipxtract.helper.StorageHelper
@@ -69,6 +74,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var quickSearchResultAdapter: QuickSearchResultAdapter
     private var isSearchSubmitted = false
     private var searchJob: Job? = null
+    private var currentFilterType: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -82,16 +88,43 @@ class MainActivity : AppCompatActivity() {
         val menuHost: MenuHost = this
         menuHost.addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                // Menu inflated by fragments
+                menuInflater.inflate(R.menu.menu_main, menu)
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                return if (menuItem.itemId == R.id.menu_search) {
+                if (menuItem.itemId == R.id.menu_search) {
                     binding.searchView.show()
-                    true
-                } else {
-                    false
+                    return true
                 }
+
+                val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this@MainActivity)
+                var isHandled = true
+                sharedPreferences.edit {
+                    when (menuItem.itemId) {
+                        R.id.menu_sort_by_name -> putString("sortBy", "SORT_BY_NAME")
+                        R.id.menu_sort_by_size -> putString("sortBy", "SORT_BY_SIZE")
+                        R.id.menu_sort_by_time_of_creation -> putString("sortBy", "SORT_BY_MODIFIED")
+                        R.id.menu_sort_by_extension -> putString("sortBy", "SORT_BY_EXTENSION")
+                        R.id.menu_sort_ascending -> putBoolean("sortAscending", true)
+                        R.id.menu_sort_descending -> putBoolean("sortAscending", false)
+                        R.id.menu_settings -> {
+                            val intent = Intent(this@MainActivity, SettingsActivity::class.java)
+                            startActivity(intent)
+                        }
+                        else -> isHandled = false
+                    }
+                }
+
+                if (isHandled && menuItem.itemId != R.id.menu_settings) {
+                    val fragment = supportFragmentManager.findFragmentById(R.id.container)
+                    if (fragment is MainFragment) {
+                        fragment.updateAdapterWithFullList()
+                    } else if (fragment is ArchiveFragment) {
+                        fragment.updateAdapterWithFullList()
+                    }
+                    return true
+                }
+                return isHandled
             }
         }, this, Lifecycle.State.RESUMED)
 
@@ -210,6 +243,34 @@ class MainActivity : AppCompatActivity() {
 
         refreshHistory()
 
+        val filterTypes = listOf("All", "Archive", "Audio", "Video", "Document")
+        val chipGroup = binding.searchView.findViewById<com.google.android.material.chip.ChipGroup>(R.id.chip_group_search_filter)
+        if (chipGroup != null) {
+            chipGroup.isSingleSelection = true
+            filterTypes.forEach { type ->
+                val chip = Chip(this)
+                chip.text = type
+                chip.isCheckable = true
+                chip.isCheckedIconVisible = false
+                chipGroup.addView(chip)
+                if (type == "All") {
+                    chip.isChecked = true
+                }
+            }
+
+            chipGroup.setOnCheckedStateChangeListener { group, checkedIds ->
+                if (checkedIds.isNotEmpty()) {
+                    val checkedChip = group.findViewById<Chip>(checkedIds[0])
+                    val type = checkedChip.text.toString()
+                    currentFilterType = if (type == "All") null else type
+                    val query = binding.searchView.text.toString()
+                    if (query.isNotEmpty()) {
+                        performFastSearch(query)
+                    }
+                }
+            }
+        }
+
         binding.searchView
             .editText
             .setOnEditorActionListener { v, _, _ ->
@@ -293,9 +354,11 @@ class MainActivity : AppCompatActivity() {
 
                         val file = File(filePath)
                         if (file.exists() && !file.name.startsWith(".")) {
-                            results.add(FileItem.fromFile(file))
-                            // To keep it responsive, limit to 50.
-                            if (results.size >= 50) break
+                            if (shouldIncludeFile(file, currentFilterType)) {
+                                results.add(FileItem.fromFile(file))
+                                // To keep it responsive, limit to 50.
+                                if (results.size >= 50) break
+                            }
                         }
                     }
                 }
@@ -306,6 +369,17 @@ class MainActivity : AppCompatActivity() {
                 val resultItems = results.map { QuickSearchResultAdapter.SearchResultItem.FileResultItem(it) }
                 quickSearchResultAdapter.updateList(resultItems)
             }
+        }
+    }
+
+    private fun shouldIncludeFile(file: File, filterType: String?): Boolean {
+        if (filterType == null || filterType == "All") return true
+        return when (filterType) {
+            "Archive" -> MimeTypeHelper.isArchive(file)
+            "Audio" -> MimeTypeHelper.isAudio(file)
+            "Video" -> MimeTypeHelper.isVideo(file)
+            "Document" -> MimeTypeHelper.isDocument(file)
+            else -> true
         }
     }
 
@@ -336,7 +410,7 @@ class MainActivity : AppCompatActivity() {
 
             val fragment = supportFragmentManager.findFragmentById(R.id.container)
             if (fragment is Searchable) {
-                fragment.onSearch(query)
+                fragment.onSearch(query, currentFilterType)
             }
             isSearchSubmitted = false
         }

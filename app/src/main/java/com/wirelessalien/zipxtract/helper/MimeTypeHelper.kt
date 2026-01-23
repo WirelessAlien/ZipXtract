@@ -22,8 +22,33 @@ import java.util.Locale
 
 object MimeTypeHelper {
 
+    val archiveExtensions = setOf(
+        "rar", "r00", "001", "7z", "7z.001", "zip", "tar", "gz", "bz2", "xz", "lz4", "lzma", "sz"
+    )
+
+    val documentExtensions = setOf(
+        "doc", "dot", "pdf", "rtf", "xls", "xlb", "xlt", "xlam", "xlsb", "xlsm", "xltm", "thmx",
+        "ppt", "pps", "ppam", "pptm", "sldm", "ppsm", "potm", "docm", "dotm", "odc", "odb", "odf",
+        "odg", "otg", "odi", "odp", "otp", "ods", "ots", "odt", "odm", "ott", "oth", "pptx", "sldx",
+        "ppsx", "potx", "xlsx", "xltx", "docx", "dotx", "sdc", "sds", "sda", "sdd", "sdf", "sdw",
+        "sgl", "sxc", "stc", "sxd", "std", "sxi", "sti", "sxm", "sxw", "sxg", "stw", "vsd", "vst",
+        "vsw", "vss", "wpd", "wp5", "abw", "gnumeric", "hwp", "kpr", "kpt", "ksp", "kwd", "kwt",
+        "latex", "lyx", "texinfo", "texi", "t", "tr", "roff", "man", "txt", "text", "md", "markdown"
+    )
+
+    val audioExtensions = setOf(
+        "amr", "awb", "au", "snd", "flac", "mid", "midi", "kar", "mpga", "mpega", "mp2", "mp3",
+        "m4a", "oga", "ogg", "opus", "spx", "aif", "aiff", "aifc", "gsm", "m3u", "m3u8", "wma",
+        "wax", "ra", "rm", "ram", "wav"
+    )
+
+    val videoExtensions = setOf(
+        "3gp", "axv", "dif", "dv", "fli", "mpeg", "mpg", "mpe", "ts", "mp4", "qt", "mov", "ogv",
+        "webm", "flv", "mpv", "mkv", "asf", "asx", "wm", "wmv", "avi"
+    )
+
     private val nonArchiveExtensions = setOf(
-        // Documents
+        // Documents (Already in documentExtensions, but keeping here for isNonArchive completeness if needed, or I can union)
         "doc", "dot", "pdf", "rtf", "xls", "xlb", "xlt", "xlam", "xlsb", "xlsm", "xltm", "thmx",
         "ppt", "pps", "ppam", "pptm", "sldm", "ppsm", "potm", "docm", "dotm", "odc", "odb", "odf",
         "odg", "otg", "odi", "odp", "otp", "ods", "ots", "odt", "odm", "ott", "oth", "pptx", "sldx",
@@ -68,5 +93,25 @@ object MimeTypeHelper {
     fun isNonArchive(file: File): Boolean {
         val extension = file.extension.lowercase(Locale.getDefault())
         return nonArchiveExtensions.contains(extension)
+    }
+
+    fun isArchive(file: File): Boolean {
+        val extension = file.extension.lowercase(Locale.getDefault())
+        return archiveExtensions.contains(extension)
+    }
+
+    fun isAudio(file: File): Boolean {
+        val extension = file.extension.lowercase(Locale.getDefault())
+        return audioExtensions.contains(extension)
+    }
+
+    fun isVideo(file: File): Boolean {
+        val extension = file.extension.lowercase(Locale.getDefault())
+        return videoExtensions.contains(extension)
+    }
+
+    fun isDocument(file: File): Boolean {
+        val extension = file.extension.lowercase(Locale.getDefault())
+        return documentExtensions.contains(extension)
     }
 }

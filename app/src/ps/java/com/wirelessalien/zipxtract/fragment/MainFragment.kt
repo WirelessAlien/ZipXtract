@@ -49,7 +49,6 @@ import android.text.TextWatcher
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
-import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
@@ -65,8 +64,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.content.edit
 import androidx.core.net.toUri
-import androidx.core.view.MenuHost
-import androidx.core.view.MenuProvider
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -76,7 +73,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.preference.PreferenceManager
@@ -159,6 +155,7 @@ import net.lingala.zip4j.model.enums.EncryptionMethod
 import org.apache.commons.compress.compressors.CompressorStreamFactory
 import java.io.File
 import java.nio.file.Files
+import java.nio.file.attribute.BasicFileAttributes
 import java.util.Date
 import java.util.Locale
 import kotlin.coroutines.cancellation.CancellationException
@@ -198,8 +195,8 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
     private var isLowStorage: Boolean = false
 
-    override fun onSearch(query: String) {
-        searchFiles(query)
+    override fun onSearch(query: String, filterType: String?) {
+        searchFiles(query, filterType)
     }
 
     override fun getCurrentSearchQuery(): String? {
@@ -365,62 +362,6 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             }
         }
 
-        val menuHost: MenuHost = requireActivity()
-        menuHost.addMenuProvider(object : MenuProvider {
-            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                menuInflater.inflate(R.menu.menu_main, menu)
-            }
-
-            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                var isHandled = true
-                sharedPreferences.edit {
-                    when (menuItem.itemId) {
-                        R.id.menu_sort_by_name -> {
-                            sortBy = SortBy.SORT_BY_NAME
-                            putString("sortBy", sortBy.name)
-                            updateAdapterWithFullList()
-                        }
-
-                        R.id.menu_sort_by_size -> {
-                            sortBy = SortBy.SORT_BY_SIZE
-                            putString("sortBy", sortBy.name)
-                            updateAdapterWithFullList()
-                        }
-
-                        R.id.menu_sort_by_time_of_creation -> {
-                            sortBy = SortBy.SORT_BY_MODIFIED
-                            putString("sortBy", sortBy.name)
-                            updateAdapterWithFullList()
-                        }
-
-                        R.id.menu_sort_by_extension -> {
-                            sortBy = SortBy.SORT_BY_EXTENSION
-                            putString("sortBy", sortBy.name)
-                            updateAdapterWithFullList()
-                        }
-
-                        R.id.menu_sort_ascending -> {
-                            sortAscending = true
-                            putBoolean("sortAscending", sortAscending)
-                            updateAdapterWithFullList()
-                        }
-
-                        R.id.menu_sort_descending -> {
-                            sortAscending = false
-                            putBoolean("sortAscending", sortAscending)
-                            updateAdapterWithFullList()
-                        }
-
-                        R.id.menu_settings -> {
-                            val intent = Intent(requireContext(), SettingsActivity::class.java)
-                            startActivity(intent)
-                        }
-                        else -> isHandled = false
-                    }
-                }
-                return isHandled
-            }
-        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
         currentPath = arguments?.getString("path") ?: arguments?.getString(ARG_DIRECTORY_PATH)
         searchHandler = Handler(Looper.getMainLooper())
@@ -2207,7 +2148,11 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         }
     }
 
-    private fun updateAdapterWithFullList() {
+    fun updateAdapterWithFullList() {
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
+        sortBy = SortBy.valueOf(sharedPreferences.getString("sortBy", SortBy.SORT_BY_NAME.name) ?: SortBy.SORT_BY_NAME.name)
+        sortAscending = sharedPreferences.getBoolean("sortAscending", true)
+
         if (!isSearchActive) {
             adapter.updateFilesAndFilter(ArrayList(), currentQuery)
             fileLoadingJob?.cancel()
@@ -2316,7 +2261,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         }
     }
 
-    private fun searchFiles(query: String?) {
+    private fun searchFiles(query: String?, filterType: String? = null) {
         isSearchActive = !query.isNullOrEmpty()
         currentQuery = query
 
@@ -2342,7 +2287,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
         searchJob = coroutineScope.launch {
             val searchFlow = if (fastSearchEnabled) {
-                searchFilesWithMediaStore(query, context)
+                searchFilesWithMediaStore(query, filterType, context)
             } else {
                 val basePath = Environment.getExternalStorageDirectory().absolutePath
                 val sdCardPath = StorageHelper.getSdCardPath(context)
@@ -2351,7 +2296,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 } else {
                     basePath
                 }
-                searchAllFiles(File(searchPath), query, context)
+                searchAllFiles(File(searchPath), query, filterType, context)
             }
 
             searchFlow
@@ -2381,7 +2326,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         }
     }
 
-    private fun searchAllFiles(directory: File, query: String, context: Context): Flow<List<FileItem>> = flow {
+    private fun searchAllFiles(directory: File, query: String, filterType: String?, context: Context): Flow<List<FileItem>> = flow {
         val results = mutableListOf<FileItem>()
         val showHiddenFiles = sharedPreferences.getBoolean("show_hidden_files", false)
         var lastEmitTime = 0L
@@ -2401,20 +2346,24 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
                 if (file.isDirectory) {
                     if (file.name.contains(query, true)) {
+                         if (filterType == null || filterType == "All") {
+                            results.add(FileItem.fromFile(file))
+                            val currentTime = System.currentTimeMillis()
+                            if (currentTime - lastEmitTime > 300) {
+                                emit(results.toList())
+                                lastEmitTime = currentTime
+                            }
+                         }
+                    }
+                    searchRecursively(file)
+                } else if (file.name.contains(query, true)) {
+                    if (shouldIncludeFile(file, filterType)) {
                         results.add(FileItem.fromFile(file))
                         val currentTime = System.currentTimeMillis()
                         if (currentTime - lastEmitTime > 300) {
                             emit(results.toList())
                             lastEmitTime = currentTime
                         }
-                    }
-                    searchRecursively(file)
-                } else if (file.name.contains(query, true)) {
-                    results.add(FileItem.fromFile(file))
-                    val currentTime = System.currentTimeMillis()
-                    if (currentTime - lastEmitTime > 300) {
-                        emit(results.toList())
-                        lastEmitTime = currentTime
                     }
                 }
             }
@@ -2424,7 +2373,18 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         emit(results.toList())
     }.distinctUntilChanged { old, new -> old.size == new.size }
 
-    private fun searchFilesWithMediaStore(query: String, context: Context): Flow<List<FileItem>> = flow {
+    private fun shouldIncludeFile(file: File, filterType: String?): Boolean {
+        if (filterType == null || filterType == "All") return true
+        return when (filterType) {
+            "Archive" -> MimeTypeHelper.isArchive(file)
+            "Audio" -> MimeTypeHelper.isAudio(file)
+            "Video" -> MimeTypeHelper.isVideo(file)
+            "Document" -> MimeTypeHelper.isDocument(file)
+            else -> true
+        }
+    }
+
+    private fun searchFilesWithMediaStore(query: String, filterType: String?, context: Context): Flow<List<FileItem>> = flow {
         val results = mutableListOf<FileItem>()
         val showHiddenFiles = sharedPreferences.getBoolean("show_hidden_files", false)
         val projection = arrayOf(
@@ -2461,11 +2421,13 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                     if (!showHiddenFiles && file.name.startsWith(".")) continue
 
                     if (file.exists()) {
-                        results.add(FileItem.fromFile(file))
-                        val currentTime = System.currentTimeMillis()
-                        if (currentTime - lastEmitTime > 300) {
-                            emit(results.toList())
-                            lastEmitTime = currentTime
+                         if (shouldIncludeFile(file, filterType)) {
+                            results.add(FileItem.fromFile(file))
+                            val currentTime = System.currentTimeMillis()
+                            if (currentTime - lastEmitTime > 300) {
+                                emit(results.toList())
+                                lastEmitTime = currentTime
+                            }
                         }
                     }
                 }

@@ -35,9 +35,6 @@ import android.provider.MediaStore
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.MimeTypeMap
@@ -46,21 +43,16 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
-import androidx.core.content.edit
-import androidx.core.view.MenuHost
-import androidx.core.view.MenuProvider
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialog
-import com.google.android.material.chip.Chip
 import com.google.android.material.color.MaterialColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.progressindicator.LinearProgressIndicator
@@ -68,7 +60,6 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.transition.MaterialSharedAxis
 import com.wirelessalien.zipxtract.BuildConfig
 import com.wirelessalien.zipxtract.R
-import com.wirelessalien.zipxtract.activity.SettingsActivity
 import com.wirelessalien.zipxtract.adapter.FileAdapter
 import com.wirelessalien.zipxtract.constant.BroadcastConstants
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.PREFERENCE_EXTRACT_DIR_PATH
@@ -146,8 +137,8 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
     private lateinit var sharedPreferences: SharedPreferences
     private var currentQuery: String? = null
 
-    override fun onSearch(query: String) {
-        searchFiles(query)
+    override fun onSearch(query: String, filterType: String?) {
+        searchFiles(query, filterType)
     }
 
     override fun getCurrentSearchQuery(): String? {
@@ -249,61 +240,6 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
             windowInsets
         }
 
-        val menuHost: MenuHost = requireActivity()
-        menuHost.addMenuProvider(object : MenuProvider {
-            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                menuInflater.inflate(R.menu.menu_main, menu)
-            }
-
-            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                var isHandled = true
-                sharedPreferences.edit {
-                    when (menuItem.itemId) {
-                        R.id.menu_sort_by_name -> {
-                            sortBy = SortBy.SORT_BY_NAME
-                            putString("sortBy", sortBy.name)
-                        }
-
-                        R.id.menu_sort_by_size -> {
-                            sortBy = SortBy.SORT_BY_SIZE
-                            putString("sortBy", sortBy.name)
-                        }
-
-                        R.id.menu_sort_by_time_of_creation -> {
-                            sortBy = SortBy.SORT_BY_MODIFIED
-                            putString("sortBy", sortBy.name)
-                        }
-
-                        R.id.menu_sort_by_extension -> {
-                            sortBy = SortBy.SORT_BY_EXTENSION
-                            putString("sortBy", sortBy.name)
-                        }
-
-                        R.id.menu_sort_ascending -> {
-                            sortAscending = true
-                            putBoolean("sortAscending", sortAscending)
-                        }
-
-                        R.id.menu_sort_descending -> {
-                            sortAscending = false
-                            putBoolean("sortAscending", sortAscending)
-                        }
-
-                        R.id.menu_settings -> {
-                            val intent = Intent(requireContext(), SettingsActivity::class.java)
-                            startActivity(intent)
-                        }
-                        else -> isHandled = false
-                    }
-                }
-                if (isHandled) {
-                    updateAdapterWithFullList()
-                    return true
-                }
-                return false
-            }
-        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
-
         val filter = IntentFilter().apply {
             addAction(BroadcastConstants.ACTION_EXTRACTION_COMPLETE)
             addAction(BroadcastConstants.ACTION_EXTRACTION_ERROR)
@@ -313,7 +249,6 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
             .registerReceiver(extractionReceiver, filter)
 
         extractProgressDialog()
-        setupFilterChips()
         viewLifecycleOwner.lifecycleScope.launch {
             loadArchiveFiles(null)
         }
@@ -323,37 +258,6 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
         }
     }
 
-    private fun setupFilterChips() {
-        val extensions = listOf("All", "zip", "rar", "7z", "tar", "gz", "bz2", "xz")
-        val chipGroup = binding.chipGroupFilter
-        chipGroup.isSingleSelection = true
-        extensions.forEach { extension ->
-            val chip = Chip(requireContext())
-            chip.text = extension
-            chip.isCheckable = true
-            chip.isCheckedIconVisible = false
-            chipGroup.addView(chip)
-
-            if (extension == "All") {
-                chip.isChecked = true
-            }
-        }
-
-        chipGroup.setOnCheckedStateChangeListener { group, checkedIds ->
-            if (checkedIds.isNotEmpty()) {
-                val checkedChipId = checkedIds[0]
-                val checkedChip = group.findViewById<Chip>(checkedChipId)
-                val selectedExtension = if (checkedChip.text.toString() == "All") {
-                    null
-                } else {
-                    checkedChip.text.toString()
-                }
-                viewLifecycleOwner.lifecycleScope.launch {
-                    loadArchiveFiles(selectedExtension)
-                }
-            }
-        }
-    }
 
     private suspend fun loadArchiveFiles(extension: String?, showShimmer: Boolean = true) {
         if (showShimmer) {
@@ -374,7 +278,7 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
         }
     }
 
-    private fun searchFiles(query: String?) {
+    private fun searchFiles(query: String?, filterType: String? = null) {
         isSearchActive = !query.isNullOrEmpty()
         currentQuery = query
 
@@ -387,7 +291,7 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
         searchJob?.cancel()
 
         searchJob = coroutineScope.launch {
-            searchAllFiles(query)
+            searchAllFiles(query, filterType)
                 .flowOn(Dispatchers.IO)
                 .catch { e ->
                     withContext(Dispatchers.Main) {
@@ -407,7 +311,7 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
         }
     }
 
-    private fun searchAllFiles(query: String?): Flow<List<FileItem>> = flow {
+    private fun searchAllFiles(query: String?, filterType: String?): Flow<List<FileItem>> = flow {
         val results = getArchiveFiles(query, null)
         emit(results)
     }
@@ -526,7 +430,14 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
     }
 
 
-    private fun updateAdapterWithFullList() {
+    fun updateAdapterWithFullList() {
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
+        sortBy = SortBy.valueOf(
+            sharedPreferences.getString("sortBy", SortBy.SORT_BY_NAME.name)
+                ?: SortBy.SORT_BY_NAME.name
+        )
+        sortAscending = sharedPreferences.getBoolean("sortAscending", true)
+
         if (!isSearchActive) {
             viewLifecycleOwner.lifecycleScope.launch {
                 loadArchiveFiles(null)
