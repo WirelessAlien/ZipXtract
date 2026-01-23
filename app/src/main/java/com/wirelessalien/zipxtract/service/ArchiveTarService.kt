@@ -32,7 +32,6 @@ import android.os.Environment
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.preference.PreferenceManager
 import com.github.luben.zstd.ZstdOutputStream
 import com.wirelessalien.zipxtract.R
@@ -159,7 +158,8 @@ class ArchiveTarService : Service() {
     }
 
     private fun sendLocalBroadcast(intent: Intent) {
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
+        intent.setPackage(packageName)
+        sendBroadcast(intent)
     }
 
     private fun sendErrorBroadcast(errorMessage: String) {

@@ -25,7 +25,6 @@ import android.content.IntentFilter
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.preference.PreferenceManager
 import com.wirelessalien.zipxtract.constant.BroadcastConstants
 import com.wirelessalien.zipxtract.constant.ServiceConstants
@@ -99,12 +98,12 @@ class ArchiveViewModel(application: Application) : AndroidViewModel(application)
             addAction(BroadcastConstants.ACTION_EXTRACTION_ERROR)
             addAction(BroadcastConstants.ACTION_EXTRACTION_PROGRESS)
         }
-        LocalBroadcastManager.getInstance(application).registerReceiver(broadcastReceiver, filter)
+        ContextCompat.registerReceiver(getApplication(), broadcastReceiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
     }
 
     override fun onCleared() {
         super.onCleared()
-        LocalBroadcastManager.getInstance(getApplication()).unregisterReceiver(broadcastReceiver)
+        getApplication<Application>().unregisterReceiver(broadcastReceiver)
     }
 
     fun loadArchiveFiles(extension: String?, sortBy: String, sortAscending: Boolean) {

@@ -80,7 +80,6 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -558,7 +557,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             addAction(ACTION_ARCHIVE_ERROR)
             addAction(ACTION_ARCHIVE_PROGRESS)
         }
-        LocalBroadcastManager.getInstance(requireContext()).registerReceiver(extractionReceiver, filter)
+        ContextCompat.registerReceiver(requireContext(), extractionReceiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
 
         extractProgressDialog()
         archiveProgressDialog()
@@ -1310,7 +1309,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         super.onDestroy()
         fileLoadingJob?.cancel()
         coroutineScope.cancel()
-        LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(extractionReceiver)
+        requireContext().unregisterReceiver(extractionReceiver)
     }
 
     override fun onResume() {
