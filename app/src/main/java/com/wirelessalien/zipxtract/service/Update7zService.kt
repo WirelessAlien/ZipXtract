@@ -24,10 +24,11 @@ import android.content.Intent
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.constant.BroadcastConstants
 import com.wirelessalien.zipxtract.constant.ServiceConstants
+import com.wirelessalien.zipxtract.helper.AppEvent
+import com.wirelessalien.zipxtract.helper.EventBus
 import com.wirelessalien.zipxtract.helper.FileOperationsDao
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -202,9 +203,7 @@ class Update7zService : Service() {
             success = true
         } catch (e: Exception) {
             e.printStackTrace()
-            sendLocalBroadcast(Intent(BroadcastConstants.ACTION_ARCHIVE_ERROR).apply {
-                putExtra(BroadcastConstants.EXTRA_ERROR_MESSAGE, e.message)
-            })
+            CoroutineScope(Dispatchers.IO).launch { EventBus.emit(AppEvent.ArchiveError(e.message)) }
         } finally {
             for (i in closeables.indices.reversed()) {
                 try {
@@ -218,10 +217,10 @@ class Update7zService : Service() {
 
         if (success) {
             showCompletionNotification(File(archivePath))
-            sendLocalBroadcast(Intent(BroadcastConstants.ACTION_ARCHIVE_COMPLETE))
+            CoroutineScope(Dispatchers.IO).launch { EventBus.emit(AppEvent.ArchiveComplete(null)) }
         } else {
             showErrorNotification(getString(R.string.error_updating_archive))
-            sendLocalBroadcast(Intent(BroadcastConstants.ACTION_ARCHIVE_ERROR))
+            CoroutineScope(Dispatchers.IO).launch { EventBus.emit(AppEvent.ArchiveError(null)) }
         }
         stopForegroundService()
     }
@@ -281,14 +280,9 @@ class Update7zService : Service() {
     }
 
     private fun sendProgressBroadcast(progress: Int) {
-        val intent = Intent(BroadcastConstants.ACTION_ARCHIVE_PROGRESS).apply {
-            putExtra(BroadcastConstants.EXTRA_PROGRESS, progress)
+        CoroutineScope(Dispatchers.IO).launch {
+            EventBus.emit(AppEvent.ArchiveProgress(progress))
         }
-        sendLocalBroadcast(intent)
-    }
-
-    private fun sendLocalBroadcast(intent: Intent) {
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
     }
 
     private fun stopForegroundService() {

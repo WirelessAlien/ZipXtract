@@ -19,12 +19,10 @@ package com.wirelessalien.zipxtract.fragment
 
 import android.Manifest
 import android.app.Activity
-import android.content.BroadcastReceiver
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.icu.text.DateFormat
@@ -74,7 +72,6 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -88,17 +85,10 @@ import com.wirelessalien.zipxtract.BuildConfig
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.activity.SettingsActivity
 import com.wirelessalien.zipxtract.adapter.FileAdapter
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_COMPLETE
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_ERROR
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_PROGRESS
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_COMPLETE
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_ERROR
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_PROGRESS
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_DIR_PATH
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_ERROR_MESSAGE
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_PROGRESS
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.PREFERENCE_ARCHIVE_DIR_PATH
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.PREFERENCE_EXTRACT_DIR_PATH
+import com.wirelessalien.zipxtract.helper.AppEvent
+import com.wirelessalien.zipxtract.helper.EventBus
 import com.wirelessalien.zipxtract.constant.ServiceConstants
 import com.wirelessalien.zipxtract.constant.ServiceConstants.EXTRA_DESTINATION_PATH
 import com.wirelessalien.zipxtract.databinding.BottomSheetCompressorArchiveBinding
@@ -204,87 +194,6 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
     private val pendingFileEvents = mutableListOf<Pair<Int, File>>()
     private var processEventsJob: Job? = null
-
-
-    private val extractionReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            if (!isAdded) return
-
-            when (intent?.action) {
-                ACTION_EXTRACTION_COMPLETE -> {
-                    binding.progressBar.visibility = View.GONE
-                    val dirPath = intent.getStringExtra(EXTRA_DIR_PATH)
-                    Log.d("MainFragment", "onReceive: $dirPath")
-                    if (dirPath != null) {
-                        Snackbar.make(binding.root, getString(R.string.open_folder), Snackbar.LENGTH_LONG)
-                            .setAnchorView(binding.mainFab)
-                            .setAction(getString(R.string.ok)) {
-                                navigateToPath(dirPath)
-                            }
-                            .show()
-                    } else {
-                        Toast.makeText(requireContext(), getString(R.string.extraction_success), Toast.LENGTH_SHORT).show()
-                    }
-                    unselectAllFiles()
-                    eProgressDialog.dismiss()
-                    eProgressBar.isIndeterminate = false
-                }
-                ACTION_EXTRACTION_ERROR -> {
-                    binding.progressBar.visibility = View.GONE
-                    unselectAllFiles()
-                    eProgressDialog.dismiss()
-                    eProgressBar.isIndeterminate = false
-                    val errorMessage = intent.getStringExtra(EXTRA_ERROR_MESSAGE)
-                    Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show()
-                }
-                ACTION_EXTRACTION_PROGRESS -> {
-                    val progress = intent.getIntExtra(EXTRA_PROGRESS, 0)
-                    updateProgressBar(progress)
-                    if (progress == 100) {
-                        eProgressBar.isIndeterminate = true
-                    } else {
-                        eProgressBar.progress = progress
-                        eProgressText.text = getString(R.string.extracting_progress, progress)
-                    }
-                }
-                ACTION_ARCHIVE_COMPLETE -> {
-                    binding.progressBar.visibility = View.GONE
-                    val dirPath = intent.getStringExtra(EXTRA_DIR_PATH)
-                    if (dirPath != null) {
-                        Snackbar.make(binding.root, getString(R.string.open_folder), Snackbar.LENGTH_LONG)
-                            .setAnchorView(binding.mainFab)
-                            .setAction(getString(R.string.ok)) {
-                                navigateToPath(dirPath)
-                            }
-                            .show()
-                    } else {
-                        Toast.makeText(requireContext(), getString(R.string.archive_success), Toast.LENGTH_SHORT).show()
-                    }
-                    unselectAllFiles()
-                    aProgressDialog.dismiss()
-                    aProgressBar.isIndeterminate = false
-                }
-                ACTION_ARCHIVE_ERROR -> {
-                    binding.progressBar.visibility = View.GONE
-                    unselectAllFiles()
-                    aProgressDialog.dismiss()
-                    aProgressBar.isIndeterminate = false
-                    val errorMessage = intent.getStringExtra(EXTRA_ERROR_MESSAGE)
-                    Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show()
-                }
-                ACTION_ARCHIVE_PROGRESS -> {
-                    val progress = intent.getIntExtra(EXTRA_PROGRESS, 0)
-                    updateProgressBar(progress)
-                    if (progress == 100) {
-                        aProgressBar.isIndeterminate = true
-                    } else {
-                        aProgressBar.progress = progress
-                        aProgressText.text = getString(R.string.compressing_progress, progress)
-                    }
-                }
-            }
-        }
-    }
 
     private val requestNotificationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -415,18 +324,85 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         updateStorageInfo(currentPath ?: Environment.getExternalStorageDirectory().absolutePath)
         startFileObserver()
 
-        val filter = IntentFilter().apply {
-            addAction(ACTION_EXTRACTION_COMPLETE)
-            addAction(ACTION_EXTRACTION_ERROR)
-            addAction(ACTION_EXTRACTION_PROGRESS)
-            addAction(ACTION_ARCHIVE_COMPLETE)
-            addAction(ACTION_ARCHIVE_ERROR)
-            addAction(ACTION_ARCHIVE_PROGRESS)
-        }
-        LocalBroadcastManager.getInstance(requireContext()).registerReceiver(extractionReceiver, filter)
-
         extractProgressDialog()
         archiveProgressDialog()
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            EventBus.events.collect { event ->
+                if (!isAdded) return@collect
+                when (event) {
+                    is AppEvent.ExtractionComplete -> {
+                        binding.progressBar.visibility = View.GONE
+                        val dirPath = event.dirPath
+                        Log.d("MainFragment", "onReceive: $dirPath")
+                        if (dirPath.isNotEmpty()) {
+                            Snackbar.make(binding.root, getString(R.string.open_folder), Snackbar.LENGTH_LONG)
+                                .setAnchorView(binding.mainFab)
+                                .setAction(getString(R.string.ok)) {
+                                    navigateToPath(dirPath)
+                                }
+                                .show()
+                        } else {
+                            Toast.makeText(requireContext(), getString(R.string.extraction_success), Toast.LENGTH_SHORT).show()
+                        }
+                        unselectAllFiles()
+                        eProgressDialog.dismiss()
+                        eProgressBar.isIndeterminate = false
+                    }
+                    is AppEvent.ExtractionError -> {
+                        binding.progressBar.visibility = View.GONE
+                        unselectAllFiles()
+                        eProgressDialog.dismiss()
+                        eProgressBar.isIndeterminate = false
+                        Toast.makeText(requireContext(), event.errorMessage, Toast.LENGTH_SHORT).show()
+                    }
+                    is AppEvent.ExtractionProgress -> {
+                        val progress = event.progress
+                        updateProgressBar(progress)
+                        if (progress == 100) {
+                            eProgressBar.isIndeterminate = true
+                        } else {
+                            eProgressBar.progress = progress
+                            eProgressText.text = getString(R.string.extracting_progress, progress)
+                        }
+                    }
+                    is AppEvent.ArchiveComplete -> {
+                        binding.progressBar.visibility = View.GONE
+                        val dirPath = event.dirPath
+                        if (dirPath != null) {
+                            Snackbar.make(binding.root, getString(R.string.open_folder), Snackbar.LENGTH_LONG)
+                                .setAnchorView(binding.mainFab)
+                                .setAction(getString(R.string.ok)) {
+                                    navigateToPath(dirPath)
+                                }
+                                .show()
+                        } else {
+                            Toast.makeText(requireContext(), getString(R.string.archive_success), Toast.LENGTH_SHORT).show()
+                        }
+                        unselectAllFiles()
+                        aProgressDialog.dismiss()
+                        aProgressBar.isIndeterminate = false
+                    }
+                    is AppEvent.ArchiveError -> {
+                        binding.progressBar.visibility = View.GONE
+                        unselectAllFiles()
+                        aProgressDialog.dismiss()
+                        aProgressBar.isIndeterminate = false
+                        Toast.makeText(requireContext(), event.errorMessage, Toast.LENGTH_SHORT).show()
+                    }
+                    is AppEvent.ArchiveProgress -> {
+                        val progress = event.progress
+                        updateProgressBar(progress)
+                        if (progress == 100) {
+                            aProgressBar.isIndeterminate = true
+                        } else {
+                            aProgressBar.progress = progress
+                            aProgressText.text = getString(R.string.compressing_progress, progress)
+                        }
+                    }
+                }
+            }
+        }
 
         binding.mainFab.setOnClickListener {
             if (areFabsVisible) {
@@ -1289,7 +1265,6 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         super.onDestroy()
         fileLoadingJob?.cancel()
         coroutineScope.cancel()
-        LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(extractionReceiver)
     }
 
     override fun onResume() {

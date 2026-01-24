@@ -97,9 +97,6 @@ dependencies {
     //fragment
     implementation 'androidx.fragment:fragment-ktx:1.8.7'
 
-    // local broadcast manager
-    implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.1.0'
-
     //apache commons compress
     implementation 'org.apache.commons:commons-compress:1.28.0'
     implementation 'org.tukaani:xz:1.10'

@@ -17,10 +17,7 @@
 
 package com.wirelessalien.zipxtract.fragment
 
-import android.content.BroadcastReceiver
-import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
@@ -39,17 +36,19 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.chip.Chip
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.adapter.ArchiveItemAdapter
-import com.wirelessalien.zipxtract.constant.BroadcastConstants
 import com.wirelessalien.zipxtract.constant.ServiceConstants
 import com.wirelessalien.zipxtract.databinding.FragmentSevenZipBinding
+import com.wirelessalien.zipxtract.helper.AppEvent
+import com.wirelessalien.zipxtract.helper.EventBus
 import com.wirelessalien.zipxtract.helper.FileOperationsDao
 import com.wirelessalien.zipxtract.service.Update7zService
+import kotlinx.coroutines.launch
 import net.sf.sevenzipjbinding.IInArchive
 import net.sf.sevenzipjbinding.PropID
 import net.sf.sevenzipjbinding.SevenZip
@@ -75,34 +74,6 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
     private lateinit var adapter: ArchiveItemAdapter
     private var inArchive: IInArchive? = null
     private var currentPath: String = ""
-    private val updateReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            when (intent?.action) {
-                BroadcastConstants.ACTION_ARCHIVE_PROGRESS -> {
-                    val progress = intent.getIntExtra(BroadcastConstants.EXTRA_PROGRESS, 0)
-                    binding.progressBar.progress = progress
-                }
-                BroadcastConstants.ACTION_ARCHIVE_COMPLETE -> {
-                    binding.progressBar.visibility = View.GONE
-                    Toast.makeText(requireContext(),
-                        getString(R.string.archive_updated_successfully), Toast.LENGTH_SHORT).show()
-                    try {
-                        inArchive?.close()
-                        val randomAccessFile = RandomAccessFile(archivePath, "r")
-                        inArchive = SevenZip.openInArchive(null, RandomAccessFileInStream(randomAccessFile))
-                        loadArchiveItems(currentPath)
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
-                }
-                BroadcastConstants.ACTION_ARCHIVE_ERROR -> {
-                    binding.progressBar.visibility = View.GONE
-                    Toast.makeText(requireContext(),
-                        getString(R.string.error_updating_archive), Toast.LENGTH_SHORT).show()
-                }
-            }
-        }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -172,12 +143,34 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
                 getString(R.string.error_opening_archive, e.message), Toast.LENGTH_LONG).show()
         }
 
-        val filter = IntentFilter().apply {
-            addAction(BroadcastConstants.ACTION_ARCHIVE_COMPLETE)
-            addAction(BroadcastConstants.ACTION_ARCHIVE_ERROR)
-            addAction(BroadcastConstants.ACTION_ARCHIVE_PROGRESS)
+        viewLifecycleOwner.lifecycleScope.launch {
+            EventBus.events.collect { event ->
+                when (event) {
+                    is AppEvent.ArchiveProgress -> {
+                        binding.progressBar.progress = event.progress
+                    }
+                    is AppEvent.ArchiveComplete -> {
+                        binding.progressBar.visibility = View.GONE
+                        Toast.makeText(requireContext(),
+                            getString(R.string.archive_updated_successfully), Toast.LENGTH_SHORT).show()
+                        try {
+                            inArchive?.close()
+                            val randomAccessFile = RandomAccessFile(archivePath, "r")
+                            inArchive = SevenZip.openInArchive(null, RandomAccessFileInStream(randomAccessFile))
+                            loadArchiveItems(currentPath)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                    }
+                    is AppEvent.ArchiveError -> {
+                        binding.progressBar.visibility = View.GONE
+                        Toast.makeText(requireContext(),
+                            getString(R.string.error_updating_archive), Toast.LENGTH_SHORT).show()
+                    }
+                    else -> {}
+                }
+            }
         }
-        LocalBroadcastManager.getInstance(requireContext()).registerReceiver(updateReceiver, filter)
 
         binding.fabAddFile.setOnClickListener {
             val filePicker = FilePickerFragment.newInstance()
@@ -372,7 +365,6 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
 
     override fun onDestroyView() {
         super.onDestroyView()
-        LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(updateReceiver)
         val activity = activity as? AppCompatActivity
         activity?.findViewById<View>(R.id.tabLayout)?.visibility = View.VISIBLE
         activity?.supportActionBar?.setDisplayHomeAsUpEnabled(false)

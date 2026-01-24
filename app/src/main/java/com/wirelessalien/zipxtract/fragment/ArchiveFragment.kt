@@ -19,12 +19,10 @@ package com.wirelessalien.zipxtract.fragment
 
 
 import android.annotation.SuppressLint
-import android.content.BroadcastReceiver
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.icu.text.DateFormat
 import android.media.MediaScannerConnection
@@ -49,7 +47,6 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -63,6 +60,8 @@ import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.adapter.FileAdapter
 import com.wirelessalien.zipxtract.constant.BroadcastConstants
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.PREFERENCE_EXTRACT_DIR_PATH
+import com.wirelessalien.zipxtract.helper.AppEvent
+import com.wirelessalien.zipxtract.helper.EventBus
 import com.wirelessalien.zipxtract.constant.ServiceConstants.EXTRA_DESTINATION_PATH
 import com.wirelessalien.zipxtract.constant.ServiceConstants.EXTRA_JOB_ID
 import com.wirelessalien.zipxtract.constant.ServiceConstants.EXTRA_PASSWORD
@@ -145,52 +144,6 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
         return if (isSearchActive) currentQuery else null
     }
 
-    private val extractionReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            if (!isAdded) return
-
-            when (intent?.action) {
-                BroadcastConstants.ACTION_EXTRACTION_COMPLETE -> {
-                    binding.linearProgressBar.visibility = View.GONE
-                    eProgressDialog.dismiss()
-                    val dirPath = intent.getStringExtra(BroadcastConstants.EXTRA_DIR_PATH)
-
-                    if (dirPath != null) {
-                        Snackbar.make(
-                            binding.root,
-                            getString(R.string.open_folder),
-                            Snackbar.LENGTH_LONG
-                        )
-                            .setAction(getString(R.string.ok)) {
-                                navigateToParentDir(File(dirPath))
-                            }
-                            .show()
-                    } else {
-                        Toast.makeText(
-                            requireContext(),
-                            getString(R.string.extraction_success),
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                }
-
-                BroadcastConstants.ACTION_EXTRACTION_ERROR -> {
-                    binding.linearProgressBar.visibility = View.GONE
-                    eProgressDialog.dismiss()
-                    val errorMessage = intent.getStringExtra(BroadcastConstants.EXTRA_ERROR_MESSAGE)
-                    Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show()
-                }
-
-                BroadcastConstants.ACTION_EXTRACTION_PROGRESS -> {
-                    val progress = intent.getIntExtra(BroadcastConstants.EXTRA_PROGRESS, 0)
-                    updateProgressBar(progress)
-                    eProgressBar.progress = progress
-                    progressText.text = getString(R.string.extracting_progress, progress)
-                }
-            }
-        }
-    }
-
     private fun navigateToParentDir(parentDir: File) {
         val fragment = MainFragment().apply {
             arguments = Bundle().apply {
@@ -240,15 +193,50 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
             windowInsets
         }
 
-        val filter = IntentFilter().apply {
-            addAction(BroadcastConstants.ACTION_EXTRACTION_COMPLETE)
-            addAction(BroadcastConstants.ACTION_EXTRACTION_ERROR)
-            addAction(BroadcastConstants.ACTION_EXTRACTION_PROGRESS)
-        }
-        LocalBroadcastManager.getInstance(requireContext())
-            .registerReceiver(extractionReceiver, filter)
-
         extractProgressDialog()
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            EventBus.events.collect { event ->
+                if (!isAdded) return@collect
+                when (event) {
+                    is AppEvent.ExtractionComplete -> {
+                        binding.linearProgressBar.visibility = View.GONE
+                        eProgressDialog.dismiss()
+                        val dirPath = event.dirPath
+
+                        if (dirPath.isNotEmpty()) {
+                            Snackbar.make(
+                                binding.root,
+                                getString(R.string.open_folder),
+                                Snackbar.LENGTH_LONG
+                            )
+                                .setAction(getString(R.string.ok)) {
+                                    navigateToParentDir(File(dirPath))
+                                }
+                                .show()
+                        } else {
+                            Toast.makeText(
+                                requireContext(),
+                                getString(R.string.extraction_success),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                    is AppEvent.ExtractionError -> {
+                        binding.linearProgressBar.visibility = View.GONE
+                        eProgressDialog.dismiss()
+                        Toast.makeText(requireContext(), event.errorMessage, Toast.LENGTH_SHORT).show()
+                    }
+                    is AppEvent.ExtractionProgress -> {
+                        val progress = event.progress
+                        updateProgressBar(progress)
+                        eProgressBar.progress = progress
+                        progressText.text = getString(R.string.extracting_progress, progress)
+                    }
+                    else -> {}
+                }
+            }
+        }
         viewLifecycleOwner.lifecycleScope.launch {
             loadArchiveFiles(null)
         }
