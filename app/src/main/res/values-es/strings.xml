@@ -29,7 +29,7 @@
     <string name="compress_sevenz">Comprimir en 7z</string>
     <string name="thread_count">Número de hilos</string>
     <string name="enter_name_of_archive_optional">Nombre del archivo (opcional)</string>
-    <string name="sevenz_creation_success">Archivo 7z creado con éxito</string>
+    <string name="sevenz_creation_success">archivo 7z archivado con éxito</string>
     <string name="sevenz_creation_failed">Error al crear el archivo 7z</string>
     <string name="max_available_thread">0 para el máximo de hilos disponibles</string>
     <string name="solid_compression">Compresión sólida</string>
@@ -187,7 +187,7 @@
     <string name="rename_t">Rename</string>
     <plurals name="folder_items">
         <item quantity="one">%d item</item>
-        <item quantity="many"></item>
+        <item quantity="many"/>
         <item quantity="other">%d items</item>
     </plurals>
 </resources>
