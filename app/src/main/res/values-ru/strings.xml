@@ -186,9 +186,9 @@
     <string name="show_hidden_files_summary">Показать файлы, начинающиеся с точки</string>
     <string name="rename_t">Переименовать</string>
     <plurals name="folder_items">
-        <item quantity="one"></item>
-        <item quantity="few">%d</item>
-        <item quantity="many">%d</item>
-        <item quantity="other">%d</item>
+        <item quantity="one">%d элемент</item>
+        <item quantity="few">%d элемента</item>
+        <item quantity="many">%d элементов</item>
+        <item quantity="other">%d элементов</item>
     </plurals>
 </resources>
