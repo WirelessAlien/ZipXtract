@@ -122,6 +122,7 @@ class ExtractArchiveService : Service() {
         val password = intent?.getStringExtra(ServiceConstants.EXTRA_PASSWORD)
         val useAppNameDir = intent?.getBooleanExtra(ServiceConstants.EXTRA_USE_APP_NAME_DIR, false) ?: false
         val destinationPath = intent?.getStringExtra(ServiceConstants.EXTRA_DESTINATION_PATH)
+        val itemsToExtract = intent?.getStringArrayListExtra(ServiceConstants.EXTRA_ITEMS_TO_EXTRACT)
 
         if (jobId == null) {
             stopSelf()
@@ -142,7 +143,7 @@ class ExtractArchiveService : Service() {
             }
             val filePath = filesToExtract[0]
 
-            extractArchive(filePath, password, useAppNameDir, destinationPath)
+            extractArchive(filePath, password, useAppNameDir, destinationPath, itemsToExtract)
             fileOperationsDao.deleteFilesForJob(jobId)
             stopSelf()
         }
@@ -187,7 +188,7 @@ class ExtractArchiveService : Service() {
         return builder.build()
     }
 
-    private fun extractArchive(filePath: String, password: String?, useAppNameDir: Boolean, destinationPath: String?) {
+    private fun extractArchive(filePath: String, password: String?, useAppNameDir: Boolean, destinationPath: String?, itemsToExtract: ArrayList<String>?) {
         if (filePath.isEmpty()) {
             val errorMessage = getString(R.string.no_files_to_archive)
             showErrorNotification(errorMessage)
@@ -199,7 +200,7 @@ class ExtractArchiveService : Service() {
         val file = File(filePath)
         when {
             file.extension.equals("zip", ignoreCase = true) -> {
-                extractZipArchive(file, password, useAppNameDir, destinationPath)
+                extractZipArchive(file, password, useAppNameDir, destinationPath, itemsToExtract)
                 return
             }
             file.extension.equals("tar", ignoreCase = true) -> {
@@ -250,7 +251,7 @@ class ExtractArchiveService : Service() {
                 counter++
             }
 
-            var success = trySevenZip(file, destinationDir, password)
+            var success = trySevenZip(file, destinationDir, password, itemsToExtract)
             if (success) {
                 if (useAppNameDir) {
                     filesDir.deleteRecursively()
@@ -290,7 +291,7 @@ class ExtractArchiveService : Service() {
         }
     }
 
-    private fun trySevenZip(file: File, destinationDir: File, password: String?): Boolean {
+    private fun trySevenZip(file: File, destinationDir: File, password: String?, itemsToExtract: ArrayList<String>?): Boolean {
         var inStream: RandomAccessFileInStream? = null
         try {
             inStream = RandomAccessFileInStream(RandomAccessFile(file, "r"))
@@ -299,7 +300,20 @@ class ExtractArchiveService : Service() {
 
             try {
                 val extractCallback = ExtractCallback(inArchive, destinationDir, password)
-                inArchive.extract(null, false, extractCallback)
+                
+                if (itemsToExtract != null && itemsToExtract.isNotEmpty()) {
+                    val indices = mutableListOf<Int>()
+                    val count = inArchive.numberOfItems
+                    for (i in 0 until count) {
+                        val path = inArchive.getStringProperty(i, PropID.PATH).replace("\\", "/")
+                        if (itemsToExtract.contains(path)) {
+                            indices.add(i)
+                        }
+                    }
+                    inArchive.extract(indices.toIntArray(), false, extractCallback)
+                } else {
+                    inArchive.extract(null, false, extractCallback)
+                }
 
                 if (extractCallback.hasError) {
                     return false
@@ -668,7 +682,7 @@ class ExtractArchiveService : Service() {
         }
     }
 
-    private fun extractZipArchive(file: File, password: String?, useAppNameDir: Boolean, destinationPath: String?) {
+    private fun extractZipArchive(file: File, password: String?, useAppNameDir: Boolean, destinationPath: String?, itemsToExtract: ArrayList<String>?) {
         var destinationDir: File? = null
         try {
             val zipFile = ZipFile(file)
@@ -723,26 +737,51 @@ class ExtractArchiveService : Service() {
 
             zipFile.isRunInThread = true
             val directories = mutableListOf<DirectoryInfo>()
-            for (fileHeader in zipFile.fileHeaders) {
-                if (fileHeader.isDirectory) {
-                    val directoryPath = File(finalDestinationDir, fileHeader.fileName).path
-                    val lastModified = if (fileHeader.lastModifiedTime > 0) fileHeader.lastModifiedTimeEpoch else System.currentTimeMillis()
-                    directories.add(DirectoryInfo(directoryPath, lastModified))
-                }
-            }
-            zipFile.extractAll(finalDestinationDir.absolutePath)
 
-            progressMonitor = zipFile.progressMonitor
-            var lastProgress = -1
-            while (!progressMonitor!!.state.equals(ProgressMonitor.State.READY)) {
-                if (progressMonitor!!.state.equals(ProgressMonitor.State.BUSY)) {
-                    val percentDone = (progressMonitor!!.percentDone)
-                    if (percentDone > lastProgress) {
-                        lastProgress = percentDone
-                        updateProgress(percentDone)
+            if (itemsToExtract != null && itemsToExtract.isNotEmpty()) {
+                for (itemPath in itemsToExtract) {
+                    zipFile.extractFile(itemPath, finalDestinationDir.absolutePath)
+
+                    progressMonitor = zipFile.progressMonitor
+                    var lastProgress = -1
+                    while (!progressMonitor!!.state.equals(ProgressMonitor.State.READY)) {
+                        if (progressMonitor!!.state.equals(ProgressMonitor.State.BUSY)) {
+                            val percentDone = (progressMonitor!!.percentDone)
+                            if (percentDone > lastProgress) {
+                                lastProgress = percentDone
+                                updateProgress(percentDone)
+                            }
+                        }
+                        Thread.sleep(100)
+                    }
+                    if (progressMonitor!!.result == ProgressMonitor.Result.CANCELLED) {
+                        break
+                    } else if (progressMonitor!!.result == ProgressMonitor.Result.ERROR) {
+                        throw progressMonitor!!.exception
                     }
                 }
-                Thread.sleep(100)
+            } else {
+                for (fileHeader in zipFile.fileHeaders) {
+                    if (fileHeader.isDirectory) {
+                        val directoryPath = File(finalDestinationDir, fileHeader.fileName).path
+                        val lastModified = if (fileHeader.lastModifiedTime > 0) fileHeader.lastModifiedTimeEpoch else System.currentTimeMillis()
+                        directories.add(DirectoryInfo(directoryPath, lastModified))
+                    }
+                }
+                zipFile.extractAll(finalDestinationDir.absolutePath)
+
+                progressMonitor = zipFile.progressMonitor
+                var lastProgress = -1
+                while (!progressMonitor!!.state.equals(ProgressMonitor.State.READY)) {
+                    if (progressMonitor!!.state.equals(ProgressMonitor.State.BUSY)) {
+                        val percentDone = (progressMonitor!!.percentDone)
+                        if (percentDone > lastProgress) {
+                            lastProgress = percentDone
+                            updateProgress(percentDone)
+                        }
+                    }
+                    Thread.sleep(100)
+                }
             }
 
             if (progressMonitor!!.result == ProgressMonitor.Result.CANCELLED) {
