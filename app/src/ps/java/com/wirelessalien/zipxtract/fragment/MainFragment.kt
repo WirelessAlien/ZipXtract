@@ -563,6 +563,10 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             }
             binding.chipGroupPath.addView(chip)
         }
+
+        binding.horizontalScrollView.post {
+            binding.horizontalScrollView.fullScroll(View.FOCUS_RIGHT)
+        }
     }
 
     private fun showStorageSelectionBottomSheet() {

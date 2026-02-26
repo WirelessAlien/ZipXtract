@@ -229,6 +229,10 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
             }
             binding.chipGroupPath.addView(chip)
         }
+
+        binding.horizontalScrollView.post {
+            binding.horizontalScrollView.fullScroll(View.FOCUS_RIGHT)
+        }
     }
 
     private fun loadArchiveItems(path: String) {
