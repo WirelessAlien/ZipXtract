@@ -30,7 +30,7 @@
 
 <blockquote>
 <p><strong>注意：</strong><br />
-由于许可限制，F-Droid 版本不包含 RAR 提取和 7z 压缩功能。如需完整版本，请使用 GitHub 或 IzzyOnDroid 的发布版本。</p>
+由于相关限制，F-Droid 版本不包含 RAR 提取和 7z 压缩功能。如需使用完整版本，请使用 GitHub 或 IzzyOnDroid 的发布版本。</p>
 </blockquote>
 
 <h2>使用提示</h2>
@@ -51,8 +51,8 @@
 </a>
 </p>
 
-<h2>许可</h2>
+<h2>开放源代码许可</h2>
 <p>本项目采用 GNU General Public License v3.0。详情请参阅 <a href="https://github.com/WirelessAlien/ZipXtract/blob/master/LICENSE">LICENSE</a> 文件。</p>
 
-<h2>联系</h2>
+<h2>联系我们</h2>
 <p>如有任何疑问或反馈，请在 <a href="https://github.com/WirelessAlien/ZipXtract/issues">GitHub 仓库</a>提交问题。</p>
