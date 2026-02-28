@@ -118,7 +118,7 @@
     <string name="file_already_exists">文件已存在</string>
     <string name="invalid_value">无效输入</string>
     <string name="please_enter_value_between_0_and_22">输入数值需要在 0 至 22 之间</string>
-    <string name="archiving_started_in_background">压缩会在后台继续运行</string>
+    <string name="archiving_started_in_background">压缩在后台启动</string>
     <string name="no_compression">无压缩</string>
     <string name="remove">删除</string>
     <string name="preview_archive">预览压缩文件</string>
