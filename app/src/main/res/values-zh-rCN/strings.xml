@@ -16,7 +16,7 @@
     <string name="zip_creation_failed">创建 zip 压缩文件出错</string>
     <string name="extract">解压</string>
     <string name="donate">捐赠</string>
-    <string name="open_folder">打开目录</string>
+    <string name="open_folder">打开文件夹</string>
     <string name="extraction_success">文件解压成功</string>
     <string name="share">分享应用链接</string>
     <string name="enter_password">输入密码</string>
@@ -126,7 +126,7 @@
     <string name="directory_selection_disabled">不能选择文件夹，请选择其中的文件。</string>
     <string name="select_file">选择文件…</string>
     <string name="select_files">添加 (%d)</string>
-    <string name="donate_desc">如果觉得 ZipXtract 有用，请考虑支持其开发：</string>
+    <string name="donate_desc">如果您觉得 ZipXtract 有用，请考虑支持一下开发者：</string>
     <string name="error_too_many_parts">这将产生 %1$d 个分卷</string>
     <string name="select_archive_type_title">选择压缩类型</string>
     <string name="add_folder_confirmation_title">添加当前文件夹？</string>
@@ -150,7 +150,7 @@
     <string name="refreshed">已刷新</string>
     <string name="storage_info_format">可用空间：%1$s / 总计：%2$s</string>
     <string name="low_storage_warning">警告：存储空间不足！可用空间：%1$s</string>
-    <string name="low_storage_warning_dynamic">存储空间不足！可用空间为 %1$s，请至少释放约 %2$s。根据压缩文件格式，可能需要更多空间。</string>
+    <string name="low_storage_warning_dynamic">存储空间不足！可用空间为 %1$s，请至少释放约 %2$s。根据压缩文件格式不同，可能需要更多空间。</string>
     <string name="please_wait">请稍候…</string>
     <string name="compare">比较</string>
     <string name="file_does_not_exist">文件不存在</string>
