@@ -120,7 +120,7 @@
     <string name="please_enter_value_between_0_and_22">0 ile 22 arasında bir değer girin</string>
     <string name="archiving_started_in_background">Arşivlemeye arka planda başladı</string>
     <string name="no_compression">Sıkıştırma Yok</string>
-    <string name="remove">Kaldır</string>
+    <string name="remove">Kaldırın</string>
     <string name="preview_archive">Arşiv Dosyasını Önizle</string>
     <string name="add">Ekle</string>
     <string name="directory_selection_disabled">Klasör seçilemiyor, içindeki dosyaları seçin.</string>
