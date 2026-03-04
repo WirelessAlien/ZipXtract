@@ -6,6 +6,7 @@
 <li>BZ2</li>
  <li>GZ</li> 
 <li>7z (şifre koruması ve çok ciltli destek ile)</li> <li>XZ</li> 
+<li>XZ</li>
 <li>JAR</li>
  <li>...</li> 
 </ul> 
@@ -22,7 +23,6 @@
  </ul>
 
 <h3>Oluşturma:</h3> 
-
 <ul> 
 <li>Şifreleme seçenekleriyle ZIP ve 7z arşivleri oluşturur.</li> 
 <li>Bölünmüş ZIP arşivleri oluşturur.</li> 
@@ -46,7 +46,11 @@ F-Droid sürümünde lisans kısıtlamaları nedeniyle RAR çıkarma ve 7z sık�
 <p>Depolama Okuma/Yazma İzni (Android 10 ve öncesi) ve Harici Depolamayı Yönetme İzni (Android 11 ve sonrası) gerektirir. Uygulamanın internet izni yoktur. Daha fazla bilgi için: <a href="https://sites.google.com/view/privacy-policy-zipxtract/home">Gizlilik politikası</a></p> 
 
 <h2>Çeviri</h2> 
-<p> Uygulamayı yerelleştirmeye yardımcı olmak için&nbsp;<a href="https://hosted.weblate.org/engage/zipxtract/">Weblate</a>'e katılın. </p> 
+<p>
+Uygulamayı yerelleştirmeye yardımcı olmak için&nbsp;<a 
+href="https://hosted.weblate.org/engage/zipxtract/">Weblate
+</a>'e katılın. 
+</p> 
 
 <h2>Lisans</h2> 
 <p>Bu proje GNU Genel Kamu Lisansı v3.0 ile lisanslanmıştır. Detaylar için <a href="https://github.com/WirelessAlien/ZipXtract/blob/master/LICENSE">LİSANS</a> dosyasına bakın.</p> 
