@@ -154,7 +154,7 @@
     <string name="no_match">Pas de correspondance</string>
     <string name="refreshed">Actualisé</string>
     <string name="storage_info_format">Disponible : %1$s / Total : %2$s</string>
-    <string name="low_storage_warning">Attention: espace de rangement bas! Disponible: %1$s</string>
+    <string name="low_storage_warning">Attention : espace de rangement bas ! Disponible : %1$s</string>
     <string name="low_storage_warning_dynamic">Faible stockage ! %1$s disponible, Libérez au moins ~%2$s. Un espace supplémentaire peut être nécessaire en fonction du format d\'archive.</string>
     <string name="please_wait">Patientez s\'il vous plaît…</string>
     <string name="compare">Comparer</string>
