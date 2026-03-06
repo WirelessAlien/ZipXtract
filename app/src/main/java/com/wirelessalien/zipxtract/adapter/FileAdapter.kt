@@ -108,9 +108,8 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
             selectedItems.put(position, true)
         }
 
-        for (file in directory.listFiles() ?: emptyArray()) {
-            val index = filteredFiles.indexOfFirst { it.file == file }
-            if (index != -1) {
+        for ((index, item) in filteredFiles.withIndex()) {
+            if (item.file.parentFile == directory) {
                 toggleSelection(index)
             }
         }
