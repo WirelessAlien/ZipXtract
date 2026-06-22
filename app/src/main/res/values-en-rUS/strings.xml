@@ -2,4 +2,31 @@
 <resources>
     <string name="folder">Folder</string>
     <string name="share">Share App Link</string>
+    <string name="share_file">Share</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="source_code">Source Code</string>
+    <string name="license">License</string>
+    <string name="report_an_issue">Report an Issue</string>
+    <string name="about">About</string>
+    <string name="grant_access">Grant Access</string>
+    <string name="storage_access_permission_text">This app requires access to your device storage for proper functionality. Please grant the necessary permissions.</string>
+    <string name="storage_access_title">Storage Access Needed</string>
+    <string name="storage_access_description">ZipXtract requires permission to access your device\'s storage to find, extract, and organize your files effectively.</string>
+    <string name="storage_safety_text">Your files are safe. This app has no internet permission, so data cannot be uploaded to external servers.</string>
+    <string name="sd_card">SD Card</string>
+    <string name="root_access">Root access</string>
+    <string name="root_access_summary">Enable root directory access</string>
+    <string name="internal_storage">Internal Storage</string>
+    <string name="root">Root</string>
+    <string name="directory_empty">Folder is empty</string>
+    <string name="paste">Paste</string>
+    <string name="storage">Storage</string>
+    <string name="invalid_value">Invalid input</string>
+    <string name="please_enter_value_between_0_and_22">Enter a value between 0 and 22</string>
+    <string name="archiving_started_in_background">Archiving started in background</string>
+    <string name="no_compression">No Compression</string>
+    <string name="remove">Remove</string>
+    <string name="preview_archive">Preview Archive</string>
+    <string name="add">Add</string>
+    <string name="directory_selection_disabled">Folder cannot be selected, select the files inside it.</string>
 </resources>
