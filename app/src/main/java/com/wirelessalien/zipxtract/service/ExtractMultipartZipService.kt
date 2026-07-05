@@ -224,9 +224,13 @@ class ExtractMultipartZipService : Service() {
 
             fileHeaders.forEach { header ->
                 if (header.isDirectory) {
-                    val directoryPath = File(extractDir, header.fileName).path
-                    val lastModified = if (header.lastModifiedTime > 0) header.lastModifiedTimeEpoch else System.currentTimeMillis()
-                    directories.add(DirectoryInfo(directoryPath, lastModified))
+                    val destFile = File(extractDir, header.fileName)
+                    val destDirPath = extractDir.canonicalPath + if (extractDir.canonicalPath.endsWith(File.separator)) "" else File.separator
+                    if (destFile.canonicalPath.startsWith(destDirPath)) {
+                        val directoryPath = destFile.path
+                        val lastModified = if (header.lastModifiedTime > 0) header.lastModifiedTimeEpoch else System.currentTimeMillis()
+                        directories.add(DirectoryInfo(directoryPath, lastModified))
+                    }
                 }
             }
 

@@ -251,6 +251,12 @@ class ExtractCsArchiveService : Service() {
                         return
                     }
                     val outputFile = File(destinationDir, entry.name)
+                    val canonicalDirPath = destinationDir.canonicalPath
+                    val canonicalFilePath = outputFile.canonicalPath
+                    if (!canonicalFilePath.startsWith(canonicalDirPath + File.separator) && canonicalFilePath != canonicalDirPath) {
+                        throw IOException("Zip Slip detected: ${entry.name}")
+                    }
+
                     if (entry.isDirectory) {
                         outputFile.mkdirs()
                         val lastModified = if (entry.lastModifiedDate.time > 0) entry.lastModifiedDate.time else System.currentTimeMillis()

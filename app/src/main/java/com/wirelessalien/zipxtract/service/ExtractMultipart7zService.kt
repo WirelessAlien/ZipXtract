@@ -341,6 +341,12 @@ class ExtractMultipart7zService : Service() {
             val isDir: Boolean = inArchive.getProperty(p0, PropID.IS_FOLDER) as Boolean
             this.currentUnpackedFile = File(dstDir, path) // Store current unpacked file
 
+            val destDirCanonical = dstDir.canonicalPath
+            val fileCanonical = this.currentUnpackedFile!!.canonicalPath
+            if (!fileCanonical.startsWith(destDirCanonical + File.separator) && fileCanonical != destDirCanonical) {
+                throw SevenZipException("Zip Slip detected: $path")
+            }
+
             if (isDir) {
                 this.currentUnpackedFile!!.mkdirs()
                 val modTime = (inArchive.getProperty(p0, PropID.LAST_MODIFICATION_TIME) as? Date)?.time

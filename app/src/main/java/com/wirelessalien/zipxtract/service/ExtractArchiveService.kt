@@ -456,7 +456,7 @@ class ExtractArchiveService : Service() {
                         while (entry != 0L) {
                             val entryPath = getEntryPath(entry)
                             val outputFile = File(destinationDir, entryPath)
-                            if (!outputFile.canonicalPath.startsWith(destinationDir.canonicalPath)) {
+                            if (!outputFile.canonicalPath.startsWith(destinationDir.canonicalPath + File.separator) && outputFile.canonicalPath != destinationDir.canonicalPath) {
                                 throw IOException("Zip Slip detected: $entryPath")
                             }
 
@@ -533,7 +533,7 @@ class ExtractArchiveService : Service() {
                             continue
                         }
                         val outputFile = File(destinationDir, entry.name)
-                        if (!outputFile.canonicalPath.startsWith(destinationDir.canonicalPath)) {
+                        if (!outputFile.canonicalPath.startsWith(destinationDir.canonicalPath + File.separator) && outputFile.canonicalPath != destinationDir.canonicalPath) {
                             throw IOException("Zip Slip detected: ${entry.name}")
                         }
 
@@ -640,6 +640,13 @@ class ExtractArchiveService : Service() {
                 var entry: TarArchiveEntry? = tarInput.nextEntry
                 while (entry != null) {
                     val outputFile = File(destinationDir, entry.name)
+                    
+                    val canonicalDstPath = destinationDir.canonicalPath
+                    val safeDstPath = if (canonicalDstPath.endsWith(File.separator)) canonicalDstPath else canonicalDstPath + File.separator
+                    if (!outputFile.canonicalPath.startsWith(safeDstPath)) {
+                        throw IOException("Zip Slip detected: ${entry.name}")
+                    }
+
                     if (entry.isDirectory) {
                         outputFile.mkdirs()
                         val lastModified = if (entry.modTime.time > 0) entry.modTime.time else System.currentTimeMillis()
@@ -768,9 +775,13 @@ class ExtractArchiveService : Service() {
             } else {
                 for (fileHeader in zipFile.fileHeaders) {
                     if (fileHeader.isDirectory) {
-                        val directoryPath = File(finalDestinationDir, fileHeader.fileName).path
-                        val lastModified = if (fileHeader.lastModifiedTime > 0) fileHeader.lastModifiedTimeEpoch else System.currentTimeMillis()
-                        directories.add(DirectoryInfo(directoryPath, lastModified))
+                        val destFile = File(finalDestinationDir, fileHeader.fileName)
+                        val destDirPath = finalDestinationDir.canonicalPath + if (finalDestinationDir.canonicalPath.endsWith(File.separator)) "" else File.separator
+                        if (destFile.canonicalPath.startsWith(destDirPath)) {
+                            val directoryPath = destFile.path
+                            val lastModified = if (fileHeader.lastModifiedTime > 0) fileHeader.lastModifiedTimeEpoch else System.currentTimeMillis()
+                            directories.add(DirectoryInfo(directoryPath, lastModified))
+                        }
                     }
                 }
                 zipFile.extractAll(finalDestinationDir.absolutePath)
@@ -914,6 +925,12 @@ class ExtractArchiveService : Service() {
             val path: String = inArchive.getStringProperty(p0, PropID.PATH)
             val isDir: Boolean = inArchive.getProperty(p0, PropID.IS_FOLDER) as Boolean
             this.currentUnpackedFile = File(dstDir.path, path) // Store current unpacked file
+
+            val destDirCanonical = dstDir.canonicalPath
+            val fileCanonical = this.currentUnpackedFile!!.canonicalPath
+            if (!fileCanonical.startsWith(destDirCanonical + File.separator) && fileCanonical != destDirCanonical) {
+                throw SevenZipException("Zip Slip detected: $path")
+            }
 
             if (isDir) {
                 this.currentUnpackedFile!!.mkdirs()
