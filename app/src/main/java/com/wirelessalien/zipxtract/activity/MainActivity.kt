@@ -136,7 +136,11 @@ class MainActivity : AppCompatActivity() {
                     val fragment = supportFragmentManager.findFragmentById(R.id.container)
                     if (fragment is Searchable && !fragment.getCurrentSearchQuery().isNullOrEmpty()) {
                         fragment.onSearch("")
+                        isSearchSubmitted = false
                         isEnabled = false
+                    } else {
+                        isEnabled = false
+                        onBackPressedDispatcher.onBackPressed()
                     }
                 }
             }
@@ -150,6 +154,7 @@ class MainActivity : AppCompatActivity() {
             } else if (newState === SearchView.TransitionState.HIDING) {
                 if (isSearchSubmitted) {
                     callback.isEnabled = true
+                    isSearchSubmitted = false
                 } else {
                     callback.isEnabled = false
                     val fragment = supportFragmentManager.findFragmentById(R.id.container)
@@ -384,6 +389,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun navigateToFile(fileItem: FileItem) {
+        isSearchSubmitted = false
         binding.searchView.hide()
         val parentPath = fileItem.file.parent ?: return
 
@@ -412,7 +418,6 @@ class MainActivity : AppCompatActivity() {
             if (fragment is Searchable) {
                 fragment.onSearch(query, currentFilterType)
             }
-            isSearchSubmitted = false
         }
     }
 

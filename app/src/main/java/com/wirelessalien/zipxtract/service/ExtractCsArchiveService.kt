@@ -263,7 +263,7 @@ class ExtractCsArchiveService : Service() {
                         directories.add(DirectoryInfo(outputFile.path, lastModified))
                     } else {
                         outputFile.parentFile?.mkdirs()
-                        FileOutputStream(outputFile).use { output ->
+                        BufferedOutputStream(FileOutputStream(outputFile)).use { output ->
                             var n: Int
                             while (tarInput.read(buffer).also { n = it } != -1) {
                                 if (extractionJob?.isActive == false) {

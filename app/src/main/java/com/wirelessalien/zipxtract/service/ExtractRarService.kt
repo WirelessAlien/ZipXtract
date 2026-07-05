@@ -396,7 +396,7 @@ class ExtractRarService : Service() {
                         parentDir.mkdirs()
                     }
                     this.currentUnpackedFile!!.createNewFile()
-                    uos = FileOutputStream(this.currentUnpackedFile!!)
+                    uos = BufferedOutputStream(FileOutputStream(this.currentUnpackedFile!!))
                 } catch (e: IOException) {
                     e.printStackTrace()
                 }

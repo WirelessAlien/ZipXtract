@@ -379,6 +379,8 @@ class ExtractArchiveService : Service() {
                         Archive.readSupportFormatAll(archive)
 
                         val buffer = ByteBuffer.allocateDirect(65536)
+                        val readBuffer = ByteBuffer.allocateDirect(65536)
+                        val writeBuffer = ByteArray(65536)
 
                         Archive.readSetCallbackData(archive, fileDescriptor)
                         Archive.readSetReadCallback(
@@ -474,8 +476,6 @@ class ExtractArchiveService : Service() {
                                 directories.add(DirectoryInfo(outputFile.path, lastModifiedTime))
                             } else {
                                 BufferedOutputStream(outputFile.outputStream()).use { outputStream ->
-                                    val readBuffer = ByteBuffer.allocateDirect(65536)
-
                                     while (true) {
                                         readBuffer.clear()
                                         Archive.readData(archive, readBuffer)
@@ -484,9 +484,8 @@ class ExtractArchiveService : Service() {
                                         if (bytesRead <= 0) break
 
                                         readBuffer.flip()
-                                        val bytes = ByteArray(bytesRead)
-                                        readBuffer.get(bytes)
-                                        outputStream.write(bytes)
+                                        readBuffer.get(writeBuffer, 0, bytesRead)
+                                        outputStream.write(writeBuffer, 0, bytesRead)
                                     }
                                 }
                                 outputFile.setLastModified(lastModifiedTime)
@@ -527,6 +526,7 @@ class ExtractArchiveService : Service() {
                 val ais: ArchiveInputStream<out org.apache.commons.compress.archivers.ArchiveEntry> = ArchiveStreamFactory().createArchiveInputStream(bis)
                 ais.use { input ->
                     val directories = mutableListOf<DirectoryInfo>()
+                    val buffer = ByteArray(65536)
                     var entry = input.nextEntry
                     while (entry != null) {
                         if (!input.canReadEntryData(entry)) {
@@ -544,8 +544,7 @@ class ExtractArchiveService : Service() {
                             directories.add(DirectoryInfo(outputFile.path, lastModified))
                         } else {
                             outputFile.parentFile?.mkdirs()
-                            FileOutputStream(outputFile).use { output ->
-                                val buffer = ByteArray(65536)
+                            BufferedOutputStream(FileOutputStream(outputFile)).use { output ->
                                 var n: Int
                                 while (input.read(buffer).also { n = it } != -1) {
                                     if (extractionJob?.isActive == false) {
@@ -654,7 +653,7 @@ class ExtractArchiveService : Service() {
                         directories.add(DirectoryInfo(outputFile.path, lastModified))
                     } else {
                         outputFile.parentFile?.mkdirs()
-                        FileOutputStream(outputFile).use { output ->
+                        BufferedOutputStream(FileOutputStream(outputFile)).use { output ->
                             var n: Int
                             while (tarInput.read(buffer).also { n = it } != -1) {
                                 if (extractionJob?.isActive == false) {
@@ -945,7 +944,7 @@ class ExtractArchiveService : Service() {
                         dir.mkdirs()
                     }
                     this.currentUnpackedFile!!.createNewFile()
-                    uos = FileOutputStream(this.currentUnpackedFile!!)
+                    uos = BufferedOutputStream(FileOutputStream(this.currentUnpackedFile!!))
                 } catch (e: IOException) {
                     e.printStackTrace()
                 }
