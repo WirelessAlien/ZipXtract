@@ -182,7 +182,7 @@
     <string name="available_storage_format">%1$s доступно</string>
     <string name="total_storage_format">Всего: %1$s</string>
     <string name="select_storage">Выбрать хранилище</string>
-    <string name="show_hidden_files">\"Показать скрытые файлы</string>
+    <string name="show_hidden_files">Показать скрытые файлы</string>
     <string name="show_hidden_files_summary">Показать файлы, начинающиеся с точки</string>
     <string name="rename_t">Переименовать</string>
     <plurals name="folder_items">

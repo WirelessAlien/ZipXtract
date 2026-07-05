@@ -311,8 +311,8 @@ class ExtractArchiveService : Service() {
                     val indices = mutableListOf<Int>()
                     val count = inArchive.numberOfItems
                     for (i in 0 until count) {
-                        val path = inArchive.getStringProperty(i, PropID.PATH).replace("\\", "/")
-                        if (itemsSet.contains(path)) {
+                        val path = inArchive.getStringProperty(i, PropID.PATH)?.replace("\\", "/")
+                        if (path != null && itemsSet.contains(path)) {
                             indices.add(i)
                         }
                     }

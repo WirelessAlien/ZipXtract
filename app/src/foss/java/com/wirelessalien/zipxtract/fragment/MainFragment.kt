@@ -53,6 +53,7 @@ import android.view.ViewGroup
 import android.webkit.MimeTypeMap
 import android.widget.TextView
 import android.widget.Toast
+import androidx.lifecycle.flowWithLifecycle
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -327,8 +328,10 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         extractProgressDialog()
         archiveProgressDialog()
 
-        viewLifecycleOwner.lifecycleScope.launch {
-            EventBus.events.collect { event ->
+        viewLifecycleOwner.lifecycleScope.launch {  
+            EventBus.events  
+                .flowWithLifecycle(viewLifecycleOwner.lifecycle, androidx.lifecycle.Lifecycle.State.STARTED)  
+                .collect { event ->
                 if (!isAdded) return@collect
                 when (event) {
                     is AppEvent.ExtractionComplete -> {

@@ -422,7 +422,7 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
                 File(android.os.Environment.getExternalStorageDirectory(), extractPath).absolutePath
             }
         } else {
-            File(archivePath ?: android.os.Environment.getExternalStorageDirectory().absolutePath).parent ?: android.os.Environment.getExternalStorageDirectory().absolutePath
+            archivePath?.let { File(it).parent } ?: android.os.Environment.getExternalStorageDirectory().absolutePath
         }
 
         binding.outputPathInput.setText(defaultPath)
