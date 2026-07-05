@@ -135,7 +135,7 @@ class MainActivity : AppCompatActivity() {
                 } else {
                     val fragment = supportFragmentManager.findFragmentById(R.id.container)
                     if (fragment is Searchable && !fragment.getCurrentSearchQuery().isNullOrEmpty()) {
-                        fragment.onSearch("")
+                        fragment.onSearch("", isExitingSearch = true)
                         isEnabled = false
                     } else if (supportFragmentManager.backStackEntryCount > 0) {
                         supportFragmentManager.popBackStack()
@@ -159,7 +159,7 @@ class MainActivity : AppCompatActivity() {
                     callback.isEnabled = supportFragmentManager.backStackEntryCount > 0
                     val fragment = supportFragmentManager.findFragmentById(R.id.container)
                     if (fragment is Searchable) {
-                        fragment.onSearch("")
+                        fragment.onSearch("", isExitingSearch = true)
                     }
                 }
             }

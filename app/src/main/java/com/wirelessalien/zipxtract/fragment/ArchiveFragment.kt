@@ -136,8 +136,8 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
     private lateinit var sharedPreferences: SharedPreferences
     private var currentQuery: String? = null
 
-    override fun onSearch(query: String, filterType: String?) {
-        searchFiles(query, filterType)
+    override fun onSearch(query: String, filterType: String?, isExitingSearch: Boolean) {
+        searchFiles(query, filterType, isExitingSearch)
     }
 
     override fun getCurrentSearchQuery(): String? {
@@ -266,9 +266,15 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
         }
     }
 
-    private fun searchFiles(query: String?, filterType: String? = null) {
+    private fun searchFiles(query: String?, filterType: String? = null, isExitingSearch: Boolean = false) {
         isSearchActive = !query.isNullOrEmpty()
         currentQuery = query
+
+        if (query.isNullOrEmpty()) {
+            isSearchActive = false
+            updateAdapterWithFullList()
+            return
+        }
 
         binding.shimmerViewContainer.startShimmer()
         binding.shimmerViewContainer.visibility = View.VISIBLE

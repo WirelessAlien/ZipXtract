@@ -18,6 +18,6 @@
 package com.wirelessalien.zipxtract.helper
 
 interface Searchable {
-    fun onSearch(query: String, filterType: String? = null)
+    fun onSearch(query: String, filterType: String? = null, isExitingSearch: Boolean = false)
     fun getCurrentSearchQuery(): String?
 }

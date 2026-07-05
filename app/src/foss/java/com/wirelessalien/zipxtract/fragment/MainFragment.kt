@@ -184,8 +184,8 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
     private var isLowStorage: Boolean = false
 
-    override fun onSearch(query: String, filterType: String?) {
-        searchFiles(query, filterType)
+    override fun onSearch(query: String, filterType: String?, isExitingSearch: Boolean) {
+        searchFiles(query, filterType, isExitingSearch)
     }
 
     override fun getCurrentSearchQuery(): String? {
@@ -2237,13 +2237,16 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         }
     }
 
-    private fun searchFiles(query: String?, filterType: String? = null) {
+    private fun searchFiles(query: String?, filterType: String? = null, isExitingSearch: Boolean = false) {
+        searchJob?.cancel()
+        fileLoadingJob?.cancel()
         val wasSearchActive = isSearchActive
         isSearchActive = !query.isNullOrEmpty()
         currentQuery = query
 
         if (query.isNullOrEmpty()) {
-            if (wasSearchActive) {
+            if (wasSearchActive && isExitingSearch) {
+                stopFileObserver()
                 val sdCardPath = StorageHelper.getSdCardPath(requireContext())
                 val basePath = Environment.getExternalStorageDirectory().absolutePath
                 currentPath = if (sdCardPath != null && currentPath?.startsWith(sdCardPath) == true) {
@@ -2253,12 +2256,14 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 }
                 updateCurrentPathChip()
                 updateStorageInfo(currentPath!!)
+                startFileObserver()
+                currentQuery = null // Reset query to null when exiting search to avoid filtering
             }
+            isSearchActive = false // Ensure it's false before calling updateAdapterWithFullList
             updateAdapterWithFullList()
             return
         }
 
-        fileLoadingJob?.cancel()
         binding.shimmerViewContainer.startShimmer()
         binding.shimmerViewContainer.visibility = View.VISIBLE
         binding.recyclerView.visibility = View.GONE
