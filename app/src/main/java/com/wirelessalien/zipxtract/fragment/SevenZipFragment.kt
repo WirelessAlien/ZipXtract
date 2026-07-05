@@ -478,7 +478,8 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
     }
 
     private fun startExtractionService(item: ArchiveItem, password: String?, destinationPath: String) {
-        val jobId = fileOperationsDao.addFilesForJob(listOf(archivePath!!))
+        val path = archivePath ?: return
+        val jobId = fileOperationsDao.addFilesForJob(listOf(path))
         val itemsToExtract = ArrayList<String>()
         itemsToExtract.add(item.path)
         

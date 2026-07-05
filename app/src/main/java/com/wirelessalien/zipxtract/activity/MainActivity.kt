@@ -261,7 +261,7 @@ class MainActivity : AppCompatActivity() {
             chipGroup.setOnCheckedStateChangeListener { group, checkedIds ->
                 if (checkedIds.isNotEmpty()) {
                     val checkedChip = group.findViewById<Chip>(checkedIds[0])
-                    val type = checkedChip.text.toString()
+                    val type = checkedChip?.text?.toString() ?: "All"
                     currentFilterType = if (type == "All") null else type
                     val query = binding.searchView.text.toString()
                     if (query.isNotEmpty()) {

@@ -70,7 +70,7 @@ import java.util.Date
 
 class ExtractRarService : Service() {
 
-    private val serviceScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     private lateinit var fileOperationsDao: FileOperationsDao
 

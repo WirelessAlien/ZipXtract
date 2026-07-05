@@ -69,7 +69,7 @@ class Archive7zService : Service() {
         const val NOTIFICATION_ID = 13
     }
 
-    private val serviceScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private var archiveJob: Job? = null
 
     private val cancelReceiver = object : BroadcastReceiver() {

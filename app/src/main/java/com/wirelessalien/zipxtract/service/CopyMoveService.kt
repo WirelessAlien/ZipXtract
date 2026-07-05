@@ -40,7 +40,7 @@ import java.io.File
 
 class CopyMoveService : Service() {
 
-    private val serviceScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     private lateinit var fileOperationsDao: FileOperationsDao
 
