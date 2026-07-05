@@ -65,6 +65,7 @@ import net.sf.sevenzipjbinding.SevenZipException
 import net.sf.sevenzipjbinding.impl.VolumedArchiveInStream
 import java.io.File
 import java.io.FileOutputStream
+import java.io.BufferedOutputStream
 import java.io.IOException
 import java.io.OutputStream
 import java.util.Date
@@ -359,7 +360,7 @@ class ExtractMultipart7zService : Service() {
                         parentDir.mkdirs()
                     }
                     this.currentUnpackedFile!!.createNewFile()
-                    uos = FileOutputStream(this.currentUnpackedFile!!)
+                    uos = BufferedOutputStream(FileOutputStream(this.currentUnpackedFile!!))
                 } catch (e: IOException) {
                     e.printStackTrace()
                 }
