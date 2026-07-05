@@ -46,7 +46,9 @@ import com.wirelessalien.zipxtract.helper.FileOperationsDao
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.cancel
 import net.sf.sevenzipjbinding.IOutCreateCallback
 import net.sf.sevenzipjbinding.IOutItemTar
 import net.sf.sevenzipjbinding.ISequentialInStream
@@ -67,6 +69,8 @@ import java.io.RandomAccessFile
 import java.util.Date
 
 class ArchiveTarService : Service() {
+
+    private val serviceScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     private lateinit var fileOperationsDao: FileOperationsDao
 
@@ -107,7 +111,7 @@ class ArchiveTarService : Service() {
 
         startForeground(NOTIFICATION_ID, createNotification(0))
 
-        archiveJob = CoroutineScope(Dispatchers.IO).launch {
+        archiveJob = serviceScope.launch {
             val filesToArchive = fileOperationsDao.getFilesForJob(jobId)
             createTarFile(archiveName, filesToArchive, compressionFormat, compressionLevel, destinationPath)
             fileOperationsDao.deleteFilesForJob(jobId)
@@ -118,6 +122,7 @@ class ArchiveTarService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        serviceScope.cancel()
         archiveJob?.cancel()
         unregisterReceiver(cancelReceiver)
     }
@@ -154,7 +159,7 @@ class ArchiveTarService : Service() {
     }
 
     private fun sendErrorBroadcast(errorMessage: String) {
-        CoroutineScope(Dispatchers.IO).launch {
+        serviceScope.launch {
             EventBus.emit(AppEvent.ArchiveError(errorMessage))
         }
     }
@@ -164,7 +169,7 @@ class ArchiveTarService : Service() {
         if (filesToArchive.isEmpty()) {
             val errorMessage = getString(R.string.no_files_to_archive)
             showErrorNotification(errorMessage)
-            CoroutineScope(Dispatchers.IO).launch { EventBus.emit(AppEvent.ArchiveError(errorMessage)) }
+            serviceScope.launch { EventBus.emit(AppEvent.ArchiveError(errorMessage)) }
             stopForegroundService()
             return
         }
@@ -273,7 +278,7 @@ class ArchiveTarService : Service() {
                 stopForegroundService()
                 showCompletionNotification(finalTarFile)
                 scanForNewFile(finalTarFile)
-                CoroutineScope(Dispatchers.IO).launch { EventBus.emit(AppEvent.ArchiveComplete(finalTarFile.parent)) }
+                serviceScope.launch { EventBus.emit(AppEvent.ArchiveComplete(finalTarFile.parent)) }
 
             } catch (e: SevenZipException) {
                 if (e.message == "Cancelled") {
@@ -281,23 +286,23 @@ class ArchiveTarService : Service() {
                 } else {
                     e.printStackTrace()
                     showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-                    CoroutineScope(Dispatchers.IO).launch { EventBus.emit(AppEvent.ArchiveError(e.message)) }
+                    serviceScope.launch { EventBus.emit(AppEvent.ArchiveError(e.message)) }
                 }
             } catch (e: IOException) {
                 e.printStackTrace()
                 showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-                CoroutineScope(Dispatchers.IO).launch { EventBus.emit(AppEvent.ArchiveError(e.message)) }
+                serviceScope.launch { EventBus.emit(AppEvent.ArchiveError(e.message)) }
             } catch (e: OutOfMemoryError) {
                 e.printStackTrace()
                 showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-                CoroutineScope(Dispatchers.IO).launch { EventBus.emit(AppEvent.ArchiveError(e.message)) }
+                serviceScope.launch { EventBus.emit(AppEvent.ArchiveError(e.message)) }
             } finally {
                 tempTarFile?.delete()
             }
         } catch (e: Exception) {
             e.printStackTrace()
             showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-            CoroutineScope(Dispatchers.IO).launch { EventBus.emit(AppEvent.ArchiveError(e.message)) }
+            serviceScope.launch { EventBus.emit(AppEvent.ArchiveError(e.message)) }
             stopForegroundService()
         }
     }
@@ -350,7 +355,7 @@ class ArchiveTarService : Service() {
         val notificationManager = getSystemService(NotificationManager::class.java)
         notificationManager.notify(NOTIFICATION_ID, notification)
 
-        CoroutineScope(Dispatchers.IO).launch {
+        serviceScope.launch {
             EventBus.emit(AppEvent.ArchiveProgress(progress))
         }
     }

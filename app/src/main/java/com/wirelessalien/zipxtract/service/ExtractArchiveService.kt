@@ -50,7 +50,9 @@ import com.wirelessalien.zipxtract.model.DirectoryInfo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.cancel
 import me.zhanghai.android.libarchive.Archive
 import me.zhanghai.android.libarchive.ArchiveEntry
 import net.lingala.zip4j.ZipFile
@@ -87,6 +89,8 @@ import java.util.Date
 
 
 class ExtractArchiveService : Service() {
+
+    private val serviceScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     private lateinit var fileOperationsDao: FileOperationsDao
 
@@ -131,7 +135,7 @@ class ExtractArchiveService : Service() {
 
         startForeground(NOTIFICATION_ID, createNotification(0))
 
-        extractionJob = CoroutineScope(Dispatchers.IO).launch {
+        extractionJob = serviceScope.launch {
             val filesToExtract = fileOperationsDao.getFilesForJob(jobId)
             if (filesToExtract.isEmpty()) {
                 fileOperationsDao.deleteFilesForJob(jobId)
@@ -153,6 +157,7 @@ class ExtractArchiveService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        serviceScope.cancel()
         extractionJob?.cancel()
         unregisterReceiver(cancelReceiver)
     }
@@ -192,7 +197,7 @@ class ExtractArchiveService : Service() {
         if (filePath.isEmpty()) {
             val errorMessage = getString(R.string.no_files_to_archive)
             showErrorNotification(errorMessage)
-            CoroutineScope(Dispatchers.IO).launch { EventBus.emit(AppEvent.ExtractionError(errorMessage)) }
+            serviceScope.launch { EventBus.emit(AppEvent.ExtractionError(errorMessage)) }
             stopForegroundService()
             return
         }
@@ -276,7 +281,7 @@ class ExtractArchiveService : Service() {
             }
 
             showErrorNotification(getString(R.string.general_error_msg))
-            CoroutineScope(Dispatchers.IO).launch { EventBus.emit(AppEvent.ExtractionError(getString(R.string.general_error_msg))) }
+            serviceScope.launch { EventBus.emit(AppEvent.ExtractionError(getString(R.string.general_error_msg))) }
             if (useAppNameDir) {
                 filesDir.deleteRecursively()
             }
@@ -287,7 +292,7 @@ class ExtractArchiveService : Service() {
         } catch (e: Exception) {
             e.printStackTrace()
             showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-            CoroutineScope(Dispatchers.IO).launch { EventBus.emit(AppEvent.ExtractionError(e.message ?: getString(R.string.general_error_msg))) }
+            serviceScope.launch { EventBus.emit(AppEvent.ExtractionError(e.message ?: getString(R.string.general_error_msg))) }
         }
     }
 
@@ -323,7 +328,7 @@ class ExtractArchiveService : Service() {
                     FileUtils.setLastModifiedTime(extractCallback.directories)
                     scanForNewFiles(destinationDir)
                     showCompletionNotification(destinationDir)
-                    CoroutineScope(Dispatchers.IO).launch { EventBus.emit(AppEvent.ExtractionComplete(destinationDir.absolutePath)) }
+                    serviceScope.launch { EventBus.emit(AppEvent.ExtractionComplete(destinationDir.absolutePath)) }
                     return true
                 }
             } catch (e: SevenZipException) {
@@ -490,7 +495,7 @@ class ExtractArchiveService : Service() {
                         FileUtils.setLastModifiedTime(directories)
                         scanForNewFiles(destinationDir)
                         showCompletionNotification(destinationDir)
-                        CoroutineScope(Dispatchers.IO).launch {
+                        serviceScope.launch {
                             EventBus.emit(AppEvent.ExtractionComplete(destinationDir.absolutePath))
                         }
                         return true
@@ -557,7 +562,7 @@ class ExtractArchiveService : Service() {
                     FileUtils.setLastModifiedTime(directories)
                     scanForNewFiles(destinationDir)
                     showCompletionNotification(destinationDir)
-                    CoroutineScope(Dispatchers.IO).launch { EventBus.emit(AppEvent.ExtractionComplete(destinationDir.absolutePath)) }
+                    serviceScope.launch { EventBus.emit(AppEvent.ExtractionComplete(destinationDir.absolutePath)) }
                     return true
                 }
             }
@@ -667,7 +672,7 @@ class ExtractArchiveService : Service() {
             FileUtils.setLastModifiedTime(directories)
             scanForNewFiles(destinationDir)
             showCompletionNotification(destinationDir)
-            CoroutineScope(Dispatchers.IO).launch { EventBus.emit(AppEvent.ExtractionComplete(destinationDir.absolutePath)) }
+            serviceScope.launch { EventBus.emit(AppEvent.ExtractionComplete(destinationDir.absolutePath)) }
         } catch (e: IOException) {
             if (e.message == "Cancelled") {
                 // Cancelled
@@ -677,7 +682,7 @@ class ExtractArchiveService : Service() {
                 if (tryApacheCommonsCompress(file, destinationDir)) return
                 if (extractionJob?.isActive == false) return
                 showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-                CoroutineScope(Dispatchers.IO).launch { EventBus.emit(AppEvent.ExtractionError(e.message ?: getString(R.string.general_error_msg))) }
+                serviceScope.launch { EventBus.emit(AppEvent.ExtractionError(e.message ?: getString(R.string.general_error_msg))) }
             }
         }
     }
@@ -790,7 +795,7 @@ class ExtractArchiveService : Service() {
                 FileUtils.setLastModifiedTime(directories)
                 scanForNewFiles(finalDestinationDir)
                 showCompletionNotification(finalDestinationDir)
-                CoroutineScope(Dispatchers.IO).launch { EventBus.emit(AppEvent.ExtractionComplete(finalDestinationDir.absolutePath)) }
+                serviceScope.launch { EventBus.emit(AppEvent.ExtractionComplete(finalDestinationDir.absolutePath)) }
 
                 if (useAppNameDir) {
                     filesDir.deleteRecursively()
@@ -803,7 +808,7 @@ class ExtractArchiveService : Service() {
                     exception?.message ?: getString(R.string.general_error_msg)
                 }
                 showErrorNotification(errorMessage)
-                CoroutineScope(Dispatchers.IO).launch { EventBus.emit(AppEvent.ExtractionError(errorMessage)) }
+                serviceScope.launch { EventBus.emit(AppEvent.ExtractionError(errorMessage)) }
             }
 
         } catch (e: ZipException) {
@@ -820,7 +825,7 @@ class ExtractArchiveService : Service() {
                 else -> e.message ?: getString(R.string.general_error_msg)
             }
             showErrorNotification(errorMessage)
-            CoroutineScope(Dispatchers.IO).launch { EventBus.emit(AppEvent.ExtractionError(errorMessage)) }
+            serviceScope.launch { EventBus.emit(AppEvent.ExtractionError(errorMessage)) }
         }
     }
 
@@ -971,7 +976,7 @@ class ExtractArchiveService : Service() {
         notificationManager.notify(NOTIFICATION_ID, notification)
 
         // Broadcast progress for activity
-        CoroutineScope(Dispatchers.IO).launch {
+        serviceScope.launch {
             EventBus.emit(AppEvent.ExtractionProgress(progress))
         }
     }

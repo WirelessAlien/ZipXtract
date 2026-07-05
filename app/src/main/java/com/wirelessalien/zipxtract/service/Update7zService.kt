@@ -33,7 +33,9 @@ import com.wirelessalien.zipxtract.helper.FileOperationsDao
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.cancel
 import net.sf.sevenzipjbinding.IOutCreateCallback
 import net.sf.sevenzipjbinding.IOutItemAllFormats
 import net.sf.sevenzipjbinding.ISequentialInStream
@@ -47,6 +49,8 @@ import java.io.File
 import java.io.RandomAccessFile
 
 class Update7zService : Service() {
+
+    private val serviceScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     private lateinit var fileOperationsDao: FileOperationsDao
 
@@ -78,7 +82,7 @@ class Update7zService : Service() {
         notificationBuilder = createNotificationBuilder()
         startForeground(NOTIFICATION_ID, notificationBuilder.build())
 
-        updateJob = CoroutineScope(Dispatchers.IO).launch {
+        updateJob = serviceScope.launch {
             val itemsToAdd = itemsToAddJobId?.let { fileOperationsDao.getFilePairsForJob(it) }
             val itemsToRemovePaths = itemsToRemoveJobId?.let { fileOperationsDao.getFilesForJob(it) }
 
@@ -203,7 +207,7 @@ class Update7zService : Service() {
             success = true
         } catch (e: Exception) {
             e.printStackTrace()
-            CoroutineScope(Dispatchers.IO).launch { EventBus.emit(AppEvent.ArchiveError(e.message)) }
+            serviceScope.launch { EventBus.emit(AppEvent.ArchiveError(e.message)) }
         } finally {
             for (i in closeables.indices.reversed()) {
                 try {
@@ -217,10 +221,10 @@ class Update7zService : Service() {
 
         if (success) {
             showCompletionNotification(File(archivePath))
-            CoroutineScope(Dispatchers.IO).launch { EventBus.emit(AppEvent.ArchiveComplete(null)) }
+            serviceScope.launch { EventBus.emit(AppEvent.ArchiveComplete(null)) }
         } else {
             showErrorNotification(getString(R.string.error_updating_archive))
-            CoroutineScope(Dispatchers.IO).launch { EventBus.emit(AppEvent.ArchiveError(null)) }
+            serviceScope.launch { EventBus.emit(AppEvent.ArchiveError(null)) }
         }
         stopForegroundService()
     }
@@ -251,6 +255,7 @@ class Update7zService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        serviceScope.cancel()
         updateJob?.cancel()
     }
 
@@ -280,7 +285,7 @@ class Update7zService : Service() {
     }
 
     private fun sendProgressBroadcast(progress: Int) {
-        CoroutineScope(Dispatchers.IO).launch {
+        serviceScope.launch {
             EventBus.emit(AppEvent.ArchiveProgress(progress))
         }
     }

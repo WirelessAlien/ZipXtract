@@ -499,7 +499,7 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
         return when {
             bytes < kilobyte -> "$bytes B"
             bytes < megabyte -> String.format(java.util.Locale.US, "%.2f KB", bytes.toFloat() / kilobyte)
-            bytes < megabyte -> String.format(java.util.Locale.US, "%.2f MB", bytes.toFloat() / megabyte)
+            bytes < gigabyte -> String.format(java.util.Locale.US, "%.2f MB", bytes.toFloat() / megabyte)
             else -> String.format(java.util.Locale.US, "%.2f GB", bytes.toFloat() / gigabyte)
         }
     }

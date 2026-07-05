@@ -48,7 +48,9 @@ import com.wirelessalien.zipxtract.model.DirectoryInfo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.cancel
 import net.sf.sevenzipjbinding.ArchiveFormat
 import net.sf.sevenzipjbinding.ExtractAskMode
 import net.sf.sevenzipjbinding.ExtractOperationResult
@@ -67,6 +69,8 @@ import java.io.OutputStream
 import java.util.Date
 
 class ExtractRarService : Service() {
+
+    private val serviceScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     private lateinit var fileOperationsDao: FileOperationsDao
 
@@ -109,7 +113,7 @@ class ExtractRarService : Service() {
         }
         startForeground(NOTIFICATION_ID, createNotification(0))
 
-        extractionJob = CoroutineScope(Dispatchers.IO).launch {
+        extractionJob = serviceScope.launch {
             val filesToExtract = fileOperationsDao.getFileForJob(jobId)
             if (filesToExtract?.isEmpty() == true) {
                 fileOperationsDao.deleteFilesForJob(jobId)
@@ -163,6 +167,7 @@ class ExtractRarService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        serviceScope.cancel()
         extractionJob?.cancel()
         unregisterReceiver(cancelReceiver)
     }
@@ -203,7 +208,7 @@ class ExtractRarService : Service() {
         if (filePath.isEmpty()) {
             val errorMessage = getString(R.string.no_files_to_archive)
             showErrorNotification(errorMessage)
-            CoroutineScope(Dispatchers.IO).launch { EventBus.emit(AppEvent.ExtractionError(errorMessage)) }
+            serviceScope.launch { EventBus.emit(AppEvent.ExtractionError(errorMessage)) }
             stopForegroundService()
             return
         }
@@ -271,7 +276,7 @@ class ExtractRarService : Service() {
                         FileUtils.setLastModifiedTime(extractCallback.directories)
                         scanForNewFiles(destinationDir)
                         showCompletionNotification(destinationDir)
-                        CoroutineScope(Dispatchers.IO).launch { EventBus.emit(AppEvent.ExtractionComplete(destinationDir.path)) }
+                        serviceScope.launch { EventBus.emit(AppEvent.ExtractionComplete(destinationDir.path)) }
                     }
                 } catch (e: SevenZipException) {
                     if (e.message == "Cancelled") {
@@ -281,7 +286,7 @@ class ExtractRarService : Service() {
                     } else {
                         e.printStackTrace()
                         showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-                        CoroutineScope(Dispatchers.IO).launch { EventBus.emit(AppEvent.ExtractionError(e.message ?: getString(R.string.general_error_msg))) }
+                        serviceScope.launch { EventBus.emit(AppEvent.ExtractionError(e.message ?: getString(R.string.general_error_msg))) }
                     }
                 } finally {
                     inArchive.close()
@@ -294,7 +299,7 @@ class ExtractRarService : Service() {
         } catch (e: IOException) {
             e.printStackTrace()
             showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-            CoroutineScope(Dispatchers.IO).launch { EventBus.emit(AppEvent.ExtractionError(e.message ?: getString(R.string.general_error_msg))) }
+            serviceScope.launch { EventBus.emit(AppEvent.ExtractionError(e.message ?: getString(R.string.general_error_msg))) }
         }
     }
 
@@ -322,7 +327,7 @@ class ExtractRarService : Service() {
                     hasError = true
                     if (!errorBroadcasted) {
                         showErrorNotification(getString(R.string.wrong_password))
-                        CoroutineScope(Dispatchers.IO).launch { EventBus.emit(AppEvent.ExtractionError(getString(R.string.wrong_password))) }
+                        serviceScope.launch { EventBus.emit(AppEvent.ExtractionError(getString(R.string.wrong_password))) }
                         errorBroadcasted = true
                     }
                     throw SevenZipException("WrongPasswordDetected")
@@ -331,7 +336,7 @@ class ExtractRarService : Service() {
                     hasError = true
                     if (!errorBroadcasted) {
                         showErrorNotification(getString(R.string.general_error_msg))
-                        CoroutineScope(Dispatchers.IO).launch { EventBus.emit(AppEvent.ExtractionError(getString(R.string.general_error_msg))) }
+                        serviceScope.launch { EventBus.emit(AppEvent.ExtractionError(getString(R.string.general_error_msg))) }
                         errorBroadcasted = true
                     }
                 }
@@ -359,7 +364,7 @@ class ExtractRarService : Service() {
                     hasError = true
                     if (!errorBroadcasted) {
                         showErrorNotification(getString(R.string.general_error_msg))
-                        CoroutineScope(Dispatchers.IO).launch { EventBus.emit(AppEvent.ExtractionError(getString(R.string.general_error_msg))) }
+                        serviceScope.launch { EventBus.emit(AppEvent.ExtractionError(getString(R.string.general_error_msg))) }
                         errorBroadcasted = true
                     }
                 }
@@ -432,7 +437,7 @@ class ExtractRarService : Service() {
         val notificationManager = getSystemService(NotificationManager::class.java)
         notificationManager.notify(NOTIFICATION_ID, notification)
 
-        CoroutineScope(Dispatchers.IO).launch {
+        serviceScope.launch {
             EventBus.emit(AppEvent.ExtractionProgress(progress))
         }
     }

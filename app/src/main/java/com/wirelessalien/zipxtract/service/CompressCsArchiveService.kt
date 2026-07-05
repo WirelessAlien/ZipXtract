@@ -47,7 +47,9 @@ import com.wirelessalien.zipxtract.helper.FileOperationsDao
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.cancel
 import org.apache.commons.compress.compressors.CompressorException
 import org.apache.commons.compress.compressors.CompressorStreamFactory
 import java.io.BufferedInputStream
@@ -61,6 +63,8 @@ import java.io.OutputStream
 import java.nio.file.Files
 
 class CompressCsArchiveService : Service() {
+
+    private val serviceScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     private lateinit var fileOperationsDao: FileOperationsDao
 
@@ -102,7 +106,7 @@ class CompressCsArchiveService : Service() {
 
         startForeground(NOTIFICATION_ID, createNotification(0))
 
-        compressionJob = CoroutineScope(Dispatchers.IO).launch {
+        compressionJob = serviceScope.launch {
             val filesToCompress = fileOperationsDao.getFilesForJob(jobId)
             if (filesToCompress.isEmpty()) {
                 fileOperationsDao.deleteFilesForJob(jobId)
@@ -129,6 +133,7 @@ class CompressCsArchiveService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        serviceScope.cancel()
         compressionJob?.cancel()
         unregisterReceiver(cancelReceiver)
     }
@@ -169,7 +174,7 @@ class CompressCsArchiveService : Service() {
         if (filePath.isEmpty()) {
             val errorMessage = getString(R.string.no_files_to_archive)
             showErrorNotification(errorMessage)
-            CoroutineScope(Dispatchers.IO).launch { EventBus.emit(AppEvent.ArchiveError(errorMessage)) }
+            serviceScope.launch { EventBus.emit(AppEvent.ArchiveError(errorMessage)) }
             stopForegroundService()
             return
         }
@@ -257,20 +262,20 @@ class CompressCsArchiveService : Service() {
 
             showCompletionNotification(outputFile)
             scanForNewFile(outputFile)
-            CoroutineScope(Dispatchers.IO).launch { EventBus.emit(AppEvent.ArchiveComplete(outputFile.parent)) }
+            serviceScope.launch { EventBus.emit(AppEvent.ArchiveComplete(outputFile.parent)) }
 
         } catch (e: CompressorException) {
             e.printStackTrace()
             showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-            CoroutineScope(Dispatchers.IO).launch { EventBus.emit(AppEvent.ArchiveError(e.message ?: getString(R.string.general_error_msg))) }
+            serviceScope.launch { EventBus.emit(AppEvent.ArchiveError(e.message ?: getString(R.string.general_error_msg))) }
         } catch (e: IOException) {
             e.printStackTrace()
             showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-            CoroutineScope(Dispatchers.IO).launch { EventBus.emit(AppEvent.ArchiveError(e.message ?: getString(R.string.general_error_msg))) }
+            serviceScope.launch { EventBus.emit(AppEvent.ArchiveError(e.message ?: getString(R.string.general_error_msg))) }
         } catch (e: Exception) {
             e.printStackTrace()
             showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-            CoroutineScope(Dispatchers.IO).launch { EventBus.emit(AppEvent.ArchiveError(e.message ?: getString(R.string.general_error_msg))) }
+            serviceScope.launch { EventBus.emit(AppEvent.ArchiveError(e.message ?: getString(R.string.general_error_msg))) }
         } finally {
             stopForegroundService()
         }
@@ -285,7 +290,7 @@ class CompressCsArchiveService : Service() {
         if (inputFilePath.isEmpty()) {
             val errorMessage = getString(R.string.no_files_to_archive)
             showErrorNotification(errorMessage)
-            CoroutineScope(Dispatchers.IO).launch { EventBus.emit(AppEvent.ArchiveError(errorMessage)) }
+            serviceScope.launch { EventBus.emit(AppEvent.ArchiveError(errorMessage)) }
             stopForegroundService()
             return
         }
@@ -355,12 +360,12 @@ class CompressCsArchiveService : Service() {
 
             showCompletionNotification(outputFile)
             scanForNewFile(outputFile)
-            CoroutineScope(Dispatchers.IO).launch { EventBus.emit(AppEvent.ArchiveComplete(outputFile.parent)) }
+            serviceScope.launch { EventBus.emit(AppEvent.ArchiveComplete(outputFile.parent)) }
 
         } catch (e: Exception) {
             e.printStackTrace()
             showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-            CoroutineScope(Dispatchers.IO).launch { EventBus.emit(AppEvent.ArchiveError(e.message ?: getString(R.string.general_error_msg))) }
+            serviceScope.launch { EventBus.emit(AppEvent.ArchiveError(e.message ?: getString(R.string.general_error_msg))) }
         } finally {
             stopForegroundService()
         }
@@ -371,7 +376,7 @@ class CompressCsArchiveService : Service() {
         val notificationManager = getSystemService(NotificationManager::class.java)
         notificationManager.notify(NOTIFICATION_ID, notification)
 
-        CoroutineScope(Dispatchers.IO).launch {
+        serviceScope.launch {
             EventBus.emit(AppEvent.ArchiveProgress(progress))
         }
     }

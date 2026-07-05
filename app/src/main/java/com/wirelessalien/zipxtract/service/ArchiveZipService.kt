@@ -46,7 +46,9 @@ import com.wirelessalien.zipxtract.helper.FileUtils.getAllFiles
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.cancel
 import net.lingala.zip4j.ZipFile
 import net.lingala.zip4j.exception.ZipException
 import net.lingala.zip4j.model.ZipParameters
@@ -58,6 +60,8 @@ import net.lingala.zip4j.progress.ProgressMonitor
 import java.io.File
 
 class ArchiveZipService : Service() {
+
+    private val serviceScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     private lateinit var fileOperationsDao: FileOperationsDao
 
@@ -130,7 +134,7 @@ class ArchiveZipService : Service() {
 
         startForeground(NOTIFICATION_ID, createNotification(0))
 
-        archiveJob = CoroutineScope(Dispatchers.IO).launch {
+        archiveJob = serviceScope.launch {
             val filesToArchive = fileOperationsDao.getFilesForJob(jobId)
             createZipFile(archiveName, password, compressionMethod, compressionLevel, isEncrypted, encryptionMethod, aesStrength, filesToArchive, destinationPath)
             fileOperationsDao.deleteFilesForJob(jobId)
@@ -141,6 +145,7 @@ class ArchiveZipService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        serviceScope.cancel()
         archiveJob?.cancel()
         unregisterReceiver(cancelReceiver)
     }
@@ -177,7 +182,7 @@ class ArchiveZipService : Service() {
     }
 
     private fun sendErrorBroadcast(errorMessage: String) {
-        CoroutineScope(Dispatchers.IO).launch { EventBus.emit(AppEvent.ArchiveError(errorMessage)) }
+        serviceScope.launch { EventBus.emit(AppEvent.ArchiveError(errorMessage)) }
     }
 
     private fun createZipFile(
@@ -195,7 +200,7 @@ class ArchiveZipService : Service() {
         if (selectedFiles.isEmpty()) {
             val errorMessage = getString(R.string.no_files_to_archive)
             showErrorNotification(errorMessage)
-            CoroutineScope(Dispatchers.IO).launch { EventBus.emit(AppEvent.ArchiveError(errorMessage)) }
+            serviceScope.launch { EventBus.emit(AppEvent.ArchiveError(errorMessage)) }
             stopForegroundService()
             return
         }
@@ -273,24 +278,24 @@ class ArchiveZipService : Service() {
                 if (progressMonitor!!.result == ProgressMonitor.Result.SUCCESS) {
                     showCompletionNotification(outputFile)
                     scanForNewFile(outputFile)
-                    CoroutineScope(Dispatchers.IO).launch { EventBus.emit(AppEvent.ArchiveComplete(outputFile.parent)) }
+                    serviceScope.launch { EventBus.emit(AppEvent.ArchiveComplete(outputFile.parent)) }
                 } else if (progressMonitor!!.result == ProgressMonitor.Result.CANCELLED) {
                     // Do nothing, service stopped
                 } else {
                     showErrorNotification(progressMonitor!!.result.toString())
-                    CoroutineScope(Dispatchers.IO).launch { EventBus.emit(AppEvent.ArchiveError(progressMonitor!!.result.toString())) }
+                    serviceScope.launch { EventBus.emit(AppEvent.ArchiveError(progressMonitor!!.result.toString())) }
                 }
 
             } catch (e: ZipException) {
                 e.printStackTrace()
                 showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-                CoroutineScope(Dispatchers.IO).launch { EventBus.emit(AppEvent.ArchiveError(e.message)) }
+                serviceScope.launch { EventBus.emit(AppEvent.ArchiveError(e.message)) }
                 return
             }
         } catch (e: ZipException) {
             e.printStackTrace()
             showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-            CoroutineScope(Dispatchers.IO).launch { EventBus.emit(AppEvent.ArchiveError(e.message)) }
+            serviceScope.launch { EventBus.emit(AppEvent.ArchiveError(e.message)) }
         }
     }
 
@@ -299,7 +304,7 @@ class ArchiveZipService : Service() {
         val notificationManager = getSystemService(NotificationManager::class.java)
         notificationManager.notify(NOTIFICATION_ID, notification)
 
-        CoroutineScope(Dispatchers.IO).launch {
+        serviceScope.launch {
             EventBus.emit(AppEvent.ArchiveProgress(progress))
         }
     }

@@ -45,7 +45,9 @@ import com.wirelessalien.zipxtract.helper.FileOperationsDao
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.cancel
 import net.sf.sevenzipjbinding.ICryptoGetTextPassword
 import net.sf.sevenzipjbinding.IOutCreateCallback
 import net.sf.sevenzipjbinding.IOutItem7z
@@ -67,6 +69,7 @@ class Archive7zService : Service() {
         const val NOTIFICATION_ID = 13
     }
 
+    private val serviceScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
     private var archiveJob: Job? = null
 
     private val cancelReceiver = object : BroadcastReceiver() {
@@ -103,7 +106,7 @@ class Archive7zService : Service() {
 
         startForeground(NOTIFICATION_ID, createNotification(0))
 
-        archiveJob = CoroutineScope(Dispatchers.IO).launch {
+        archiveJob = serviceScope.launch {
             val filesToArchive = fileOperationsDao.getFilesForJob(jobId)
             create7zFile(archiveName, password, compressionLevel, solid, threadCount, filesToArchive, destinationPath)
             fileOperationsDao.deleteFilesForJob(jobId)
@@ -114,6 +117,7 @@ class Archive7zService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        serviceScope.cancel()
         archiveJob?.cancel()
         unregisterReceiver(cancelReceiver)
     }
@@ -162,7 +166,7 @@ class Archive7zService : Service() {
         if (filesToArchive.isEmpty()) {
             val errorMessage = getString(R.string.no_files_to_archive)
             showErrorNotification(errorMessage)
-            CoroutineScope(Dispatchers.IO).launch { EventBus.emit(AppEvent.ArchiveError(errorMessage)) }
+            serviceScope.launch { EventBus.emit(AppEvent.ArchiveError(errorMessage)) }
             stopForegroundService()
             return
         }
@@ -264,7 +268,7 @@ class Archive7zService : Service() {
                 stopForegroundService()
                 showCompletionNotification(sevenZFile)
                 scanForNewFile(sevenZFile)
-                CoroutineScope(Dispatchers.IO).launch { EventBus.emit(AppEvent.ArchiveComplete(sevenZFile.parent)) }
+                serviceScope.launch { EventBus.emit(AppEvent.ArchiveComplete(sevenZFile.parent)) }
             }
         } catch (e: SevenZipException) {
             if (e.message == "Cancelled") {
@@ -272,16 +276,16 @@ class Archive7zService : Service() {
             } else {
                 e.printStackTrace()
                 showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-                CoroutineScope(Dispatchers.IO).launch { EventBus.emit(AppEvent.ArchiveError(e.message)) }
+                serviceScope.launch { EventBus.emit(AppEvent.ArchiveError(e.message)) }
             }
         } catch (e: IOException) {
             e.printStackTrace()
             showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-            CoroutineScope(Dispatchers.IO).launch { EventBus.emit(AppEvent.ArchiveError(e.message)) }
+            serviceScope.launch { EventBus.emit(AppEvent.ArchiveError(e.message)) }
         } catch (e: OutOfMemoryError) {
             e.printStackTrace()
             showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-            CoroutineScope(Dispatchers.IO).launch { EventBus.emit(AppEvent.ArchiveError(e.message)) }
+            serviceScope.launch { EventBus.emit(AppEvent.ArchiveError(e.message)) }
         } finally {
             filesDir.deleteRecursively()
         }
@@ -292,13 +296,13 @@ class Archive7zService : Service() {
         val notificationManager = getSystemService(NotificationManager::class.java)
         notificationManager.notify(NOTIFICATION_ID, notification)
 
-        CoroutineScope(Dispatchers.IO).launch {
+        serviceScope.launch {
             EventBus.emit(AppEvent.ArchiveProgress(progress))
         }
     }
 
     private fun sendErrorBroadcast(errorMessage: String) {
-        CoroutineScope(Dispatchers.IO).launch {
+        serviceScope.launch {
             EventBus.emit(AppEvent.ArchiveError(errorMessage))
         }
     }

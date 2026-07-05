@@ -17,8 +17,9 @@
 
 package com.wirelessalien.zipxtract.helper
 
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.Flow
 
 sealed class AppEvent {
     data class ExtractionProgress(val progress: Int) : AppEvent()
@@ -30,10 +31,10 @@ sealed class AppEvent {
 }
 
 object EventBus {
-    private val _events = MutableSharedFlow<AppEvent>()
-    val events: SharedFlow<AppEvent> = _events
+    private val _events = Channel<AppEvent>(Channel.BUFFERED)
+    val events: Flow<AppEvent> = _events.receiveAsFlow()
 
     suspend fun emit(event: AppEvent) {
-        _events.emit(event)
+        _events.send(event)
     }
 }

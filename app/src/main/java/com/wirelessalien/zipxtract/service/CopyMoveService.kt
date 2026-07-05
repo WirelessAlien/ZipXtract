@@ -33,10 +33,14 @@ import com.wirelessalien.zipxtract.helper.FileOperationsDao
 import com.wirelessalien.zipxtract.helper.FileUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.cancel
 import java.io.File
 
 class CopyMoveService : Service() {
+
+    private val serviceScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     private lateinit var fileOperationsDao: FileOperationsDao
 
@@ -62,7 +66,7 @@ class CopyMoveService : Service() {
         createNotificationChannel()
         startForeground(NOTIFICATION_ID, createNotification(0, filesToCopyMove.size, isCopyAction))
 
-        CoroutineScope(Dispatchers.IO).launch {
+        serviceScope.launch {
             copyMoveFiles(filesToCopyMove, destinationPath, isCopyAction)
             fileOperationsDao.deleteFilesForJob(jobId)
         }
@@ -163,5 +167,10 @@ class CopyMoveService : Service() {
         stopForeground(STOP_FOREGROUND_REMOVE)
         val notificationManager = getSystemService(NotificationManager::class.java)
         notificationManager.cancel(Archive7zService.NOTIFICATION_ID)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        serviceScope.cancel()
     }
 }

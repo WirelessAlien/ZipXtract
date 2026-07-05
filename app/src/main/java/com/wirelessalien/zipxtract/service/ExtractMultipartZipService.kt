@@ -47,14 +47,18 @@ import com.wirelessalien.zipxtract.model.DirectoryInfo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.cancel
 import net.lingala.zip4j.ZipFile
 import net.lingala.zip4j.exception.ZipException
 import net.lingala.zip4j.progress.ProgressMonitor
 import java.io.File
 
 class ExtractMultipartZipService : Service() {
+
+    private val serviceScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     private lateinit var fileOperationsDao: FileOperationsDao
 
@@ -95,7 +99,7 @@ class ExtractMultipartZipService : Service() {
         }
         startForeground(NOTIFICATION_ID, createNotification(0))
 
-        extractionJob = CoroutineScope(Dispatchers.IO).launch {
+        extractionJob = serviceScope.launch {
             val filesToExtract = fileOperationsDao.getFileForJob(jobId)
             if (filesToExtract?.isEmpty() == true) {
                 fileOperationsDao.deleteFilesForJob(jobId)
@@ -111,6 +115,7 @@ class ExtractMultipartZipService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        serviceScope.cancel()
         extractionJob?.cancel()
         unregisterReceiver(cancelReceiver)
     }
