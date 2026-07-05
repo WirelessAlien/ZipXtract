@@ -136,8 +136,9 @@ class MainActivity : AppCompatActivity() {
                     val fragment = supportFragmentManager.findFragmentById(R.id.container)
                     if (fragment is Searchable && !fragment.getCurrentSearchQuery().isNullOrEmpty()) {
                         fragment.onSearch("")
-                        isSearchSubmitted = false
                         isEnabled = false
+                    } else if (supportFragmentManager.backStackEntryCount > 0) {
+                        supportFragmentManager.popBackStack()
                     } else {
                         isEnabled = false
                         onBackPressedDispatcher.onBackPressed()
@@ -154,15 +155,18 @@ class MainActivity : AppCompatActivity() {
             } else if (newState === SearchView.TransitionState.HIDING) {
                 if (isSearchSubmitted) {
                     callback.isEnabled = true
-                    isSearchSubmitted = false
                 } else {
-                    callback.isEnabled = false
+                    callback.isEnabled = supportFragmentManager.backStackEntryCount > 0
                     val fragment = supportFragmentManager.findFragmentById(R.id.container)
                     if (fragment is Searchable) {
                         fragment.onSearch("")
                     }
                 }
             }
+        }
+
+        supportFragmentManager.addOnBackStackChangedListener {
+            callback.isEnabled = binding.searchView.isShowing || isSearchSubmitted || supportFragmentManager.backStackEntryCount > 0
         }
 
         val fileName = "Crash_Log.txt"
@@ -389,7 +393,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun navigateToFile(fileItem: FileItem) {
-        isSearchSubmitted = false
         binding.searchView.hide()
         val parentPath = fileItem.file.parent ?: return
 
@@ -418,6 +421,7 @@ class MainActivity : AppCompatActivity() {
             if (fragment is Searchable) {
                 fragment.onSearch(query, currentFilterType)
             }
+            isSearchSubmitted = false
         }
     }
 
