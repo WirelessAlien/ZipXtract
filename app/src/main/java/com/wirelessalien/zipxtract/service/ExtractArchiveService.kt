@@ -306,12 +306,13 @@ class ExtractArchiveService : Service() {
             try {
                 val extractCallback = ExtractCallback(inArchive, destinationDir, password)
                 
-                if (itemsToExtract != null && itemsToExtract.isNotEmpty()) {
+                if (!itemsToExtract.isNullOrEmpty()) {
+                    val itemsSet = itemsToExtract.toSet()
                     val indices = mutableListOf<Int>()
                     val count = inArchive.numberOfItems
                     for (i in 0 until count) {
                         val path = inArchive.getStringProperty(i, PropID.PATH).replace("\\", "/")
-                        if (itemsToExtract.contains(path)) {
+                        if (itemsSet.contains(path)) {
                             indices.add(i)
                         }
                     }

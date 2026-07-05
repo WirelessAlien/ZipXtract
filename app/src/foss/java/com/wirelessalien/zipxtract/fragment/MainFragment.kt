@@ -388,7 +388,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                         unselectAllFiles()
                         aProgressDialog.dismiss()
                         aProgressBar.isIndeterminate = false
-                        Toast.makeText(requireContext(), event.errorMessage, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), event.errorMessage ?: getString(R.string.general_error_msg), Toast.LENGTH_SHORT).show()
                     }
                     is AppEvent.ArchiveProgress -> {
                         val progress = event.progress

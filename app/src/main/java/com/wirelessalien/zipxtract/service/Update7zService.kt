@@ -224,7 +224,7 @@ class Update7zService : Service() {
             serviceScope.launch { EventBus.emit(AppEvent.ArchiveComplete(null)) }
         } else {
             showErrorNotification(getString(R.string.error_updating_archive))
-            serviceScope.launch { EventBus.emit(AppEvent.ArchiveError(null)) }
+            serviceScope.launch { EventBus.emit(AppEvent.ArchiveError(getString(R.string.error_updating_archive))) }
         }
         stopForegroundService()
     }
