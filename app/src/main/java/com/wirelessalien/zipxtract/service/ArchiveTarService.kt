@@ -253,7 +253,7 @@ class ArchiveTarService : Service() {
                                 val tempTarSize = tempTarFile.length()
                                 if (tempTarSize > 0) {
                                     var bytesCopied = 0L
-                                    val buffer = ByteArray(DEFAULT_BUFFER_SIZE) // 8KB buffer
+                                    val buffer = ByteArray(65536) // 64KB buffer
                                     var bytes = fis.read(buffer)
                                     var lastProgress = -1
                                     while (bytes >= 0) {

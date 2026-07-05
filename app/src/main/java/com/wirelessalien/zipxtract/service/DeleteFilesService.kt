@@ -56,12 +56,12 @@ class DeleteFilesService : Service() {
             stopSelf()
             return START_NOT_STICKY
         }
-        val filesToDelete = fileOperationsDao.getFilesForJob(jobId).map { File(it) }
 
         createNotificationChannel()
-        startForeground(NOTIFICATION_ID, createNotification(0, filesToDelete.size))
+        startForeground(NOTIFICATION_ID, createNotification(0, 0))
 
         serviceScope.launch {
+            val filesToDelete = fileOperationsDao.getFilesForJob(jobId).map { File(it) }
             deleteFiles(filesToDelete)
             fileOperationsDao.deleteFilesForJob(jobId)
         }

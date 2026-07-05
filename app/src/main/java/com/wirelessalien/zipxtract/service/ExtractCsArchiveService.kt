@@ -221,7 +221,7 @@ class ExtractCsArchiveService : Service() {
         try {
             val totalBytes = file.length()
             var bytesRead = 0L
-            val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+            val buffer = ByteArray(65536)
             val directories = mutableListOf<DirectoryInfo>()
 
             val fi: InputStream = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

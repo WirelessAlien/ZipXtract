@@ -61,12 +61,11 @@ class CopyMoveService : Service() {
             return START_NOT_STICKY
         }
 
-        val filesToCopyMove = fileOperationsDao.getFilesForJob(jobId).map { File(it) }
-
         createNotificationChannel()
-        startForeground(NOTIFICATION_ID, createNotification(0, filesToCopyMove.size, isCopyAction))
+        startForeground(NOTIFICATION_ID, createNotification(0, 0, isCopyAction))
 
         serviceScope.launch {
+            val filesToCopyMove = fileOperationsDao.getFilesForJob(jobId).map { File(it) }
             copyMoveFiles(filesToCopyMove, destinationPath, isCopyAction)
             fileOperationsDao.deleteFilesForJob(jobId)
         }

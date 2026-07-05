@@ -193,7 +193,7 @@ class ExtractArchiveService : Service() {
         return builder.build()
     }
 
-    private fun extractArchive(filePath: String, password: String?, useAppNameDir: Boolean, destinationPath: String?, itemsToExtract: ArrayList<String>?) {
+    private suspend fun extractArchive(filePath: String, password: String?, useAppNameDir: Boolean, destinationPath: String?, itemsToExtract: ArrayList<String>?) {
         if (filePath.isEmpty()) {
             val errorMessage = getString(R.string.no_files_to_archive)
             showErrorNotification(errorMessage)
@@ -378,7 +378,7 @@ class ExtractArchiveService : Service() {
                         Archive.readSupportFilterAll(archive)
                         Archive.readSupportFormatAll(archive)
 
-                        val buffer = ByteBuffer.allocateDirect(DEFAULT_BUFFER_SIZE)
+                        val buffer = ByteBuffer.allocateDirect(65536)
 
                         Archive.readSetCallbackData(archive, fileDescriptor)
                         Archive.readSetReadCallback(
@@ -474,7 +474,7 @@ class ExtractArchiveService : Service() {
                                 directories.add(DirectoryInfo(outputFile.path, lastModifiedTime))
                             } else {
                                 BufferedOutputStream(outputFile.outputStream()).use { outputStream ->
-                                    val readBuffer = ByteBuffer.allocateDirect(DEFAULT_BUFFER_SIZE)
+                                    val readBuffer = ByteBuffer.allocateDirect(65536)
 
                                     while (true) {
                                         readBuffer.clear()
@@ -545,7 +545,7 @@ class ExtractArchiveService : Service() {
                         } else {
                             outputFile.parentFile?.mkdirs()
                             FileOutputStream(outputFile).use { output ->
-                                val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+                                val buffer = ByteArray(65536)
                                 var n: Int
                                 while (input.read(buffer).also { n = it } != -1) {
                                     if (extractionJob?.isActive == false) {
@@ -633,7 +633,7 @@ class ExtractArchiveService : Service() {
         try {
             val totalBytes = file.length()
             var bytesRead = 0L
-            val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+            val buffer = ByteArray(65536)
             val directories = mutableListOf<DirectoryInfo>()
             var lastProgress = -1
 
@@ -695,7 +695,7 @@ class ExtractArchiveService : Service() {
         }
     }
 
-    private fun extractZipArchive(file: File, password: String?, useAppNameDir: Boolean, destinationPath: String?, itemsToExtract: ArrayList<String>?) {
+    private suspend fun extractZipArchive(file: File, password: String?, useAppNameDir: Boolean, destinationPath: String?, itemsToExtract: ArrayList<String>?) {
         var destinationDir: File? = null
         try {
             val zipFile = ZipFile(file)
@@ -765,7 +765,7 @@ class ExtractArchiveService : Service() {
                                 updateProgress(percentDone)
                             }
                         }
-                        Thread.sleep(100)
+                        kotlinx.coroutines.delay(100)
                     }
                     if (progressMonitor!!.result == ProgressMonitor.Result.CANCELLED) {
                         break
@@ -797,7 +797,7 @@ class ExtractArchiveService : Service() {
                             updateProgress(percentDone)
                         }
                     }
-                    Thread.sleep(100)
+                    kotlinx.coroutines.delay(100)
                 }
             }
 

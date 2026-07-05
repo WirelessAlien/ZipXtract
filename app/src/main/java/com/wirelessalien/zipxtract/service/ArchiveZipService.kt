@@ -185,7 +185,7 @@ class ArchiveZipService : Service() {
         serviceScope.launch { EventBus.emit(AppEvent.ArchiveError(errorMessage)) }
     }
 
-    private fun createZipFile(
+    private suspend fun createZipFile(
         archiveName: String,
         password: String?,
         compressionMethod: CompressionMethod,
@@ -272,7 +272,7 @@ class ArchiveZipService : Service() {
                         lastProgress = progress
                         updateProgress(progress)
                     }
-                    Thread.sleep(100)
+                    kotlinx.coroutines.delay(100)
                 }
 
                 if (progressMonitor!!.result == ProgressMonitor.Result.SUCCESS) {

@@ -186,7 +186,7 @@ class ArchiveSplitZipService : Service() {
         serviceScope.launch { EventBus.emit(AppEvent.ArchiveError(errorMessage)) }
     }
 
-    private fun createSplitZipFile(
+    private suspend fun createSplitZipFile(
         archiveName: String,
         password: String?,
         compressionMethod: CompressionMethod,
@@ -266,7 +266,7 @@ class ArchiveSplitZipService : Service() {
                         lastProgress = progress
                         updateProgress(progress)
                     }
-                    Thread.sleep(100)
+                    kotlinx.coroutines.delay(100)
                 }
 
                 if (progressMonitor!!.result == ProgressMonitor.Result.SUCCESS) {

@@ -180,7 +180,7 @@ class CompressCsArchiveService : Service() {
         }
 
         val file = File(filePath)
-        val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+        val buffer = ByteArray(65536)
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
         val archivePath = sharedPreferences.getString(PREFERENCE_ARCHIVE_DIR_PATH, null)
         val parentDir: File
@@ -333,7 +333,7 @@ class CompressCsArchiveService : Service() {
             }
 
             FileInputStream(file).use { inputStream ->
-                val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+                val buffer = ByteArray(65536)
                 var bytesRead: Int
                 val totalBytes = file.length()
                 var bytesProcessed = 0L
