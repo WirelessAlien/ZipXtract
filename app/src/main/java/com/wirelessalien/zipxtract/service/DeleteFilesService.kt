@@ -130,10 +130,16 @@ class DeleteFilesService : Service() {
             .build()
     }
 
+    private var lastNotifyTime = 0L
+
     private fun updateNotification(progress: Int, total: Int) {
-        val notification = createNotification(progress, total)
-        val notificationManager = getSystemService(NotificationManager::class.java)
-        notificationManager.notify(NOTIFICATION_ID, notification)
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - lastNotifyTime >= 500 || progress == total || progress == 0) {
+            lastNotifyTime = currentTime
+            val notification = createNotification(progress, total)
+            val notificationManager = getSystemService(NotificationManager::class.java)
+            notificationManager.notify(NOTIFICATION_ID, notification)
+        }
     }
 
     private fun stopForegroundService() {

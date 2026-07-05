@@ -350,10 +350,16 @@ class ArchiveTarService : Service() {
         }
     }
 
+    private var lastNotifyTime = 0L
+
     private fun updateProgress(progress: Int) {
-        val notification = createNotification(progress)
-        val notificationManager = getSystemService(NotificationManager::class.java)
-        notificationManager.notify(NOTIFICATION_ID, notification)
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - lastNotifyTime >= 500 || progress == 100 || progress == 0) {
+            lastNotifyTime = currentTime
+            val notification = createNotification(progress)
+            val notificationManager = getSystemService(NotificationManager::class.java)
+            notificationManager.notify(NOTIFICATION_ID, notification)
+        }
 
         serviceScope.launch {
             EventBus.emit(AppEvent.ArchiveProgress(progress))

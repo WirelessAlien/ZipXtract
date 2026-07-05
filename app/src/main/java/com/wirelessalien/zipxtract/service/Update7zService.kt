@@ -278,10 +278,16 @@ class Update7zService : Service() {
             .setOngoing(true)
     }
 
+    private var lastNotifyTime = 0L
+
     private fun updateNotification(progress: Int) {
-        notificationBuilder.setProgress(100, progress, false)
-            .setContentText("$progress%")
-        notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build())
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - lastNotifyTime >= 500 || progress == 100 || progress == 0) {
+            lastNotifyTime = currentTime
+            notificationBuilder.setProgress(100, progress, false)
+                .setContentText("$progress%")
+            notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build())
+        }
     }
 
     private fun sendProgressBroadcast(progress: Int) {
