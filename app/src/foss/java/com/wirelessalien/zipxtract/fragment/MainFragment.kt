@@ -2238,10 +2238,22 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     }
 
     private fun searchFiles(query: String?, filterType: String? = null) {
+        val wasSearchActive = isSearchActive
         isSearchActive = !query.isNullOrEmpty()
         currentQuery = query
 
         if (query.isNullOrEmpty()) {
+            if (wasSearchActive) {
+                val sdCardPath = StorageHelper.getSdCardPath(requireContext())
+                val basePath = Environment.getExternalStorageDirectory().absolutePath
+                currentPath = if (sdCardPath != null && currentPath?.startsWith(sdCardPath) == true) {
+                    sdCardPath
+                } else {
+                    basePath
+                }
+                updateCurrentPathChip()
+                updateStorageInfo(currentPath!!)
+            }
             updateAdapterWithFullList()
             return
         }
