@@ -882,6 +882,9 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 return
             }
             if (file.isDirectory) {
+                if (isSearchActive) {
+                    searchFiles(query = "", isExitingSearch = true)
+                }
                 navigateToPath(file.absolutePath)
             } else {
                 if (file.extension.equals("tar", ignoreCase = true)) {
