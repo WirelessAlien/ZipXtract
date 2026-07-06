@@ -21,10 +21,11 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
+import android.content.Context
 import android.content.Intent
-import android.media.MediaScannerConnection
 import android.os.Build
 import android.os.IBinder
+import android.os.PowerManager
 import androidx.core.app.NotificationCompat
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.COPY_MOVE_NOTIFICATION_CHANNEL_ID
@@ -65,9 +66,17 @@ class CopyMoveService : Service() {
         startForeground(NOTIFICATION_ID, createNotification(0, 0, isCopyAction))
 
         serviceScope.launch {
-            val filesToCopyMove = fileOperationsDao.getFilesForJob(jobId).map { File(it) }
-            copyMoveFiles(filesToCopyMove, destinationPath, isCopyAction)
-            fileOperationsDao.deleteFilesForJob(jobId)
+            val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+            val wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "ZipXtract:CopyMoveWakeLock")
+            wakeLock.acquire(60 * 60 * 1000L /*1 hour*/)
+            try {
+                val filesToCopyMove = fileOperationsDao.getFilesForJob(jobId).map { File(it) }
+                copyMoveFiles(filesToCopyMove, destinationPath, isCopyAction)
+                fileOperationsDao.deleteFilesForJob(jobId)
+            } finally {
+                if (wakeLock.isHeld) wakeLock.release()
+                stopSelf()
+            }
         }
 
         return START_STICKY
@@ -117,12 +126,9 @@ class CopyMoveService : Service() {
             }
         }
 
-        pathsToScan.chunked(500).forEach { chunk ->
-            MediaScannerConnection.scanFile(this, chunk.toTypedArray(), null, null)
-        }
+        FileUtils.scanFiles(this, pathsToScan)
 
         stopForegroundService()
-        stopSelf()
     }
 
     private fun createNotificationChannel() {

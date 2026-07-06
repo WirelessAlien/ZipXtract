@@ -20,9 +20,11 @@ package com.wirelessalien.zipxtract.service
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
+import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.IBinder
+import android.os.PowerManager
 import androidx.core.app.NotificationCompat
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.constant.BroadcastConstants
@@ -83,13 +85,20 @@ class Update7zService : Service() {
         startForeground(NOTIFICATION_ID, notificationBuilder.build())
 
         updateJob = serviceScope.launch {
-            val itemsToAdd = itemsToAddJobId?.let { fileOperationsDao.getFilePairsForJob(it) }
-            val itemsToRemovePaths = itemsToRemoveJobId?.let { fileOperationsDao.getFilesForJob(it) }
+            val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+            val wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "ZipXtract:Update7zWakeLock")
+            wakeLock.acquire(60 * 60 * 1000L /*1 hour*/)
+            try {
+                val itemsToAdd = itemsToAddJobId?.let { fileOperationsDao.getFilePairsForJob(it) }
+                val itemsToRemovePaths = itemsToRemoveJobId?.let { fileOperationsDao.getFilesForJob(it) }
 
-            update7zFile(archivePath, itemsToAdd, itemsToRemovePaths)
-            itemsToAddJobId?.let { fileOperationsDao.deleteFilesForJob(it) }
-            itemsToRemoveJobId?.let { fileOperationsDao.deleteFilesForJob(it) }
-            stopSelf()
+                update7zFile(archivePath, itemsToAdd, itemsToRemovePaths)
+                itemsToAddJobId?.let { fileOperationsDao.deleteFilesForJob(it) }
+                itemsToRemoveJobId?.let { fileOperationsDao.deleteFilesForJob(it) }
+            } finally {
+                if (wakeLock.isHeld) wakeLock.release()
+                stopSelf()
+            }
         }
         return START_STICKY
     }

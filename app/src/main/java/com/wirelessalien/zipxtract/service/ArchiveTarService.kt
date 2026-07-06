@@ -26,10 +26,10 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.media.MediaScannerConnection
 import android.os.Build
 import android.os.Environment
 import android.os.IBinder
+import android.os.PowerManager
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.preference.PreferenceManager
@@ -43,6 +43,7 @@ import com.wirelessalien.zipxtract.constant.ServiceConstants
 import com.wirelessalien.zipxtract.helper.AppEvent
 import com.wirelessalien.zipxtract.helper.EventBus
 import com.wirelessalien.zipxtract.helper.FileOperationsDao
+import com.wirelessalien.zipxtract.helper.FileUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -112,10 +113,17 @@ class ArchiveTarService : Service() {
         startForeground(NOTIFICATION_ID, createNotification(0))
 
         archiveJob = serviceScope.launch {
-            val filesToArchive = fileOperationsDao.getFilesForJob(jobId)
-            createTarFile(archiveName, filesToArchive, compressionFormat, compressionLevel, destinationPath)
-            fileOperationsDao.deleteFilesForJob(jobId)
-            stopSelf()
+            val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+            val wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "ZipXtract:ArchiveTarWakeLock")
+            wakeLock.acquire(60 * 60 * 1000L /*1 hour*/)
+            try {
+                val filesToArchive = fileOperationsDao.getFilesForJob(jobId)
+                createTarFile(archiveName, filesToArchive, compressionFormat, compressionLevel, destinationPath)
+                fileOperationsDao.deleteFilesForJob(jobId)
+            } finally {
+                if (wakeLock.isHeld) wakeLock.release()
+                stopSelf()
+            }
         }
         return START_STICKY
     }
@@ -419,6 +427,6 @@ class ArchiveTarService : Service() {
     }
 
     private fun scanForNewFile(file: File) {
-        MediaScannerConnection.scanFile(this, arrayOf(file.absolutePath), null, null)
+        FileUtils.scanFiles(this, listOf(file.absolutePath))
     }
 }

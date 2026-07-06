@@ -26,10 +26,10 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.media.MediaScannerConnection
 import android.os.Build
 import android.os.Environment
 import android.os.IBinder
+import android.os.PowerManager
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
@@ -44,6 +44,7 @@ import com.wirelessalien.zipxtract.constant.ServiceConstants
 import com.wirelessalien.zipxtract.helper.AppEvent
 import com.wirelessalien.zipxtract.helper.EventBus
 import com.wirelessalien.zipxtract.helper.FileOperationsDao
+import com.wirelessalien.zipxtract.helper.FileUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -107,24 +108,30 @@ class CompressCsArchiveService : Service() {
         startForeground(NOTIFICATION_ID, createNotification(0))
 
         compressionJob = serviceScope.launch {
-            val filesToCompress = fileOperationsDao.getFilesForJob(jobId)
-            if (filesToCompress.isEmpty()) {
-                fileOperationsDao.deleteFilesForJob(jobId)
-                stopSelf()
-                return@launch
-            }
-            if (filesToCompress.size > 1) {
-                Log.w("CompressCsArchiveService", "This service only supports single file compression. Only the first file will be compressed.")
-            }
-            val filePath = filesToCompress[0]
+            val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+            val wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "ZipXtract:CompressCsArchiveWakeLock")
+            wakeLock.acquire(60 * 60 * 1000L /*1 hour*/)
+            try {
+                val filesToCompress = fileOperationsDao.getFilesForJob(jobId)
+                if (filesToCompress.isEmpty()) {
+                    fileOperationsDao.deleteFilesForJob(jobId)
+                    return@launch
+                }
+                if (filesToCompress.size > 1) {
+                    Log.w("CompressCsArchiveService", "This service only supports single file compression. Only the first file will be compressed.")
+                }
+                val filePath = filesToCompress[0]
 
-            if (compressionFormat == ZSTD_FORMAT) {
-                compressWithZstd(filePath, compressionFormat, destinationPath)
-            } else {
-                compressArchive(filePath, compressionFormat, destinationPath)
+                if (compressionFormat == ZSTD_FORMAT) {
+                    compressWithZstd(filePath, compressionFormat, destinationPath)
+                } else {
+                    compressArchive(filePath, compressionFormat, destinationPath)
+                }
+                fileOperationsDao.deleteFilesForJob(jobId)
+            } finally {
+                if (wakeLock.isHeld) wakeLock.release()
+                stopSelf()
             }
-            fileOperationsDao.deleteFilesForJob(jobId)
-            stopSelf()
         }
 
 
@@ -431,6 +438,6 @@ class CompressCsArchiveService : Service() {
     }
 
     private fun scanForNewFile(file: File) {
-        MediaScannerConnection.scanFile(this, arrayOf(file.absolutePath), null, null)
+        FileUtils.scanFiles(this, listOf(file.absolutePath))
     }
 }

@@ -26,10 +26,10 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.media.MediaScannerConnection
 import android.os.Build
 import android.os.Environment
 import android.os.IBinder
+import android.os.PowerManager
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.preference.PreferenceManager
@@ -115,17 +115,23 @@ class ExtractRarService : Service() {
         startForeground(NOTIFICATION_ID, createNotification(0))
 
         extractionJob = serviceScope.launch {
-            val filesToExtract = fileOperationsDao.getFileForJob(jobId)
-            if (filesToExtract?.isEmpty() == true) {
-                fileOperationsDao.deleteFilesForJob(jobId)
-                stopSelf()
-                return@launch
-            }
+            val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+            val wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "ZipXtract:ExtractRarWakeLock")
+            wakeLock.acquire(60 * 60 * 1000L /*1 hour*/)
+            try {
+                val filesToExtract = fileOperationsDao.getFileForJob(jobId)
+                if (filesToExtract?.isEmpty() == true) {
+                    fileOperationsDao.deleteFilesForJob(jobId)
+                    return@launch
+                }
 
-            val modifiedFilePath = getModifiedFilePath(filesToExtract ?:"")
-            extractArchive(modifiedFilePath, useAppNameDir, destinationPath)
-            fileOperationsDao.deleteFilesForJob(jobId)
-            stopSelf()
+                val modifiedFilePath = getModifiedFilePath(filesToExtract ?: "")
+                extractArchive(modifiedFilePath, useAppNameDir, destinationPath)
+                fileOperationsDao.deleteFilesForJob(jobId)
+            } finally {
+                if (wakeLock.isHeld) wakeLock.release()
+                stopSelf()
+            }
         }
 
         return START_NOT_STICKY
@@ -502,8 +508,8 @@ class ExtractRarService : Service() {
     private fun scanForNewFiles(directory: File) {
         val files = directory.listFiles()
         if (files != null) {
-            val paths = files.map { it.absolutePath }.toTypedArray()
-            MediaScannerConnection.scanFile(this, paths, null, null)
+            val paths = files.map { it.absolutePath }
+            FileUtils.scanFiles(this, paths)
         }
     }
 }

@@ -21,15 +21,17 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
+import android.content.Context
 import android.content.Intent
-import android.media.MediaScannerConnection
 import android.os.Build
 import android.os.IBinder
+import android.os.PowerManager
 import androidx.core.app.NotificationCompat
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.DELETE_NOTIFICATION_CHANNEL_ID
 import com.wirelessalien.zipxtract.constant.ServiceConstants
 import com.wirelessalien.zipxtract.helper.FileOperationsDao
+import com.wirelessalien.zipxtract.helper.FileUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -61,9 +63,17 @@ class DeleteFilesService : Service() {
         startForeground(NOTIFICATION_ID, createNotification(0, 0))
 
         serviceScope.launch {
-            val filesToDelete = fileOperationsDao.getFilesForJob(jobId).map { File(it) }
-            deleteFiles(filesToDelete)
-            fileOperationsDao.deleteFilesForJob(jobId)
+            val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+            val wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "ZipXtract:DeleteFilesWakeLock")
+            wakeLock.acquire(60 * 60 * 1000L /*1 hour*/)
+            try {
+                val filesToDelete = fileOperationsDao.getFilesForJob(jobId).map { File(it) }
+                deleteFiles(filesToDelete)
+                fileOperationsDao.deleteFilesForJob(jobId)
+            } finally {
+                if (wakeLock.isHeld) wakeLock.release()
+                stopSelf()
+            }
         }
 
         return START_STICKY
@@ -92,12 +102,9 @@ class DeleteFilesService : Service() {
             }
         }
 
-        pathsToScan.chunked(500).forEach { chunk ->
-            MediaScannerConnection.scanFile(this, chunk.toTypedArray(), null, null)
-        }
+        FileUtils.scanFiles(this, pathsToScan)
 
         stopForegroundService()
-        stopSelf()
     }
 
     private fun createNotificationChannel() {

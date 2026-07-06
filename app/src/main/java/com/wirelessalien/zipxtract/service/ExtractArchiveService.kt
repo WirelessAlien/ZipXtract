@@ -26,10 +26,10 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.media.MediaScannerConnection
 import android.os.Build
 import android.os.Environment
 import android.os.IBinder
+import android.os.PowerManager
 import android.system.Os
 import android.system.OsConstants
 import android.util.Log
@@ -136,20 +136,26 @@ class ExtractArchiveService : Service() {
         startForeground(NOTIFICATION_ID, createNotification(0))
 
         extractionJob = serviceScope.launch {
-            val filesToExtract = fileOperationsDao.getFilesForJob(jobId)
-            if (filesToExtract.isEmpty()) {
-                fileOperationsDao.deleteFilesForJob(jobId)
-                stopSelf()
-                return@launch
-            }
-            if (filesToExtract.size > 1) {
-                Log.w("ExtractArchiveService", "This service only supports single file extraction. Only the first file will be extracted.")
-            }
-            val filePath = filesToExtract[0]
+            val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+            val wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "ZipXtract:ExtractArchiveWakeLock")
+            wakeLock.acquire(60 * 60 * 1000L /*1 hour*/)
+            try {
+                val filesToExtract = fileOperationsDao.getFilesForJob(jobId)
+                if (filesToExtract.isEmpty()) {
+                    fileOperationsDao.deleteFilesForJob(jobId)
+                    return@launch
+                }
+                if (filesToExtract.size > 1) {
+                    Log.w("ExtractArchiveService", "This service only supports single file extraction. Only the first file will be extracted.")
+                }
+                val filePath = filesToExtract[0]
 
-            extractArchive(filePath, password, useAppNameDir, destinationPath, itemsToExtract)
-            fileOperationsDao.deleteFilesForJob(jobId)
-            stopSelf()
+                extractArchive(filePath, password, useAppNameDir, destinationPath, itemsToExtract)
+                fileOperationsDao.deleteFilesForJob(jobId)
+            } finally {
+                if (wakeLock.isHeld) wakeLock.release()
+                stopSelf()
+            }
         }
 
         return START_NOT_STICKY
@@ -1052,8 +1058,8 @@ class ExtractArchiveService : Service() {
     private fun scanForNewFiles(directory: File) {
         val files = directory.listFiles()
         if (files != null) {
-            val paths = files.map { it.absolutePath }.toTypedArray()
-            MediaScannerConnection.scanFile(this, paths, null, null)
+            val paths = files.map { it.absolutePath }
+            FileUtils.scanFiles(this, paths)
         }
     }
 

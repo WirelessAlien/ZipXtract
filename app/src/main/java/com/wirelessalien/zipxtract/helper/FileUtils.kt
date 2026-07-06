@@ -18,6 +18,7 @@
 package com.wirelessalien.zipxtract.helper
 
 import android.content.Context
+import android.media.MediaScannerConnection
 import android.util.Log
 import com.wirelessalien.zipxtract.model.DirectoryInfo
 import java.io.File
@@ -209,5 +210,11 @@ object FileUtils {
             }
         }
         return allFiles.distinct()
+    }
+
+    fun scanFiles(context: Context, paths: Collection<String>) {
+        paths.chunked(500).forEach { chunk ->
+            MediaScannerConnection.scanFile(context, chunk.toTypedArray(), null, null)
+        }
     }
 }
