@@ -501,17 +501,21 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
 
     private fun startExtractionService(item: ArchiveItem, password: String?, destinationPath: String) {
         val path = archivePath ?: return
-        val jobId = fileOperationsDao.addFilesForJob(listOf(path))
-        val itemsToExtract = ArrayList<String>()
-        itemsToExtract.add(item.path)
-        
-        val intent = Intent(requireContext(), ExtractArchiveService::class.java).apply {
-            putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
-            putExtra(ServiceConstants.EXTRA_PASSWORD, password)
-            putExtra(ServiceConstants.EXTRA_DESTINATION_PATH, destinationPath)
-            putStringArrayListExtra(ServiceConstants.EXTRA_ITEMS_TO_EXTRACT, itemsToExtract)
+        lifecycleScope.launch {
+            val jobId = withContext(Dispatchers.IO) {
+                fileOperationsDao.addFilesForJob(listOf(path))
+            }
+            val itemsToExtract = ArrayList<String>()
+            itemsToExtract.add(item.path)
+            
+            val intent = Intent(requireContext(), ExtractArchiveService::class.java).apply {
+                putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
+                putExtra(ServiceConstants.EXTRA_PASSWORD, password)
+                putExtra(ServiceConstants.EXTRA_DESTINATION_PATH, destinationPath)
+                putStringArrayListExtra(ServiceConstants.EXTRA_ITEMS_TO_EXTRACT, itemsToExtract)
+            }
+            ContextCompat.startForegroundService(requireContext(), intent)
         }
-        ContextCompat.startForegroundService(requireContext(), intent)
     }
 
     private fun bytesToString(bytes: Long): String {

@@ -256,6 +256,7 @@ class MainActivity : AppCompatActivity() {
         val chipGroup = binding.searchView.findViewById<com.google.android.material.chip.ChipGroup>(R.id.chip_group_search_filter)
         if (chipGroup != null) {
             chipGroup.isSingleSelection = true
+            chipGroup.isSelectionRequired = true
             filterTypes.forEach { type ->
                 val chip = Chip(this)
                 chip.text = type

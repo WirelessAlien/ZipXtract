@@ -38,7 +38,7 @@
     <string name="split_size_mb">Taille des parties de Zip</string>
     <string name="encryption_strength">Puissance de chiffrement</string>
     <string name="root">Root</string>
-    <string name="directory_empty">Folder est vide</string>
+    <string name="directory_empty">Le dossier est vide</string>
     <string name="paste">Coller</string>
     <string name="home">Accueil</string>
     <string name="action_settings">Réglages</string>

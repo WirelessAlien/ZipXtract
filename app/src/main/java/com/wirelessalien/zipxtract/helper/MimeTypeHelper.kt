@@ -96,6 +96,8 @@ object MimeTypeHelper {
     }
 
     fun isArchive(file: File): Boolean {
+        val name = file.name.lowercase(Locale.getDefault())
+        if (name.endsWith(".7z.001")) return true
         val extension = file.extension.lowercase(Locale.getDefault())
         return archiveExtensions.contains(extension)
     }

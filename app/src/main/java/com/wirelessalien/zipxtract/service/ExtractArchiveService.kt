@@ -655,7 +655,7 @@ class ExtractArchiveService : Service() {
                 while (entry != null) {
                     val outputFile = File(destinationDir, entry.name)
                     
-                    if (!outputFile.canonicalPath.startsWith(safeDstPath)) {
+                    if (!outputFile.canonicalPath.startsWith(safeDstPath) && outputFile.canonicalPath != canonicalDstPath) {
                         throw IOException("Zip Slip detected: ${entry.name}")
                     }
 
@@ -683,7 +683,6 @@ class ExtractArchiveService : Service() {
                         if (entry.modTime.time > 0) {
                             outputFile.setLastModified(entry.modTime.time)
                         }
-
                     }
                     entry = tarInput.nextEntry
                 }

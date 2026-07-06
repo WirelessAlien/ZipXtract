@@ -309,7 +309,10 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
     }
 
     private fun searchAllFiles(query: String?, filterType: String?): Flow<List<FileItem>> = flow {
-        val results = getArchiveFiles(query, null)
+        val results = when (filterType) {
+            null, "All", "Archive" -> getArchiveFiles(query, null)
+            else -> emptyList()
+        }
         emit(results)
     }
 
