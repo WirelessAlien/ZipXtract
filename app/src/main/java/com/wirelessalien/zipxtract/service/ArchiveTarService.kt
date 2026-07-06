@@ -22,6 +22,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.pm.ServiceInfo
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -100,17 +101,25 @@ class ArchiveTarService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val archiveName = intent?.getStringExtra(ServiceConstants.EXTRA_ARCHIVE_NAME) ?: return START_NOT_STICKY
+        val archiveName = intent?.getStringExtra(ServiceConstants.EXTRA_ARCHIVE_NAME) ?: run {
+            stopSelf(startId)
+            return START_NOT_STICKY
+        }
         val jobId = intent.getStringExtra(ServiceConstants.EXTRA_JOB_ID)
         if (jobId == null) {
             sendErrorBroadcast(getString(R.string.general_error_msg))
+            stopSelf(startId)
             return START_NOT_STICKY
         }
         val compressionFormat = intent.getStringExtra(ServiceConstants.EXTRA_COMPRESSION_FORMAT) ?: "TAR_ONLY"
         val compressionLevel = intent.getIntExtra(ServiceConstants.EXTRA_COMPRESSION_LEVEL, 3)
         val destinationPath = intent.getStringExtra(ServiceConstants.EXTRA_DESTINATION_PATH)
 
-        startForeground(NOTIFICATION_ID, createNotification(0))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            startForeground(NOTIFICATION_ID, createNotification(0), ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
+        } else {
+            startForeground(NOTIFICATION_ID, createNotification(0))
+        }
 
         archiveJob = serviceScope.launch {
             val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
@@ -122,7 +131,7 @@ class ArchiveTarService : Service() {
                 fileOperationsDao.deleteFilesForJob(jobId)
             } finally {
                 if (wakeLock.isHeld) wakeLock.release()
-                stopSelf()
+                stopSelf(startId)
             }
         }
         return START_STICKY

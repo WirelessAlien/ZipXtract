@@ -22,6 +22,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.pm.ServiceInfo
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -109,10 +110,14 @@ class ExtractRarService : Service() {
         this.password = password?.toCharArray()
 
         if (jobId.isNullOrEmpty()) {
-            stopSelf()
+            stopSelf(startId)
             return START_NOT_STICKY
         }
-        startForeground(NOTIFICATION_ID, createNotification(0))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            startForeground(NOTIFICATION_ID, createNotification(0), ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
+        } else {
+            startForeground(NOTIFICATION_ID, createNotification(0))
+        }
 
         extractionJob = serviceScope.launch {
             val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
@@ -130,7 +135,7 @@ class ExtractRarService : Service() {
                 fileOperationsDao.deleteFilesForJob(jobId)
             } finally {
                 if (wakeLock.isHeld) wakeLock.release()
-                stopSelf()
+                stopSelf(startId)
             }
         }
 

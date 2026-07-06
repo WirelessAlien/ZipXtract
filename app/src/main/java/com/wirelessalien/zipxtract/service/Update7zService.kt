@@ -20,6 +20,7 @@ package com.wirelessalien.zipxtract.service
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
+import android.content.pm.ServiceInfo
 import android.content.Context
 import android.content.Intent
 import android.os.Build
@@ -76,13 +77,20 @@ class Update7zService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val archivePath = intent?.getStringExtra(ServiceConstants.EXTRA_ARCHIVE_PATH) ?: return START_NOT_STICKY
+        val archivePath = intent?.getStringExtra(ServiceConstants.EXTRA_ARCHIVE_PATH) ?: run {
+            stopSelf(startId)
+            return START_NOT_STICKY
+        }
         val itemsToAddJobId = intent.getStringExtra(ServiceConstants.EXTRA_ITEMS_TO_ADD_JOB_ID)
         val itemsToRemoveJobId = intent.getStringExtra(ServiceConstants.EXTRA_ITEMS_TO_REMOVE_JOB_ID)
 
         lastProgress = -1
         notificationBuilder = createNotificationBuilder()
-        startForeground(NOTIFICATION_ID, notificationBuilder.build())
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            startForeground(NOTIFICATION_ID, notificationBuilder.build(), ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
+        } else {
+            startForeground(NOTIFICATION_ID, notificationBuilder.build())
+        }
 
         updateJob = serviceScope.launch {
             val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
@@ -97,7 +105,7 @@ class Update7zService : Service() {
                 itemsToRemoveJobId?.let { fileOperationsDao.deleteFilesForJob(it) }
             } finally {
                 if (wakeLock.isHeld) wakeLock.release()
-                stopSelf()
+                stopSelf(startId)
             }
         }
         return START_STICKY
