@@ -302,6 +302,17 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
         notifyItemRemoved(position)
     }
 
+    fun removeFileItem(fileItem: FileItem) {
+        val indexInFiltered = filteredFiles.indexOf(fileItem)
+        if (indexInFiltered != -1) {
+            val newList = filteredFiles.toMutableList()
+            newList.removeAt(indexInFiltered)
+            filteredFiles = newList
+            notifyItemRemoved(indexInFiltered)
+        }
+        files.remove(fileItem)
+    }
+
     fun updateFilesAndFilter(newFiles: List<FileItem>, query: String? = null) {
         val newFilteredFiles = if (!query.isNullOrBlank()) {
             newFiles.filter { it.file.name.contains(query, true) || it.isDirectory }

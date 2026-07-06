@@ -717,9 +717,9 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
                     }
                     ContextCompat.startForegroundService(requireContext(), intent)
 
-                    val position = adapter.files.indexOfFirst { it.file == file }
-                    if (position != -1) {
-                        adapter.removeItem(position)
+                    val fileItem = adapter.files.find { it.file == file }
+                    fileItem?.let {
+                        adapter.removeFileItem(it)
                     }
 
                     bottomSheetDialog.dismiss()
