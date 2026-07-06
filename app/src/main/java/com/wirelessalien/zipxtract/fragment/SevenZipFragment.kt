@@ -376,6 +376,8 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
                     fileOperationsDao.addFilePairsForJob(filePairs)
                 }
 
+                if (!isAdded) return@launch
+
                 val intent = Intent(requireContext(), Update7zService::class.java).apply {
                     putExtra(ServiceConstants.EXTRA_ARCHIVE_PATH, archivePath)
                     putExtra(ServiceConstants.EXTRA_ITEMS_TO_ADD_JOB_ID, jobId)
@@ -505,6 +507,9 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
             val jobId = withContext(Dispatchers.IO) {
                 fileOperationsDao.addFilesForJob(listOf(path))
             }
+
+            if (!isAdded) return@launch
+
             val itemsToExtract = ArrayList<String>()
             itemsToExtract.add(item.path)
             

@@ -779,6 +779,8 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                     fileOperationsDao.addFilesForJob(selectedFiles)
                 }
 
+                if (!isAdded) return@launch
+
                 val fragmentManager = parentFragmentManager
                 val newFragment = createFragment(jobId)
 

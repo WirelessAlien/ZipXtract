@@ -258,10 +258,12 @@ class MainActivity : AppCompatActivity() {
             chipGroup.isSingleSelection = true
             chipGroup.isSelectionRequired = true
             filterTypes.forEach { type ->
-                val chip = Chip(this)
-                chip.text = type
-                chip.isCheckable = true
-                chip.isCheckedIconVisible = false
+                val chip = Chip(this).apply {
+                    id = android.view.View.generateViewId()
+                    text = type
+                    isCheckable = true
+                    isCheckedIconVisible = false
+                }
                 chipGroup.addView(chip)
                 if (type == "All") {
                     chip.isChecked = true

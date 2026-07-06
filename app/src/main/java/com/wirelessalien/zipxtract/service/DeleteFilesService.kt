@@ -75,6 +75,8 @@ class DeleteFilesService : Service() {
                 val filesToDelete = fileOperationsDao.getFilesForJob(jobId).map { File(it) }
                 deleteFiles(filesToDelete)
                 fileOperationsDao.deleteFilesForJob(jobId)
+            } catch (e: Exception) {
+                e.printStackTrace()
             } finally {
                 if (wakeLock.isHeld) wakeLock.release()
                 stopSelf(startId)
