@@ -278,12 +278,13 @@ class ExtractMultipartZipService : Service() {
         val currentTime = System.currentTimeMillis()
         if (currentTime - lastNotifyTime >= 500 || progress == 100 || progress == 0) {
             lastNotifyTime = currentTime
+            
             val notification = createNotification(progress)
             val notificationManager = getSystemService(NotificationManager::class.java)
             notificationManager.notify(NOTIFICATION_ID, notification)
-        }
 
-        EventBus.emit(AppEvent.ExtractionProgress(progress))
+            EventBus.emit(AppEvent.ExtractionProgress(progress))
+        }
     }
 
     private fun showCompletionNotification(destination: File) {

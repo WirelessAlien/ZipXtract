@@ -207,7 +207,7 @@ class Update7zService : Service() {
             success = true
         } catch (e: Exception) {
             e.printStackTrace()
-            serviceScope.launch { EventBus.emit(AppEvent.ArchiveError(e.message)) }
+            EventBus.emit(AppEvent.ArchiveError(e.message))
         } finally {
             for (i in closeables.indices.reversed()) {
                 try {
@@ -221,10 +221,10 @@ class Update7zService : Service() {
 
         if (success) {
             showCompletionNotification(File(archivePath))
-            serviceScope.launch { EventBus.emit(AppEvent.ArchiveComplete(null)) }
+            EventBus.emit(AppEvent.ArchiveComplete(null))
         } else {
             showErrorNotification(getString(R.string.error_updating_archive))
-            serviceScope.launch { EventBus.emit(AppEvent.ArchiveError(getString(R.string.error_updating_archive))) }
+            EventBus.emit(AppEvent.ArchiveError(getString(R.string.error_updating_archive)))
         }
         stopForegroundService()
     }
@@ -291,9 +291,7 @@ class Update7zService : Service() {
     }
 
     private fun sendProgressBroadcast(progress: Int) {
-        serviceScope.launch {
-            EventBus.emit(AppEvent.ArchiveProgress(progress))
-        }
+        EventBus.emit(AppEvent.ArchiveProgress(progress))
     }
 
     private fun stopForegroundService() {

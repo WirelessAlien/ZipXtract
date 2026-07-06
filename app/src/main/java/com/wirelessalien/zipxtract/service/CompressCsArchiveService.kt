@@ -174,7 +174,7 @@ class CompressCsArchiveService : Service() {
         if (filePath.isEmpty()) {
             val errorMessage = getString(R.string.no_files_to_archive)
             showErrorNotification(errorMessage)
-            serviceScope.launch { EventBus.emit(AppEvent.ArchiveError(errorMessage)) }
+            EventBus.emit(AppEvent.ArchiveError(errorMessage))
             stopForegroundService()
             return
         }
@@ -262,20 +262,20 @@ class CompressCsArchiveService : Service() {
 
             showCompletionNotification(outputFile)
             scanForNewFile(outputFile)
-            serviceScope.launch { EventBus.emit(AppEvent.ArchiveComplete(outputFile.parent)) }
+            EventBus.emit(AppEvent.ArchiveComplete(outputFile.parent))
 
         } catch (e: CompressorException) {
             e.printStackTrace()
             showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-            serviceScope.launch { EventBus.emit(AppEvent.ArchiveError(e.message ?: getString(R.string.general_error_msg))) }
+            EventBus.emit(AppEvent.ArchiveError(e.message ?: getString(R.string.general_error_msg)))
         } catch (e: IOException) {
             e.printStackTrace()
             showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-            serviceScope.launch { EventBus.emit(AppEvent.ArchiveError(e.message ?: getString(R.string.general_error_msg))) }
+            EventBus.emit(AppEvent.ArchiveError(e.message ?: getString(R.string.general_error_msg)))
         } catch (e: Exception) {
             e.printStackTrace()
             showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-            serviceScope.launch { EventBus.emit(AppEvent.ArchiveError(e.message ?: getString(R.string.general_error_msg))) }
+            EventBus.emit(AppEvent.ArchiveError(e.message ?: getString(R.string.general_error_msg)))
         } finally {
             stopForegroundService()
         }
@@ -290,7 +290,7 @@ class CompressCsArchiveService : Service() {
         if (inputFilePath.isEmpty()) {
             val errorMessage = getString(R.string.no_files_to_archive)
             showErrorNotification(errorMessage)
-            serviceScope.launch { EventBus.emit(AppEvent.ArchiveError(errorMessage)) }
+            EventBus.emit(AppEvent.ArchiveError(errorMessage))
             stopForegroundService()
             return
         }
@@ -360,12 +360,12 @@ class CompressCsArchiveService : Service() {
 
             showCompletionNotification(outputFile)
             scanForNewFile(outputFile)
-            serviceScope.launch { EventBus.emit(AppEvent.ArchiveComplete(outputFile.parent)) }
+            EventBus.emit(AppEvent.ArchiveComplete(outputFile.parent))
 
         } catch (e: Exception) {
             e.printStackTrace()
             showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-            serviceScope.launch { EventBus.emit(AppEvent.ArchiveError(e.message ?: getString(R.string.general_error_msg))) }
+            EventBus.emit(AppEvent.ArchiveError(e.message ?: getString(R.string.general_error_msg)))
         } finally {
             stopForegroundService()
         }
@@ -377,12 +377,11 @@ class CompressCsArchiveService : Service() {
         val currentTime = System.currentTimeMillis()
         if (currentTime - lastNotifyTime >= 500 || progress == 100 || progress == 0) {
             lastNotifyTime = currentTime
+            
             val notification = createNotification(progress)
             val notificationManager = getSystemService(NotificationManager::class.java)
             notificationManager.notify(NOTIFICATION_ID, notification)
-        }
 
-        serviceScope.launch {
             EventBus.emit(AppEvent.ArchiveProgress(progress))
         }
     }

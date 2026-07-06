@@ -170,7 +170,7 @@ class ExtractCsArchiveService : Service() {
         if (filePath.isEmpty()) {
             val errorMessage = getString(R.string.no_files_to_archive)
             showErrorNotification(errorMessage)
-            serviceScope.launch { EventBus.emit(AppEvent.ExtractionError(errorMessage)) }
+            EventBus.emit(AppEvent.ExtractionError(errorMessage))
             stopForegroundService()
             return
         }
@@ -238,7 +238,7 @@ class ExtractCsArchiveService : Service() {
                         CompressorStreamFactory().createCompressorInputStream(bi)
                     } catch (e: CompressorException) {
                         showErrorNotification(getString(R.string.unsupported_compression_format))
-                        serviceScope.launch { EventBus.emit(AppEvent.ExtractionError(getString(R.string.unsupported_compression_format))) }
+                        EventBus.emit(AppEvent.ExtractionError(getString(R.string.unsupported_compression_format)))
                         return
                     }
                 }
@@ -289,19 +289,19 @@ class ExtractCsArchiveService : Service() {
             FileUtils.setLastModifiedTime(directories)
             scanForNewFiles(destinationDir)
             showCompletionNotification(destinationDir)
-            serviceScope.launch { EventBus.emit(AppEvent.ExtractionComplete(destinationDir.absolutePath)) }
+            EventBus.emit(AppEvent.ExtractionComplete(destinationDir.absolutePath))
         } catch (e: CompressorException) {
             e.printStackTrace()
             showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-            serviceScope.launch { EventBus.emit(AppEvent.ExtractionError(e.message ?: getString(R.string.general_error_msg))) }
+            EventBus.emit(AppEvent.ExtractionError(e.message ?: getString(R.string.general_error_msg)))
         } catch (e: Exception) {
             e.printStackTrace()
             showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-            serviceScope.launch { EventBus.emit(AppEvent.ExtractionError(e.message ?: getString(R.string.general_error_msg))) }
+            EventBus.emit(AppEvent.ExtractionError(e.message ?: getString(R.string.general_error_msg)))
         } catch (e: IOException) {
             e.printStackTrace()
             showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-            serviceScope.launch { EventBus.emit(AppEvent.ExtractionError(e.message ?: getString(R.string.general_error_msg))) }
+            EventBus.emit(AppEvent.ExtractionError(e.message ?: getString(R.string.general_error_msg)))
         } finally {
             stopForegroundService()
             if (useAppNameDir) {
@@ -316,12 +316,11 @@ class ExtractCsArchiveService : Service() {
         val currentTime = System.currentTimeMillis()
         if (currentTime - lastNotifyTime >= 500 || progress == 100 || progress == 0) {
             lastNotifyTime = currentTime
+            
             val notification = createNotification(progress)
             val notificationManager = getSystemService(NotificationManager::class.java)
             notificationManager.notify(NOTIFICATION_ID, notification)
-        }
 
-        serviceScope.launch {
             EventBus.emit(AppEvent.ExtractionProgress(progress))
         }
     }

@@ -185,7 +185,7 @@ class ExtractMultipart7zService : Service() {
         if (filePath.isEmpty()) {
             val errorMessage = getString(R.string.no_files_to_archive)
             showErrorNotification(errorMessage)
-            serviceScope.launch { EventBus.emit(AppEvent.ExtractionError(errorMessage)) }
+            EventBus.emit(AppEvent.ExtractionError(errorMessage))
             stopForegroundService()
             return
         }
@@ -243,7 +243,7 @@ class ExtractMultipart7zService : Service() {
                     FileUtils.setLastModifiedTime(extractCallback.directories)
                     scanForNewFiles(destinationDir)
                     showCompletionNotification(destinationDir)
-                    serviceScope.launch { EventBus.emit(AppEvent.ExtractionComplete(destinationDir.path)) }
+                    EventBus.emit(AppEvent.ExtractionComplete(destinationDir.path))
                 }
             } catch (e: SevenZipException) {
                 if (e.message == "Cancelled") {
@@ -253,7 +253,7 @@ class ExtractMultipart7zService : Service() {
                 } else {
                     e.printStackTrace()
                     showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-                    serviceScope.launch { EventBus.emit(AppEvent.ExtractionError(e.message ?: getString(R.string.general_error_msg))) }
+                    EventBus.emit(AppEvent.ExtractionError(e.message ?: getString(R.string.general_error_msg)))
                 }
             } finally {
                 inArchive.close()
@@ -262,7 +262,7 @@ class ExtractMultipart7zService : Service() {
         } catch (e: IOException) {
             e.printStackTrace()
             showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-            serviceScope.launch { EventBus.emit(AppEvent.ExtractionError(e.message ?: getString(R.string.general_error_msg))) }
+            EventBus.emit(AppEvent.ExtractionError(e.message ?: getString(R.string.general_error_msg)))
         }
     }
 
@@ -291,7 +291,7 @@ class ExtractMultipart7zService : Service() {
                     hasError = true
                     if (!errorBroadcasted) {
                         showErrorNotification(getString(R.string.wrong_password))
-                        serviceScope.launch { EventBus.emit(AppEvent.ExtractionError(getString(R.string.wrong_password))) }
+                        EventBus.emit(AppEvent.ExtractionError(getString(R.string.wrong_password)))
                         errorBroadcasted = true
                     }
                     throw SevenZipException("WrongPasswordDetected")
@@ -300,7 +300,7 @@ class ExtractMultipart7zService : Service() {
                     hasError = true
                     if (!errorBroadcasted) {
                         showErrorNotification(getString(R.string.general_error_msg))
-                        serviceScope.launch { EventBus.emit(AppEvent.ExtractionError(getString(R.string.general_error_msg))) }
+                        EventBus.emit(AppEvent.ExtractionError(getString(R.string.general_error_msg)))
                         errorBroadcasted = true
                     }
                 }
@@ -328,7 +328,7 @@ class ExtractMultipart7zService : Service() {
                     hasError = true
                     if (!errorBroadcasted) {
                         showErrorNotification(getString(R.string.general_error_msg))
-                        serviceScope.launch { EventBus.emit(AppEvent.ExtractionError(getString(R.string.general_error_msg))) }
+                        EventBus.emit(AppEvent.ExtractionError(getString(R.string.general_error_msg)))
                         errorBroadcasted = true
                     }
                 }
@@ -406,12 +406,11 @@ class ExtractMultipart7zService : Service() {
         val currentTime = System.currentTimeMillis()
         if (currentTime - lastNotifyTime >= 500 || progress == 100 || progress == 0) {
             lastNotifyTime = currentTime
+            
             val notification = createNotification(progress)
             val notificationManager = getSystemService(NotificationManager::class.java)
             notificationManager.notify(NOTIFICATION_ID, notification)
-        }
 
-        serviceScope.launch {
             EventBus.emit(AppEvent.ExtractionProgress(progress))
         }
     }

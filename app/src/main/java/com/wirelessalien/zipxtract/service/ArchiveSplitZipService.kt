@@ -183,7 +183,7 @@ class ArchiveSplitZipService : Service() {
     }
 
     private fun sendErrorBroadcast(errorMessage: String) {
-        serviceScope.launch { EventBus.emit(AppEvent.ArchiveError(errorMessage)) }
+        EventBus.emit(AppEvent.ArchiveError(errorMessage))
     }
 
     private suspend fun createSplitZipFile(
@@ -202,7 +202,7 @@ class ArchiveSplitZipService : Service() {
         if (selectedFiles.isEmpty()) {
             val errorMessage = getString(R.string.no_files_to_archive)
             showErrorNotification(errorMessage)
-            serviceScope.launch { EventBus.emit(AppEvent.ArchiveError(errorMessage)) }
+            EventBus.emit(AppEvent.ArchiveError(errorMessage))
             stopForegroundService()
             return
         }
@@ -272,24 +272,24 @@ class ArchiveSplitZipService : Service() {
                 if (progressMonitor!!.result == ProgressMonitor.Result.SUCCESS) {
                     showCompletionNotification(outputFile)
                     scanForNewFile(outputFile)
-                    serviceScope.launch { EventBus.emit(AppEvent.ArchiveComplete(outputFile.parent)) }
+                    EventBus.emit(AppEvent.ArchiveComplete(outputFile.parent))
                 } else if (progressMonitor!!.result == ProgressMonitor.Result.CANCELLED) {
                     // Do nothing
                 } else {
                     showErrorNotification(getString(R.string.zip_creation_failed))
-                    serviceScope.launch { EventBus.emit(AppEvent.ArchiveError(progressMonitor!!.result.toString())) }
+                    EventBus.emit(AppEvent.ArchiveError(progressMonitor!!.result.toString()))
                 }
 
             } catch (e: ZipException) {
                 e.printStackTrace()
                 showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-                serviceScope.launch { EventBus.emit(AppEvent.ArchiveError(e.message)) }
+                EventBus.emit(AppEvent.ArchiveError(e.message))
                 return
             }
         } catch (e: Exception) {
             e.printStackTrace()
             showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-            serviceScope.launch { EventBus.emit(AppEvent.ArchiveError(e.message)) }
+            EventBus.emit(AppEvent.ArchiveError(e.message))
         }
     }
 
@@ -299,12 +299,11 @@ class ArchiveSplitZipService : Service() {
         val currentTime = System.currentTimeMillis()
         if (currentTime - lastNotifyTime >= 500 || progress == 100 || progress == 0) {
             lastNotifyTime = currentTime
+            
             val notification = createNotification(progress)
             val notificationManager = getSystemService(NotificationManager::class.java)
             notificationManager.notify(NOTIFICATION_ID, notification)
-        }
 
-        serviceScope.launch {
             EventBus.emit(AppEvent.ArchiveProgress(progress))
         }
     }

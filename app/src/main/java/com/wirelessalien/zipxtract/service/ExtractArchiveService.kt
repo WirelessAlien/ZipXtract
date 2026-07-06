@@ -197,7 +197,7 @@ class ExtractArchiveService : Service() {
         if (filePath.isEmpty()) {
             val errorMessage = getString(R.string.no_files_to_archive)
             showErrorNotification(errorMessage)
-            serviceScope.launch { EventBus.emit(AppEvent.ExtractionError(errorMessage)) }
+            EventBus.emit(AppEvent.ExtractionError(errorMessage))
             stopForegroundService()
             return
         }
@@ -281,7 +281,7 @@ class ExtractArchiveService : Service() {
             }
 
             showErrorNotification(getString(R.string.general_error_msg))
-            serviceScope.launch { EventBus.emit(AppEvent.ExtractionError(getString(R.string.general_error_msg))) }
+            EventBus.emit(AppEvent.ExtractionError(getString(R.string.general_error_msg)))
             if (useAppNameDir) {
                 filesDir.deleteRecursively()
             }
@@ -292,7 +292,7 @@ class ExtractArchiveService : Service() {
         } catch (e: Exception) {
             e.printStackTrace()
             showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-            serviceScope.launch { EventBus.emit(AppEvent.ExtractionError(e.message ?: getString(R.string.general_error_msg))) }
+            EventBus.emit(AppEvent.ExtractionError(e.message ?: getString(R.string.general_error_msg)))
         }
     }
 
@@ -329,7 +329,7 @@ class ExtractArchiveService : Service() {
                     FileUtils.setLastModifiedTime(extractCallback.directories)
                     scanForNewFiles(destinationDir)
                     showCompletionNotification(destinationDir)
-                    serviceScope.launch { EventBus.emit(AppEvent.ExtractionComplete(destinationDir.absolutePath)) }
+                    EventBus.emit(AppEvent.ExtractionComplete(destinationDir.absolutePath))
                     return true
                 }
             } catch (e: SevenZipException) {
@@ -495,9 +495,8 @@ class ExtractArchiveService : Service() {
                         FileUtils.setLastModifiedTime(directories)
                         scanForNewFiles(destinationDir)
                         showCompletionNotification(destinationDir)
-                        serviceScope.launch {
-                            EventBus.emit(AppEvent.ExtractionComplete(destinationDir.absolutePath))
-                        }
+                        EventBus.emit(AppEvent.ExtractionComplete(destinationDir.absolutePath))
+                        
                         return true
                     } catch (e: Exception) {
                         if (e.message == "Cancelled" || (e is IOException && e.message == "Cancelled")) {
@@ -562,7 +561,7 @@ class ExtractArchiveService : Service() {
                     FileUtils.setLastModifiedTime(directories)
                     scanForNewFiles(destinationDir)
                     showCompletionNotification(destinationDir)
-                    serviceScope.launch { EventBus.emit(AppEvent.ExtractionComplete(destinationDir.absolutePath)) }
+                    EventBus.emit(AppEvent.ExtractionComplete(destinationDir.absolutePath))
                     return true
                 }
             }
@@ -679,7 +678,7 @@ class ExtractArchiveService : Service() {
             FileUtils.setLastModifiedTime(directories)
             scanForNewFiles(destinationDir)
             showCompletionNotification(destinationDir)
-            serviceScope.launch { EventBus.emit(AppEvent.ExtractionComplete(destinationDir.absolutePath)) }
+            EventBus.emit(AppEvent.ExtractionComplete(destinationDir.absolutePath))
         } catch (e: IOException) {
             if (e.message == "Cancelled") {
                 // Cancelled
@@ -689,7 +688,7 @@ class ExtractArchiveService : Service() {
                 if (tryApacheCommonsCompress(file, destinationDir)) return
                 if (extractionJob?.isActive == false) return
                 showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-                serviceScope.launch { EventBus.emit(AppEvent.ExtractionError(e.message ?: getString(R.string.general_error_msg))) }
+                EventBus.emit(AppEvent.ExtractionError(e.message ?: getString(R.string.general_error_msg)))
             }
         }
     }
@@ -806,7 +805,7 @@ class ExtractArchiveService : Service() {
                 FileUtils.setLastModifiedTime(directories)
                 scanForNewFiles(finalDestinationDir)
                 showCompletionNotification(finalDestinationDir)
-                serviceScope.launch { EventBus.emit(AppEvent.ExtractionComplete(finalDestinationDir.absolutePath)) }
+                EventBus.emit(AppEvent.ExtractionComplete(finalDestinationDir.absolutePath)) 
 
                 if (useAppNameDir) {
                     filesDir.deleteRecursively()
@@ -819,7 +818,7 @@ class ExtractArchiveService : Service() {
                     exception?.message ?: getString(R.string.general_error_msg)
                 }
                 showErrorNotification(errorMessage)
-                serviceScope.launch { EventBus.emit(AppEvent.ExtractionError(errorMessage)) }
+                EventBus.emit(AppEvent.ExtractionError(errorMessage))
             }
 
         } catch (e: ZipException) {
@@ -836,7 +835,7 @@ class ExtractArchiveService : Service() {
                 else -> e.message ?: getString(R.string.general_error_msg)
             }
             showErrorNotification(errorMessage)
-            serviceScope.launch { EventBus.emit(AppEvent.ExtractionError(errorMessage)) }
+            EventBus.emit(AppEvent.ExtractionError(errorMessage))
         }
     }
 
@@ -993,13 +992,11 @@ class ExtractArchiveService : Service() {
         val currentTime = System.currentTimeMillis()
         if (currentTime - lastNotifyTime >= 500 || progress == 100 || progress == 0) {
             lastNotifyTime = currentTime
+            
             val notification = createNotification(progress)
             val notificationManager = getSystemService(NotificationManager::class.java)
             notificationManager.notify(NOTIFICATION_ID, notification)
-        }
 
-        // Broadcast progress for activity
-        serviceScope.launch {
             EventBus.emit(AppEvent.ExtractionProgress(progress))
         }
     }
