@@ -124,7 +124,7 @@ class ExtractMultipartZipService : Service() {
                 stopSelf(startId)
             }
         }
-        return START_STICKY
+        return START_NOT_STICKY
     }
 
     override fun onDestroy() {

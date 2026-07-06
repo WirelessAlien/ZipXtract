@@ -81,7 +81,7 @@ class DeleteFilesService : Service() {
             }
         }
 
-        return START_STICKY
+        return START_NOT_STICKY
     }
 
     private fun deleteFiles(files: List<File>) {

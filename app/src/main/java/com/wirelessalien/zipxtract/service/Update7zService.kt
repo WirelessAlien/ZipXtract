@@ -58,7 +58,7 @@ class Update7zService : Service() {
     private lateinit var fileOperationsDao: FileOperationsDao
 
     companion object {
-        const val NOTIFICATION_ID = 14
+        const val NOTIFICATION_ID = 24
     }
 
     private var updateJob: Job? = null
@@ -108,7 +108,7 @@ class Update7zService : Service() {
                 stopSelf(startId)
             }
         }
-        return START_STICKY
+        return START_NOT_STICKY
     }
 
     private fun update7zFile(
