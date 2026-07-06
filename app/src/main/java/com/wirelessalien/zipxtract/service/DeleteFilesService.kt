@@ -70,16 +70,25 @@ class DeleteFilesService : Service() {
     }
 
     private fun deleteFiles(files: List<File>) {
-        val totalFilesCount = files.sumOf { it.walkTopDown().count() }
+        var totalFilesCount = 0
+        files.forEach { file ->
+            file.walkTopDown().forEach {
+                totalFilesCount++
+                updateNotification(0, totalFilesCount)
+            }
+        }
+        updateNotification(0, totalFilesCount, true)
+
         var deletedFilesCount = 0
         val pathsToScan = mutableSetOf<String>()
 
         for (file in files) {
             file.walkBottomUp().forEach { currentFile ->
                 pathsToScan.add(currentFile.absolutePath)
-                currentFile.delete()
-                deletedFilesCount++
-                updateNotification(deletedFilesCount, totalFilesCount)
+                if (currentFile.delete()) {
+                    deletedFilesCount++
+                    updateNotification(deletedFilesCount, totalFilesCount)
+                }
             }
         }
 
@@ -115,9 +124,9 @@ class DeleteFilesService : Service() {
 
     private var lastNotifyTime = 0L
 
-    private fun updateNotification(progress: Int, total: Int) {
+    private fun updateNotification(progress: Int, total: Int, force: Boolean = false) {
         val currentTime = System.currentTimeMillis()
-        if (currentTime - lastNotifyTime >= 500 || progress == total || progress == 0) {
+        if (force || currentTime - lastNotifyTime >= 500 || progress == total) {
             lastNotifyTime = currentTime
             val notification = createNotification(progress, total)
             val notificationManager = getSystemService(NotificationManager::class.java)
@@ -128,7 +137,7 @@ class DeleteFilesService : Service() {
     private fun stopForegroundService() {
         stopForeground(STOP_FOREGROUND_REMOVE)
         val notificationManager = getSystemService(NotificationManager::class.java)
-        notificationManager.cancel(Archive7zService.NOTIFICATION_ID)
+        notificationManager.cancel(NOTIFICATION_ID)
     }
 
     override fun onDestroy() {
