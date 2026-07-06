@@ -236,14 +236,9 @@ class Update7zService : Service() {
         for ((path, name) in itemsToAdd) {
             val file = File(path)
             if (file.isDirectory) {
-                file.walkTopDown().forEach {
-                    val relativePath = it.absolutePath.substring(file.absolutePath.length)
-                        .removePrefix("/")
-                    val archivePath = if (relativePath.isEmpty()) {
-                        name
-                    } else {
-                        "$name/$relativePath"
-                    }
+                file.walkTopDown().filter { it.isFile }.forEach {
+                    val relativePath = it.absolutePath.substring(file.absolutePath.length).removePrefix("/")
+                    val archivePath = if (relativePath.isEmpty()) name else "$name/$relativePath"
                     fileList.add(Pair(it, archivePath!!))
                 }
             } else {

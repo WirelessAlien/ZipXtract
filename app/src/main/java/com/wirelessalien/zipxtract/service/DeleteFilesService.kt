@@ -70,22 +70,17 @@ class DeleteFilesService : Service() {
     }
 
     private fun deleteFiles(files: List<File>) {
-        val totalFilesCount = countTotalFiles(files)
+        val totalFilesCount = files.sumOf { it.walkTopDown().count() }
         var deletedFilesCount = 0
         val pathsToScan = mutableSetOf<String>()
 
-        fun deleteFile(file: File) {
-            pathsToScan.add(file.absolutePath)
-            if (file.isDirectory) {
-                file.listFiles()?.forEach { deleteFile(it) }
-            }
-            file.delete()
-            deletedFilesCount++
-            updateNotification(deletedFilesCount, totalFilesCount)
-        }
-
         for (file in files) {
-            deleteFile(file)
+            file.walkBottomUp().forEach { currentFile ->
+                pathsToScan.add(currentFile.absolutePath)
+                currentFile.delete()
+                deletedFilesCount++
+                updateNotification(deletedFilesCount, totalFilesCount)
+            }
         }
 
         pathsToScan.chunked(500).forEach { chunk ->
@@ -94,18 +89,6 @@ class DeleteFilesService : Service() {
 
         stopForegroundService()
         stopSelf()
-    }
-
-    private fun countTotalFiles(files: List<File>): Int {
-        var count = 0
-        for (file in files) {
-            if (file.isDirectory) {
-                count += countTotalFiles(file.listFiles()?.toList() ?: emptyList())
-            } else {
-                count++
-            }
-        }
-        return count
     }
 
     private fun createNotificationChannel() {
