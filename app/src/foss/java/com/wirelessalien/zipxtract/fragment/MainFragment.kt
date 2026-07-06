@@ -751,68 +751,52 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     }
 
     private fun show7zOptionsDialog() {
-        lifecycleScope.launch {
-            val selectedFiles = adapter.getSelectedFilesPaths()
-            if (selectedFiles.isEmpty()) {
-                Toast.makeText(requireContext(), R.string.no_files_to_archive, Toast.LENGTH_SHORT).show()
-                return@launch
-            }
-            val jobId = fileOperationsDao.addFilesForJob(selectedFiles)
-            val fragmentManager = parentFragmentManager
-            val newFragment = SevenZOptionDialogFragment.newInstance(jobId)
-
-            // Show the fragment fullscreen.
-            val transaction = fragmentManager.beginTransaction()
-            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-            transaction.add(android.R.id.content, newFragment)
-                .addToBackStack(null)
-                .commit()
-
-            actionMode?.finish() // Destroy the action mode
-        }
+        prepareArchiveAndShowDialog { jobId -> SevenZOptionDialogFragment.newInstance(jobId) }
     }
 
     private fun showTarOptionsDialog() {
-        lifecycleScope.launch {
-            val selectedFiles = adapter.getSelectedFilesPaths()
-            if (selectedFiles.isEmpty()) {
-                Toast.makeText(requireContext(), R.string.no_files_to_archive, Toast.LENGTH_SHORT).show()
-                return@launch
-            }
-            val jobId = fileOperationsDao.addFilesForJob(selectedFiles)
-            val fragmentManager = parentFragmentManager
-            val newFragment = TarOptionsDialogFragment.newInstance(jobId)
-
-            // Show the fragment fullscreen.
-            val transaction = fragmentManager.beginTransaction()
-            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-            transaction.add(android.R.id.content, newFragment)
-                .addToBackStack(null)
-                .commit()
-
-            actionMode?.finish() // Destroy the action mode
-        }
+        prepareArchiveAndShowDialog { jobId -> TarOptionsDialogFragment.newInstance(jobId) }
     }
 
     private fun showZipOptionsDialog() {
+        prepareArchiveAndShowDialog { jobId -> ZipOptionDialogFragment.newInstance(jobId) }
+    }
+
+    private fun prepareArchiveAndShowDialog(createFragment: (String) -> Fragment) {
         lifecycleScope.launch {
-            val selectedFiles = adapter.getSelectedFilesPaths()
-            if (selectedFiles.isEmpty()) {
-                Toast.makeText(requireContext(), R.string.no_files_to_archive, Toast.LENGTH_SHORT).show()
-                return@launch
+            val loadingDialog = MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
+                .setMessage(getString(R.string.please_wait))
+                .setCancelable(false)
+                .create()
+            loadingDialog.show()
+
+            try {
+                val selectedFiles = adapter.getSelectedFilesPaths()
+                if (selectedFiles.isEmpty()) {
+                    Toast.makeText(requireContext(), R.string.no_files_to_archive, Toast.LENGTH_SHORT).show()
+                    return@launch
+                }
+                val jobId = withContext(Dispatchers.IO) {
+                    fileOperationsDao.addFilesForJob(selectedFiles)
+                }
+
+                val fragmentManager = parentFragmentManager
+                val newFragment = createFragment(jobId)
+
+                // Show the fragment fullscreen.
+                val transaction = fragmentManager.beginTransaction()
+                transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+                transaction.add(android.R.id.content, newFragment)
+                    .addToBackStack(null)
+                    .commit()
+
+                actionMode?.finish()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(requireContext(), R.string.general_error_msg, Toast.LENGTH_SHORT).show()
+            } finally {
+                loadingDialog.dismiss()
             }
-            val jobId = fileOperationsDao.addFilesForJob(selectedFiles)
-            val fragmentManager = parentFragmentManager
-            val newFragment = ZipOptionDialogFragment.newInstance(jobId)
-
-            // Show the fragment fullscreen.
-            val transaction = fragmentManager.beginTransaction()
-            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-            transaction.add(android.R.id.content, newFragment)
-                .addToBackStack(null)
-                .commit()
-
-            actionMode?.finish()
         }
     }
 
@@ -1631,35 +1615,45 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 } else {
                     loadingDialog.show()
                     lifecycleScope.launch(Dispatchers.IO) {
-                        val isMultipartZip = MultipartArchiveHelper.isMultipartZip(file)
-                        val isMultipart7z = MultipartArchiveHelper.isMultipart7z(file)
-                        val isMultipartRar = MultipartArchiveHelper.isMultipartRar(file)
+                        try {
+                            val isMultipartZip = MultipartArchiveHelper.isMultipartZip(file)
+                            val isMultipart7z = MultipartArchiveHelper.isMultipart7z(file)
+                            val isMultipartRar = MultipartArchiveHelper.isMultipartRar(file)
 
-                        val isEncrypted = EncryptionCheckHelper.isEncrypted(file)
-                        withContext(Dispatchers.Main) {
-                            loadingDialog.dismiss()
-                            if (isMultipartZip) {
-                                if (isEncrypted) showPasswordInputMultiZipDialog(filePaths, destinationPath)
-                                else startMultiZipExtractionService(filePaths, null, destinationPath)
-                            } else if (isMultipart7z) {
-                                if (isEncrypted) showPasswordInputMulti7zDialog(filePaths, destinationPath)
-                                else startMulti7zExtractionService(filePaths, null, destinationPath)
-                            } else if (isMultipartRar) {
-                                if (isEncrypted) showPasswordInputMultiRarDialog(filePaths, destinationPath)
-                                else startRarExtractionService(filePaths, null, destinationPath)
-                            } else {
-                                if (file.extension.equals("rar", ignoreCase = true)) {
+                            val isEncrypted = EncryptionCheckHelper.isEncrypted(file)
+                            withContext(Dispatchers.Main) {
+                                if (isMultipartZip) {
+                                    if (isEncrypted) showPasswordInputMultiZipDialog(filePaths, destinationPath)
+                                    else startMultiZipExtractionService(filePaths, null, destinationPath)
+                                } else if (isMultipart7z) {
+                                    if (isEncrypted) showPasswordInputMulti7zDialog(filePaths, destinationPath)
+                                    else startMulti7zExtractionService(filePaths, null, destinationPath)
+                                } else if (isMultipartRar) {
                                     if (isEncrypted) showPasswordInputMultiRarDialog(filePaths, destinationPath)
                                     else startRarExtractionService(filePaths, null, destinationPath)
                                 } else {
-                                    if (isEncrypted) {
-                                        showPasswordInputDialog(filePaths, destinationPath)
+                                    if (file.extension.equals("rar", ignoreCase = true)) {
+                                        if (isEncrypted) showPasswordInputMultiRarDialog(filePaths, destinationPath)
+                                        else startRarExtractionService(filePaths, null, destinationPath)
                                     } else {
-                                        startExtractionService(filePaths, null, destinationPath)
+                                        if (isEncrypted) {
+                                            showPasswordInputDialog(filePaths, destinationPath)
+                                        } else {
+                                            startExtractionService(filePaths, null, destinationPath)
+                                        }
                                     }
                                 }
+                                bottomSheetDialog.dismiss()
                             }
-                            bottomSheetDialog.dismiss()
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(requireContext(), R.string.general_error_msg, Toast.LENGTH_SHORT).show()
+                            }
+                        } finally {
+                            withContext(Dispatchers.Main) {
+                                loadingDialog.dismiss()
+                            }
                         }
                     }
                 }

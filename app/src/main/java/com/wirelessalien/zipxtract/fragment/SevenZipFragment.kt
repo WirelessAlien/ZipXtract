@@ -57,7 +57,9 @@ import com.wirelessalien.zipxtract.helper.FileOperationsDao
 import com.wirelessalien.zipxtract.helper.PathUtils
 import com.wirelessalien.zipxtract.service.ExtractArchiveService
 import com.wirelessalien.zipxtract.service.Update7zService
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import net.sf.sevenzipjbinding.IInArchive
 import net.sf.sevenzipjbinding.PropID
 import net.sf.sevenzipjbinding.SevenZip
@@ -358,15 +360,35 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
     }
 
     override fun onFilesSelected(files: List<File>) {
-        binding.progressBar.visibility = View.VISIBLE
-        val filePairs = files.map { it.absolutePath to (if (currentPath.isEmpty()) it.name else "$currentPath/${it.name}") }
-        val jobId = fileOperationsDao.addFilePairsForJob(filePairs)
+        lifecycleScope.launch {
+            val loadingDialog = MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
+                .setMessage(getString(R.string.please_wait))
+                .setCancelable(false)
+                .create()
+            loadingDialog.show()
 
-        val intent = Intent(requireContext(), Update7zService::class.java).apply {
-            putExtra(ServiceConstants.EXTRA_ARCHIVE_PATH, archivePath)
-            putExtra(ServiceConstants.EXTRA_ITEMS_TO_ADD_JOB_ID, jobId)
+            try {
+                binding.progressBar.visibility = View.VISIBLE
+                val filePairs = withContext(Dispatchers.IO) {
+                    files.map { it.absolutePath to (if (currentPath.isEmpty()) it.name else "$currentPath/${it.name}") }
+                }
+                val jobId = withContext(Dispatchers.IO) {
+                    fileOperationsDao.addFilePairsForJob(filePairs)
+                }
+
+                val intent = Intent(requireContext(), Update7zService::class.java).apply {
+                    putExtra(ServiceConstants.EXTRA_ARCHIVE_PATH, archivePath)
+                    putExtra(ServiceConstants.EXTRA_ITEMS_TO_ADD_JOB_ID, jobId)
+                }
+                requireContext().startService(intent)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(requireContext(), R.string.general_error_msg, Toast.LENGTH_SHORT).show()
+                binding.progressBar.visibility = View.GONE
+            } finally {
+                loadingDialog.dismiss()
+            }
         }
-        requireContext().startService(intent)
     }
 
     private fun showBottomSheetOptions(item: ArchiveItem) {
