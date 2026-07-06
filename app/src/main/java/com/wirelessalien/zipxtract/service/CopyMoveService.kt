@@ -179,7 +179,7 @@ class CopyMoveService : Service() {
     private fun stopForegroundService() {
         stopForeground(STOP_FOREGROUND_REMOVE)
         val notificationManager = getSystemService(NotificationManager::class.java)
-        notificationManager.cancel(Archive7zService.NOTIFICATION_ID)
+        notificationManager.cancel(NOTIFICATION_ID)
     }
 
     override fun onDestroy() {
