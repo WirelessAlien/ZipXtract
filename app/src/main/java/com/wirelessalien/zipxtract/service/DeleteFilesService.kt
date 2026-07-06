@@ -72,7 +72,7 @@ class DeleteFilesService : Service() {
     private fun deleteFiles(files: List<File>) {
         val totalFilesCount = countTotalFiles(files)
         var deletedFilesCount = 0
-        val pathsToScan = mutableListOf<String>()
+        val pathsToScan = mutableSetOf<String>()
 
         fun deleteFile(file: File) {
             pathsToScan.add(file.absolutePath)
@@ -88,8 +88,8 @@ class DeleteFilesService : Service() {
             deleteFile(file)
         }
 
-        if (pathsToScan.isNotEmpty()) {
-            MediaScannerConnection.scanFile(this, pathsToScan.toTypedArray(), null, null)
+        pathsToScan.chunked(500).forEach { chunk ->
+            MediaScannerConnection.scanFile(this, chunk.toTypedArray(), null, null)
         }
 
         stopForegroundService()

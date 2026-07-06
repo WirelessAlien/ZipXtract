@@ -244,6 +244,7 @@ class ExtractCsArchiveService : Service() {
                 }
             }
 
+            val canonicalDirPath = destinationDir.canonicalPath
             TarArchiveInputStream(compressorInputStream).use { tarInput ->
                 var entry: TarArchiveEntry? = tarInput.nextEntry
                 var lastProgress = -1
@@ -252,7 +253,6 @@ class ExtractCsArchiveService : Service() {
                         return
                     }
                     val outputFile = File(destinationDir, entry.name)
-                    val canonicalDirPath = destinationDir.canonicalPath
                     val canonicalFilePath = outputFile.canonicalPath
                     if (!canonicalFilePath.startsWith(canonicalDirPath + File.separator) && canonicalFilePath != canonicalDirPath) {
                         throw IOException("Zip Slip detected: ${entry.name}")

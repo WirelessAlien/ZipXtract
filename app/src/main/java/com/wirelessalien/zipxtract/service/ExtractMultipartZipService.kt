@@ -221,11 +221,12 @@ class ExtractMultipartZipService : Service() {
             val fileHeaders = zipFile.fileHeaders
             progressMonitor = zipFile.progressMonitor
             val directories = mutableListOf<DirectoryInfo>()
+            val canonicalExtractPath = extractDir.canonicalPath
+            val destDirPath = canonicalExtractPath + if (canonicalExtractPath.endsWith(File.separator)) "" else File.separator
 
             fileHeaders.forEach { header ->
                 if (header.isDirectory) {
                     val destFile = File(extractDir, header.fileName)
-                    val destDirPath = extractDir.canonicalPath + if (extractDir.canonicalPath.endsWith(File.separator)) "" else File.separator
                     if (destFile.canonicalPath.startsWith(destDirPath)) {
                         val directoryPath = destFile.path
                         val lastModified = if (header.lastModifiedTime > 0) header.lastModifiedTimeEpoch else System.currentTimeMillis()

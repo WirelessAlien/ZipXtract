@@ -455,11 +455,12 @@ class ExtractArchiveService : Service() {
                         Archive.readOpen1(archive)
                         val directories = mutableListOf<DirectoryInfo>()
 
+                        val canonicalDstPath = destinationDir.canonicalPath
                         var entry = Archive.readNextHeader(archive)
                         while (entry != 0L) {
                             val entryPath = getEntryPath(entry)
                             val outputFile = File(destinationDir, entryPath)
-                            if (!outputFile.canonicalPath.startsWith(destinationDir.canonicalPath + File.separator) && outputFile.canonicalPath != destinationDir.canonicalPath) {
+                            if (!outputFile.canonicalPath.startsWith(canonicalDstPath + File.separator) && outputFile.canonicalPath != canonicalDstPath) {
                                 throw IOException("Zip Slip detected: $entryPath")
                             }
 
@@ -524,6 +525,7 @@ class ExtractArchiveService : Service() {
             BufferedInputStream(FileInputStream(file)).use { bis ->
                 val ais: ArchiveInputStream<out org.apache.commons.compress.archivers.ArchiveEntry> = ArchiveStreamFactory().createArchiveInputStream(bis)
                 ais.use { input ->
+                    val canonicalDstPath = destinationDir.canonicalPath
                     val directories = mutableListOf<DirectoryInfo>()
                     val buffer = ByteArray(65536)
                     var entry = input.nextEntry
@@ -533,7 +535,7 @@ class ExtractArchiveService : Service() {
                             continue
                         }
                         val outputFile = File(destinationDir, entry.name)
-                        if (!outputFile.canonicalPath.startsWith(destinationDir.canonicalPath + File.separator) && outputFile.canonicalPath != destinationDir.canonicalPath) {
+                        if (!outputFile.canonicalPath.startsWith(canonicalDstPath + File.separator) && outputFile.canonicalPath != canonicalDstPath) {
                             throw IOException("Zip Slip detected: ${entry.name}")
                         }
 
@@ -634,14 +636,14 @@ class ExtractArchiveService : Service() {
             val buffer = ByteArray(65536)
             val directories = mutableListOf<DirectoryInfo>()
             var lastProgress = -1
+            val canonicalDstPath = destinationDir.canonicalPath
+            val safeDstPath = if (canonicalDstPath.endsWith(File.separator)) canonicalDstPath else canonicalDstPath + File.separator
 
             TarArchiveInputStream(FileInputStream(file)).use { tarInput ->
                 var entry: TarArchiveEntry? = tarInput.nextEntry
                 while (entry != null) {
                     val outputFile = File(destinationDir, entry.name)
                     
-                    val canonicalDstPath = destinationDir.canonicalPath
-                    val safeDstPath = if (canonicalDstPath.endsWith(File.separator)) canonicalDstPath else canonicalDstPath + File.separator
                     if (!outputFile.canonicalPath.startsWith(safeDstPath)) {
                         throw IOException("Zip Slip detected: ${entry.name}")
                     }
@@ -772,10 +774,11 @@ class ExtractArchiveService : Service() {
                     }
                 }
             } else {
+                val canonicalDstPath = finalDestinationDir.canonicalPath
+                val destDirPath = canonicalDstPath + if (canonicalDstPath.endsWith(File.separator)) "" else File.separator
                 for (fileHeader in zipFile.fileHeaders) {
                     if (fileHeader.isDirectory) {
                         val destFile = File(finalDestinationDir, fileHeader.fileName)
-                        val destDirPath = finalDestinationDir.canonicalPath + if (finalDestinationDir.canonicalPath.endsWith(File.separator)) "" else File.separator
                         if (destFile.canonicalPath.startsWith(destDirPath)) {
                             val directoryPath = destFile.path
                             val lastModified = if (fileHeader.lastModifiedTime > 0) fileHeader.lastModifiedTimeEpoch else System.currentTimeMillis()
@@ -860,9 +863,11 @@ class ExtractArchiveService : Service() {
         var hasUnsupportedMethod = false
         var hasError = false
         val directories = mutableListOf<DirectoryInfo>()
+        private val dstDirCanonicalPath: String
 
         init {
             totalSize = inArchive.numberOfItems.toLong()
+            dstDirCanonicalPath = dstDir.canonicalPath
         }
 
         private var errorBroadcasted = false
@@ -925,9 +930,8 @@ class ExtractArchiveService : Service() {
             val isDir: Boolean = inArchive.getProperty(p0, PropID.IS_FOLDER) as Boolean
             this.currentUnpackedFile = File(dstDir.path, path) // Store current unpacked file
 
-            val destDirCanonical = dstDir.canonicalPath
             val fileCanonical = this.currentUnpackedFile!!.canonicalPath
-            if (!fileCanonical.startsWith(destDirCanonical + File.separator) && fileCanonical != destDirCanonical) {
+            if (!fileCanonical.startsWith(dstDirCanonicalPath + File.separator) && fileCanonical != dstDirCanonicalPath) {
                 throw SevenZipException("Zip Slip detected: $path")
             }
 

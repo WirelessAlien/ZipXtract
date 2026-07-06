@@ -276,11 +276,13 @@ class ExtractMultipart7zService : Service() {
         private var currentFileIndex: Int = -1
         private var currentUnpackedFile: File? = null
         val directories = mutableListOf<DirectoryInfo>()
+        private val dstDirCanonicalPath: String
         private var lastProgress = -1
         var hasError = false
 
         init {
             totalSize = inArchive.numberOfItems.toLong()
+            dstDirCanonicalPath = dstDir.canonicalPath
         }
 
         private var errorBroadcasted = false
@@ -342,9 +344,8 @@ class ExtractMultipart7zService : Service() {
             val isDir: Boolean = inArchive.getProperty(p0, PropID.IS_FOLDER) as Boolean
             this.currentUnpackedFile = File(dstDir, path) // Store current unpacked file
 
-            val destDirCanonical = dstDir.canonicalPath
             val fileCanonical = this.currentUnpackedFile!!.canonicalPath
-            if (!fileCanonical.startsWith(destDirCanonical + File.separator) && fileCanonical != destDirCanonical) {
+            if (!fileCanonical.startsWith(dstDirCanonicalPath + File.separator) && fileCanonical != dstDirCanonicalPath) {
                 throw SevenZipException("Zip Slip detected: $path")
             }
 

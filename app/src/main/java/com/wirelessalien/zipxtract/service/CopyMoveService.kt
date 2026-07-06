@@ -80,7 +80,7 @@ class CopyMoveService : Service() {
         }
 
         var processedFilesCount = 0
-        val pathsToScan = mutableListOf<String>()
+        val pathsToScan = mutableSetOf<String>()
 
         val progressCallback: (Int) -> Unit = { count ->
             processedFilesCount += count
@@ -117,7 +117,9 @@ class CopyMoveService : Service() {
             }
         }
 
-        MediaScannerConnection.scanFile(this, pathsToScan.toTypedArray(), null, null)
+        pathsToScan.chunked(500).forEach { chunk ->
+            MediaScannerConnection.scanFile(this, chunk.toTypedArray(), null, null)
+        }
 
         stopForegroundService()
         stopSelf()
