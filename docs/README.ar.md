@@ -6,7 +6,7 @@
 [![GitHub all releases](https://img.shields.io/github/downloads/WirelessAlien/ZipXtract/total)](https://img.shields.io/github/downloads/WirelessAlien/ZipXtract/total)
 ![IzzyOnDroid](https://img.shields.io/endpoint?url=https://apt.izzysoft.de/fdroid/api/v1/shield/com.wirelessalien.zipxtract)
 
-<p style="text-align: left;">ZipXtract هو تطبيق أندرويد مفتوح المصدر بالكامل مصمم للتعامل مع مجموعة واسعة من صيغ الأرشيف، بما في ذلك:</p>
+<p>ZipXtract هو تطبيق أندرويد مفتوح المصدر بالكامل مصمم للتعامل مع مجموعة واسعة من صيغ الأرشيف، بما في ذلك:</p>
 <ul>
 <li>RAR (بدعم RAR5 والأرشيفات متعددة المجلدات)</li>
 <li>ZIP (بما في ذلك الأرشيفات المحمية بكلمة مرور والمقسمة)</li>

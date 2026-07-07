@@ -51,8 +51,7 @@
 
 <h2>மொழிபெயர்</h2>
 <p>
-<a href="https://hosted.weblate.org/engage/zipxtract/">Weblate மூலம் பயன்பாட்டை உள்ளூர்மயமாக்க உதவுங்கள்.
-</a>
+<a href="https://hosted.weblate.org/engage/zipxtract/">Weblate</a> மூலம் பயன்பாட்டை உள்ளூர்மயமாக்க உதவுங்கள்.
 </p>
 
 <h2>உரிமம்</h2>
