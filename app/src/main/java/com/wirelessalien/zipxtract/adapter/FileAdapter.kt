@@ -108,9 +108,8 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
             selectedItems.put(position, true)
         }
 
-        for (file in directory.listFiles() ?: emptyArray()) {
-            val index = filteredFiles.indexOfFirst { it.file == file }
-            if (index != -1) {
+        for ((index, item) in filteredFiles.withIndex()) {
+            if (item.file.parentFile?.absolutePath == directory.absolutePath) {
                 toggleSelection(index)
             }
         }
@@ -301,6 +300,17 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
     fun removeItem(position: Int) {
         files.removeAt(position)
         notifyItemRemoved(position)
+    }
+
+    fun removeFileItem(fileItem: FileItem) {
+        val indexInFiltered = filteredFiles.indexOf(fileItem)
+        if (indexInFiltered != -1) {
+            val newList = filteredFiles.toMutableList()
+            newList.removeAt(indexInFiltered)
+            filteredFiles = newList
+            notifyItemRemoved(indexInFiltered)
+        }
+        files.remove(fileItem)
     }
 
     fun updateFilesAndFilter(newFiles: List<FileItem>, query: String? = null) {

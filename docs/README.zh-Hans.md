@@ -1,0 +1,62 @@
+# ZipXtract
+
+[![GitHub release](https://img.shields.io/github/v/release/WirelessAlien/ZipXtract)](https://github.com/WirelessAlien/ZipXtract/releases/latest)
+[![GitHub license](https://img.shields.io/github/license/WirelessAlien/ZipXtract)](../License)
+[![GitHub Repo stars](https://img.shields.io/github/stars/WirelessAlien/ZipXtract)](https://img.shields.io/github/stars/WirelessAlien/ZipXtract)
+[![GitHub all releases](https://img.shields.io/github/downloads/WirelessAlien/ZipXtract/total)](https://img.shields.io/github/downloads/WirelessAlien/ZipXtract/total)
+![IzzyOnDroid](https://img.shields.io/endpoint?url=https://apt.izzysoft.de/fdroid/api/v1/shield/com.wirelessalien.zipxtract)
+
+<p style="text-align: left;">ZipXtract 是一款完全开源的 Android 应用，支持处理多种归档格式，包括：</p>
+<ul>
+<li>RAR（支持 RAR5 和分卷归档文件）</li>
+<li>ZIP（支持密码保护和分卷归档文件）</li>
+<li>TAR</li>
+<li>BZ2</li>
+<li>GZ</li>
+<li>7z（支持密码保护和分卷归档文件）</li>
+<li>XZ</li>
+<li>JAR</li>
+<li>…</li>
+</ul>
+
+<h2>功能</h2>
+
+<h3>提取：</h3>
+<ul>
+<li>支持多种格式：RAR、ZIP、TAR、BZ2、GZ、7z、XZ、JAR 等。</li>
+<li>处理加密的 ZIP 和 7z 文件。</li>
+<li>提取分卷 RAR 归档文件。</li>
+<li>提取分卷归档文件。</li>
+<li>提取分卷 ZIP 文件。</li>
+</ul>
+
+<h3>创建：</h3>
+<ul>
+<li>创建 ZIP 和 7z 归档文件，并提供加密选项。</li>
+<li>创建分卷 ZIP 归档文件。</li>
+</ul>
+
+
+<h2>使用提示</h2>
+<p>归档文件提取和创建的一般提示：</p>
+<ul>
+<li>长按文件和文件夹或点击文件/文件夹图标即可选择以对其进行归档。</li>
+<li>点击文件即可显示提取菜单，选择提取选项。</li>
+<li>使用操作系统“打开方式”菜单提取的文件默认存储在 <strong>内部存储空间/ZipXtract</strong> 中。您可以在应用设置中修改此设置。</li>
+<li>（应用内）归档或提取归档文件的默认位置是相应文件的上级目录。</li>
+</ul>
+
+<h2>应用权限</h2>
+<p>读取和写入存储权限（Android 10 及更低版本）以及管理外部存储权限（Android 11 及更高版本）。该应用没有互联网权限。了解详情 - <a href="https://sites.google.com/view/privacy-policy-zipxtract/home">隐私政策</a></p>
+
+<h2>翻译</h2>
+<p>
+欢迎帮助本地化应用，请通过&nbsp;<a href="https://hosted.weblate.org/engage/zipxtract/">Weblate
+</a>
+</p>
+
+<h2>开放源代码许可</h2>
+<p>本项目采用 GNU General Public License v3.0。详情请参阅 <a href="../LICENSE">LICENSE</a> 文件。</p>
+
+<h2>联系我们</h2>
+<p>如有任何疑问或反馈，请在 <a href="../issues">GitHub 仓库</a>提交问题。</p>

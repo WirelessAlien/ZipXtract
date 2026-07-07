@@ -22,35 +22,34 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.pm.ServiceInfo
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.media.MediaScannerConnection
 import android.os.Build
 import android.os.Environment
 import android.os.IBinder
+import android.os.PowerManager
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.preference.PreferenceManager
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.activity.MainActivity
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_COMPLETE
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_ERROR
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_PROGRESS
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_CANCEL_OPERATION
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ARCHIVE_NOTIFICATION_CHANNEL_ID
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_DIR_PATH
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_ERROR_MESSAGE
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_PROGRESS
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.PREFERENCE_ARCHIVE_DIR_PATH
 import com.wirelessalien.zipxtract.constant.ServiceConstants
+import com.wirelessalien.zipxtract.helper.AppEvent
+import com.wirelessalien.zipxtract.helper.EventBus
 import com.wirelessalien.zipxtract.helper.FileOperationsDao
+import com.wirelessalien.zipxtract.helper.FileUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.cancel
 import net.sf.sevenzipjbinding.ICryptoGetTextPassword
 import net.sf.sevenzipjbinding.IOutCreateCallback
 import net.sf.sevenzipjbinding.IOutItem7z
@@ -72,6 +71,7 @@ class Archive7zService : Service() {
         const val NOTIFICATION_ID = 13
     }
 
+    private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private var archiveJob: Job? = null
 
     private val cancelReceiver = object : BroadcastReceiver() {
@@ -93,7 +93,10 @@ class Archive7zService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val archiveName = intent?.getStringExtra(ServiceConstants.EXTRA_ARCHIVE_NAME) ?: return START_NOT_STICKY
+        val archiveName = intent?.getStringExtra(ServiceConstants.EXTRA_ARCHIVE_NAME) ?: run {
+            stopSelf(startId)
+            return START_NOT_STICKY
+        }
         val password = intent.getStringExtra(ServiceConstants.EXTRA_PASSWORD)
         val compressionLevel = intent.getIntExtra(ServiceConstants.EXTRA_COMPRESSION_LEVEL, 1)
         val solid = intent.getBooleanExtra(ServiceConstants.EXTRA_SOLID, false)
@@ -103,22 +106,35 @@ class Archive7zService : Service() {
 
         if (jobId == null) {
             sendErrorBroadcast(getString(R.string.general_error_msg))
+            stopSelf(startId)
             return START_NOT_STICKY
         }
 
-        startForeground(NOTIFICATION_ID, createNotification(0))
-
-        archiveJob = CoroutineScope(Dispatchers.IO).launch {
-            val filesToArchive = fileOperationsDao.getFilesForJob(jobId)
-            create7zFile(archiveName, password, compressionLevel, solid, threadCount, filesToArchive, destinationPath)
-            fileOperationsDao.deleteFilesForJob(jobId)
-            stopSelf()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            startForeground(NOTIFICATION_ID, createNotification(0), ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
+        } else {
+            startForeground(NOTIFICATION_ID, createNotification(0))
         }
-        return START_STICKY
+
+        archiveJob = serviceScope.launch {
+            val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+            val wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "ZipXtract:Archive7zWakeLock")
+            wakeLock.acquire(60 * 60 * 1000L /*1 hour*/)
+            try {
+                val filesToArchive = fileOperationsDao.getFilesForJob(jobId)
+                create7zFile(archiveName, password, compressionLevel, solid, threadCount, filesToArchive, destinationPath)
+                fileOperationsDao.deleteFilesForJob(jobId)
+            } finally {
+                if (wakeLock.isHeld) wakeLock.release()
+                stopSelf(startId)
+            }
+        }
+        return START_NOT_STICKY
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        serviceScope.cancel()
         archiveJob?.cancel()
         unregisterReceiver(cancelReceiver)
     }
@@ -154,10 +170,6 @@ class Archive7zService : Service() {
         return builder.build()
     }
 
-    private fun sendLocalBroadcast(intent: Intent) {
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
-    }
-
     private fun create7zFile(
         archiveName: String,
         password: String?,
@@ -171,7 +183,7 @@ class Archive7zService : Service() {
         if (filesToArchive.isEmpty()) {
             val errorMessage = getString(R.string.no_files_to_archive)
             showErrorNotification(errorMessage)
-            sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, errorMessage))
+            EventBus.emit(AppEvent.ArchiveError(errorMessage))
             stopForegroundService()
             return
         }
@@ -273,7 +285,7 @@ class Archive7zService : Service() {
                 stopForegroundService()
                 showCompletionNotification(sevenZFile)
                 scanForNewFile(sevenZFile)
-                sendLocalBroadcast(Intent(ACTION_ARCHIVE_COMPLETE).putExtra(EXTRA_DIR_PATH, sevenZFile.parent))
+                EventBus.emit(AppEvent.ArchiveComplete(sevenZFile.parent))
             }
         } catch (e: SevenZipException) {
             if (e.message == "Cancelled") {
@@ -281,32 +293,38 @@ class Archive7zService : Service() {
             } else {
                 e.printStackTrace()
                 showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-                sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message))
+                EventBus.emit(AppEvent.ArchiveError(e.message))
             }
         } catch (e: IOException) {
             e.printStackTrace()
             showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-            sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message))
+            EventBus.emit(AppEvent.ArchiveError(e.message))
         } catch (e: OutOfMemoryError) {
             e.printStackTrace()
             showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-            sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message))
+            EventBus.emit(AppEvent.ArchiveError(e.message))
         } finally {
             filesDir.deleteRecursively()
         }
     }
 
-    private fun updateProgress(progress: Int) {
-        val notification = createNotification(progress)
-        val notificationManager = getSystemService(NotificationManager::class.java)
-        notificationManager.notify(NOTIFICATION_ID, notification)
+    private var lastNotifyTime = 0L
 
-        sendLocalBroadcast(Intent(ACTION_ARCHIVE_PROGRESS).putExtra(
-            EXTRA_PROGRESS, progress))
+    private fun updateProgress(progress: Int) {
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - lastNotifyTime >= 500 || progress == 100 || progress == 0) {
+            lastNotifyTime = currentTime
+            
+            val notification = createNotification(progress)
+            val notificationManager = getSystemService(NotificationManager::class.java)
+            notificationManager.notify(NOTIFICATION_ID, notification)
+
+            EventBus.emit(AppEvent.ArchiveProgress(progress))
+        }
     }
 
     private fun sendErrorBroadcast(errorMessage: String) {
-        sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, errorMessage))
+        EventBus.emit(AppEvent.ArchiveError(errorMessage))
     }
 
     private fun showCompletionNotification(file: File) {
@@ -354,6 +372,6 @@ class Archive7zService : Service() {
     }
 
     private fun scanForNewFile(file: File) {
-        MediaScannerConnection.scanFile(this, arrayOf(file.absolutePath), null, null)
+        FileUtils.scanFiles(this, listOf(file.absolutePath))
     }
 }

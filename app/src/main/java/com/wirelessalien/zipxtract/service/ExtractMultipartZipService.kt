@@ -22,44 +22,44 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.pm.ServiceInfo
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.media.MediaScannerConnection
 import android.os.Build
 import android.os.Environment
 import android.os.IBinder
+import android.os.PowerManager
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.preference.PreferenceManager
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.activity.MainActivity
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_CANCEL_OPERATION
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_COMPLETE
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_ERROR
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_PROGRESS
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRACTION_NOTIFICATION_CHANNEL_ID
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_DIR_PATH
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_ERROR_MESSAGE
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_PROGRESS
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.PREFERENCE_EXTRACT_DIR_PATH
 import com.wirelessalien.zipxtract.constant.ServiceConstants
+import com.wirelessalien.zipxtract.helper.AppEvent
+import com.wirelessalien.zipxtract.helper.EventBus
 import com.wirelessalien.zipxtract.helper.FileOperationsDao
 import com.wirelessalien.zipxtract.helper.FileUtils
 import com.wirelessalien.zipxtract.model.DirectoryInfo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.cancel
 import net.lingala.zip4j.ZipFile
 import net.lingala.zip4j.exception.ZipException
 import net.lingala.zip4j.progress.ProgressMonitor
 import java.io.File
 
 class ExtractMultipartZipService : Service() {
+
+    private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     private lateinit var fileOperationsDao: FileOperationsDao
 
@@ -90,32 +90,46 @@ class ExtractMultipartZipService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val jobId = intent?.getStringExtra(ServiceConstants.EXTRA_JOB_ID) ?: return START_NOT_STICKY
+        val jobId = intent?.getStringExtra(ServiceConstants.EXTRA_JOB_ID) ?: run {
+            stopSelf(startId)
+            return START_NOT_STICKY
+        }
         val password = intent.getStringExtra(ServiceConstants.EXTRA_PASSWORD)
         val destinationPath = intent.getStringExtra(ServiceConstants.EXTRA_DESTINATION_PATH)
 
         if (jobId.isEmpty()) {
-            stopSelf()
+            stopSelf(startId)
             return START_NOT_STICKY
         }
-        startForeground(NOTIFICATION_ID, createNotification(0))
-
-        extractionJob = CoroutineScope(Dispatchers.IO).launch {
-            val filesToExtract = fileOperationsDao.getFileForJob(jobId)
-            if (filesToExtract?.isEmpty() == true) {
-                fileOperationsDao.deleteFilesForJob(jobId)
-                stopSelf()
-                return@launch
-            }
-            extractArchive(filesToExtract ?:"", password, destinationPath)
-            fileOperationsDao.deleteFilesForJob(jobId)
-            stopSelf()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            startForeground(NOTIFICATION_ID, createNotification(0), ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
+        } else {
+            startForeground(NOTIFICATION_ID, createNotification(0))
         }
-        return START_STICKY
+
+        extractionJob = serviceScope.launch {
+            val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+            val wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "ZipXtract:ExtractMultipartZipWakeLock")
+            wakeLock.acquire(60 * 60 * 1000L /*1 hour*/)
+            try {
+                val filesToExtract = fileOperationsDao.getFileForJob(jobId)
+                if (filesToExtract?.isEmpty() == true) {
+                    fileOperationsDao.deleteFilesForJob(jobId)
+                    return@launch
+                }
+                extractArchive(filesToExtract ?: "", password, destinationPath)
+                fileOperationsDao.deleteFilesForJob(jobId)
+            } finally {
+                if (wakeLock.isHeld) wakeLock.release()
+                stopSelf(startId)
+            }
+        }
+        return START_NOT_STICKY
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        serviceScope.cancel()
         extractionJob?.cancel()
         unregisterReceiver(cancelReceiver)
     }
@@ -151,16 +165,12 @@ class ExtractMultipartZipService : Service() {
         return builder.build()
     }
 
-    private fun sendLocalBroadcast(intent: Intent) {
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
-    }
-
     private suspend fun extractArchive(filePath: String, password: String?, destinationPath: String?) {
 
         if (filePath.isEmpty()) {
             val errorMessage = getString(R.string.no_files_to_archive)
             showErrorNotification(errorMessage)
-            sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(EXTRA_ERROR_MESSAGE, errorMessage))
+            EventBus.emit(AppEvent.ExtractionError(errorMessage))
             stopForegroundService()
             return
         }
@@ -225,12 +235,17 @@ class ExtractMultipartZipService : Service() {
             val fileHeaders = zipFile.fileHeaders
             progressMonitor = zipFile.progressMonitor
             val directories = mutableListOf<DirectoryInfo>()
+            val canonicalExtractPath = extractDir.canonicalPath
+            val destDirPath = canonicalExtractPath + if (canonicalExtractPath.endsWith(File.separator)) "" else File.separator
 
             fileHeaders.forEach { header ->
                 if (header.isDirectory) {
-                    val directoryPath = File(extractDir, header.fileName).path
-                    val lastModified = if (header.lastModifiedTime > 0) header.lastModifiedTimeEpoch else System.currentTimeMillis()
-                    directories.add(DirectoryInfo(directoryPath, lastModified))
+                    val destFile = File(extractDir, header.fileName)
+                    if (destFile.canonicalPath.startsWith(destDirPath)) {
+                        val directoryPath = destFile.path
+                        val lastModified = if (header.lastModifiedTime > 0) header.lastModifiedTimeEpoch else System.currentTimeMillis()
+                        directories.add(DirectoryInfo(directoryPath, lastModified))
+                    }
                 }
             }
 
@@ -254,7 +269,7 @@ class ExtractMultipartZipService : Service() {
                 FileUtils.setLastModifiedTime(directories)
                 scanForNewFiles(extractDir)
                 showCompletionNotification(extractDir)
-                sendLocalBroadcast(Intent(ACTION_EXTRACTION_COMPLETE).putExtra(EXTRA_DIR_PATH, extractDir.absolutePath))
+                EventBus.emit(AppEvent.ExtractionComplete(extractDir.absolutePath))
             } else {
                 val exception = progressMonitor!!.exception
                 val errorMessage = if (exception is ZipException && exception.type == ZipException.Type.WRONG_PASSWORD) {
@@ -263,21 +278,28 @@ class ExtractMultipartZipService : Service() {
                     exception?.message ?: getString(R.string.general_error_msg)
                 }
                 showErrorNotification(errorMessage)
-                sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(EXTRA_ERROR_MESSAGE, errorMessage))
+                EventBus.emit(AppEvent.ExtractionError(errorMessage))
             }
         } catch (e: ZipException) {
             e.printStackTrace()
             showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-            sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message))
+            EventBus.emit(AppEvent.ExtractionError(e.message ?: getString(R.string.general_error_msg)))
         }
     }
 
-    private fun updateProgress(progress: Int) {
-        val notification = createNotification(progress)
-        val notificationManager = getSystemService(NotificationManager::class.java)
-        notificationManager.notify(NOTIFICATION_ID, notification)
+    private var lastNotifyTime = 0L
 
-        sendLocalBroadcast(Intent(ACTION_EXTRACTION_PROGRESS).putExtra(EXTRA_PROGRESS, progress))
+    private suspend fun updateProgress(progress: Int) {
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - lastNotifyTime >= 500 || progress == 100 || progress == 0) {
+            lastNotifyTime = currentTime
+            
+            val notification = createNotification(progress)
+            val notificationManager = getSystemService(NotificationManager::class.java)
+            notificationManager.notify(NOTIFICATION_ID, notification)
+
+            EventBus.emit(AppEvent.ExtractionProgress(progress))
+        }
     }
 
     private fun showCompletionNotification(destination: File) {
@@ -327,8 +349,8 @@ class ExtractMultipartZipService : Service() {
     private fun scanForNewFiles(directory: File) {
         val files = directory.listFiles()
         if (files != null) {
-            val paths = files.map { it.absolutePath }.toTypedArray()
-            MediaScannerConnection.scanFile(this, paths, null, null)
+            val paths = files.map { it.absolutePath }
+            FileUtils.scanFiles(this, paths)
         }
     }
 }

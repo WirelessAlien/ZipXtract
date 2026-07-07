@@ -22,44 +22,43 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.pm.ServiceInfo
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.media.MediaScannerConnection
 import android.os.Build
 import android.os.Environment
 import android.os.IBinder
+import android.os.PowerManager
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.preference.PreferenceManager
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.activity.MainActivity
 import com.wirelessalien.zipxtract.constant.BroadcastConstants
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_CANCEL_OPERATION
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_COMPLETE
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_ERROR
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_PROGRESS
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRACTION_NOTIFICATION_CHANNEL_ID
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_DIR_PATH
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_ERROR_MESSAGE
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_PROGRESS
 import com.wirelessalien.zipxtract.constant.ServiceConstants
+import com.wirelessalien.zipxtract.helper.AppEvent
+import com.wirelessalien.zipxtract.helper.EventBus
 import com.wirelessalien.zipxtract.helper.FileOperationsDao
 import com.wirelessalien.zipxtract.helper.FileUtils
 import com.wirelessalien.zipxtract.model.DirectoryInfo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.cancel
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.compress.compressors.CompressorException
 import org.apache.commons.compress.compressors.CompressorStreamFactory
 import org.apache.commons.compress.compressors.lzma.LZMACompressorInputStream
 import java.io.BufferedInputStream
+import java.io.BufferedOutputStream
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -68,6 +67,8 @@ import java.io.InputStream
 import java.nio.file.Files
 
 class ExtractCsArchiveService : Service() {
+
+    private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     private lateinit var fileOperationsDao: FileOperationsDao
 
@@ -101,27 +102,37 @@ class ExtractCsArchiveService : Service() {
         val destinationPath = intent?.getStringExtra(ServiceConstants.EXTRA_DESTINATION_PATH)
 
         if (jobId == null) {
-            stopSelf()
+            stopSelf(startId)
             return START_NOT_STICKY
         }
 
-        startForeground(NOTIFICATION_ID, createNotification(0))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            startForeground(NOTIFICATION_ID, createNotification(0), ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
+        } else {
+            startForeground(NOTIFICATION_ID, createNotification(0))
+        }
 
-        extractionJob = CoroutineScope(Dispatchers.IO).launch {
-            val filesToExtract = fileOperationsDao.getFilesForJob(jobId)
-            if (filesToExtract.isEmpty()) {
+        extractionJob = serviceScope.launch {
+            val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+            val wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "ZipXtract:ExtractCsArchiveWakeLock")
+            wakeLock.acquire(60 * 60 * 1000L /*1 hour*/)
+            try {
+                val filesToExtract = fileOperationsDao.getFilesForJob(jobId)
+                if (filesToExtract.isEmpty()) {
+                    fileOperationsDao.deleteFilesForJob(jobId)
+                    return@launch
+                }
+                if (filesToExtract.size > 1) {
+                    Log.w("ExtractCsArchiveService", "This service only supports single file extraction. Only the first file will be extracted.")
+                }
+                val filePath = filesToExtract[0]
+
+                extractArchive(filePath, useAppNameDir, destinationPath)
                 fileOperationsDao.deleteFilesForJob(jobId)
-                stopSelf()
-                return@launch
+            } finally {
+                if (wakeLock.isHeld) wakeLock.release()
+                stopSelf(startId)
             }
-            if (filesToExtract.size > 1) {
-                Log.w("ExtractCsArchiveService", "This service only supports single file extraction. Only the first file will be extracted.")
-            }
-            val filePath = filesToExtract[0]
-
-            extractArchive(filePath, useAppNameDir, destinationPath)
-            fileOperationsDao.deleteFilesForJob(jobId)
-            stopSelf()
         }
 
         return START_NOT_STICKY
@@ -129,6 +140,7 @@ class ExtractCsArchiveService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        serviceScope.cancel()
         extractionJob?.cancel()
         unregisterReceiver(cancelReceiver)
     }
@@ -164,16 +176,12 @@ class ExtractCsArchiveService : Service() {
         return builder.build()
     }
 
-    private fun sendLocalBroadcast(intent: Intent) {
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
-    }
-
     private fun extractArchive(filePath: String, useAppNameDir: Boolean, destinationPath: String?) {
 
         if (filePath.isEmpty()) {
             val errorMessage = getString(R.string.no_files_to_archive)
             showErrorNotification(errorMessage)
-            sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(EXTRA_ERROR_MESSAGE, errorMessage))
+            EventBus.emit(AppEvent.ExtractionError(errorMessage))
             stopForegroundService()
             return
         }
@@ -225,7 +233,7 @@ class ExtractCsArchiveService : Service() {
         try {
             val totalBytes = file.length()
             var bytesRead = 0L
-            val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+            val buffer = ByteArray(65536)
             val directories = mutableListOf<DirectoryInfo>()
 
             val fi: InputStream = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -241,12 +249,13 @@ class ExtractCsArchiveService : Service() {
                         CompressorStreamFactory().createCompressorInputStream(bi)
                     } catch (e: CompressorException) {
                         showErrorNotification(getString(R.string.unsupported_compression_format))
-                        sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(EXTRA_ERROR_MESSAGE, getString(R.string.unsupported_compression_format)))
+                        EventBus.emit(AppEvent.ExtractionError(getString(R.string.unsupported_compression_format)))
                         return
                     }
                 }
             }
 
+            val canonicalDirPath = destinationDir.canonicalPath
             TarArchiveInputStream(compressorInputStream).use { tarInput ->
                 var entry: TarArchiveEntry? = tarInput.nextEntry
                 var lastProgress = -1
@@ -255,13 +264,18 @@ class ExtractCsArchiveService : Service() {
                         return
                     }
                     val outputFile = File(destinationDir, entry.name)
+                    val canonicalFilePath = outputFile.canonicalPath
+                    if (!canonicalFilePath.startsWith(canonicalDirPath + File.separator) && canonicalFilePath != canonicalDirPath) {
+                        throw IOException("Zip Slip detected: ${entry.name}")
+                    }
+
                     if (entry.isDirectory) {
                         outputFile.mkdirs()
                         val lastModified = if (entry.lastModifiedDate.time > 0) entry.lastModifiedDate.time else System.currentTimeMillis()
                         directories.add(DirectoryInfo(outputFile.path, lastModified))
                     } else {
                         outputFile.parentFile?.mkdirs()
-                        FileOutputStream(outputFile).use { output ->
+                        BufferedOutputStream(FileOutputStream(outputFile)).use { output ->
                             var n: Int
                             while (tarInput.read(buffer).also { n = it } != -1) {
                                 if (extractionJob?.isActive == false) {
@@ -286,19 +300,19 @@ class ExtractCsArchiveService : Service() {
             FileUtils.setLastModifiedTime(directories)
             scanForNewFiles(destinationDir)
             showCompletionNotification(destinationDir)
-            sendLocalBroadcast(Intent(ACTION_EXTRACTION_COMPLETE).putExtra(EXTRA_DIR_PATH, destinationDir.absolutePath))
+            EventBus.emit(AppEvent.ExtractionComplete(destinationDir.absolutePath))
         } catch (e: CompressorException) {
             e.printStackTrace()
             showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-            sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message ?: getString(R.string.general_error_msg)))
+            EventBus.emit(AppEvent.ExtractionError(e.message ?: getString(R.string.general_error_msg)))
         } catch (e: Exception) {
             e.printStackTrace()
             showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-            sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message ?: getString(R.string.general_error_msg)))
+            EventBus.emit(AppEvent.ExtractionError(e.message ?: getString(R.string.general_error_msg)))
         } catch (e: IOException) {
             e.printStackTrace()
             showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-            sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message ?: getString(R.string.general_error_msg)))
+            EventBus.emit(AppEvent.ExtractionError(e.message ?: getString(R.string.general_error_msg)))
         } finally {
             stopForegroundService()
             if (useAppNameDir) {
@@ -307,12 +321,19 @@ class ExtractCsArchiveService : Service() {
         }
     }
 
-    private fun updateProgress(progress: Int) {
-        val notification = createNotification(progress)
-        val notificationManager = getSystemService(NotificationManager::class.java)
-        notificationManager.notify(NOTIFICATION_ID, notification)
+    private var lastNotifyTime = 0L
 
-        sendLocalBroadcast(Intent(ACTION_EXTRACTION_PROGRESS).putExtra(EXTRA_PROGRESS, progress))
+    private fun updateProgress(progress: Int) {
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - lastNotifyTime >= 500 || progress == 100 || progress == 0) {
+            lastNotifyTime = currentTime
+            
+            val notification = createNotification(progress)
+            val notificationManager = getSystemService(NotificationManager::class.java)
+            notificationManager.notify(NOTIFICATION_ID, notification)
+
+            EventBus.emit(AppEvent.ExtractionProgress(progress))
+        }
     }
 
     private fun showCompletionNotification(destination: File) {
@@ -362,8 +383,8 @@ class ExtractCsArchiveService : Service() {
     private fun scanForNewFiles(directory: File) {
         val files = directory.listFiles()
         if (files != null) {
-            val paths = files.map { it.absolutePath }.toTypedArray()
-            MediaScannerConnection.scanFile(this, paths, null, null)
+            val paths = files.map { it.absolutePath }
+            FileUtils.scanFiles(this, paths)
         }
     }
 }

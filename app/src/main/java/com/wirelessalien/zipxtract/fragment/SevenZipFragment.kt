@@ -17,10 +17,7 @@
 
 package com.wirelessalien.zipxtract.fragment
 
-import android.content.BroadcastReceiver
-import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
@@ -39,17 +36,30 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.chip.Chip
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.wirelessalien.zipxtract.R
+import androidx.core.content.ContextCompat
+import androidx.core.view.WindowCompat
+import androidx.preference.PreferenceManager
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.wirelessalien.zipxtract.adapter.ArchiveItemAdapter
 import com.wirelessalien.zipxtract.constant.BroadcastConstants
 import com.wirelessalien.zipxtract.constant.ServiceConstants
+import com.wirelessalien.zipxtract.databinding.BottomSheetOptionBinding
 import com.wirelessalien.zipxtract.databinding.FragmentSevenZipBinding
+import com.wirelessalien.zipxtract.databinding.PasswordInputDialogBinding
+import com.wirelessalien.zipxtract.helper.AppEvent
+import com.wirelessalien.zipxtract.helper.EventBus
 import com.wirelessalien.zipxtract.helper.FileOperationsDao
+import com.wirelessalien.zipxtract.helper.PathUtils
+import com.wirelessalien.zipxtract.service.ExtractArchiveService
 import com.wirelessalien.zipxtract.service.Update7zService
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import net.sf.sevenzipjbinding.IInArchive
 import net.sf.sevenzipjbinding.PropID
 import net.sf.sevenzipjbinding.SevenZip
@@ -66,7 +76,8 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
         val path: String,
         val isDirectory: Boolean,
         val size: Long,
-        val lastModified: Date?
+        val lastModified: Date?,
+        val isEncrypted: Boolean
     )
 
     private lateinit var binding: FragmentSevenZipBinding
@@ -75,34 +86,6 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
     private lateinit var adapter: ArchiveItemAdapter
     private var inArchive: IInArchive? = null
     private var currentPath: String = ""
-    private val updateReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            when (intent?.action) {
-                BroadcastConstants.ACTION_ARCHIVE_PROGRESS -> {
-                    val progress = intent.getIntExtra(BroadcastConstants.EXTRA_PROGRESS, 0)
-                    binding.progressBar.progress = progress
-                }
-                BroadcastConstants.ACTION_ARCHIVE_COMPLETE -> {
-                    binding.progressBar.visibility = View.GONE
-                    Toast.makeText(requireContext(),
-                        getString(R.string.archive_updated_successfully), Toast.LENGTH_SHORT).show()
-                    try {
-                        inArchive?.close()
-                        val randomAccessFile = RandomAccessFile(archivePath, "r")
-                        inArchive = SevenZip.openInArchive(null, RandomAccessFileInStream(randomAccessFile))
-                        loadArchiveItems(currentPath)
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
-                }
-                BroadcastConstants.ACTION_ARCHIVE_ERROR -> {
-                    binding.progressBar.visibility = View.GONE
-                    Toast.makeText(requireContext(),
-                        getString(R.string.error_updating_archive), Toast.LENGTH_SHORT).show()
-                }
-            }
-        }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -172,12 +155,34 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
                 getString(R.string.error_opening_archive, e.message), Toast.LENGTH_LONG).show()
         }
 
-        val filter = IntentFilter().apply {
-            addAction(BroadcastConstants.ACTION_ARCHIVE_COMPLETE)
-            addAction(BroadcastConstants.ACTION_ARCHIVE_ERROR)
-            addAction(BroadcastConstants.ACTION_ARCHIVE_PROGRESS)
+        viewLifecycleOwner.lifecycleScope.launch {
+            EventBus.events.collect { event ->
+                when (event) {
+                    is AppEvent.ArchiveProgress -> {
+                        binding.progressBar.progress = event.progress
+                    }
+                    is AppEvent.ArchiveComplete -> {
+                        binding.progressBar.visibility = View.GONE
+                        Toast.makeText(requireContext(),
+                            getString(R.string.archive_updated_successfully), Toast.LENGTH_SHORT).show()
+                        try {
+                            inArchive?.close()
+                            val randomAccessFile = RandomAccessFile(archivePath, "r")
+                            inArchive = SevenZip.openInArchive(null, RandomAccessFileInStream(randomAccessFile))
+                            loadArchiveItems(currentPath)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                    }
+                    is AppEvent.ArchiveError -> {
+                        binding.progressBar.visibility = View.GONE
+                        Toast.makeText(requireContext(),
+                            getString(R.string.error_updating_archive), Toast.LENGTH_SHORT).show()
+                    }
+                    else -> {}
+                }
+            }
         }
-        LocalBroadcastManager.getInstance(requireContext()).registerReceiver(updateReceiver, filter)
 
         binding.fabAddFile.setOnClickListener {
             val filePicker = FilePickerFragment.newInstance()
@@ -189,7 +194,7 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
         val menuHost: MenuHost = requireActivity()
         menuHost.addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                // No menu items to add for now
+                menu.clear()
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
@@ -226,6 +231,10 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
             }
             binding.chipGroupPath.addView(chip)
         }
+
+        binding.horizontalScrollView.post {
+            binding.horizontalScrollView.fullScroll(View.FOCUS_RIGHT)
+        }
     }
 
     private fun loadArchiveItems(path: String) {
@@ -248,15 +257,16 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
                         val dirName = relativePath.substring(0, separatorIndex)
                         val dirPath = if (currentPath.isEmpty()) dirName else "$currentPath/$dirName"
                         if (!children.containsKey(dirPath)) {
-                            children[dirPath] = ArchiveItem(dirPath, true, 0, null)
+                            children[dirPath] = ArchiveItem(dirPath, true, 0, null, false)
                         }
                     } else {
                         // It's a direct child file or an empty directory entry
                         val isDirectory = it.getProperty(i, PropID.IS_FOLDER) as? Boolean ?: false
                         val size = it.getProperty(i, PropID.SIZE) as? Long ?: 0L
                         val lastModified = it.getProperty(i, PropID.LAST_MODIFICATION_TIME) as? Date
+                        val isEncrypted = it.getProperty(i, PropID.ENCRYPTED) as? Boolean ?: false
                         if (!children.containsKey(itemPath)) {
-                            children[itemPath] = ArchiveItem(itemPath, isDirectory, size, lastModified)
+                            children[itemPath] = ArchiveItem(itemPath, isDirectory, size, lastModified, isEncrypted)
                         }
                     }
                 }
@@ -277,7 +287,7 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
             if (item.isDirectory) {
                 loadArchiveItems(item.path)
             } else {
-                // will add a confirmation dialog to remove the file
+                showBottomSheetOptions(item)
             }
         }
     }
@@ -350,15 +360,180 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
     }
 
     override fun onFilesSelected(files: List<File>) {
-        binding.progressBar.visibility = View.VISIBLE
-        val filePairs = files.map { it.absolutePath to (if (currentPath.isEmpty()) it.name else "$currentPath/${it.name}") }
-        val jobId = fileOperationsDao.addFilePairsForJob(filePairs)
+        lifecycleScope.launch {
+            val loadingDialog = MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
+                .setMessage(getString(R.string.please_wait))
+                .setCancelable(false)
+                .create()
+            loadingDialog.show()
 
-        val intent = Intent(requireContext(), Update7zService::class.java).apply {
-            putExtra(ServiceConstants.EXTRA_ARCHIVE_PATH, archivePath)
-            putExtra(ServiceConstants.EXTRA_ITEMS_TO_ADD_JOB_ID, jobId)
+            try {
+                binding.progressBar.visibility = View.VISIBLE
+                val filePairs = withContext(Dispatchers.IO) {
+                    files.map { it.absolutePath to (if (currentPath.isEmpty()) it.name else "$currentPath/${it.name}") }
+                }
+                val jobId = withContext(Dispatchers.IO) {
+                    fileOperationsDao.addFilePairsForJob(filePairs)
+                }
+
+                if (!isAdded) return@launch
+
+                val intent = Intent(requireContext(), Update7zService::class.java).apply {
+                    putExtra(ServiceConstants.EXTRA_ARCHIVE_PATH, archivePath)
+                    putExtra(ServiceConstants.EXTRA_ITEMS_TO_ADD_JOB_ID, jobId)
+                }
+                requireContext().startService(intent)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(requireContext(), R.string.general_error_msg, Toast.LENGTH_SHORT).show()
+                binding.progressBar.visibility = View.GONE
+            } finally {
+                loadingDialog.dismiss()
+            }
         }
-        requireContext().startService(intent)
+    }
+
+    private fun showBottomSheetOptions(item: ArchiveItem) {
+        val binding = BottomSheetOptionBinding.inflate(layoutInflater)
+        val bottomSheetDialog = BottomSheetDialog(requireContext())
+        bottomSheetDialog.window?.let { window ->
+            WindowCompat.setDecorFitsSystemWindows(window, false)
+            window.statusBarColor = android.graphics.Color.TRANSPARENT
+            window.navigationBarColor = android.graphics.Color.TRANSPARENT
+        }
+        bottomSheetDialog.setContentView(binding.root)
+
+        binding.fileName.text = item.path.substringAfterLast('/')
+        val fileSizeText = bytesToString(item.size)
+        binding.fileSize.text = fileSizeText
+
+        val dateFormat = java.text.DateFormat.getDateTimeInstance(
+            java.text.DateFormat.DEFAULT,
+            java.text.DateFormat.SHORT,
+            java.util.Locale.getDefault()
+        )
+        binding.fileDate.text = item.lastModified?.let { dateFormat.format(it) } ?: ""
+
+        val extension = item.path.substringAfterLast('.', "")
+        binding.fileExtension.text = if (extension.isNotEmpty()) {
+            if (extension.length > 4) {
+                "FILE"
+            } else {
+                if (extension.length == 4) {
+                    binding.fileExtension.textSize = 16f
+                } else {
+                    binding.fileExtension.textSize = 18f
+                }
+                extension.uppercase(java.util.Locale.getDefault())
+            }
+        } else {
+            "..."
+        }
+
+        binding.btnPreviewArchive.visibility = View.GONE
+        binding.btnShare.visibility = View.GONE
+        binding.btnOpenWith.visibility = View.GONE
+        binding.btnFileInfo.visibility = View.GONE
+        binding.btnDelete.visibility = View.GONE
+        binding.lowStorageWarning.visibility = View.GONE
+
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
+        val extractPath = sharedPreferences.getString(BroadcastConstants.PREFERENCE_EXTRACT_DIR_PATH, null)
+        val defaultPath = if (!extractPath.isNullOrEmpty()) {
+            if (File(extractPath).isAbsolute) {
+                extractPath
+            } else {
+                File(android.os.Environment.getExternalStorageDirectory(), extractPath).absolutePath
+            }
+        } else {
+            archivePath?.let { File(it).parent } ?: android.os.Environment.getExternalStorageDirectory().absolutePath
+        }
+
+        binding.outputPathInput.setText(defaultPath)
+        binding.outputPathDisplay.text = PathUtils.formatPath(defaultPath, requireContext())
+
+        binding.outputPathLayout.setEndIconOnClickListener {
+            val pathPicker = PathPickerFragment.newInstance()
+            pathPicker.setPathPickerListener(object : PathPickerFragment.PathPickerListener {
+                override fun onPathSelected(path: String) {
+                    binding.outputPathInput.setText(path)
+                    binding.outputPathDisplay.text = PathUtils.formatPath(path, requireContext())
+                }
+            })
+            pathPicker.show(parentFragmentManager, "path_picker")
+        }
+        
+        binding.outputPathInput.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: android.text.Editable?) {
+                val path = s.toString()
+                binding.outputPathDisplay.text = PathUtils.formatPath(path, requireContext())
+            }
+        })
+
+        binding.btnExtract.setOnClickListener {
+            val destinationPath = binding.outputPathInput.text.toString()
+            if (item.isEncrypted) {
+                showPasswordInputDialog(item, destinationPath)
+            } else {
+                startExtractionService(item, null, destinationPath)
+            }
+            bottomSheetDialog.dismiss()
+        }
+
+        bottomSheetDialog.show()
+    }
+
+    private fun showPasswordInputDialog(item: ArchiveItem, destinationPath: String) {
+        val binding = PasswordInputDialogBinding.inflate(layoutInflater)
+
+        MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
+            .setTitle(getString(R.string.enter_password))
+            .setView(binding.root)
+            .setPositiveButton(getString(R.string.ok)) { _, _ ->
+                val password = binding.passwordInput.text.toString()
+                startExtractionService(item, password.ifBlank { null }, destinationPath)
+            }
+            .setNegativeButton(getString(R.string.no_password)) { _, _ ->
+                startExtractionService(item, null, destinationPath)
+            }
+            .show()
+    }
+
+    private fun startExtractionService(item: ArchiveItem, password: String?, destinationPath: String) {
+        val path = archivePath ?: return
+        lifecycleScope.launch {
+            val jobId = withContext(Dispatchers.IO) {
+                fileOperationsDao.addFilesForJob(listOf(path))
+            }
+
+            if (!isAdded) return@launch
+
+            val itemsToExtract = ArrayList<String>()
+            itemsToExtract.add(item.path)
+            
+            val intent = Intent(requireContext(), ExtractArchiveService::class.java).apply {
+                putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
+                putExtra(ServiceConstants.EXTRA_PASSWORD, password)
+                putExtra(ServiceConstants.EXTRA_DESTINATION_PATH, destinationPath)
+                putStringArrayListExtra(ServiceConstants.EXTRA_ITEMS_TO_EXTRACT, itemsToExtract)
+            }
+            ContextCompat.startForegroundService(requireContext(), intent)
+        }
+    }
+
+    private fun bytesToString(bytes: Long): String {
+        val kilobyte = 1024
+        val megabyte = kilobyte * 1024
+        val gigabyte = megabyte * 1024
+
+        return when {
+            bytes < kilobyte -> "$bytes B"
+            bytes < megabyte -> String.format(java.util.Locale.US, "%.2f KB", bytes.toFloat() / kilobyte)
+            bytes < gigabyte -> String.format(java.util.Locale.US, "%.2f MB", bytes.toFloat() / megabyte)
+            else -> String.format(java.util.Locale.US, "%.2f GB", bytes.toFloat() / gigabyte)
+        }
     }
 
     private fun handleBackNavigation() {
@@ -372,7 +547,6 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
 
     override fun onDestroyView() {
         super.onDestroyView()
-        LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(updateReceiver)
         val activity = activity as? AppCompatActivity
         activity?.findViewById<View>(R.id.tabLayout)?.visibility = View.VISIBLE
         activity?.supportActionBar?.setDisplayHomeAsUpEnabled(false)

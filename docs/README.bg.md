@@ -1,11 +1,10 @@
 # ZipXtract
 
 [![GitHub release](https://img.shields.io/github/v/release/WirelessAlien/ZipXtract)](https://github.com/WirelessAlien/ZipXtract/releases/latest)
-[![GitHub license](https://img.shields.io/github/license/WirelessAlien/ZipXtract)](https://github.com/WirelessAlien/ZipXtract/blob/master/License)
+[![GitHub license](https://img.shields.io/github/license/WirelessAlien/ZipXtract)](../License)
 [![GitHub Repo stars](https://img.shields.io/github/stars/WirelessAlien/ZipXtract)](https://img.shields.io/github/stars/WirelessAlien/ZipXtract)
 [![GitHub all releases](https://img.shields.io/github/downloads/WirelessAlien/ZipXtract/total)](https://img.shields.io/github/downloads/WirelessAlien/ZipXtract/total)
 ![IzzyOnDroid](https://img.shields.io/endpoint?url=https://apt.izzysoft.de/fdroid/api/v1/shield/com.wirelessalien.zipxtract)
-[![F-Droid](https://img.shields.io/f-droid/v/com.wirelessalien.zipxtract?logo=F-Droid)](https://f-droid.org/packages/com.wirelessalien.zipxtract)
 
 <p style="text-align: left;">ZipXtract е приложение за Android с напълно отворен код, предназначено да обработва широк набор от архивни формати, включително:</p>
 <ul>
@@ -37,10 +36,6 @@
 <li>Създавайте разделени ZIP архиви.</li>
 </ul>
 
-<blockquote>
-<p><strong>ЗАБЕЛЕЖКА:</strong><br />
-Версията на F-Droid не включва функции за извличане на RAR и 7z компресия поради лицензионни ограничения. За пълната версия, моля, използвайте версиите GitHub или IzzyOnDroid.</p>
-</blockquote>
 
 <h2>Съвет за използване</h2>
 <p>Общи съвети за извличане на архиви и създаване на архиви:</p>
@@ -61,7 +56,7 @@
 </p>
 
 <h2>Лиценз</h2>
-<p>Този проект е лицензиран под GNU General Public License v3.0. Вижте <a href="https://github.com/WirelessAlien/ZipXtract/blob/master/LICENSE">LICENSE</a> файл за подробности.</p>
+<p>Този проект е лицензиран под GNU General Public License v3.0. Вижте <a href="../LICENSE">LICENSE</a> файл за подробности.</p>
 
 <h2>Контакт</h2>
-<p>За всякакви запитвания или обратна връзка, моля, отворете проблем на <a href="https://github.com/WirelessAlien/ZipXtract/issues">GitHub хранилище</a>.</p>
+<p>За всякакви запитвания или обратна връзка, моля, отворете проблем на <a href="../issues">GitHub хранилище</a>.</p>

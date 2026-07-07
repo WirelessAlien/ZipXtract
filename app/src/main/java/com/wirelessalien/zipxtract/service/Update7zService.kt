@@ -20,19 +20,25 @@ package com.wirelessalien.zipxtract.service
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
+import android.content.pm.ServiceInfo
+import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.IBinder
+import android.os.PowerManager
 import androidx.core.app.NotificationCompat
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.constant.BroadcastConstants
 import com.wirelessalien.zipxtract.constant.ServiceConstants
+import com.wirelessalien.zipxtract.helper.AppEvent
+import com.wirelessalien.zipxtract.helper.EventBus
 import com.wirelessalien.zipxtract.helper.FileOperationsDao
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.cancel
 import net.sf.sevenzipjbinding.IOutCreateCallback
 import net.sf.sevenzipjbinding.IOutItemAllFormats
 import net.sf.sevenzipjbinding.ISequentialInStream
@@ -47,10 +53,12 @@ import java.io.RandomAccessFile
 
 class Update7zService : Service() {
 
+    private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+
     private lateinit var fileOperationsDao: FileOperationsDao
 
     companion object {
-        const val NOTIFICATION_ID = 14
+        const val NOTIFICATION_ID = 24
     }
 
     private var updateJob: Job? = null
@@ -69,24 +77,38 @@ class Update7zService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val archivePath = intent?.getStringExtra(ServiceConstants.EXTRA_ARCHIVE_PATH) ?: return START_NOT_STICKY
+        val archivePath = intent?.getStringExtra(ServiceConstants.EXTRA_ARCHIVE_PATH) ?: run {
+            stopSelf(startId)
+            return START_NOT_STICKY
+        }
         val itemsToAddJobId = intent.getStringExtra(ServiceConstants.EXTRA_ITEMS_TO_ADD_JOB_ID)
         val itemsToRemoveJobId = intent.getStringExtra(ServiceConstants.EXTRA_ITEMS_TO_REMOVE_JOB_ID)
 
         lastProgress = -1
         notificationBuilder = createNotificationBuilder()
-        startForeground(NOTIFICATION_ID, notificationBuilder.build())
-
-        updateJob = CoroutineScope(Dispatchers.IO).launch {
-            val itemsToAdd = itemsToAddJobId?.let { fileOperationsDao.getFilePairsForJob(it) }
-            val itemsToRemovePaths = itemsToRemoveJobId?.let { fileOperationsDao.getFilesForJob(it) }
-
-            update7zFile(archivePath, itemsToAdd, itemsToRemovePaths)
-            itemsToAddJobId?.let { fileOperationsDao.deleteFilesForJob(it) }
-            itemsToRemoveJobId?.let { fileOperationsDao.deleteFilesForJob(it) }
-            stopSelf()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            startForeground(NOTIFICATION_ID, notificationBuilder.build(), ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
+        } else {
+            startForeground(NOTIFICATION_ID, notificationBuilder.build())
         }
-        return START_STICKY
+
+        updateJob = serviceScope.launch {
+            val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+            val wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "ZipXtract:Update7zWakeLock")
+            wakeLock.acquire(60 * 60 * 1000L /*1 hour*/)
+            try {
+                val itemsToAdd = itemsToAddJobId?.let { fileOperationsDao.getFilePairsForJob(it) }
+                val itemsToRemovePaths = itemsToRemoveJobId?.let { fileOperationsDao.getFilesForJob(it) }
+
+                update7zFile(archivePath, itemsToAdd, itemsToRemovePaths)
+                itemsToAddJobId?.let { fileOperationsDao.deleteFilesForJob(it) }
+                itemsToRemoveJobId?.let { fileOperationsDao.deleteFilesForJob(it) }
+            } finally {
+                if (wakeLock.isHeld) wakeLock.release()
+                stopSelf(startId)
+            }
+        }
+        return START_NOT_STICKY
     }
 
     private fun update7zFile(
@@ -202,9 +224,7 @@ class Update7zService : Service() {
             success = true
         } catch (e: Exception) {
             e.printStackTrace()
-            sendLocalBroadcast(Intent(BroadcastConstants.ACTION_ARCHIVE_ERROR).apply {
-                putExtra(BroadcastConstants.EXTRA_ERROR_MESSAGE, e.message)
-            })
+            EventBus.emit(AppEvent.ArchiveError(e.message))
         } finally {
             for (i in closeables.indices.reversed()) {
                 try {
@@ -218,10 +238,10 @@ class Update7zService : Service() {
 
         if (success) {
             showCompletionNotification(File(archivePath))
-            sendLocalBroadcast(Intent(BroadcastConstants.ACTION_ARCHIVE_COMPLETE))
+            EventBus.emit(AppEvent.ArchiveComplete(null))
         } else {
             showErrorNotification(getString(R.string.error_updating_archive))
-            sendLocalBroadcast(Intent(BroadcastConstants.ACTION_ARCHIVE_ERROR))
+            EventBus.emit(AppEvent.ArchiveError(getString(R.string.error_updating_archive)))
         }
         stopForegroundService()
     }
@@ -233,14 +253,9 @@ class Update7zService : Service() {
         for ((path, name) in itemsToAdd) {
             val file = File(path)
             if (file.isDirectory) {
-                file.walkTopDown().forEach {
-                    val relativePath = it.absolutePath.substring(file.absolutePath.length)
-                        .removePrefix("/")
-                    val archivePath = if (relativePath.isEmpty()) {
-                        name
-                    } else {
-                        "$name/$relativePath"
-                    }
+                file.walkTopDown().filter { it.isFile }.forEach {
+                    val relativePath = it.absolutePath.substring(file.absolutePath.length).removePrefix("/")
+                    val archivePath = if (relativePath.isEmpty()) name else "$name/$relativePath"
                     fileList.add(Pair(it, archivePath!!))
                 }
             } else {
@@ -252,6 +267,7 @@ class Update7zService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        serviceScope.cancel()
         updateJob?.cancel()
     }
 
@@ -274,21 +290,20 @@ class Update7zService : Service() {
             .setOngoing(true)
     }
 
+    private var lastNotifyTime = 0L
+
     private fun updateNotification(progress: Int) {
-        notificationBuilder.setProgress(100, progress, false)
-            .setContentText("$progress%")
-        notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build())
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - lastNotifyTime >= 500 || progress == 100 || progress == 0) {
+            lastNotifyTime = currentTime
+            notificationBuilder.setProgress(100, progress, false)
+                .setContentText("$progress%")
+            notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build())
+        }
     }
 
     private fun sendProgressBroadcast(progress: Int) {
-        val intent = Intent(BroadcastConstants.ACTION_ARCHIVE_PROGRESS).apply {
-            putExtra(BroadcastConstants.EXTRA_PROGRESS, progress)
-        }
-        sendLocalBroadcast(intent)
-    }
-
-    private fun sendLocalBroadcast(intent: Intent) {
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
+        EventBus.emit(AppEvent.ArchiveProgress(progress))
     }
 
     private fun stopForegroundService() {

@@ -19,12 +19,10 @@ package com.wirelessalien.zipxtract.fragment
 
 
 import android.annotation.SuppressLint
-import android.content.BroadcastReceiver
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.icu.text.DateFormat
 import android.media.MediaScannerConnection
@@ -35,32 +33,24 @@ import android.provider.MediaStore
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.MimeTypeMap
 import android.widget.TextView
 import android.widget.Toast
+import androidx.lifecycle.flowWithLifecycle
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
-import androidx.core.content.edit
-import androidx.core.view.MenuHost
-import androidx.core.view.MenuProvider
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialog
-import com.google.android.material.chip.Chip
 import com.google.android.material.color.MaterialColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.progressindicator.LinearProgressIndicator
@@ -68,10 +58,11 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.transition.MaterialSharedAxis
 import com.wirelessalien.zipxtract.BuildConfig
 import com.wirelessalien.zipxtract.R
-import com.wirelessalien.zipxtract.activity.SettingsActivity
 import com.wirelessalien.zipxtract.adapter.FileAdapter
 import com.wirelessalien.zipxtract.constant.BroadcastConstants
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.PREFERENCE_EXTRACT_DIR_PATH
+import com.wirelessalien.zipxtract.helper.AppEvent
+import com.wirelessalien.zipxtract.helper.EventBus
 import com.wirelessalien.zipxtract.constant.ServiceConstants.EXTRA_DESTINATION_PATH
 import com.wirelessalien.zipxtract.constant.ServiceConstants.EXTRA_JOB_ID
 import com.wirelessalien.zipxtract.constant.ServiceConstants.EXTRA_PASSWORD
@@ -146,58 +137,12 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
     private lateinit var sharedPreferences: SharedPreferences
     private var currentQuery: String? = null
 
-    override fun onSearch(query: String) {
-        searchFiles(query)
+    override fun onSearch(query: String, filterType: String?, isExitingSearch: Boolean) {
+        searchFiles(query, filterType, isExitingSearch)
     }
 
     override fun getCurrentSearchQuery(): String? {
         return if (isSearchActive) currentQuery else null
-    }
-
-    private val extractionReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            if (!isAdded) return
-
-            when (intent?.action) {
-                BroadcastConstants.ACTION_EXTRACTION_COMPLETE -> {
-                    binding.linearProgressBar.visibility = View.GONE
-                    eProgressDialog.dismiss()
-                    val dirPath = intent.getStringExtra(BroadcastConstants.EXTRA_DIR_PATH)
-
-                    if (dirPath != null) {
-                        Snackbar.make(
-                            binding.root,
-                            getString(R.string.open_folder),
-                            Snackbar.LENGTH_LONG
-                        )
-                            .setAction(getString(R.string.ok)) {
-                                navigateToParentDir(File(dirPath))
-                            }
-                            .show()
-                    } else {
-                        Toast.makeText(
-                            requireContext(),
-                            getString(R.string.extraction_success),
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                }
-
-                BroadcastConstants.ACTION_EXTRACTION_ERROR -> {
-                    binding.linearProgressBar.visibility = View.GONE
-                    eProgressDialog.dismiss()
-                    val errorMessage = intent.getStringExtra(BroadcastConstants.EXTRA_ERROR_MESSAGE)
-                    Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show()
-                }
-
-                BroadcastConstants.ACTION_EXTRACTION_PROGRESS -> {
-                    val progress = intent.getIntExtra(BroadcastConstants.EXTRA_PROGRESS, 0)
-                    updateProgressBar(progress)
-                    eProgressBar.progress = progress
-                    progressText.text = getString(R.string.extracting_progress, progress)
-                }
-            }
-        }
     }
 
     private fun navigateToParentDir(parentDir: File) {
@@ -249,71 +194,52 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
             windowInsets
         }
 
-        val menuHost: MenuHost = requireActivity()
-        menuHost.addMenuProvider(object : MenuProvider {
-            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                menuInflater.inflate(R.menu.menu_main, menu)
-            }
-
-            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                var isHandled = true
-                sharedPreferences.edit {
-                    when (menuItem.itemId) {
-                        R.id.menu_sort_by_name -> {
-                            sortBy = SortBy.SORT_BY_NAME
-                            putString("sortBy", sortBy.name)
-                        }
-
-                        R.id.menu_sort_by_size -> {
-                            sortBy = SortBy.SORT_BY_SIZE
-                            putString("sortBy", sortBy.name)
-                        }
-
-                        R.id.menu_sort_by_time_of_creation -> {
-                            sortBy = SortBy.SORT_BY_MODIFIED
-                            putString("sortBy", sortBy.name)
-                        }
-
-                        R.id.menu_sort_by_extension -> {
-                            sortBy = SortBy.SORT_BY_EXTENSION
-                            putString("sortBy", sortBy.name)
-                        }
-
-                        R.id.menu_sort_ascending -> {
-                            sortAscending = true
-                            putBoolean("sortAscending", sortAscending)
-                        }
-
-                        R.id.menu_sort_descending -> {
-                            sortAscending = false
-                            putBoolean("sortAscending", sortAscending)
-                        }
-
-                        R.id.menu_settings -> {
-                            val intent = Intent(requireContext(), SettingsActivity::class.java)
-                            startActivity(intent)
-                        }
-                        else -> isHandled = false
-                    }
-                }
-                if (isHandled) {
-                    updateAdapterWithFullList()
-                    return true
-                }
-                return false
-            }
-        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
-
-        val filter = IntentFilter().apply {
-            addAction(BroadcastConstants.ACTION_EXTRACTION_COMPLETE)
-            addAction(BroadcastConstants.ACTION_EXTRACTION_ERROR)
-            addAction(BroadcastConstants.ACTION_EXTRACTION_PROGRESS)
-        }
-        LocalBroadcastManager.getInstance(requireContext())
-            .registerReceiver(extractionReceiver, filter)
-
         extractProgressDialog()
-        setupFilterChips()
+
+        viewLifecycleOwner.lifecycleScope.launch {  
+            EventBus.events  
+                .flowWithLifecycle(viewLifecycleOwner.lifecycle, androidx.lifecycle.Lifecycle.State.STARTED)  
+                .collect { event ->
+                if (!isAdded) return@collect
+                when (event) {
+                    is AppEvent.ExtractionComplete -> {
+                        binding.linearProgressBar.visibility = View.GONE
+                        eProgressDialog.dismiss()
+                        val dirPath = event.dirPath
+
+                        if (dirPath.isNotEmpty()) {
+                            Snackbar.make(
+                                binding.root,
+                                getString(R.string.open_folder),
+                                Snackbar.LENGTH_LONG
+                            )
+                                .setAction(getString(R.string.ok)) {
+                                    navigateToParentDir(File(dirPath))
+                                }
+                                .show()
+                        } else {
+                            Toast.makeText(
+                                requireContext(),
+                                getString(R.string.extraction_success),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                    is AppEvent.ExtractionError -> {
+                        binding.linearProgressBar.visibility = View.GONE
+                        eProgressDialog.dismiss()
+                        Toast.makeText(requireContext(), event.errorMessage, Toast.LENGTH_SHORT).show()
+                    }
+                    is AppEvent.ExtractionProgress -> {
+                        val progress = event.progress
+                        updateProgressBar(progress)
+                        eProgressBar.progress = progress
+                        progressText.text = getString(R.string.extracting_progress, progress)
+                    }
+                    else -> {}
+                }
+            }
+        }
         viewLifecycleOwner.lifecycleScope.launch {
             loadArchiveFiles(null)
         }
@@ -323,37 +249,6 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
         }
     }
 
-    private fun setupFilterChips() {
-        val extensions = listOf("All", "zip", "rar", "7z", "tar", "gz", "bz2", "xz")
-        val chipGroup = binding.chipGroupFilter
-        chipGroup.isSingleSelection = true
-        extensions.forEach { extension ->
-            val chip = Chip(requireContext())
-            chip.text = extension
-            chip.isCheckable = true
-            chip.isCheckedIconVisible = false
-            chipGroup.addView(chip)
-
-            if (extension == "All") {
-                chip.isChecked = true
-            }
-        }
-
-        chipGroup.setOnCheckedStateChangeListener { group, checkedIds ->
-            if (checkedIds.isNotEmpty()) {
-                val checkedChipId = checkedIds[0]
-                val checkedChip = group.findViewById<Chip>(checkedChipId)
-                val selectedExtension = if (checkedChip.text.toString() == "All") {
-                    null
-                } else {
-                    checkedChip.text.toString()
-                }
-                viewLifecycleOwner.lifecycleScope.launch {
-                    loadArchiveFiles(selectedExtension)
-                }
-            }
-        }
-    }
 
     private suspend fun loadArchiveFiles(extension: String?, showShimmer: Boolean = true) {
         if (showShimmer) {
@@ -374,9 +269,15 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
         }
     }
 
-    private fun searchFiles(query: String?) {
+    private fun searchFiles(query: String?, filterType: String? = null, isExitingSearch: Boolean = false) {
         isSearchActive = !query.isNullOrEmpty()
         currentQuery = query
+
+        if (query.isNullOrEmpty()) {
+            isSearchActive = false
+            updateAdapterWithFullList()
+            return
+        }
 
         binding.shimmerViewContainer.startShimmer()
         binding.shimmerViewContainer.visibility = View.VISIBLE
@@ -387,7 +288,7 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
         searchJob?.cancel()
 
         searchJob = coroutineScope.launch {
-            searchAllFiles(query)
+            searchAllFiles(query, filterType)
                 .flowOn(Dispatchers.IO)
                 .catch { e ->
                     withContext(Dispatchers.Main) {
@@ -407,8 +308,11 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
         }
     }
 
-    private fun searchAllFiles(query: String?): Flow<List<FileItem>> = flow {
-        val results = getArchiveFiles(query, null)
+    private fun searchAllFiles(query: String?, filterType: String?): Flow<List<FileItem>> = flow {
+        val results = when (filterType) {
+            null, "All", "Archive" -> getArchiveFiles(query, null)
+            else -> emptyList()
+        }
         emit(results)
     }
 
@@ -526,7 +430,14 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
     }
 
 
-    private fun updateAdapterWithFullList() {
+    fun updateAdapterWithFullList() {
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
+        sortBy = SortBy.valueOf(
+            sharedPreferences.getString("sortBy", SortBy.SORT_BY_NAME.name)
+                ?: SortBy.SORT_BY_NAME.name
+        )
+        sortAscending = sharedPreferences.getBoolean("sortAscending", true)
+
         if (!isSearchActive) {
             viewLifecycleOwner.lifecycleScope.launch {
                 loadArchiveFiles(null)
@@ -696,35 +607,45 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
                     loadingDialog.show()
 
                     lifecycleScope.launch(Dispatchers.IO) {
-                        val isMultipartZip = MultipartArchiveHelper.isMultipartZip(file)
-                        val isMultipart7z = MultipartArchiveHelper.isMultipart7z(file)
-                        val isMultipartRar = MultipartArchiveHelper.isMultipartRar(file)
+                        try {
+                            val isMultipartZip = MultipartArchiveHelper.isMultipartZip(file)
+                            val isMultipart7z = MultipartArchiveHelper.isMultipart7z(file)
+                            val isMultipartRar = MultipartArchiveHelper.isMultipartRar(file)
 
-                        val isEncrypted = EncryptionCheckHelper.isEncrypted(file)
-                        withContext(Dispatchers.Main) {
-                            loadingDialog.dismiss()
-                            if (isMultipartZip) {
-                                if (isEncrypted) showPasswordInputMultiZipDialog(filePaths, destinationPath)
-                                else startMultiZipExtractionService(filePaths, null, destinationPath)
-                            } else if (isMultipart7z) {
-                                if (isEncrypted) showPasswordInputMulti7zDialog(filePaths, destinationPath)
-                                else startMulti7zExtractionService(filePaths, null, destinationPath)
-                            } else if (isMultipartRar) {
-                                if (isEncrypted) showPasswordInputMultiRarDialog(filePaths, destinationPath)
-                                else startRarExtractionService(filePaths, null, destinationPath)
-                            } else {
-                                if (file.extension.equals("rar", ignoreCase = true)) {
+                            val isEncrypted = EncryptionCheckHelper.isEncrypted(file)
+                            withContext(Dispatchers.Main) {
+                                if (isMultipartZip) {
+                                    if (isEncrypted) showPasswordInputMultiZipDialog(filePaths, destinationPath)
+                                    else startMultiZipExtractionService(filePaths, null, destinationPath)
+                                } else if (isMultipart7z) {
+                                    if (isEncrypted) showPasswordInputMulti7zDialog(filePaths, destinationPath)
+                                    else startMulti7zExtractionService(filePaths, null, destinationPath)
+                                } else if (isMultipartRar) {
                                     if (isEncrypted) showPasswordInputMultiRarDialog(filePaths, destinationPath)
                                     else startRarExtractionService(filePaths, null, destinationPath)
                                 } else {
-                                    if (isEncrypted) {
-                                        showPasswordInputDialog(filePaths, destinationPath)
+                                    if (file.extension.equals("rar", ignoreCase = true)) {
+                                        if (isEncrypted) showPasswordInputMultiRarDialog(filePaths, destinationPath)
+                                        else startRarExtractionService(filePaths, null, destinationPath)
                                     } else {
-                                        startExtractionService(filePaths, null, destinationPath)
+                                        if (isEncrypted) {
+                                            showPasswordInputDialog(filePaths, destinationPath)
+                                        } else {
+                                            startExtractionService(filePaths, null, destinationPath)
+                                        }
                                     }
                                 }
+                                bottomSheetDialog.dismiss()
                             }
-                            bottomSheetDialog.dismiss()
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(requireContext(), R.string.general_error_msg, Toast.LENGTH_SHORT).show()
+                            }
+                        } finally {
+                            withContext(Dispatchers.Main) {
+                                loadingDialog.dismiss()
+                            }
                         }
                     }
                 }
@@ -796,9 +717,9 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
                     }
                     ContextCompat.startForegroundService(requireContext(), intent)
 
-                    val position = adapter.files.indexOfFirst { it.file == file }
-                    if (position != -1) {
-                        adapter.removeItem(position)
+                    val fileItem = adapter.files.find { it.file == file }
+                    fileItem?.let {
+                        adapter.removeFileItem(it)
                     }
 
                     bottomSheetDialog.dismiss()

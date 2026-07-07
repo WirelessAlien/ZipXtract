@@ -1,0 +1,62 @@
+# ZipXtract
+
+[![GitHub release](https://img.shields.io/github/v/release/WirelessAlien/ZipXtract)](https://github.com/WirelessAlien/ZipXtract/releases/latest)
+[![GitHub license](https://img.shields.io/github/license/WirelessAlien/ZipXtract)](../License)
+[![GitHub Repo stars](https://img.shields.io/github/stars/WirelessAlien/ZipXtract)](https://img.shields.io/github/stars/WirelessAlien/ZipXtract)
+[![GitHub all releases](https://img.shields.io/github/downloads/WirelessAlien/ZipXtract/total)](https://img.shields.io/github/downloads/WirelessAlien/ZipXtract/total)
+![IzzyOnDroid](https://img.shields.io/endpoint?url=https://apt.izzysoft.de/fdroid/api/v1/shield/com.wirelessalien.zipxtract)
+
+<p>ZipXtract هو تطبيق أندرويد مفتوح المصدر بالكامل مصمم للتعامل مع مجموعة واسعة من صيغ الأرشيف، بما في ذلك:</p>
+<ul>
+<li>RAR (بدعم RAR5 والأرشيفات متعددة المجلدات)</li>
+<li>ZIP (بما في ذلك الأرشيفات المحمية بكلمة مرور والمقسمة)</li>
+<li>TAR</li>
+<li>BZ2</li>
+<li>GZ</li>
+<li>7z (بدعم حماية بكلمة مرور ودعم الأرشيفات متعددة المجلدات)</li>
+<li>XZ</li>
+<li>JAR</li>
+<li>...</li>
+</ul>
+
+<h2>الميزات</h2>
+
+<h3>استخراج:</h3>
+<ul>
+<li>يدعم صيغًا متنوعة: RAR، ZIP، TAR، BZ2، GZ، 7z، XZ، JAR، إلخ.</li>
+<li>يتعامل مع ملفات ZIP و7z المشفرة.</li>
+<li>يستخرج أرشيفات RAR متعددة المجلدات.</li>
+<li>يستخرج الأرشيفات متعددة المجلدات.</li>
+<li>يستخرج ملفات ZIP المقسمة.</li>
+</ul>
+
+<h3>إنشاء:</h3>
+<ul>
+<li>إنشاء أرشيفات ZIP و7z، مع خيارات للتشفير.</li>
+<li>إنشاء أرشيفات ZIP مقسمة.</li>
+</ul>
+
+
+<h2>نصيحة الاستخدام</h2>
+<p>نصائح عامة لاستخراج الأرشيف وإنشائه:</p>
+<ul>
+<li>اضغط مطولاً على الملفات والمجلدات أو انقر على أيقونات الملف/المجلد لتحديدها للأرشفة.</li>
+<li>انقر على ملف لعرض قائمة الاستخراج لاختيار خيارات الاستخراج.</li>
+<li>يتم تخزين الملفات المستخرجة باستخدام قائمة "فتح باستخدام" لنظام التشغيل في <strong>التخزين الداخلي/ZipXtract</strong> افتراضيًا. يمكن تعديل هذا في إعدادات التطبيق.</li>
+<li>الموقع الافتراضي للأرشفة أو استخراج الأرشيفات (داخل التطبيق) هو المجلد الأصلي للملف(ات) المعنية. يمكن تغيير هذا في إعدادات التطبيق.</li>
+</ul>
+
+<h2>صلاحيات التطبيق</h2>
+<p>صلاحية قراءة وكتابة التخزين (أندرويد 10 وما دون) وصلاحية إدارة التخزين الخارجي (أندرويد 11 وما فوق). التطبيق لا يملك صلاحية الوصول إلى الإنترنت. اقرأ المزيد - <a href="https://sites.google.com/view/privacy-policy-zipxtract/home">سياسة الخصوصية</a></p>
+
+<h2>ترجمة</h2>
+<p>
+ساعد في ترجمة التطبيق عبر&nbsp;<a href="https://hosted.weblate.org/engage/zipxtract/">Weblate
+</a>
+</p>
+
+<h2>الترخيص</h2>
+<p>هذا المشروع مرخص بموجب رخصة جنو العمومية العامة v3.0. راجع ملف <a href="../LICENSE">الترخيص</a> للتفاصيل.</p>
+
+<h2>الاتصال</h2>
+<p>لأي استفسارات أو ملاحظات، يُرجى فتح مشكلة في <a href="../issues">مستودع GitHub</a>.</p>

@@ -1,11 +1,10 @@
 # ZipXtract
 
 [![GitHub release](https://img.shields.io/github/v/release/WirelessAlien/ZipXtract)](https://github.com/WirelessAlien/ZipXtract/releases/latest)
-[![GitHub license](https://img.shields.io/github/license/WirelessAlien/ZipXtract)](https://github.com/WirelessAlien/ZipXtract/blob/master/License)
+[![GitHub license](https://img.shields.io/github/license/WirelessAlien/ZipXtract)](../License)
 [![GitHub Repo stars](https://img.shields.io/github/stars/WirelessAlien/ZipXtract)](https://img.shields.io/github/stars/WirelessAlien/ZipXtract)
 [![GitHub all releases](https://img.shields.io/github/downloads/WirelessAlien/ZipXtract/total)](https://img.shields.io/github/downloads/WirelessAlien/ZipXtract/total)
 ![IzzyOnDroid](https://img.shields.io/endpoint?url=https://apt.izzysoft.de/fdroid/api/v1/shield/com.wirelessalien.zipxtract)
-[![F-Droid](https://img.shields.io/f-droid/v/com.wirelessalien.zipxtract?logo=F-Droid)](https://f-droid.org/packages/com.wirelessalien.zipxtract)
 
 <p style="text-align: left;">ZipXtract, çok çeşitli arşiv formatlarını işleyebilen tamamen açık kaynaklı bir Android uygulamasıdır. Desteklenen formatlar şunlardır:</p> 
 <ul>
@@ -37,10 +36,6 @@
 <li>Bölünmüş ZIP arşivleri oluşturur.</li> 
 </ul> 
 
-<blockquote> 
-<p><strong>NOT:</strong><br /> 
-F-Droid sürümünde lisans kısıtlamaları nedeniyle RAR çıkarma ve 7z sıkıştırma özellikleri bulunmamaktadır. Tüm özelliklere sahip sürüm için GitHub veya IzzyOnDroid dağıtımlarını kullanın.</p> 
-</blockquote> 
 
 <h2>Kullanım İpucu</h2> 
 <p>Arşiv çıkarma ve oluşturma için genel ipuçları:</p> 
@@ -58,7 +53,7 @@ F-Droid sürümünde lisans kısıtlamaları nedeniyle RAR çıkarma ve 7z sık�
 <p> Uygulamayı yerelleştirmeye yardımcı olmak için&nbsp;<a href="https://hosted.weblate.org/engage/zipxtract/">Weblate</a>'e katılın. </p> 
 
 <h2>Lisans</h2> 
-<p>Bu proje GNU Genel Kamu Lisansı v3.0 ile lisanslanmıştır. Detaylar için <a href="https://github.com/WirelessAlien/ZipXtract/blob/master/LICENSE">LİSANS</a> dosyasına bakın.</p> 
+<p>Bu proje GNU Genel Kamu Lisansı v3.0 ile lisanslanmıştır. Detaylar için <a href="../LICENSE">LİSANS</a> dosyasına bakın.</p> 
 
 <h2>İletişim</h2> 
-<p>Herhangi bir soru veya geri bildirim için lütfen <a href="https://github.com/WirelessAlien/ZipXtract/issues">GitHub deposunda</a> bir konu (issue) açın.</p>
+<p>Herhangi bir soru veya geri bildirim için lütfen <a href="../issues">GitHub deposunda</a> bir konu (issue) açın.</p>

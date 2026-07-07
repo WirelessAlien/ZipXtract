@@ -180,4 +180,9 @@
     <string name="select_storage">Изберете място за съхранение</string>
     <string name="show_hidden_files">Показване на скрити файлове</string>
     <string name="show_hidden_files_summary">Показване на файлове, започващи с точка</string>
+    <string name="rename_t">Преименуване</string>
+    <plurals name="folder_items">
+        <item quantity="one">%d елемент</item>
+        <item quantity="other">%d елемента</item>
+    </plurals>
 </resources>

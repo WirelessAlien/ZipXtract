@@ -64,16 +64,20 @@ class AboutFragment : DialogFragment() {
             openUrl("https://www.gnu.org/licenses/gpl-3.0.txt")
         }
 
-        binding.donate.setOnClickListener {
-            val donateFragment = DonationFragment()
-            donateFragment.show(requireActivity().supportFragmentManager, "donationFragment")
+        if (getString(R.string.show_donation) == "true") {
+            binding.donate.setOnClickListener {
+                val donateFragment = DonationFragment()
+                donateFragment.show(requireActivity().supportFragmentManager, "donationFragment")
+            }
+        } else {
+            binding.donate.visibility = View.GONE
         }
 
         binding.shareIcon.setOnClickListener {
-            val githubUrl = "https://github.com/WirelessAlien/ZipXtract"
+            val shareUrl = getString(R.string.share_url)
             val shareIntent = Intent(Intent.ACTION_SEND)
             shareIntent.type = "text/plain"
-            shareIntent.putExtra(Intent.EXTRA_TEXT, githubUrl)
+            shareIntent.putExtra(Intent.EXTRA_TEXT, shareUrl)
             startActivity(Intent.createChooser(shareIntent, getString(R.string.share)))
         }
 

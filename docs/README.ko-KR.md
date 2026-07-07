@@ -1,11 +1,10 @@
 # ZipXtract
 
 [![GitHub release](https://img.shields.io/github/v/release/WirelessAlien/ZipXtract)](https://github.com/WirelessAlien/ZipXtract/releases/latest)
-[![GitHub license](https://img.shields.io/github/license/WirelessAlien/ZipXtract)](https://github.com/WirelessAlien/ZipXtract/blob/master/License)
+[![GitHub license](https://img.shields.io/github/license/WirelessAlien/ZipXtract)](../License)
 [![GitHub Repo stars](https://img.shields.io/github/stars/WirelessAlien/ZipXtract)](https://img.shields.io/github/stars/WirelessAlien/ZipXtract)
 [![GitHub all releases](https://img.shields.io/github/downloads/WirelessAlien/ZipXtract/total)](https://img.shields.io/github/downloads/WirelessAlien/ZipXtract/total)
 ![IzzyOnDroid](https://img.shields.io/endpoint?url=https://apt.izzysoft.de/fdroid/api/v1/shield/com.wirelessalien.zipxtract)
-[![F-Droid](https://img.shields.io/f-droid/v/com.wirelessalien.zipxtract?logo=F-Droid)](https://f-droid.org/packages/com.wirelessalien.zipxtract)
 
 <p style="text-align: left;">ZipXtract는 아래와 같은 다양한 범주의 압축 포맷을 지원하기 위해 만들어진 완전 오픈 소스 안드로이드 앱입니다.</p>
 <ul>
@@ -37,10 +36,6 @@
 <li>분할 ZIP 압축파일.</li>
 </ul>
 
-<blockquote>
-<p><strong>알림:</strong><br />
-F-Droid 버전에는 라이센스 제한으로 인해 RAR 압축해제 및 7z 압축 기능이 포함되어 있지 않습니다. 전체 기능을 사용하려면 GitHub 또는 IzzyOnDroid 릴리즈를 사용하십시오.</p>
-</blockquote>
 
 <h2>사용 팁</h2>
 <p>압축파일 해제 및 압축파일 생성을 위한 일반적인 팁:</p>
@@ -60,7 +55,7 @@ Weblate에서 앱 번역을 도와주십시오. (<a href="https://hosted.weblate
 </p>
 
 <h2>라이센스</h2>
-<p>이 프로젝트는 GNU 일반 공중 사용 허가서 v3.0.에 의해 라이선스가 부여됩니다. 자세한 사항은 <a href="https://github.com/WirelessAlien/ZipXtract/blob/master/LICENSE">라이센스</a> 파일을 확인해 주십시오.</p>
+<p>이 프로젝트는 GNU 일반 공중 사용 허가서 v3.0.에 의해 라이선스가 부여됩니다. 자세한 사항은 <a href="../LICENSE">라이센스</a> 파일을 확인해 주십시오.</p>
 
 <h2>연락</h2>
-<p>문의사항 또는 피드백이 있으실 경우, <a href="https://github.com/WirelessAlien/ZipXtract/issues">GitHub 레포지토리</a>에서 이슈를 개설해 주십시오.</p>
+<p>문의사항 또는 피드백이 있으실 경우, <a href="../issues">GitHub 레포지토리</a>에서 이슈를 개설해 주십시오.</p>

@@ -185,46 +185,57 @@ class OpenWithActivity : AppCompatActivity() {
                             loadingDialog.show()
 
                             lifecycleScope.launch(Dispatchers.IO) {
-                                val isMultipartZip = MultipartArchiveHelper.isMultipartZip(file)
-                                val isMultipart7z = MultipartArchiveHelper.isMultipart7z(file)
-                                val isMultipartRar = MultipartArchiveHelper.isMultipartRar(file)
-                                val isEncrypted = EncryptionCheckHelper.isEncrypted(file)
+                                try {
+                                    val isMultipartZip = MultipartArchiveHelper.isMultipartZip(file)
+                                    val isMultipart7z = MultipartArchiveHelper.isMultipart7z(file)
+                                    val isMultipartRar = MultipartArchiveHelper.isMultipartRar(file)
+                                    val isEncrypted = EncryptionCheckHelper.isEncrypted(file)
 
-                                withContext(Dispatchers.Main) {
-                                    loadingDialog.dismiss()
-                                    if (isMultipartZip) {
-                                        if (isEncrypted) showPasswordInputMultiZipDialog(filePath)
-                                        else {
-                                            startMultiZipExtractionService(filePath, null)
-                                            finish()
-                                        }
-                                    } else if (isMultipart7z) {
-                                        if (isEncrypted) showPasswordInputMulti7zDialog(filePath)
-                                        else {
-                                            startMulti7zExtractionService(filePath, null)
-                                            finish()
-                                        }
-                                    } else if (isMultipartRar) {
-                                        if (isEncrypted) showPasswordInputMultiRarDialog(filePath)
-                                        else {
-                                            startRarExtractionService(filePath, null)
-                                            finish()
-                                        }
-                                    } else {
-                                        if (file.extension.equals("rar", ignoreCase = true)) {
+                                    withContext(Dispatchers.Main) {
+                                        if (isMultipartZip) {
+                                            if (isEncrypted) showPasswordInputMultiZipDialog(filePath)
+                                            else {
+                                                startMultiZipExtractionService(filePath, null)
+                                                finish()
+                                            }
+                                        } else if (isMultipart7z) {
+                                            if (isEncrypted) showPasswordInputMulti7zDialog(filePath)
+                                            else {
+                                                startMulti7zExtractionService(filePath, null)
+                                                finish()
+                                            }
+                                        } else if (isMultipartRar) {
                                             if (isEncrypted) showPasswordInputMultiRarDialog(filePath)
                                             else {
                                                 startRarExtractionService(filePath, null)
                                                 finish()
                                             }
                                         } else {
-                                            if (isEncrypted) {
-                                                showPasswordInputDialog(filePath)
+                                            if (file.extension.equals("rar", ignoreCase = true)) {
+                                                if (isEncrypted) showPasswordInputMultiRarDialog(filePath)
+                                                else {
+                                                    startRarExtractionService(filePath, null)
+                                                    finish()
+                                                }
                                             } else {
-                                                startExtractionService(filePath, null)
-                                                finish()
+                                                if (isEncrypted) {
+                                                    showPasswordInputDialog(filePath)
+                                                } else {
+                                                    startExtractionService(filePath, null)
+                                                    finish()
+                                                }
                                             }
                                         }
+                                    }
+                                } catch (e: Exception) {
+                                    e.printStackTrace()
+                                    withContext(Dispatchers.Main) {
+                                        Toast.makeText(this@OpenWithActivity, R.string.general_error_msg, Toast.LENGTH_SHORT).show()
+                                        finish()
+                                    }
+                                } finally {
+                                    withContext(Dispatchers.Main) {
+                                        loadingDialog.dismiss()
                                     }
                                 }
                             }

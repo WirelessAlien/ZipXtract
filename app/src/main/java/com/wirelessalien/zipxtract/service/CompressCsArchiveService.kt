@@ -22,37 +22,36 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.pm.ServiceInfo
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.media.MediaScannerConnection
 import android.os.Build
 import android.os.Environment
 import android.os.IBinder
+import android.os.PowerManager
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.preference.PreferenceManager
 import com.github.luben.zstd.ZstdOutputStream
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.activity.MainActivity
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_COMPLETE
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_ERROR
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_ARCHIVE_PROGRESS
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_CANCEL_OPERATION
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ARCHIVE_NOTIFICATION_CHANNEL_ID
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_DIR_PATH
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_ERROR_MESSAGE
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_PROGRESS
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.PREFERENCE_ARCHIVE_DIR_PATH
 import com.wirelessalien.zipxtract.constant.ServiceConstants
+import com.wirelessalien.zipxtract.helper.AppEvent
+import com.wirelessalien.zipxtract.helper.EventBus
 import com.wirelessalien.zipxtract.helper.FileOperationsDao
+import com.wirelessalien.zipxtract.helper.FileUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.cancel
 import org.apache.commons.compress.compressors.CompressorException
 import org.apache.commons.compress.compressors.CompressorStreamFactory
 import java.io.BufferedInputStream
@@ -66,6 +65,8 @@ import java.io.OutputStream
 import java.nio.file.Files
 
 class CompressCsArchiveService : Service() {
+
+    private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     private lateinit var fileOperationsDao: FileOperationsDao
 
@@ -101,31 +102,41 @@ class CompressCsArchiveService : Service() {
 
 
         if (jobId == null || compressionFormat == null) {
-            stopSelf()
+            stopSelf(startId)
             return START_NOT_STICKY
         }
 
-        startForeground(NOTIFICATION_ID, createNotification(0))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            startForeground(NOTIFICATION_ID, createNotification(0), ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
+        } else {
+            startForeground(NOTIFICATION_ID, createNotification(0))
+        }
 
-        compressionJob = CoroutineScope(Dispatchers.IO).launch {
-            val filesToCompress = fileOperationsDao.getFilesForJob(jobId)
-            if (filesToCompress.isEmpty()) {
+        compressionJob = serviceScope.launch {
+            val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+            val wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "ZipXtract:CompressCsArchiveWakeLock")
+            wakeLock.acquire(60 * 60 * 1000L /*1 hour*/)
+            try {
+                val filesToCompress = fileOperationsDao.getFilesForJob(jobId)
+                if (filesToCompress.isEmpty()) {
+                    fileOperationsDao.deleteFilesForJob(jobId)
+                    return@launch
+                }
+                if (filesToCompress.size > 1) {
+                    Log.w("CompressCsArchiveService", "This service only supports single file compression. Only the first file will be compressed.")
+                }
+                val filePath = filesToCompress[0]
+
+                if (compressionFormat == ZSTD_FORMAT) {
+                    compressWithZstd(filePath, compressionFormat, destinationPath)
+                } else {
+                    compressArchive(filePath, compressionFormat, destinationPath)
+                }
                 fileOperationsDao.deleteFilesForJob(jobId)
-                stopSelf()
-                return@launch
+            } finally {
+                if (wakeLock.isHeld) wakeLock.release()
+                stopSelf(startId)
             }
-            if (filesToCompress.size > 1) {
-                Log.w("CompressCsArchiveService", "This service only supports single file compression. Only the first file will be compressed.")
-            }
-            val filePath = filesToCompress[0]
-
-            if (compressionFormat == ZSTD_FORMAT) {
-                compressWithZstd(filePath, compressionFormat, destinationPath)
-            } else {
-                compressArchive(filePath, compressionFormat, destinationPath)
-            }
-            fileOperationsDao.deleteFilesForJob(jobId)
-            stopSelf()
         }
 
 
@@ -134,6 +145,7 @@ class CompressCsArchiveService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        serviceScope.cancel()
         compressionJob?.cancel()
         unregisterReceiver(cancelReceiver)
     }
@@ -169,22 +181,18 @@ class CompressCsArchiveService : Service() {
         return builder.build()
     }
 
-    private fun sendLocalBroadcast(intent: Intent) {
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
-    }
-
     private fun compressArchive(filePath: String, format: String, destinationPath: String?) {
 
         if (filePath.isEmpty()) {
             val errorMessage = getString(R.string.no_files_to_archive)
             showErrorNotification(errorMessage)
-            sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, errorMessage))
+            EventBus.emit(AppEvent.ArchiveError(errorMessage))
             stopForegroundService()
             return
         }
 
         val file = File(filePath)
-        val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+        val buffer = ByteArray(65536)
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
         val archivePath = sharedPreferences.getString(PREFERENCE_ARCHIVE_DIR_PATH, null)
         val parentDir: File
@@ -266,20 +274,20 @@ class CompressCsArchiveService : Service() {
 
             showCompletionNotification(outputFile)
             scanForNewFile(outputFile)
-            sendLocalBroadcast(Intent(ACTION_ARCHIVE_COMPLETE).putExtra(EXTRA_DIR_PATH, outputFile.parent))
+            EventBus.emit(AppEvent.ArchiveComplete(outputFile.parent))
 
         } catch (e: CompressorException) {
             e.printStackTrace()
             showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-            sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message ?: getString(R.string.general_error_msg)))
+            EventBus.emit(AppEvent.ArchiveError(e.message ?: getString(R.string.general_error_msg)))
         } catch (e: IOException) {
             e.printStackTrace()
             showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-            sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message ?: getString(R.string.general_error_msg)))
+            EventBus.emit(AppEvent.ArchiveError(e.message ?: getString(R.string.general_error_msg)))
         } catch (e: Exception) {
             e.printStackTrace()
             showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-            sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message ?: getString(R.string.general_error_msg)))
+            EventBus.emit(AppEvent.ArchiveError(e.message ?: getString(R.string.general_error_msg)))
         } finally {
             stopForegroundService()
         }
@@ -294,7 +302,7 @@ class CompressCsArchiveService : Service() {
         if (inputFilePath.isEmpty()) {
             val errorMessage = getString(R.string.no_files_to_archive)
             showErrorNotification(errorMessage)
-            sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, errorMessage))
+            EventBus.emit(AppEvent.ArchiveError(errorMessage))
             stopForegroundService()
             return
         }
@@ -337,7 +345,7 @@ class CompressCsArchiveService : Service() {
             }
 
             FileInputStream(file).use { inputStream ->
-                val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+                val buffer = ByteArray(65536)
                 var bytesRead: Int
                 val totalBytes = file.length()
                 var bytesProcessed = 0L
@@ -364,23 +372,30 @@ class CompressCsArchiveService : Service() {
 
             showCompletionNotification(outputFile)
             scanForNewFile(outputFile)
-            sendLocalBroadcast(Intent(ACTION_ARCHIVE_COMPLETE).putExtra(EXTRA_DIR_PATH, outputFile.parent))
+            EventBus.emit(AppEvent.ArchiveComplete(outputFile.parent))
 
         } catch (e: Exception) {
             e.printStackTrace()
             showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-            sendLocalBroadcast(Intent(ACTION_ARCHIVE_ERROR).putExtra(EXTRA_ERROR_MESSAGE, e.message ?: getString(R.string.general_error_msg)))
+            EventBus.emit(AppEvent.ArchiveError(e.message ?: getString(R.string.general_error_msg)))
         } finally {
             stopForegroundService()
         }
     }
 
-    private fun updateProgress(progress: Int) {
-        val notification = createNotification(progress)
-        val notificationManager = getSystemService(NotificationManager::class.java)
-        notificationManager.notify(NOTIFICATION_ID, notification)
+    private var lastNotifyTime = 0L
 
-        sendLocalBroadcast(Intent(ACTION_ARCHIVE_PROGRESS).putExtra(EXTRA_PROGRESS, progress))
+    private fun updateProgress(progress: Int) {
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - lastNotifyTime >= 500 || progress == 100 || progress == 0) {
+            lastNotifyTime = currentTime
+            
+            val notification = createNotification(progress)
+            val notificationManager = getSystemService(NotificationManager::class.java)
+            notificationManager.notify(NOTIFICATION_ID, notification)
+
+            EventBus.emit(AppEvent.ArchiveProgress(progress))
+        }
     }
 
     private fun showCompletionNotification(file: File) {
@@ -428,6 +443,6 @@ class CompressCsArchiveService : Service() {
     }
 
     private fun scanForNewFile(file: File) {
-        MediaScannerConnection.scanFile(this, arrayOf(file.absolutePath), null, null)
+        FileUtils.scanFiles(this, listOf(file.absolutePath))
     }
 }

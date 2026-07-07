@@ -21,21 +21,28 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
+import android.content.pm.ServiceInfo
+import android.content.Context
 import android.content.Intent
-import android.media.MediaScannerConnection
 import android.os.Build
 import android.os.IBinder
+import android.os.PowerManager
 import androidx.core.app.NotificationCompat
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.DELETE_NOTIFICATION_CHANNEL_ID
 import com.wirelessalien.zipxtract.constant.ServiceConstants
 import com.wirelessalien.zipxtract.helper.FileOperationsDao
+import com.wirelessalien.zipxtract.helper.FileUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.cancel
 import java.io.File
 
 class DeleteFilesService : Service() {
+
+    private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     private lateinit var fileOperationsDao: FileOperationsDao
 
@@ -49,59 +56,62 @@ class DeleteFilesService : Service() {
         fileOperationsDao = FileOperationsDao(this)
         val jobId = intent?.getStringExtra(ServiceConstants.EXTRA_JOB_ID)
         if (jobId == null) {
-            stopSelf()
+            stopSelf(startId)
             return START_NOT_STICKY
         }
-        val filesToDelete = fileOperationsDao.getFilesForJob(jobId).map { File(it) }
 
         createNotificationChannel()
-        startForeground(NOTIFICATION_ID, createNotification(0, filesToDelete.size))
-
-        CoroutineScope(Dispatchers.IO).launch {
-            deleteFiles(filesToDelete)
-            fileOperationsDao.deleteFilesForJob(jobId)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            startForeground(NOTIFICATION_ID, createNotification(0, 0), ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
+        } else {
+            startForeground(NOTIFICATION_ID, createNotification(0, 0))
         }
 
-        return START_STICKY
+        serviceScope.launch {
+            val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+            val wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "ZipXtract:DeleteFilesWakeLock")
+            wakeLock.acquire(60 * 60 * 1000L /*1 hour*/)
+            try {
+                val filesToDelete = fileOperationsDao.getFilesForJob(jobId).map { File(it) }
+                deleteFiles(filesToDelete)
+                fileOperationsDao.deleteFilesForJob(jobId)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            } finally {
+                if (wakeLock.isHeld) wakeLock.release()
+                stopSelf(startId)
+            }
+        }
+
+        return START_NOT_STICKY
     }
 
     private fun deleteFiles(files: List<File>) {
-        val totalFilesCount = countTotalFiles(files)
-        var deletedFilesCount = 0
-        val pathsToScan = mutableListOf<String>()
-
-        fun deleteFile(file: File) {
-            pathsToScan.add(file.absolutePath)
-            if (file.isDirectory) {
-                file.listFiles()?.forEach { deleteFile(it) }
+        var totalFilesCount = 0
+        files.forEach { file ->
+            file.walkTopDown().forEach {
+                totalFilesCount++
+                updateNotification(0, totalFilesCount)
             }
-            file.delete()
-            deletedFilesCount++
-            updateNotification(deletedFilesCount, totalFilesCount)
         }
+        updateNotification(0, totalFilesCount, true)
+
+        var deletedFilesCount = 0
+        val pathsToScan = mutableSetOf<String>()
 
         for (file in files) {
-            deleteFile(file)
+            file.walkBottomUp().forEach { currentFile ->
+                pathsToScan.add(currentFile.absolutePath)
+                if (currentFile.delete()) {
+                    deletedFilesCount++
+                    updateNotification(deletedFilesCount, totalFilesCount)
+                }
+            }
         }
 
-        if (pathsToScan.isNotEmpty()) {
-            MediaScannerConnection.scanFile(this, pathsToScan.toTypedArray(), null, null)
-        }
+        FileUtils.scanFiles(this, pathsToScan)
 
         stopForegroundService()
-        stopSelf()
-    }
-
-    private fun countTotalFiles(files: List<File>): Int {
-        var count = 0
-        for (file in files) {
-            if (file.isDirectory) {
-                count += countTotalFiles(file.listFiles()?.toList() ?: emptyList())
-            } else {
-                count++
-            }
-        }
-        return count
     }
 
     private fun createNotificationChannel() {
@@ -126,15 +136,26 @@ class DeleteFilesService : Service() {
             .build()
     }
 
-    private fun updateNotification(progress: Int, total: Int) {
-        val notification = createNotification(progress, total)
-        val notificationManager = getSystemService(NotificationManager::class.java)
-        notificationManager.notify(NOTIFICATION_ID, notification)
+    private var lastNotifyTime = 0L
+
+    private fun updateNotification(progress: Int, total: Int, force: Boolean = false) {
+        val currentTime = System.currentTimeMillis()
+        if (force || currentTime - lastNotifyTime >= 500 || progress == total) {
+            lastNotifyTime = currentTime
+            val notification = createNotification(progress, total)
+            val notificationManager = getSystemService(NotificationManager::class.java)
+            notificationManager.notify(NOTIFICATION_ID, notification)
+        }
     }
 
     private fun stopForegroundService() {
         stopForeground(STOP_FOREGROUND_REMOVE)
         val notificationManager = getSystemService(NotificationManager::class.java)
-        notificationManager.cancel(Archive7zService.NOTIFICATION_ID)
+        notificationManager.cancel(NOTIFICATION_ID)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        serviceScope.cancel()
     }
 }

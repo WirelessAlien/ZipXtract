@@ -21,10 +21,12 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
+import android.content.pm.ServiceInfo
+import android.content.Context
 import android.content.Intent
-import android.media.MediaScannerConnection
 import android.os.Build
 import android.os.IBinder
+import android.os.PowerManager
 import androidx.core.app.NotificationCompat
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.COPY_MOVE_NOTIFICATION_CHANNEL_ID
@@ -33,10 +35,14 @@ import com.wirelessalien.zipxtract.helper.FileOperationsDao
 import com.wirelessalien.zipxtract.helper.FileUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.cancel
 import java.io.File
 
 class CopyMoveService : Service() {
+
+    private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     private lateinit var fileOperationsDao: FileOperationsDao
 
@@ -53,21 +59,32 @@ class CopyMoveService : Service() {
         val isCopyAction = intent?.getBooleanExtra(ServiceConstants.EXTRA_IS_COPY_ACTION, true)
 
         if (jobId == null || destinationPath == null || isCopyAction == null) {
-            stopSelf()
+            stopSelf(startId)
             return START_NOT_STICKY
         }
 
-        val filesToCopyMove = fileOperationsDao.getFilesForJob(jobId).map { File(it) }
-
         createNotificationChannel()
-        startForeground(NOTIFICATION_ID, createNotification(0, filesToCopyMove.size, isCopyAction))
-
-        CoroutineScope(Dispatchers.IO).launch {
-            copyMoveFiles(filesToCopyMove, destinationPath, isCopyAction)
-            fileOperationsDao.deleteFilesForJob(jobId)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            startForeground(NOTIFICATION_ID, createNotification(0, 0, isCopyAction), ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
+        } else {
+            startForeground(NOTIFICATION_ID, createNotification(0, 0, isCopyAction))
         }
 
-        return START_STICKY
+        serviceScope.launch {
+            val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+            val wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "ZipXtract:CopyMoveWakeLock")
+            wakeLock.acquire(60 * 60 * 1000L /*1 hour*/)
+            try {
+                val filesToCopyMove = fileOperationsDao.getFilesForJob(jobId).map { File(it) }
+                copyMoveFiles(filesToCopyMove, destinationPath, isCopyAction)
+                fileOperationsDao.deleteFilesForJob(jobId)
+            } finally {
+                if (wakeLock.isHeld) wakeLock.release()
+                stopSelf(startId)
+            }
+        }
+
+        return START_NOT_STICKY
     }
 
     private fun copyMoveFiles(files: List<File>, destinationPath: String, isCopyAction: Boolean) {
@@ -77,7 +94,7 @@ class CopyMoveService : Service() {
         }
 
         var processedFilesCount = 0
-        val pathsToScan = mutableListOf<String>()
+        val pathsToScan = mutableSetOf<String>()
 
         val progressCallback: (Int) -> Unit = { count ->
             processedFilesCount += count
@@ -114,10 +131,9 @@ class CopyMoveService : Service() {
             }
         }
 
-        MediaScannerConnection.scanFile(this, pathsToScan.toTypedArray(), null, null)
+        FileUtils.scanFiles(this, pathsToScan)
 
         stopForegroundService()
-        stopSelf()
     }
 
     private fun createNotificationChannel() {
@@ -153,15 +169,26 @@ class CopyMoveService : Service() {
             .build()
     }
 
+    private var lastNotifyTime = 0L
+
     private fun updateNotification(progress: Int, total: Int, isCopyAction: Boolean) {
-        val notification = createNotification(progress, total, isCopyAction)
-        val notificationManager = getSystemService(NotificationManager::class.java)
-        notificationManager.notify(NOTIFICATION_ID, notification)
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - lastNotifyTime >= 500 || progress == total || progress == 0) {
+            lastNotifyTime = currentTime
+            val notification = createNotification(progress, total, isCopyAction)
+            val notificationManager = getSystemService(NotificationManager::class.java)
+            notificationManager.notify(NOTIFICATION_ID, notification)
+        }
     }
 
     private fun stopForegroundService() {
         stopForeground(STOP_FOREGROUND_REMOVE)
         val notificationManager = getSystemService(NotificationManager::class.java)
-        notificationManager.cancel(Archive7zService.NOTIFICATION_ID)
+        notificationManager.cancel(NOTIFICATION_ID)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        serviceScope.cancel()
     }
 }

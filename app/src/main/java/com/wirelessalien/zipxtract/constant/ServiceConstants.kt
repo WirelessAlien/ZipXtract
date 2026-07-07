@@ -37,4 +37,5 @@ object ServiceConstants {
     const val EXTRA_ITEMS_TO_ADD_JOB_ID = "com.wirelessalien.zipxtract.EXTRA_ITEMS_TO_ADD_JOB_ID"
     const val EXTRA_ITEMS_TO_REMOVE_JOB_ID = "com.wirelessalien.zipxtract.EXTRA_ITEMS_TO_REMOVE_JOB_ID"
     const val EXTRA_ITEMS_TO_ADD_NAMES = "itemsToAddNames"
+    const val EXTRA_ITEMS_TO_EXTRACT = "items_to_extract"
 }

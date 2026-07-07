@@ -22,38 +22,36 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.pm.ServiceInfo
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.media.MediaScannerConnection
 import android.os.Build
 import android.os.Environment
 import android.os.IBinder
+import android.os.PowerManager
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.preference.PreferenceManager
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.activity.MainActivity
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_CANCEL_OPERATION
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_COMPLETE
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_ERROR
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.ACTION_EXTRACTION_PROGRESS
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRACTION_NOTIFICATION_CHANNEL_ID
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_DIR_PATH
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_ERROR_MESSAGE
-import com.wirelessalien.zipxtract.constant.BroadcastConstants.EXTRA_PROGRESS
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.PREFERENCE_EXTRACT_DIR_PATH
 import com.wirelessalien.zipxtract.constant.ServiceConstants
+import com.wirelessalien.zipxtract.helper.AppEvent
 import com.wirelessalien.zipxtract.helper.ArchiveOpenMultipartRarCallback
+import com.wirelessalien.zipxtract.helper.EventBus
 import com.wirelessalien.zipxtract.helper.FileOperationsDao
 import com.wirelessalien.zipxtract.helper.FileUtils
 import com.wirelessalien.zipxtract.model.DirectoryInfo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.cancel
 import net.sf.sevenzipjbinding.ArchiveFormat
 import net.sf.sevenzipjbinding.ExtractAskMode
 import net.sf.sevenzipjbinding.ExtractOperationResult
@@ -65,6 +63,7 @@ import net.sf.sevenzipjbinding.ISequentialOutStream
 import net.sf.sevenzipjbinding.PropID
 import net.sf.sevenzipjbinding.SevenZip
 import net.sf.sevenzipjbinding.SevenZipException
+import java.io.BufferedOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -72,6 +71,8 @@ import java.io.OutputStream
 import java.util.Date
 
 class ExtractRarService : Service() {
+
+    private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     private lateinit var fileOperationsDao: FileOperationsDao
 
@@ -109,23 +110,33 @@ class ExtractRarService : Service() {
         this.password = password?.toCharArray()
 
         if (jobId.isNullOrEmpty()) {
-            stopSelf()
+            stopSelf(startId)
             return START_NOT_STICKY
         }
-        startForeground(NOTIFICATION_ID, createNotification(0))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            startForeground(NOTIFICATION_ID, createNotification(0), ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
+        } else {
+            startForeground(NOTIFICATION_ID, createNotification(0))
+        }
 
-        extractionJob = CoroutineScope(Dispatchers.IO).launch {
-            val filesToExtract = fileOperationsDao.getFileForJob(jobId)
-            if (filesToExtract?.isEmpty() == true) {
+        extractionJob = serviceScope.launch {
+            val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+            val wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "ZipXtract:ExtractRarWakeLock")
+            wakeLock.acquire(60 * 60 * 1000L /*1 hour*/)
+            try {
+                val filesToExtract = fileOperationsDao.getFileForJob(jobId)
+                if (filesToExtract?.isEmpty() == true) {
+                    fileOperationsDao.deleteFilesForJob(jobId)
+                    return@launch
+                }
+
+                val modifiedFilePath = getModifiedFilePath(filesToExtract ?: "")
+                extractArchive(modifiedFilePath, useAppNameDir, destinationPath)
                 fileOperationsDao.deleteFilesForJob(jobId)
-                stopSelf()
-                return@launch
+            } finally {
+                if (wakeLock.isHeld) wakeLock.release()
+                stopSelf(startId)
             }
-
-            val modifiedFilePath = getModifiedFilePath(filesToExtract ?:"")
-            extractArchive(modifiedFilePath, useAppNameDir, destinationPath)
-            fileOperationsDao.deleteFilesForJob(jobId)
-            stopSelf()
         }
 
         return START_NOT_STICKY
@@ -168,6 +179,7 @@ class ExtractRarService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        serviceScope.cancel()
         extractionJob?.cancel()
         unregisterReceiver(cancelReceiver)
     }
@@ -203,16 +215,12 @@ class ExtractRarService : Service() {
         return builder.build()
     }
 
-    private fun sendLocalBroadcast(intent: Intent) {
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
-    }
-
     private fun extractArchive(filePath: String, useAppNameDir: Boolean, destinationPath: String?) {
 
         if (filePath.isEmpty()) {
             val errorMessage = getString(R.string.no_files_to_archive)
             showErrorNotification(errorMessage)
-            sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(EXTRA_ERROR_MESSAGE, errorMessage))
+            EventBus.emit(AppEvent.ExtractionError(errorMessage))
             stopForegroundService()
             return
         }
@@ -280,7 +288,7 @@ class ExtractRarService : Service() {
                         FileUtils.setLastModifiedTime(extractCallback.directories)
                         scanForNewFiles(destinationDir)
                         showCompletionNotification(destinationDir)
-                        sendLocalBroadcast(Intent(ACTION_EXTRACTION_COMPLETE).putExtra(EXTRA_DIR_PATH, destinationDir.path))
+                        EventBus.emit(AppEvent.ExtractionComplete(destinationDir.path))
                     }
                 } catch (e: SevenZipException) {
                     if (e.message == "Cancelled") {
@@ -290,8 +298,7 @@ class ExtractRarService : Service() {
                     } else {
                         e.printStackTrace()
                         showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-                        sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(
-                            EXTRA_ERROR_MESSAGE, e.message ?: getString(R.string.general_error_msg)))
+                        EventBus.emit(AppEvent.ExtractionError(e.message ?: getString(R.string.general_error_msg)))
                     }
                 } finally {
                     inArchive.close()
@@ -304,8 +311,7 @@ class ExtractRarService : Service() {
         } catch (e: IOException) {
             e.printStackTrace()
             showErrorNotification(e.message ?: getString(R.string.general_error_msg))
-            sendLocalBroadcast(Intent(ACTION_EXTRACTION_ERROR).putExtra(
-                EXTRA_ERROR_MESSAGE, e.message ?: getString(R.string.general_error_msg)))
+            EventBus.emit(AppEvent.ExtractionError(e.message ?: getString(R.string.general_error_msg)))
         }
     }
 
@@ -319,10 +325,12 @@ class ExtractRarService : Service() {
         private var currentFileIndex: Int = -1
         private var currentUnpackedFile: File? = null
         val directories = mutableListOf<DirectoryInfo>()
+        private val dstDirCanonicalPath: String
         var hasError = false
 
         init {
             totalSize = inArchive.numberOfItems.toLong()
+            dstDirCanonicalPath = dstDir.canonicalPath
         }
 
         private var errorBroadcasted = false
@@ -333,12 +341,7 @@ class ExtractRarService : Service() {
                     hasError = true
                     if (!errorBroadcasted) {
                         showErrorNotification(getString(R.string.wrong_password))
-                        sendLocalBroadcast(
-                            Intent(ACTION_EXTRACTION_ERROR).putExtra(
-                                EXTRA_ERROR_MESSAGE,
-                                getString(R.string.wrong_password)
-                            )
-                        )
+                        EventBus.emit(AppEvent.ExtractionError(getString(R.string.wrong_password)))
                         errorBroadcasted = true
                     }
                     throw SevenZipException("WrongPasswordDetected")
@@ -347,12 +350,7 @@ class ExtractRarService : Service() {
                     hasError = true
                     if (!errorBroadcasted) {
                         showErrorNotification(getString(R.string.general_error_msg))
-                        sendLocalBroadcast(
-                            Intent(ACTION_EXTRACTION_ERROR).putExtra(
-                                EXTRA_ERROR_MESSAGE,
-                                getString(R.string.general_error_msg)
-                            )
-                        )
+                        EventBus.emit(AppEvent.ExtractionError(getString(R.string.general_error_msg)))
                         errorBroadcasted = true
                     }
                 }
@@ -380,12 +378,7 @@ class ExtractRarService : Service() {
                     hasError = true
                     if (!errorBroadcasted) {
                         showErrorNotification(getString(R.string.general_error_msg))
-                        sendLocalBroadcast(
-                            Intent(ACTION_EXTRACTION_ERROR).putExtra(
-                                EXTRA_ERROR_MESSAGE,
-                                getString(R.string.general_error_msg)
-                            )
-                        )
+                        EventBus.emit(AppEvent.ExtractionError(getString(R.string.general_error_msg)))
                         errorBroadcasted = true
                     }
                 }
@@ -399,6 +392,11 @@ class ExtractRarService : Service() {
             val isDir: Boolean = inArchive.getProperty(p0, PropID.IS_FOLDER) as Boolean
             this.currentUnpackedFile = File(dstDir, path) // Store current unpacked file
 
+            val fileCanonical = this.currentUnpackedFile!!.canonicalPath
+            if (!fileCanonical.startsWith(dstDirCanonicalPath + File.separator) && fileCanonical != dstDirCanonicalPath) {
+                throw SevenZipException("Zip Slip detected: $path")
+            }
+
             if (isDir) {
                 this.currentUnpackedFile!!.mkdirs()
                 val modTime = (inArchive.getProperty(p0, PropID.LAST_MODIFICATION_TIME) as? Date)?.time
@@ -411,7 +409,7 @@ class ExtractRarService : Service() {
                         parentDir.mkdirs()
                     }
                     this.currentUnpackedFile!!.createNewFile()
-                    uos = FileOutputStream(this.currentUnpackedFile!!)
+                    uos = BufferedOutputStream(FileOutputStream(this.currentUnpackedFile!!))
                 } catch (e: IOException) {
                     e.printStackTrace()
                 }
@@ -453,12 +451,19 @@ class ExtractRarService : Service() {
         }
     }
 
-    private fun updateProgress(progress: Int) {
-        val notification = createNotification(progress)
-        val notificationManager = getSystemService(NotificationManager::class.java)
-        notificationManager.notify(NOTIFICATION_ID, notification)
+    private var lastNotifyTime = 0L
 
-        sendLocalBroadcast(Intent(ACTION_EXTRACTION_PROGRESS).putExtra(EXTRA_PROGRESS, progress))
+    private fun updateProgress(progress: Int) {
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - lastNotifyTime >= 500 || progress == 100 || progress == 0) {
+            lastNotifyTime = currentTime
+            
+            val notification = createNotification(progress)
+            val notificationManager = getSystemService(NotificationManager::class.java)
+            notificationManager.notify(NOTIFICATION_ID, notification)
+
+            EventBus.emit(AppEvent.ExtractionProgress(progress))
+        }
     }
 
     private fun showCompletionNotification(destination: File) {
@@ -508,8 +513,8 @@ class ExtractRarService : Service() {
     private fun scanForNewFiles(directory: File) {
         val files = directory.listFiles()
         if (files != null) {
-            val paths = files.map { it.absolutePath }.toTypedArray()
-            MediaScannerConnection.scanFile(this, paths, null, null)
+            val paths = files.map { it.absolutePath }
+            FileUtils.scanFiles(this, paths)
         }
     }
 }
