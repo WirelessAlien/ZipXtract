@@ -1,7 +1,7 @@
 # ZipXtract
 
 [![GitHub release](https://img.shields.io/github/v/release/WirelessAlien/ZipXtract)](https://github.com/WirelessAlien/ZipXtract/releases/latest)
-[![GitHub license](https://img.shields.io/github/license/WirelessAlien/ZipXtract)](https://github.com/WirelessAlien/ZipXtract/blob/master/License)
+[![GitHub license](https://img.shields.io/github/license/WirelessAlien/ZipXtract)](../License)
 [![GitHub Repo stars](https://img.shields.io/github/stars/WirelessAlien/ZipXtract)](https://img.shields.io/github/stars/WirelessAlien/ZipXtract)
 [![GitHub all releases](https://img.shields.io/github/downloads/WirelessAlien/ZipXtract/total)](https://img.shields.io/github/downloads/WirelessAlien/ZipXtract/total)
 ![IzzyOnDroid](https://img.shields.io/endpoint?url=https://apt.izzysoft.de/fdroid/api/v1/shield/com.wirelessalien.zipxtract)
@@ -36,10 +36,6 @@
 <li>Erstelle aufgeteilte ZIP-Archive.</li>
 </ul>
 
-<blockquote>
-<p><strong>HINWEIS:</strong><br />
-Die F-Droid-Version enthält aufgrund von Lizenzbeschränkungen keine RAR-Extraktions- und 7z-Komprimierungsfunktionen. Für die vollständige Version verwenden Sie bitte die GitHub- oder IzzyOnDroid-Versionen.</p>
-</blockquote>
 
 <h2>Verwendungstipps</h2>
 <p>Allgemeine Tipps zur Archivextraktion und Archivierung:</p>
@@ -60,7 +56,7 @@ Helfen Sie dabei, die App zu übersetzen: &nbsp;<a href="https://hosted.weblate.
 </p>
 
 <h2>Lizenz</h2>
-<p>Dieses Projekt ist unter der GNU General Public License v3.0 lizenziert. Siehe die <a href="https://github.com/WirelessAlien/ZipXtract/blob/master/LICENSE">LICENSE</a>-Datei für Einzelheiten.</p>
+<p>Dieses Projekt ist unter der GNU General Public License v3.0 lizenziert. Siehe die <a href="../LICENSE">LICENSE</a>-Datei für Einzelheiten.</p>
 
 <h2>Kontakt</h2>
-<p>Bei Fragen oder Feedback erstelle bitte ein Issue im <a href="https://github.com/WirelessAlien/ZipXtract/issues">GitHub-Repository</a>.</p>
+<p>Bei Fragen oder Feedback erstelle bitte ein Issue im <a href="../issues">GitHub-Repository</a>.</p>

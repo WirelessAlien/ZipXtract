@@ -1,7 +1,7 @@
 # ZipXtract
 
 [![GitHub release](https://img.shields.io/github/v/release/WirelessAlien/ZipXtract)](https://github.com/WirelessAlien/ZipXtract/releases/latest)
-[![GitHub license](https://img.shields.io/github/license/WirelessAlien/ZipXtract)](https://github.com/WirelessAlien/ZipXtract/blob/master/License)
+[![GitHub license](https://img.shields.io/github/license/WirelessAlien/ZipXtract)](../License)
 [![GitHub Repo stars](https://img.shields.io/github/stars/WirelessAlien/ZipXtract)](https://img.shields.io/github/stars/WirelessAlien/ZipXtract)
 [![GitHub all releases](https://img.shields.io/github/downloads/WirelessAlien/ZipXtract/total)](https://img.shields.io/github/downloads/WirelessAlien/ZipXtract/total)
 ![IzzyOnDroid](https://img.shields.io/endpoint?url=https://apt.izzysoft.de/fdroid/api/v1/shield/com.wirelessalien.zipxtract)
@@ -37,10 +37,6 @@
 <li>Створення розділених ZIP-архівів.</li> 
 </ul> 
 
-<blockquote> 
-<p><strong>ПРИМІТКА:</strong><br /> 
-Версія F-Droid не включає функції видобування RAR і стиснення 7z через ліцензійні обмеження. Щоб отримати повну версію, використовуйте випуски GitHub або IzzyOnDroid.</p> 
-</blockquote> 
 
 <h2>Порада щодо використання</h2> 
 <p>Загальні поради щодо розпакування та створення архіву:</p> 
@@ -61,7 +57,7 @@
 </p> 
 
 <h2>Ліцензія</h2> 
-<p>Цей проект ліцензовано згідно з GNU General Public License v3.0. Докладніше див. у файлі <a href="https://github.com/WirelessAlien/ZipXtract/blob/master/LICENSE">LICENSE</a>.</p> 
+<p>Цей проект ліцензовано згідно з GNU General Public License v3.0. Докладніше див. у файлі <a href="../LICENSE">LICENSE</a>.</p> 
 
 <h2>Контакт</h2> 
-<p>Щоб отримати будь-які запитання чи відгуки, будь ласка, відкрийте проблему в <a href="https://github.com/WirelessAlien/ZipXtract/issues">репозиторії GitHub</a>.</p>
+<p>Щоб отримати будь-які запитання чи відгуки, будь ласка, відкрийте проблему в <a href="../issues">репозиторії GitHub</a>.</p>

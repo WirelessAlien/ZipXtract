@@ -1,7 +1,7 @@
 # ZipXtract
 
 [![GitHub release](https://img.shields.io/github/v/release/WirelessAlien/ZipXtract)](https://github.com/WirelessAlien/ZipXtract/releases/latest)
-[![GitHub license](https://img.shields.io/github/license/WirelessAlien/ZipXtract)](https://github.com/WirelessAlien/ZipXtract/blob/master/License)
+[![GitHub license](https://img.shields.io/github/license/WirelessAlien/ZipXtract)](../License)
 [![GitHub Repo stars](https://img.shields.io/github/stars/WirelessAlien/ZipXtract)](https://img.shields.io/github/stars/WirelessAlien/ZipXtract)
 [![GitHub all releases](https://img.shields.io/github/downloads/WirelessAlien/ZipXtract/total)](https://img.shields.io/github/downloads/WirelessAlien/ZipXtract/total)
 ![IzzyOnDroid](https://img.shields.io/endpoint?url=https://apt.izzysoft.de/fdroid/api/v1/shield/com.wirelessalien.zipxtract)
@@ -36,10 +36,6 @@
 <li>Membuat arsip ZIP split.</li>
 </ul>
 
-<blockquote>
-<p><strong>CATATAN:</strong><br />
-Versi F-Droid tidak menyertakan fitur ekstraksi RAR dan kompresi 7z karena pembatasan lisensi. Untuk versi lengkap, silakan gunakan rilis dari GitHub atau IzzyOnDroid.</p>
-</blockquote>
 
 <h2>Tips Penggunaan</h2>
 <p>Tips umum untuk ekstraksi dan pembuatan arsip:</p>
@@ -60,7 +56,7 @@ Bantu melokalisasi aplikasi melalui&nbsp;<a href="https://hosted.weblate.org/eng
 </p>
 
 <h2>Lisensi</h2>
-<p>Proyek ini dilisensikan di bawah GNU General Public License v3.0. Lihat file <a href="https://github.com/WirelessAlien/ZipXtract/blob/master/LICENSE">LICENSE</a> untuk detail.</p>
+<p>Proyek ini dilisensikan di bawah GNU General Public License v3.0. Lihat file <a href="../LICENSE">LICENSE</a> untuk detail.</p>
 
 <h2>Kontak</h2>
-<p>Untuk pertanyaan atau feedback, silakan buka issue di <a href="https://github.com/WirelessAlien/ZipXtract/issues">repositori GitHub</a>.</p>
+<p>Untuk pertanyaan atau feedback, silakan buka issue di <a href="../issues">repositori GitHub</a>.</p>

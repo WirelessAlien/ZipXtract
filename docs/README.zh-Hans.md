@@ -1,7 +1,7 @@
 # ZipXtract
 
 [![GitHub release](https://img.shields.io/github/v/release/WirelessAlien/ZipXtract)](https://github.com/WirelessAlien/ZipXtract/releases/latest)
-[![GitHub license](https://img.shields.io/github/license/WirelessAlien/ZipXtract)](https://github.com/WirelessAlien/ZipXtract/blob/master/License)
+[![GitHub license](https://img.shields.io/github/license/WirelessAlien/ZipXtract)](../License)
 [![GitHub Repo stars](https://img.shields.io/github/stars/WirelessAlien/ZipXtract)](https://img.shields.io/github/stars/WirelessAlien/ZipXtract)
 [![GitHub all releases](https://img.shields.io/github/downloads/WirelessAlien/ZipXtract/total)](https://img.shields.io/github/downloads/WirelessAlien/ZipXtract/total)
 ![IzzyOnDroid](https://img.shields.io/endpoint?url=https://apt.izzysoft.de/fdroid/api/v1/shield/com.wirelessalien.zipxtract)
@@ -36,10 +36,6 @@
 <li>创建分卷 ZIP 归档文件。</li>
 </ul>
 
-<blockquote>
-<p><strong>注意：</strong><br />
-由于相关限制，F-Droid 版本不包含 RAR 提取和 7z 压缩功能。如需使用完整版本，请使用 GitHub 或 IzzyOnDroid 的发布版本。</p>
-</blockquote>
 
 <h2>使用提示</h2>
 <p>归档文件提取和创建的一般提示：</p>
@@ -60,7 +56,7 @@
 </p>
 
 <h2>开放源代码许可</h2>
-<p>本项目采用 GNU General Public License v3.0。详情请参阅 <a href="https://github.com/WirelessAlien/ZipXtract/blob/master/LICENSE">LICENSE</a> 文件。</p>
+<p>本项目采用 GNU General Public License v3.0。详情请参阅 <a href="../LICENSE">LICENSE</a> 文件。</p>
 
 <h2>联系我们</h2>
-<p>如有任何疑问或反馈，请在 <a href="https://github.com/WirelessAlien/ZipXtract/issues">GitHub 仓库</a>提交问题。</p>
+<p>如有任何疑问或反馈，请在 <a href="../issues">GitHub 仓库</a>提交问题。</p>
