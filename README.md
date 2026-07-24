@@ -18,6 +18,7 @@ ZipXtract is a fully open-source Android application designed for comprehensive 
 *   **Encrypted Archives:** Handles password-protected ZIP and 7z files.
 *   **Multi-Volume Archives:** Seamlessly extracts multi-volume RAR and 7z archives.
 *   **Split Archives:** Support for extracting split ZIP files.
+*   **File timestamps:** Extracted file timestamps match what was stored in the archive file.
 
 ### Flexible Archive Creation
 *   **Popular Formats:** Create ZIP, 7z and TAR archives (with multiple type of compression support).
