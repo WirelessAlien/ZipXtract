@@ -109,7 +109,7 @@ dependencies {
     implementation 'net.lingala.zip4j:zip4j:2.11.5'
 
     //7-Zip-Jbinding-android
-    implementation 'com.github.WirelessAlien:sevenzipjbinding:Release-26.06-2.3-android'
+    implementation 'com.github.WirelessAlien:sevenzipjbinding:Release-26.06-2.4-android'
 
     //libarchive
     implementation 'me.zhanghai.android.libarchive:library:1.1.6'
