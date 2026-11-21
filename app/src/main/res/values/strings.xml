@@ -168,6 +168,9 @@
     <string name="automatic_threads_subtitle">Uses maximum CPU for fastest speeds</string>
     <string name="automatic_threads_warning">Warning: Uses all CPU cores. Device may become unresponsive during archive operation.</string>
     <string name="solid_compression_subtitle">Improves ratio for many small files but extraction time will increase</string>
+    <string name="enable_header_encryption">Enable header encryption</string>
+    <string name="enable_header_encryption_subtitle">Encrypt file names and directory structure</string>
+    <string name="password_required_for_header_encryption">Password is required for header encryption</string>
     <string name="destination">General</string>
     <string name="compression_settings">Compression Settings</string>
     <string name="security">Security</string>

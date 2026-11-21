@@ -1999,7 +1999,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         return if (remainder > 0) division + 1 else division
     }
 
-    fun startSevenZService(password: String?, archiveName: String, compressionLevel: Int, solid: Boolean, threadCount: Int, filesToArchive: List<String>, destinationPath: String? = null) {
+    fun startSevenZService(password: String?, archiveName: String, compressionLevel: Int, solid: Boolean, threadCount: Int, filesToArchive: List<String>, destinationPath: String? = null, headerEncryption: Boolean = false) {
         aProgressDialog.show()
         val jobId = fileOperationsDao.addFilesForJob(filesToArchive)
         val intent = Intent(requireContext(), Archive7zService::class.java).apply {
@@ -2010,6 +2010,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             putExtra(ServiceConstants.EXTRA_SOLID, solid)
             putExtra(ServiceConstants.EXTRA_THREAD_COUNT, threadCount)
             putExtra(EXTRA_DESTINATION_PATH, destinationPath)
+            putExtra(ServiceConstants.EXTRA_HEADER_ENCRYPTION, headerEncryption)
         }
         ContextCompat.startForegroundService(requireContext(), intent)
     }

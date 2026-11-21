@@ -315,9 +315,17 @@ class SevenZOptionDialogFragment : DialogFragment() {
         val mainFragment = parentFragmentManager.findFragmentById(R.id.container) as? MainFragment
 
         binding.okButton.setOnClickListener {
+            binding.passwordEditText.error = null
+            binding.confirmPasswordEditText.error = null
+
             val archiveName = binding.archiveNameEditText.text.toString().ifBlank { defaultName }
             val password = binding.passwordEditText.text.toString()
             val confirmPassword = binding.confirmPasswordEditText.text.toString()
+
+            if (binding.headerEncryptionSwitch.isChecked && password.isBlank()) {
+                binding.passwordEditText.error = getString(R.string.password_required_for_header_encryption)
+                return@setOnClickListener
+            }
 
             if (password != confirmPassword) {
                 binding.confirmPasswordEditText.error = getString(R.string.passwords_do_not_match)
@@ -340,6 +348,7 @@ class SevenZOptionDialogFragment : DialogFragment() {
             }
 
             val destinationPath = binding.outputPathInput.text.toString()
+            val headerEncryption = binding.headerEncryptionSwitch.isChecked && password.isNotBlank()
 
             mainFragment?.startSevenZService(
                 password.ifBlank { null },
@@ -348,7 +357,8 @@ class SevenZOptionDialogFragment : DialogFragment() {
                 solid,
                 threadCount,
                 selectedFilePaths,
-                destinationPath
+                destinationPath,
+                headerEncryption
             )
             dismiss()
         }

@@ -44,12 +44,16 @@ import net.sf.sevenzipjbinding.IOutItemAllFormats
 import net.sf.sevenzipjbinding.ISequentialInStream
 import net.sf.sevenzipjbinding.PropID
 import net.sf.sevenzipjbinding.SevenZip
+import net.sf.sevenzipjbinding.SevenZipException
 import net.sf.sevenzipjbinding.impl.OutItemFactory
 import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream
 import net.sf.sevenzipjbinding.impl.RandomAccessFileOutStream
 import java.io.Closeable
 import java.io.File
+import java.io.FileNotFoundException
 import java.io.RandomAccessFile
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicInteger
 
 class Update7zService : Service() {
 
@@ -119,6 +123,8 @@ class Update7zService : Service() {
         val closeables = ArrayList<Closeable>()
         var tmpFile: File? = null
         var success = false
+        val openStreams = ConcurrentHashMap<Int, Closeable>()
+        val currentItemIndex = AtomicInteger(0)
         try {
             val inStream = RandomAccessFileInStream(RandomAccessFile(archivePath, "r"))
             val inArchive = SevenZip.openInArchive(null, inStream)
@@ -154,7 +160,14 @@ class Update7zService : Service() {
             val newCount = inArchive.numberOfItems - itemsToRemoveIndices.size + numToAdd
 
             outArchive.updateItems(outStream, newCount, object : IOutCreateCallback<IOutItemAllFormats> {
-                override fun setOperationResult(p0: Boolean) {}
+                override fun setOperationResult(p0: Boolean) {
+                    val idx = currentItemIndex.getAndIncrement()
+                    try {
+                        openStreams.remove(idx)?.close()
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
                 override fun setTotal(size: Long) {
                     totalSize = size
                 }
@@ -181,6 +194,7 @@ class Update7zService : Service() {
                         outItem.propertyLastModificationTime = java.util.Date(file.lastModified())
                         if (file.isDirectory) {
                             outItem.propertyIsDir = true
+                            outItem.dataSize = 0L
                         } else {
                             outItem.dataSize = file.length()
                         }
@@ -203,10 +217,15 @@ class Update7zService : Service() {
                     if (index >= inArchive.numberOfItems - itemsToRemoveIndices.size) {
                         val addItemIndex = index - (inArchive.numberOfItems - itemsToRemoveIndices.size)
                         val (file, _) = filesToAdd[addItemIndex]
+                        if (file.isDirectory) return null
                         if (file.isFile) {
-                            val stream = RandomAccessFileInStream(RandomAccessFile(file, "r"))
-                            closeables.add(stream)
-                            return stream
+                            return try {
+                                val stream = RandomAccessFileInStream(RandomAccessFile(file, "r"))
+                                openStreams.put(index, stream)?.close()
+                                stream
+                            } catch (ex: FileNotFoundException) {
+                                throw SevenZipException("File not found", ex)
+                            }
                         }
                     }
                     return null
@@ -226,6 +245,14 @@ class Update7zService : Service() {
             e.printStackTrace()
             EventBus.emit(AppEvent.ArchiveError(e.message))
         } finally {
+            for ((_, stream) in openStreams) {
+                try {
+                    stream.close()
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+            openStreams.clear()
             for (i in closeables.indices.reversed()) {
                 try {
                     closeables[i].close()

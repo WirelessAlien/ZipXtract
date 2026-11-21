@@ -29,6 +29,7 @@ object ServiceConstants {
     const val EXTRA_SPLIT_SIZE = "splitSize"
     const val EXTRA_SOLID = "solid"
     const val EXTRA_THREAD_COUNT = "threadCount"
+    const val EXTRA_HEADER_ENCRYPTION = "headerEncryption"
     const val EXTRA_DESTINATION_PATH = "extra_destination_path"
     const val EXTRA_IS_COPY_ACTION = "extra_is_copy_action"
     const val EXTRA_USE_APP_NAME_DIR = "use_app_name_dir"

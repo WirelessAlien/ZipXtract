@@ -326,6 +326,21 @@
                             android:hint="@string/confirm_password"
                             android:inputType="textPassword"/>
                     </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/headerEncryptionSwitch"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="@string/enable_header_encryption"
+                        android:checked="false"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/enable_header_encryption_subtitle"
+                        android:textSize="12sp"
+                        android:layout_marginTop="-5dp"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 

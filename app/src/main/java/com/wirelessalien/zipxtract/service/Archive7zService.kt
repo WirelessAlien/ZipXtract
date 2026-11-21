@@ -59,10 +59,14 @@ import net.sf.sevenzipjbinding.SevenZipException
 import net.sf.sevenzipjbinding.impl.OutItemFactory
 import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream
 import net.sf.sevenzipjbinding.impl.RandomAccessFileOutStream
+import java.io.Closeable
 import java.io.File
+import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.RandomAccessFile
 import java.util.Date
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicInteger
 
 class Archive7zService : Service() {
 
@@ -103,6 +107,7 @@ class Archive7zService : Service() {
         val threadCount = intent.getIntExtra(ServiceConstants.EXTRA_THREAD_COUNT, -1)
         val jobId = intent.getStringExtra(ServiceConstants.EXTRA_JOB_ID)
         val destinationPath = intent.getStringExtra(ServiceConstants.EXTRA_DESTINATION_PATH)
+        val headerEncryption = intent.getBooleanExtra(ServiceConstants.EXTRA_HEADER_ENCRYPTION, false)
 
         if (jobId == null) {
             sendErrorBroadcast(getString(R.string.general_error_msg))
@@ -122,7 +127,7 @@ class Archive7zService : Service() {
             wakeLock.acquire(60 * 60 * 1000L /*1 hour*/)
             try {
                 val filesToArchive = fileOperationsDao.getFilesForJob(jobId)
-                create7zFile(archiveName, password, compressionLevel, solid, threadCount, filesToArchive, destinationPath)
+                create7zFile(archiveName, password, compressionLevel, solid, threadCount, filesToArchive, destinationPath, headerEncryption)
                 fileOperationsDao.deleteFilesForJob(jobId)
             } finally {
                 if (wakeLock.isHeld) wakeLock.release()
@@ -177,7 +182,8 @@ class Archive7zService : Service() {
         solid: Boolean,
         threadCount: Int,
         filesToArchive: List<String>,
-        destinationPath: String?
+        destinationPath: String?,
+        headerEncryption: Boolean
     ) {
 
         if (filesToArchive.isEmpty()) {
@@ -226,62 +232,91 @@ class Archive7zService : Service() {
             RandomAccessFile(sevenZFile, "rw").use { raf ->
                 val outArchive = SevenZip.openOutArchive7z()
 
-                outArchive.setHeaderEncryption(true)
+                if (!password.isNullOrEmpty() && headerEncryption) {
+                    outArchive.setHeaderEncryption(true)
+                }
                 outArchive.setLevel(compressionLevel)
                 outArchive.setSolid(solid)
-                outArchive.setSolidSize(8192)
                 outArchive.setThreadCount(threadCount)
 
-                val totalSize = filesToArchive.sumOf { File(it).length() }
+                val totalSize = filesToArchive.sumOf {
+                    val file = File(it)
+                    if (file.isDirectory) 0L else file.length()
+                }
                 var lastProgress = -1
+                val openStreams = ConcurrentHashMap<Int, Closeable>()
+                val currentItemIndex = AtomicInteger(0)
 
-                outArchive.createArchive(
-                    RandomAccessFileOutStream(raf), filesToArchive.size,
-                    object : IOutCreateCallback<IOutItem7z>, ICryptoGetTextPassword {
-                        override fun cryptoGetTextPassword(): String? {
-                            return password
-                        }
-
-                        override fun setOperationResult(operationResultOk: Boolean) {
-
-                        }
-
-                        override fun setTotal(total: Long) {
-
-                        }
-
-                        override fun setCompleted(complete: Long) {
-                            if (archiveJob?.isActive == false) {
-                                throw SevenZipException("Cancelled")
+                try {
+                    outArchive.createArchive(
+                        RandomAccessFileOutStream(raf), filesToArchive.size,
+                        object : IOutCreateCallback<IOutItem7z>, ICryptoGetTextPassword {
+                            override fun cryptoGetTextPassword(): String? {
+                                return password
                             }
-                            val progress = if (totalSize > 0) ((complete.toDouble() / totalSize) * 100).toInt() else 0
-                            if (progress > lastProgress) {
-                                lastProgress = progress
-                                updateProgress(progress)
+
+                            override fun setOperationResult(operationResultOk: Boolean) {
+                                val index = currentItemIndex.getAndIncrement()
+                                try {
+                                    openStreams.remove(index)?.close()
+                                } catch (e: Exception) {
+                                    e.printStackTrace()
+                                }
                             }
+
+                            override fun setTotal(total: Long) {
+
+                            }
+
+                            override fun setCompleted(complete: Long) {
+                                if (archiveJob?.isActive == false) {
+                                    throw SevenZipException("Cancelled")
+                                }
+                                val progress = if (totalSize > 0) ((complete.toDouble() / totalSize) * 100).toInt() else 0
+                                if (progress > lastProgress) {
+                                    lastProgress = progress
+                                    updateProgress(progress)
+                                }
+                            }
+
+                            override fun getItemInformation(index: Int, outItemFactory: OutItemFactory<IOutItem7z>): IOutItem7z {
+                                val item = outItemFactory.createOutItem()
+                                val file = File(filesToArchive[index])
+                                val relativePath = file.absolutePath.removePrefix(baseDirectory).removePrefix("/")
+
+                                item.dataSize = if (file.isDirectory) 0L else file.length()
+                                item.propertyPath = relativePath
+                                item.propertyIsDir = file.isDirectory
+                                val lastModified = file.lastModified()
+                                item.propertyLastModificationTime = Date(if (lastModified > 0) lastModified else System.currentTimeMillis())
+
+                                return item
+                            }
+
+                            override fun getStream(i: Int): ISequentialInStream? {
+                                val file = File(filesToArchive[i])
+                                if (file.isDirectory) return null
+                                return try {
+                                    val stream = RandomAccessFileInStream(RandomAccessFile(file, "r"))
+                                    openStreams.put(i, stream)?.close()
+                                    stream
+                                } catch (ex: FileNotFoundException) {
+                                    throw SevenZipException("File not found", ex)
+                                }
+                            }
+                        })
+                } finally {
+                    for ((_, stream) in openStreams) {
+                        try {
+                            stream.close()
+                        } catch (e: Exception) {
+                            e.printStackTrace()
                         }
+                    }
+                    openStreams.clear()
+                    outArchive.close()
+                }
 
-                        override fun getItemInformation(index: Int, outItemFactory: OutItemFactory<IOutItem7z>): IOutItem7z {
-                            val item = outItemFactory.createOutItem()
-                            val file = File(filesToArchive[index])
-                            val relativePath = file.absolutePath.removePrefix(baseDirectory).removePrefix("/")
-
-                            item.dataSize = file.length()
-                            item.propertyPath = relativePath
-                            item.propertyIsDir = file.isDirectory
-                            val lastModified = file.lastModified()
-                            item.propertyLastModificationTime = Date(if (lastModified > 0) lastModified else System.currentTimeMillis())
-
-                            return item
-                        }
-
-                        override fun getStream(i: Int): ISequentialInStream {
-
-                            return RandomAccessFileInStream(RandomAccessFile(filesToArchive[i], "r"))
-                        }
-                    })
-
-                outArchive.close()
                 stopForegroundService()
                 showCompletionNotification(sevenZFile)
                 scanForNewFile(sevenZFile)
