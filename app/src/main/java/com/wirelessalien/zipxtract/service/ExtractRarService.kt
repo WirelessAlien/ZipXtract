@@ -279,7 +279,7 @@ class ExtractRarService : Service() {
 
                 try {
                     destinationDir.mkdirs()
-                    val extractCallback = ExtractCallback(inArchive, destinationDir)
+                    val extractCallback = ExtractCallback(inArchive, destinationDir, file.name)
                     inArchive.extract(null, false, extractCallback)
 
                     if (extractCallback.hasError) {
@@ -317,28 +317,41 @@ class ExtractRarService : Service() {
 
     private inner class ExtractCallback(
         private val inArchive: IInArchive,
-        private val dstDir: File
+        private val dstDir: File,
+        private val archiveName: String
     ) : IArchiveExtractCallback, ICryptoGetTextPassword {
-        private var uos: OutputStream? = null
+        private var uos: BufferedOutputStream? = null
         private var totalSize: Long = 0
         private var extractedSize: Long = 0
         private var currentFileIndex: Int = -1
         private var currentUnpackedFile: File? = null
+        private var currentItemFailed: Boolean = false
         val directories = mutableListOf<DirectoryInfo>()
         private val dstDirCanonicalPath: String
         var hasError = false
 
         init {
-            totalSize = inArchive.numberOfItems.toLong()
+            totalSize = 0L
             dstDirCanonicalPath = dstDir.canonicalPath
         }
 
         private var errorBroadcasted = false
 
         override fun setOperationResult(p0: ExtractOperationResult?) {
+            try {
+                uos?.flush()
+                uos?.close()
+            } catch (e: IOException) {
+                currentItemFailed = true
+                hasError = true
+            } finally {
+                uos = null
+            }
+
             when (p0) {
                 ExtractOperationResult.WRONG_PASSWORD -> {
                     hasError = true
+                    cleanupCurrentFile()
                     if (!errorBroadcasted) {
                         showErrorNotification(getString(R.string.wrong_password))
                         EventBus.emit(AppEvent.ExtractionError(getString(R.string.wrong_password)))
@@ -348,6 +361,7 @@ class ExtractRarService : Service() {
                 }
                 ExtractOperationResult.DATAERROR, ExtractOperationResult.UNSUPPORTEDMETHOD, ExtractOperationResult.CRCERROR, ExtractOperationResult.UNAVAILABLE, ExtractOperationResult.HEADERS_ERROR, ExtractOperationResult.UNEXPECTED_END, ExtractOperationResult.UNKNOWN_OPERATION_RESULT -> {
                     hasError = true
+                    cleanupCurrentFile()
                     if (!errorBroadcasted) {
                         showErrorNotification(getString(R.string.general_error_msg))
                         EventBus.emit(AppEvent.ExtractionError(getString(R.string.general_error_msg)))
@@ -355,27 +369,32 @@ class ExtractRarService : Service() {
                     }
                 }
                 ExtractOperationResult.OK -> {
-                    try {
-                        uos?.close()
-                        if (this.currentUnpackedFile != null) {
-                            val modTime = inArchive.getProperty(
-                                this.currentFileIndex,
-                                PropID.LAST_MODIFICATION_TIME
-                            ) as? Date
-                            if (modTime != null && modTime.time > 0) {
-                                this.currentUnpackedFile!!.setLastModified(modTime.time)
+                    if (currentItemFailed) {
+                        hasError = true
+                        cleanupCurrentFile()
+                    } else {
+                        val file = this.currentUnpackedFile
+                        if (file != null && file.exists() && this.currentFileIndex >= 0) {
+                            try {
+                                val modTime = inArchive.getProperty(
+                                    this.currentFileIndex,
+                                    PropID.LAST_MODIFICATION_TIME
+                                ) as? Date
+                                if (modTime != null && modTime.time > 0) {
+                                    file.setLastModified(modTime.time)
+                                }
+                            } catch (e: Exception) {
+                                // Ignore timestamp setting failure
                             }
                         }
-                        // Reset currentUnpackedFile and currentFileIndex for the next entry
-                        this.currentUnpackedFile = null
-                        this.currentFileIndex = -1
                         extractedSize++
-                    } catch (e: IOException) {
-                        e.printStackTrace()
                     }
+                    this.currentUnpackedFile = null
+                    this.currentFileIndex = -1
                 }
                 else -> {
                     hasError = true
+                    cleanupCurrentFile()
                     if (!errorBroadcasted) {
                         showErrorNotification(getString(R.string.general_error_msg))
                         EventBus.emit(AppEvent.ExtractionError(getString(R.string.general_error_msg)))
@@ -385,43 +404,84 @@ class ExtractRarService : Service() {
             }
         }
 
+        private fun cleanupCurrentFile() {
+            try {
+                val file = currentUnpackedFile
+                if (file != null && file.exists() && file.isFile) {
+                    file.delete()
+                }
+            } catch (e: Exception) {
+                // Ignore delete error
+            } finally {
+                currentUnpackedFile = null
+                currentFileIndex = -1
+            }
+        }
+
         override fun getStream(p0: Int, p1: ExtractAskMode?): ISequentialOutStream {
-            this.currentFileIndex = p0 // Store current file index
+            this.currentFileIndex = p0
+            this.currentItemFailed = false
 
-            val path: String = inArchive.getStringProperty(p0, PropID.PATH)
-            val isDir: Boolean = inArchive.getProperty(p0, PropID.IS_FOLDER) as Boolean
-            this.currentUnpackedFile = File(dstDir, path) // Store current unpacked file
+            if (p1 != null && p1 != ExtractAskMode.EXTRACT) {
+                return ISequentialOutStream { data -> data.size }
+            }
 
-            val fileCanonical = this.currentUnpackedFile!!.canonicalPath
+            val isSymLink = java.lang.Boolean.TRUE == inArchive.getProperty(p0, PropID.SYM_LINK)
+            val isHardLink = inArchive.getProperty(p0, PropID.HARD_LINK) != null
+            if (isSymLink || isHardLink) {
+                return ISequentialOutStream { data -> data.size }
+            }
+
+            val rawPath: String? = inArchive.getStringProperty(p0, PropID.PATH)
+            val isDir: Boolean = java.lang.Boolean.TRUE == inArchive.getProperty(p0, PropID.IS_FOLDER)
+
+            val safePath = if (rawPath.isNullOrBlank()) {
+                FileUtils.fallbackArchiveEntryName(archiveName)
+            } else {
+                FileUtils.sanitizeRelativePath(rawPath)
+            }
+
+            val targetFile = File(dstDir, safePath)
+            this.currentUnpackedFile = targetFile
+
+            val fileCanonical = targetFile.canonicalPath
             if (!fileCanonical.startsWith(dstDirCanonicalPath + File.separator) && fileCanonical != dstDirCanonicalPath) {
-                throw SevenZipException("Zip Slip detected: $path")
+                throw SevenZipException("Zip Slip detected: $rawPath")
             }
 
             if (isDir) {
-                this.currentUnpackedFile!!.mkdirs()
+                targetFile.mkdirs()
                 val modTime = (inArchive.getProperty(p0, PropID.LAST_MODIFICATION_TIME) as? Date)?.time
                 val lastModified = if (modTime != null && modTime > 0) modTime else System.currentTimeMillis()
-                directories.add(DirectoryInfo(this.currentUnpackedFile!!.path, lastModified))
+                directories.add(DirectoryInfo(targetFile.path, lastModified))
             } else {
                 try {
-                    val parentDir = this.currentUnpackedFile!!.parentFile
+                    val parentDir = targetFile.parentFile
                     if (parentDir != null && !parentDir.exists()) {
                         parentDir.mkdirs()
                     }
-                    this.currentUnpackedFile!!.createNewFile()
-                    uos = BufferedOutputStream(FileOutputStream(this.currentUnpackedFile!!))
+                    if (targetFile.exists()) {
+                        targetFile.delete()
+                    }
+                    targetFile.createNewFile()
+                    uos = BufferedOutputStream(FileOutputStream(targetFile), 64 * 1024)
                 } catch (e: IOException) {
-                    e.printStackTrace()
+                    currentItemFailed = true
+                    hasError = true
+                    throw SevenZipException("Failed to create file: ${targetFile.path}", e)
                 }
             }
 
             return ISequentialOutStream { data: ByteArray ->
-                try {
-                    if (!isDir) {
-                        uos?.write(data)
+                if (!isDir) {
+                    val out = uos ?: throw SevenZipException("OutputStream was not initialized for file: ${targetFile.path}")
+                    try {
+                        out.write(data)
+                    } catch (e: IOException) {
+                        currentItemFailed = true
+                        hasError = true
+                        throw SevenZipException("Failed to write to file: ${targetFile.path}", e)
                     }
-                } catch (e: IOException) {
-                    e.printStackTrace()
                 }
                 data.size
             }
@@ -435,7 +495,7 @@ class ExtractRarService : Service() {
                 throw SevenZipException("Cancelled")
             }
             if (hasError) return
-            val progress = if (totalSize > 0) ((complete.toDouble() / totalSize) * 100).toInt() else 0
+            val progress = if (totalSize > 0) ((complete.toDouble() / totalSize) * 100).toInt().coerceIn(0, 100) else 0
             if (progress > lastProgress) {
                 lastProgress = progress
                 updateProgress(progress)

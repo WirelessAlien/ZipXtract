@@ -80,11 +80,22 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
         val isEncrypted: Boolean
     )
 
+    private data class RawEntry(
+        val path: String,
+        val isDirectory: Boolean,
+        val size: Long,
+        val lastModified: Date?,
+        val isEncrypted: Boolean
+    )
+
     private lateinit var binding: FragmentSevenZipBinding
     private lateinit var fileOperationsDao: FileOperationsDao
     private var archivePath: String? = null
     private lateinit var adapter: ArchiveItemAdapter
+    private var randomAccessFile: RandomAccessFile? = null
+    private var inStream: RandomAccessFileInStream? = null
     private var inArchive: IInArchive? = null
+    private var cachedEntries: List<RawEntry> = emptyList()
     private var currentPath: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -145,15 +156,7 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
             windowInsets
         }
 
-        try {
-            val randomAccessFile = RandomAccessFile(archivePath, "r")
-            inArchive = SevenZip.openInArchive(null, RandomAccessFileInStream(randomAccessFile))
-            loadArchiveItems(currentPath)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            Toast.makeText(requireContext(),
-                getString(R.string.error_opening_archive, e.message), Toast.LENGTH_LONG).show()
-        }
+        openArchiveAndLoad()
 
         viewLifecycleOwner.lifecycleScope.launch {
             EventBus.events.collect { event ->
@@ -165,14 +168,7 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
                         binding.progressBar.visibility = View.GONE
                         Toast.makeText(requireContext(),
                             getString(R.string.archive_updated_successfully), Toast.LENGTH_SHORT).show()
-                        try {
-                            inArchive?.close()
-                            val randomAccessFile = RandomAccessFile(archivePath, "r")
-                            inArchive = SevenZip.openInArchive(null, RandomAccessFileInStream(randomAccessFile))
-                            loadArchiveItems(currentPath)
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                        }
+                        openArchiveAndLoad()
                     }
                     is AppEvent.ArchiveError -> {
                         binding.progressBar.visibility = View.GONE
@@ -237,37 +233,96 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
         }
     }
 
+    private fun openArchiveAndLoad() {
+        val path = archivePath ?: return
+        binding.progressBar.visibility = View.VISIBLE
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    closeArchive()
+                    val raf = RandomAccessFile(path, "r")
+                    randomAccessFile = raf
+                    val stream = RandomAccessFileInStream(raf)
+                    inStream = stream
+                    val archive = SevenZip.openInArchive(null, stream)
+                    inArchive = archive
+
+                    val count = archive.numberOfItems
+                    val entries = ArrayList<RawEntry>(count)
+                    for (i in 0 until count) {
+                        val rawPath = archive.getStringProperty(i, PropID.PATH) ?: ""
+                        val normalized = rawPath.replace("\\", "/")
+                        val isDir = java.lang.Boolean.TRUE == archive.getProperty(i, PropID.IS_FOLDER)
+                        val size = archive.getProperty(i, PropID.SIZE) as? Long ?: 0L
+                        val lastModified = archive.getProperty(i, PropID.LAST_MODIFICATION_TIME) as? Date
+                        val isEncrypted = archive.getProperty(i, PropID.ENCRYPTED) as? Boolean ?: false
+                        entries.add(RawEntry(normalized, isDir, size, lastModified, isEncrypted))
+                    }
+                    cachedEntries = entries
+                }
+                binding.progressBar.visibility = View.GONE
+                loadArchiveItems(currentPath)
+            } catch (e: Exception) {
+                binding.progressBar.visibility = View.GONE
+                e.printStackTrace()
+                if (isAdded) {
+                    Toast.makeText(
+                        requireContext(),
+                        getString(R.string.error_opening_archive, e.message),
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
+        }
+    }
+
+    private fun closeArchive() {
+        try {
+            inArchive?.close()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        } finally {
+            inArchive = null
+        }
+        try {
+            inStream?.close()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        } finally {
+            inStream = null
+        }
+        try {
+            randomAccessFile?.close()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        } finally {
+            randomAccessFile = null
+        }
+    }
+
     private fun loadArchiveItems(path: String) {
         currentPath = path
         updateCurrentPathChip()
 
         val children = mutableMapOf<String, ArchiveItem>()
 
-        inArchive?.let {
-            val count = it.numberOfItems
-            for (i in 0 until count) {
-                val itemPath = it.getProperty(i, PropID.PATH) as String
+        for (entry in cachedEntries) {
+            val itemPath = entry.path
+            if (itemPath.let { p -> p.startsWith(currentPath) && p != currentPath && (currentPath.isEmpty() || p.substring(currentPath.length).removePrefix("/").isNotEmpty()) }) {
+                val relativePath = itemPath.substring(currentPath.length).removePrefix("/")
 
-                if (itemPath.replace("\\", "/").let { p -> p.startsWith(currentPath) && p != currentPath && (currentPath.isEmpty() || p.substring(currentPath.length).removePrefix("/").isNotEmpty()) }) {
-                    val relativePath = itemPath.substring(currentPath.length).removePrefix("/")
-
-                    val separatorIndex = relativePath.indexOf('/')
-                    if (separatorIndex > -1) {
-                        // It's in a subdirectory. We only care about the subdirectory itself.
-                        val dirName = relativePath.substring(0, separatorIndex)
-                        val dirPath = if (currentPath.isEmpty()) dirName else "$currentPath/$dirName"
-                        if (!children.containsKey(dirPath)) {
-                            children[dirPath] = ArchiveItem(dirPath, true, 0, null, false)
-                        }
-                    } else {
-                        // It's a direct child file or an empty directory entry
-                        val isDirectory = it.getProperty(i, PropID.IS_FOLDER) as? Boolean ?: false
-                        val size = it.getProperty(i, PropID.SIZE) as? Long ?: 0L
-                        val lastModified = it.getProperty(i, PropID.LAST_MODIFICATION_TIME) as? Date
-                        val isEncrypted = it.getProperty(i, PropID.ENCRYPTED) as? Boolean ?: false
-                        if (!children.containsKey(itemPath)) {
-                            children[itemPath] = ArchiveItem(itemPath, isDirectory, size, lastModified, isEncrypted)
-                        }
+                val separatorIndex = relativePath.indexOf('/')
+                if (separatorIndex > -1) {
+                    // It's in a subdirectory. We only care about the subdirectory itself.
+                    val dirName = relativePath.substring(0, separatorIndex)
+                    val dirPath = if (currentPath.isEmpty()) dirName else "$currentPath/$dirName"
+                    if (!children.containsKey(dirPath)) {
+                        children[dirPath] = ArchiveItem(dirPath, true, 0, null, false)
+                    }
+                } else {
+                    // It's a direct child file or an empty directory entry
+                    if (!children.containsKey(itemPath)) {
+                        children[itemPath] = ArchiveItem(itemPath, entry.isDirectory, entry.size, entry.lastModified, entry.isEncrypted)
                     }
                 }
             }
@@ -555,7 +610,7 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
 
     override fun onDestroy() {
         super.onDestroy()
-        inArchive?.close()
+        closeArchive()
     }
 
     companion object {

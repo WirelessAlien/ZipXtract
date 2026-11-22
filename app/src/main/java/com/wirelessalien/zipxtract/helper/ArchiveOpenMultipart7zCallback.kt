@@ -40,7 +40,13 @@ class ArchiveOpenMultipart7zCallback(private val parentDir: File) : IArchiveOpen
             // First check if we already have this file open
             var randomAccessFile = openedRandomAccessFileList[filename]
             if (randomAccessFile != null) {
-                randomAccessFile.seek(0)
+                val volumeFile = File(parentDir, File(filename).name)
+                if (!randomAccessFile.channel.isOpen) {
+                    randomAccessFile = RandomAccessFile(volumeFile, "r")
+                    openedRandomAccessFileList[filename] = randomAccessFile
+                } else {
+                    randomAccessFile.seek(0)
+                }
                 return RandomAccessFileInStream(randomAccessFile)
             }
 

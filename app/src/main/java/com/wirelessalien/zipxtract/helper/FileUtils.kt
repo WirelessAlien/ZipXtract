@@ -217,4 +217,25 @@ object FileUtils {
             MediaScannerConnection.scanFile(context, chunk.toTypedArray(), null, null)
         }
     }
+
+    fun fallbackArchiveEntryName(archiveName: String): String {
+        val lower = archiveName.lowercase(java.util.Locale.ROOT)
+        for (shorthand in arrayOf(".tgz", ".tpz", ".tbz", ".tbz2", ".txz", ".tlz", ".taz")) {
+            if (lower.endsWith(shorthand)) {
+                return archiveName.substring(0, archiveName.length - shorthand.length) + ".tar"
+            }
+        }
+        val dot = archiveName.lastIndexOf('.')
+        return if (dot > 0) archiveName.substring(0, dot) else "$archiveName~"
+    }
+
+    fun sanitizeRelativePath(rawPath: String): String {
+        val parts = rawPath.replace('\\', '/').split('/').filter { it.isNotEmpty() && it != "." }
+        for (part in parts) {
+            if (part == "..") {
+                throw SecurityException("Path traversal ('..') detected: $rawPath")
+            }
+        }
+        return parts.joinToString(File.separator)
+    }
 }

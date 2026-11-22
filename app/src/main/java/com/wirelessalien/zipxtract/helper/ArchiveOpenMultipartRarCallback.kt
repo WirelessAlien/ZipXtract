@@ -39,7 +39,13 @@ class ArchiveOpenMultipartRarCallback(private val parentDir: File) : IArchiveOpe
         try {
             var randomAccessFile = openedRandomAccessFileList[filename]
             if (randomAccessFile != null) {
-                randomAccessFile.seek(0)
+                if (!randomAccessFile.channel.isOpen) {
+                    val file = File(parentDir, filename)
+                    randomAccessFile = RandomAccessFile(file, "r")
+                    openedRandomAccessFileList[filename] = randomAccessFile
+                } else {
+                    randomAccessFile.seek(0)
+                }
                 name = filename
                 return RandomAccessFileInStream(randomAccessFile)
             }
