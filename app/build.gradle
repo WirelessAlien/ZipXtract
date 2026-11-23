@@ -88,7 +88,7 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
     implementation 'androidx.preference:preference-ktx:1.2.1'
     implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.2.0'
-    implementation 'com.google.code.gson:gson:2.14.1'
+    implementation 'com.google.code.gson:gson:2.14.0'
     implementation 'androidx.activity:activity:1.13.0'
 
     //glide
