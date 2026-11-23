@@ -32,7 +32,7 @@ object EncryptionCheckHelper {
         val name = file.name.lowercase()
         return try {
             when {
-                name.matches(Regex(".*\\.z\\d{2}$")) || name.matches(Regex(".*\\.zip\\.\\d{3}$")) -> checkZip(file)
+                name.endsWith(".zip") || name.matches(Regex(".*\\.z\\d{2}$")) || name.matches(Regex(".*\\.zip\\.\\d{3}$")) -> checkZip(file)
                 name.matches(Regex(".*\\.part\\d+\\.rar$")) || name.matches(Regex(".*\\.r\\d{2}$")) || name.matches(Regex(".*\\.rar\\.\\d{3}$")) -> checkRar(file)
                 name.matches(Regex(".*\\.7z\\.\\d{3}$")) -> check7z(file)
                 else -> checkGenericSevenZip(file)

@@ -62,6 +62,10 @@ android {
         includeInApk false
     }
 
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
+
     packagingOptions {
         resources {
             excludes += [
