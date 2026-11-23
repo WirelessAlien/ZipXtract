@@ -254,4 +254,22 @@
     <string name="sha1" translatable="false">SHA-1</string>
     <string name="sha256" translatable="false">SHA-256</string>
     <string name="change_unc" translatable="false">\u2699</string>
+
+    <!-- New Archive Modal Bottom Sheet & Task Banner strings -->
+    <string name="new_archive">New Archive</string>
+    <string name="create_zip_action">Create ZIP</string>
+    <string name="create_zip_desc">Fast, standard compatibility</string>
+    <string name="create_7z_action">Create 7z</string>
+    <string name="create_7z_desc">High compression, header encryption</string>
+    <string name="create_tar_action">Create TAR</string>
+    <string name="create_tar_desc">.tar, .tar.gz, .tar.xz, .tar.zst</string>
+    <string name="ongoing_process">Ongoing Process</string>
+    <string name="expand">Expand</string>
+    <string name="task_completed">Completed: %1$s</string>
+    <string name="task_extracting">Extracting: %1$s</string>
+    <string name="task_archiving">Archiving: %1$s</string>
+    <string name="tap_to_open_folder">Tap to open folder</string>
+    <string name="in_progress">In progress…</string>
+    <string name="btn_open">Open</string>
+    <string name="btn_close">Close</string>
 </resources>

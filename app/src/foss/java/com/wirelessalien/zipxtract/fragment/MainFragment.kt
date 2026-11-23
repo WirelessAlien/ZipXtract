@@ -90,6 +90,11 @@ import com.wirelessalien.zipxtract.constant.BroadcastConstants.PREFERENCE_ARCHIV
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.PREFERENCE_EXTRACT_DIR_PATH
 import com.wirelessalien.zipxtract.helper.AppEvent
 import com.wirelessalien.zipxtract.helper.EventBus
+import com.wirelessalien.zipxtract.helper.OngoingTask
+import com.wirelessalien.zipxtract.helper.OngoingTaskManager
+import com.wirelessalien.zipxtract.helper.TaskStatus
+import com.wirelessalien.zipxtract.helper.TaskType
+import androidx.lifecycle.repeatOnLifecycle
 import com.wirelessalien.zipxtract.constant.ServiceConstants
 import com.wirelessalien.zipxtract.constant.ServiceConstants.EXTRA_DESTINATION_PATH
 import com.wirelessalien.zipxtract.databinding.BottomSheetCompressorArchiveBinding
@@ -172,7 +177,6 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     private lateinit var aProgressDialog: AlertDialog
     private lateinit var aProgressText: TextView
     private lateinit var eProgressText: TextView
-    private var areFabsVisible: Boolean = false
     private val fileOperationViewModel: FileOperationViewModel by activityViewModels()
     private lateinit var eProgressBar: LinearProgressIndicator
     private lateinit var aProgressBar: LinearProgressIndicator
@@ -257,33 +261,19 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             windowInsets
         }
 
-        val fabs = listOf(binding.mainFab, binding.pasteFab, binding.createZipFab, binding.create7zFab, binding.createTarFab)
-        fabs.forEach { fab ->
-            val initialMarginBottom = (fab.layoutParams as ViewGroup.MarginLayoutParams).bottomMargin
-            val initialMarginRight = (fab.layoutParams as ViewGroup.MarginLayoutParams).rightMargin
-            ViewCompat.setOnApplyWindowInsetsListener(fab) { v, windowInsets ->
-                val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
-                v.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                    bottomMargin = initialMarginBottom + insets.bottom
-                    rightMargin = initialMarginRight + insets.right
-                }
-                windowInsets
+        val initialMarginBottom = (binding.mainFab.layoutParams as ViewGroup.MarginLayoutParams).bottomMargin
+        val initialMarginRight = (binding.mainFab.layoutParams as ViewGroup.MarginLayoutParams).rightMargin
+        ViewCompat.setOnApplyWindowInsetsListener(binding.mainFab) { v, windowInsets ->
+            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                bottomMargin = initialMarginBottom + insets.bottom
+                rightMargin = initialMarginRight + insets.right
             }
+            windowInsets
         }
-
 
         currentPath = arguments?.getString("path") ?: arguments?.getString(ARG_DIRECTORY_PATH)
         searchHandler = Handler(Looper.getMainLooper())
-
-        lifecycleScope.launch {
-            fileOperationViewModel.filesToCopyMove.collect { files ->
-                if (files.isNotEmpty()) {
-                    showPasteFab()
-                } else {
-                    binding.pasteFab.visibility = View.GONE
-                }
-            }
-        }
 
         if (!checkStoragePermissions()) {
             showPermissionRequestLayout()
@@ -408,26 +398,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         }
 
         binding.mainFab.setOnClickListener {
-            if (areFabsVisible) {
-                hideExtendedFabs()
-            } else {
-                showExtendedFabs()
-            }
-        }
-
-        binding.createZipFab.setOnClickListener {
-            showZipOptionsDialog()
-            hideExtendedFabs()
-        }
-
-        binding.create7zFab.setOnClickListener {
-            show7zOptionsDialog()
-            hideExtendedFabs()
-        }
-
-        binding.createTarFab.setOnClickListener {
-            showTarOptionsDialog()
-            hideExtendedFabs()
+            showNewArchiveBottomSheet()
         }
 
         binding.swipeRefreshLayout.setOnRefreshListener {
@@ -723,18 +694,57 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         }
     }
 
-    private fun showExtendedFabs() {
-        binding.createZipFab.show()
-        binding.create7zFab.show()
-        binding.createTarFab.show()
-        areFabsVisible = true
+    private fun showNewArchiveBottomSheet() {
+        val sheet = NewArchiveBottomSheetDialogFragment.newInstance()
+        sheet.setListener(object : NewArchiveBottomSheetDialogFragment.NewArchiveListener {
+            override fun onCreateZip() {
+                showZipOptionsDialog()
+            }
+
+            override fun onCreate7z() {
+                show7zOptionsDialog()
+            }
+
+            override fun onCreateTar() {
+                showTarOptionsDialog()
+            }
+
+            override fun onCancelOngoing() {
+                cancelOngoingTask()
+            }
+
+            override fun onExpandOngoing(task: OngoingTask) {
+                expandOngoingTask(task)
+            }
+        })
+        sheet.show(parentFragmentManager, "newArchiveSheet")
     }
 
-    private fun hideExtendedFabs() {
-        binding.createZipFab.hide()
-        binding.create7zFab.hide()
-        binding.createTarFab.hide()
-        areFabsVisible = false
+    private fun expandOngoingTask(task: OngoingTask) {
+        if (task.status == TaskStatus.COMPLETED) {
+            task.outputDir?.let { dir -> navigateToPath(dir) }
+            OngoingTaskManager.clearTask()
+        } else {
+            when (task.type) {
+                TaskType.EXTRACTION -> {
+                    if (::eProgressDialog.isInitialized && !eProgressDialog.isShowing) {
+                        eProgressDialog.show()
+                    }
+                }
+                TaskType.ARCHIVE -> {
+                    if (::aProgressDialog.isInitialized && !aProgressDialog.isShowing) {
+                        aProgressDialog.show()
+                    }
+                }
+            }
+        }
+    }
+
+    private fun cancelOngoingTask() {
+        cancelAllServices()
+        if (::eProgressDialog.isInitialized && eProgressDialog.isShowing) eProgressDialog.dismiss()
+        if (::aProgressDialog.isInitialized && aProgressDialog.isShowing) aProgressDialog.dismiss()
+        OngoingTaskManager.clearTask()
     }
 
     private fun showInfoDialog() {
@@ -763,6 +773,22 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     }
 
     private fun prepareArchiveAndShowDialog(createFragment: (String) -> Fragment) {
+        if (getSelectedItemCount() == 0) {
+            val filePicker = FilePickerFragment.newInstance()
+            filePicker.setFilePickerListener(object : FilePickerFragment.FilePickerListener {
+                override fun onFilesSelected(files: List<File>) {
+                    if (files.isNotEmpty()) {
+                        launchArchiveWithJob(files.map { it.absolutePath }, createFragment)
+                    }
+                }
+            })
+            filePicker.show(parentFragmentManager, "filePicker")
+        } else {
+            launchArchiveWithSelectedFiles(createFragment)
+        }
+    }
+
+    private fun launchArchiveWithSelectedFiles(createFragment: (String) -> Fragment) {
         lifecycleScope.launch {
             val loadingDialog = MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
                 .setMessage(getString(R.string.please_wait))
@@ -802,6 +828,41 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         }
     }
 
+    private fun launchArchiveWithJob(filePaths: List<String>, createFragment: (String) -> Fragment) {
+        lifecycleScope.launch {
+            val loadingDialog = MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
+                .setMessage(getString(R.string.please_wait))
+                .setCancelable(false)
+                .create()
+            loadingDialog.show()
+
+            try {
+                val jobId = withContext(Dispatchers.IO) {
+                    fileOperationsDao.addFilesForJob(filePaths)
+                }
+
+                if (!isAdded) return@launch
+
+                val fragmentManager = parentFragmentManager
+                val newFragment = createFragment(jobId)
+
+                // Show the fragment fullscreen.
+                val transaction = fragmentManager.beginTransaction()
+                transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+                transaction.add(android.R.id.content, newFragment)
+                    .addToBackStack(null)
+                    .commit()
+
+                actionMode?.finish()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(requireContext(), R.string.general_error_msg, Toast.LENGTH_SHORT).show()
+            } finally {
+                loadingDialog.dismiss()
+            }
+        }
+    }
+
     private fun archiveProgressDialog() {
         val binding = ProgressDialogArchiveBinding.inflate(layoutInflater)
         aProgressBar = binding.progressBar
@@ -812,8 +873,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         }
 
         binding.cancelButton.setOnClickListener {
-            cancelAllServices()
-            aProgressDialog.dismiss()
+            cancelOngoingTask()
         }
 
         aProgressDialog = MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
@@ -832,8 +892,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         }
 
         binding.cancelButton.setOnClickListener {
-            cancelAllServices()
-            eProgressDialog.dismiss()
+            cancelOngoingTask()
         }
 
         eProgressDialog = MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
@@ -957,31 +1016,24 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
 
     private fun startCopyMoveAction(isCopy: Boolean) {
-        fileOperationViewModel.isCopyAction = isCopy
-        fileOperationViewModel.setFilesToCopyMove(selectedFiles.toList())
+        val filesToCopyMove = selectedFiles.map { it.absolutePath }
         actionMode?.finish()
-    }
+        if (filesToCopyMove.isEmpty()) return
 
-    private fun showPasteFab() {
-        binding.pasteFab.visibility = View.VISIBLE
-        binding.pasteFab.setOnClickListener {
-            pasteFiles()
-        }
-    }
-
-    private fun pasteFiles() {
-        val destinationPath = currentPath ?: Environment.getExternalStorageDirectory().absolutePath
-        val filesToCopyMove = fileOperationViewModel.filesToCopyMove.value.map { it.absolutePath }
-        val isCopyAction = fileOperationViewModel.isCopyAction
-        val jobId = fileOperationsDao.addFilesForJob(filesToCopyMove)
-
-        val intent = Intent(requireContext(), CopyMoveService::class.java).apply {
-            putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
-            putExtra(ServiceConstants.EXTRA_DESTINATION_PATH, destinationPath)
-            putExtra(ServiceConstants.EXTRA_IS_COPY_ACTION, isCopyAction)
-        }
-        ContextCompat.startForegroundService(requireContext(), intent)
-        fileOperationViewModel.setFilesToCopyMove(emptyList())
+        val pathPicker = PathPickerFragment.newInstance()
+        pathPicker.setPathPickerListener(object : PathPickerFragment.PathPickerListener {
+            override fun onPathSelected(path: String) {
+                val ctx = context ?: return
+                val jobId = fileOperationsDao.addFilesForJob(filesToCopyMove)
+                val intent = Intent(ctx, CopyMoveService::class.java).apply {
+                    putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
+                    putExtra(ServiceConstants.EXTRA_DESTINATION_PATH, path)
+                    putExtra(ServiceConstants.EXTRA_IS_COPY_ACTION, isCopy)
+                }
+                ContextCompat.startForegroundService(ctx, intent)
+            }
+        })
+        pathPicker.show(parentFragmentManager, "pathPicker")
     }
 
     private fun deleteSelectedFiles() {
@@ -1469,6 +1521,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     }
 
     private fun startCompressService(file: String, compressionFormat: String, destinationPath: String?) {
+        OngoingTaskManager.startTask(TaskType.ARCHIVE, File(file).name + compressionFormat, destinationPath)
         aProgressDialog.show()
         val jobId = fileOperationsDao.addFilesForJob(listOf(file))
         val intent = Intent(requireContext(), CompressCsArchiveService::class.java).apply {
@@ -1480,6 +1533,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     }
 
     fun startArchiveTarService(file: List<String>, archiveName: String, compressionFormat: String, destinationPath: String? = null, compressionLevel: Int = 3) {
+        OngoingTaskManager.startTask(TaskType.ARCHIVE, archiveName, destinationPath)
         aProgressDialog.show()
         val jobId = fileOperationsDao.addFilesForJob(file)
         val intent = Intent(requireContext(), ArchiveTarService::class.java).apply {
@@ -1800,6 +1854,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     }
 
     private fun startExtractionService(file: String, password: String?, destinationPath: String?) {
+        OngoingTaskManager.startTask(TaskType.EXTRACTION, File(file).name, destinationPath)
         eProgressDialog.show()
         val jobId = fileOperationsDao.addFilesForJob(listOf(file))
         val intent = Intent(requireContext(), ExtractArchiveService::class.java).apply {
@@ -1811,6 +1866,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     }
 
     private fun startExtractionCsService(file: String, destinationPath: String?) {
+        OngoingTaskManager.startTask(TaskType.EXTRACTION, File(file).name, destinationPath)
         eProgressDialog.show()
         val jobId = fileOperationsDao.addFilesForJob(listOf(file))
         val intent = Intent(requireContext(), ExtractCsArchiveService::class.java).apply {
@@ -1821,6 +1877,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     }
 
     private fun startRarExtractionService(file: String, password: String?, destinationPath: String?) {
+        OngoingTaskManager.startTask(TaskType.EXTRACTION, File(file).name, destinationPath)
         eProgressDialog.show()
         val jobId = fileOperationsDao.addFilesForJob(listOf(file))
         val intent = Intent(requireContext(), ExtractRarService::class.java).apply {
@@ -1832,6 +1889,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     }
 
     private fun startMulti7zExtractionService(file: String, password: String?, destinationPath: String?) {
+        OngoingTaskManager.startTask(TaskType.EXTRACTION, File(file).name, destinationPath)
         eProgressDialog.show()
         val jobId = fileOperationsDao.addFilesForJob(listOf(file))
         val intent = Intent(requireContext(), ExtractMultipart7zService::class.java).apply {
@@ -1843,6 +1901,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     }
 
     private fun startMultiZipExtractionService(file: String, password: String?, destinationPath: String?) {
+        OngoingTaskManager.startTask(TaskType.EXTRACTION, File(file).name, destinationPath)
         eProgressDialog.show()
         val jobId = fileOperationsDao.addFilesForJob(listOf(file))
         val intent = Intent(requireContext(), ExtractMultipartZipService::class.java).apply {
@@ -1946,6 +2005,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     }
 
     fun startZipService(archiveName: String, password: String?, compressionMethod: CompressionMethod, compressionLevel: CompressionLevel, isEncrypted: Boolean, encryptionMethod: EncryptionMethod?, aesStrength: AesKeyStrength?, filesToArchive: List<String>, destinationPath: String? = null) {
+        OngoingTaskManager.startTask(TaskType.ARCHIVE, archiveName, destinationPath)
         aProgressDialog.show()
         val jobId = fileOperationsDao.addFilesForJob(filesToArchive)
         val intent = Intent(requireContext(), ArchiveZipService::class.java).apply {
@@ -1963,6 +2023,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     }
 
     fun startSplitZipService(archiveName: String, password: String?, compressionMethod: CompressionMethod, compressionLevel: CompressionLevel, isEncrypted: Boolean, encryptionMethod: EncryptionMethod?, aesStrength: AesKeyStrength?, filesToArchive: List<String>, splitSize: Long?, destinationPath: String? = null) {
+        OngoingTaskManager.startTask(TaskType.ARCHIVE, archiveName, destinationPath)
         aProgressDialog.show()
         val jobId = fileOperationsDao.addFilesForJob(filesToArchive)
         val intent = Intent(requireContext(), ArchiveSplitZipService::class.java).apply {
@@ -2000,6 +2061,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     }
 
     fun startSevenZService(password: String?, archiveName: String, compressionLevel: Int, solid: Boolean, threadCount: Int, filesToArchive: List<String>, destinationPath: String? = null, headerEncryption: Boolean = false) {
+        OngoingTaskManager.startTask(TaskType.ARCHIVE, archiveName, destinationPath)
         aProgressDialog.show()
         val jobId = fileOperationsDao.addFilesForJob(filesToArchive)
         val intent = Intent(requireContext(), Archive7zService::class.java).apply {
