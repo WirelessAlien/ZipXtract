@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace 'com.wirelessalien.zipxtract'
-    compileSdk = 35
+    compileSdk = 36
 
     flavorDimensions "version"
     productFlavors {
@@ -23,7 +23,7 @@ android {
     defaultConfig {
         applicationId "com.wirelessalien.zipxtract"
         minSdk 24
-        targetSdk 35
+        targetSdk 36
         versionCode 26
         versionName "7.1.1"
 
@@ -86,24 +86,24 @@ android {
 
 dependencies {
 
-    implementation 'androidx.core:core-ktx:1.16.0'
-    implementation 'androidx.appcompat:appcompat:1.7.0'
-    implementation 'com.google.android.material:material:1.14.0-alpha06'
+    implementation 'androidx.core:core-ktx:1.18.0'
+    implementation 'androidx.appcompat:appcompat:1.7.1'
+    implementation 'com.google.android.material:material:1.14.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
     implementation 'androidx.preference:preference-ktx:1.2.1'
-    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.2.0-beta01'
-    implementation 'com.google.code.gson:gson:2.13.1'
-    implementation 'androidx.activity:activity:1.10.1'
+    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.2.0'
+    implementation 'com.google.code.gson:gson:2.14.1'
+    implementation 'androidx.activity:activity:1.13.0'
 
     //glide
-    implementation("com.github.bumptech.glide:glide:5.0.5")
+    implementation("com.github.bumptech.glide:glide:5.0.7")
 
     //Kotlin Coroutines
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2'
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0'
 
     //fragment
-    implementation 'androidx.fragment:fragment-ktx:1.8.7'
+    implementation 'androidx.fragment:fragment-ktx:1.8.9'
 
     //apache commons compress
     implementation 'org.apache.commons:commons-compress:1.28.0'
