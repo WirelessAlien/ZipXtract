@@ -28,6 +28,7 @@ import com.bumptech.glide.request.RequestOptions
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.databinding.ItemSearchHistoryBinding
 import com.wirelessalien.zipxtract.databinding.ItemSearchResultFileBinding
+import com.wirelessalien.zipxtract.helper.FileIconHelper
 import com.wirelessalien.zipxtract.model.FileItem
 import java.util.Locale
 
@@ -83,52 +84,14 @@ class QuickSearchResultAdapter(
                 fileHolder.binding.resultName.text = file.name
                 fileHolder.binding.resultPath.text = file.parent
 
-                if (item.fileItem.isDirectory) {
-                    fileHolder.binding.resultIcon.setImageResource(R.drawable.ic_folder)
-                    fileHolder.binding.resultIcon.visibility = View.VISIBLE
-                    fileHolder.binding.resultExtension.visibility = View.GONE
-                } else {
-                    val imageLoadingOptions = RequestOptions()
-                        .diskCacheStrategy(DiskCacheStrategy.ALL)
-                        .override(48, 48)
-                        .format(DecodeFormat.PREFER_RGB_565)
-
-                    when (file.extension.lowercase(Locale.getDefault())) {
-                        "png", "jpg", "bmp", "jpeg", "gif", "webp" -> {
-                            val requestBuilder = Glide.with(fileHolder.itemView.context)
-                                .asDrawable()
-                                .apply(imageLoadingOptions)
-                                .sizeMultiplier(0.25f)
-
-                            Glide.with(fileHolder.itemView.context)
-                                .load(file)
-                                .apply(imageLoadingOptions)
-                                .thumbnail(requestBuilder)
-                                .into(fileHolder.binding.resultIcon)
-
-                            fileHolder.binding.resultIcon.visibility = View.VISIBLE
-                            fileHolder.binding.resultExtension.visibility = View.GONE
-                        }
-                        else -> {
-                            fileHolder.binding.resultIcon.visibility = View.GONE
-                            fileHolder.binding.resultExtension.visibility = View.VISIBLE
-                            fileHolder.binding.resultExtension.text = if (file.extension.isNotEmpty()) {
-                                if (file.extension.length > 4) {
-                                    "FILE"
-                                } else {
-                                    if (file.extension.length == 4) {
-                                        fileHolder.binding.resultExtension.textSize = 16f
-                                    } else {
-                                        fileHolder.binding.resultExtension.textSize = 18f
-                                    }
-                                    file.extension.uppercase(Locale.getDefault())
-                                }
-                            } else {
-                                "..."
-                            }
-                        }
-                    }
-                }
+                FileIconHelper.bindFileIcon(
+                    cardView = fileHolder.binding.cardView,
+                    fileIcon = fileHolder.binding.resultIcon,
+                    fileExtension = fileHolder.binding.resultExtension,
+                    name = file.name,
+                    isDirectory = item.fileItem.isDirectory,
+                    file = file
+                )
 
                 fileHolder.itemView.setOnClickListener { onItemClick(item) }
             }

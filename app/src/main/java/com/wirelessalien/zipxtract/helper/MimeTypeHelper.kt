@@ -23,7 +23,8 @@ import java.util.Locale
 object MimeTypeHelper {
 
     val archiveExtensions = setOf(
-        "rar", "r00", "001", "7z", "7z.001", "zip", "tar", "gz", "bz2", "xz", "lz4", "lzma", "sz"
+        "rar", "r00", "001", "7z", "7z.001", "zip", "tar", "gz", "bz2", "xz", "lz4", "lzma", "sz",
+        "tgz", "tbz", "tbz2", "txz", "zst", "zstd", "iso", "cab", "arj", "lzh", "ace", "cpio", "jar", "war"
     )
 
     val documentExtensions = setOf(
@@ -97,7 +98,10 @@ object MimeTypeHelper {
 
     fun isArchive(file: File): Boolean {
         val name = file.name.lowercase(Locale.getDefault())
-        if (name.endsWith(".7z.001")) return true
+        if (name.endsWith(".7z.001") || name.endsWith(".tar.gz") || name.endsWith(".tar.bz2") ||
+            name.endsWith(".tar.xz") || name.endsWith(".tar.lz4") || name.endsWith(".tar.sz") ||
+            name.endsWith(".tar.zst") || name.endsWith(".tar.zstd") || name.endsWith(".tar.lzma")
+        ) return true
         val extension = file.extension.lowercase(Locale.getDefault())
         return archiveExtensions.contains(extension)
     }

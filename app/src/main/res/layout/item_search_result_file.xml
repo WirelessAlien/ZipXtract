@@ -14,7 +14,8 @@
         android:layout_height="40dp"
         style="@style/Widget.Material3.CardView.Filled"
         android:elevation="0dp"
-        app:cardCornerRadius="10dp"
+        app:cardCornerRadius="12dp"
+        app:strokeWidth="0dp"
         android:layout_marginEnd="16dp">
 
         <ImageView
@@ -22,18 +23,21 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:padding="8dp"
+            android:scaleType="centerInside"
             android:src="@drawable/ic_unknown"
             android:contentDescription="@null"/>
 
         <TextView
             android:id="@+id/result_extension"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:fontFamily="@font/bebasneue_regular"
-            android:text="FILE"
-            android:textSize="18sp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:paddingHorizontal="2dp"
+            android:textAppearance="?attr/textAppearanceLabelSmall"
+            android:textColor="?attr/colorOnSurfaceVariant"
             android:textStyle="bold"
+            android:maxLines="1"
+            android:ellipsize="none"
             android:visibility="gone" />
     </com.google.android.material.card.MaterialCardView>
 

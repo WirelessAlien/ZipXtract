@@ -58,6 +58,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.transition.MaterialSharedAxis
 import com.wirelessalien.zipxtract.BuildConfig
 import com.wirelessalien.zipxtract.R
+import com.wirelessalien.zipxtract.helper.FileIconHelper
 import com.wirelessalien.zipxtract.adapter.FileAdapter
 import com.wirelessalien.zipxtract.constant.BroadcastConstants
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.PREFERENCE_EXTRACT_DIR_PATH
@@ -569,19 +570,11 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
             pathPicker.show(parentFragmentManager, "path_picker")
         }
 
-        binding.fileExtension.text = if (file.extension.isNotEmpty()) {
-            if (file.extension.length > 4) {
-                "FILE"
-            } else {
-                if (file.extension.length == 4) {
-                    binding.fileExtension.textSize = 16f
-                } else {
-                    binding.fileExtension.textSize = 18f
-                }
-                file.extension.uppercase(Locale.getDefault())
-            }
+        val ext = FileIconHelper.getDisplayExtension(file.name)
+        if (ext.isNotEmpty()) {
+            FileIconHelper.applyExtensionText(binding.fileExtension, ext)
         } else {
-            "..."
+            binding.fileExtension.text = "—"
         }
 
         binding.fileSize.text = bytesToString(file.length())

@@ -55,13 +55,14 @@
 
                 <TextView
                     android:id="@+id/fileExtension"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:fontFamily="@font/bebasneue_regular"
-                    android:text="FILE"
-                    android:textSize="18sp"
-                    android:textStyle="bold"/>
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:textAppearance="?attr/textAppearanceLabelMedium"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:textStyle="bold"
+                    android:maxLines="1"
+                    android:ellipsize="none"/>
             </com.google.android.material.card.MaterialCardView>
 
             <TextView

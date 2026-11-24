@@ -39,6 +39,7 @@ import com.bumptech.glide.request.RequestOptions
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.databinding.ItemFileBinding
 import com.wirelessalien.zipxtract.fragment.MainFragment
+import com.wirelessalien.zipxtract.helper.FileIconHelper
 import com.wirelessalien.zipxtract.helper.HapticHelper
 import com.wirelessalien.zipxtract.model.FileItem
 import kotlinx.coroutines.Dispatchers
@@ -151,6 +152,7 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
             itemView.setOnLongClickListener(this)
             binding.fileIcon.setOnClickListener(this)
             binding.fileExtension.setOnClickListener(this)
+            binding.cardView.setOnClickListener(this)
         }
 
         override fun onClick(v: View?) {
@@ -202,55 +204,21 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
         val dateString = dateFormat.format(Date(fileItem.lastModified))
 
         if (fileItem.isDirectory) {
-            binding.fileIcon.setImageResource(R.drawable.ic_folder)
             val folderString = context.getString(R.string.folder)
             binding.fileSize.text = String.format("%s \u2022 %s", folderString, dateString)
-            binding.fileIcon.visibility = View.VISIBLE
-            binding.fileExtension.visibility = View.GONE
         } else {
             val sizeString = bytesToString(fileItem.size)
             binding.fileSize.text = String.format("%s \u2022 %s", sizeString, dateString)
-
-            val imageLoadingOptions = RequestOptions()
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .override(48, 48)
-                .format(DecodeFormat.PREFER_RGB_565)
-
-            when (file.extension.lowercase(Locale.getDefault())) {
-                "png", "jpg", "bmp", "jpeg", "gif", "webp" -> {
-                    val requestBuilder = Glide.with(context)
-                        .asDrawable()
-                        .apply(imageLoadingOptions)
-                        .sizeMultiplier(0.25f)
-
-                    Glide.with(context)
-                        .load(file)
-                        .apply(imageLoadingOptions)
-                        .thumbnail(requestBuilder)
-                        .into(binding.fileIcon)
-                    binding.fileIcon.visibility = View.VISIBLE
-                    binding.fileExtension.visibility = View.GONE
-                }
-                else -> {
-                    binding.fileIcon.visibility = View.GONE
-                    binding.fileExtension.visibility = View.VISIBLE
-                    binding.fileExtension.text = if (file.extension.isNotEmpty()) {
-                        if (file.extension.length > 4) {
-                            "FILE"
-                        } else {
-                            if (file.extension.length == 4) {
-                                binding.fileExtension.textSize = 16f
-                            } else {
-                                binding.fileExtension.textSize = 18f
-                            }
-                            file.extension.uppercase(Locale.getDefault())
-                        }
-                    } else {
-                        "..."
-                    }
-                }
-            }
         }
+
+        FileIconHelper.bindFileIcon(
+            cardView = binding.cardView,
+            fileIcon = binding.fileIcon,
+            fileExtension = binding.fileExtension,
+            name = file.name,
+            isDirectory = fileItem.isDirectory,
+            file = file
+        )
 
         if (selectedItems.get(position, false)) {
             binding.checkIcon.visibility = View.VISIBLE

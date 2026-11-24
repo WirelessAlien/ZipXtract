@@ -67,4 +67,18 @@
     <color name="md_theme_surfaceContainer">#1D2024</color>
     <color name="md_theme_surfaceContainerHigh">#272A2F</color>
     <color name="md_theme_surfaceContainerHighest">#32353A</color>
+
+    <!-- File type tonal containers (Dark) -->
+    <color name="file_doc_container">#004F4F</color>
+    <color name="file_on_doc_container">#A6EEEC</color>
+    <color name="file_code_container">#552800</color>
+    <color name="file_on_code_container">#FFDCC2</color>
+    <color name="file_audio_container">#4F378B</color>
+    <color name="file_on_audio_container">#EADDFF</color>
+    <color name="file_video_container">#633B48</color>
+    <color name="file_on_video_container">#FFD8E4</color>
+    <color name="file_folder_container">#4A4458</color>
+    <color name="file_on_folder_container">#E8DEF8</color>
+    <color name="file_generic_container">#43474E</color>
+    <color name="file_on_generic_container">#C3C6CF</color>
 </resources>

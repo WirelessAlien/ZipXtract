@@ -41,6 +41,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.chip.Chip
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.wirelessalien.zipxtract.R
+import com.wirelessalien.zipxtract.helper.FileIconHelper
 import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
 import androidx.preference.PreferenceManager
@@ -499,20 +500,11 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
         )
         binding.fileDate.text = item.lastModified?.let { dateFormat.format(it) } ?: ""
 
-        val extension = item.path.substringAfterLast('.', "")
-        binding.fileExtension.text = if (extension.isNotEmpty()) {
-            if (extension.length > 4) {
-                "FILE"
-            } else {
-                if (extension.length == 4) {
-                    binding.fileExtension.textSize = 16f
-                } else {
-                    binding.fileExtension.textSize = 18f
-                }
-                extension.uppercase(java.util.Locale.getDefault())
-            }
+        val ext = FileIconHelper.getDisplayExtension(item.path)
+        if (ext.isNotEmpty()) {
+            FileIconHelper.applyExtensionText(binding.fileExtension, ext)
         } else {
-            "..."
+            binding.fileExtension.text = "—"
         }
 
         binding.btnPreviewArchive.visibility = View.GONE

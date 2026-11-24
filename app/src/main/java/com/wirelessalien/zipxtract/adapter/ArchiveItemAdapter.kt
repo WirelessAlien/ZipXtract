@@ -31,6 +31,7 @@ import androidx.core.util.size
 import androidx.recyclerview.widget.RecyclerView
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.databinding.ItemFileBinding
+import com.wirelessalien.zipxtract.helper.FileIconHelper
 import com.wirelessalien.zipxtract.helper.HapticHelper
 import com.wirelessalien.zipxtract.fragment.SevenZipFragment
 import java.util.Locale
@@ -123,38 +124,28 @@ class ArchiveItemAdapter(
         val item = items[position]
         val binding = holder.binding
 
-        binding.fileName.text = item.path.substringAfterLast('/')
+        val itemName = item.path.removeSuffix("/").substringAfterLast('/')
+        binding.fileName.text = itemName
 
         val dateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM, Locale.getDefault())
         val dateString = item.lastModified?.let { dateFormat.format(it) } ?: ""
 
         if (item.isDirectory) {
-            binding.fileIcon.setImageResource(R.drawable.ic_folder)
             val folderString = context.getString(R.string.folder)
             binding.fileSize.text = String.format("%s \u2022 %s", folderString, dateString)
-            binding.fileIcon.visibility = View.VISIBLE
-            binding.fileExtension.visibility = View.GONE
         } else {
             val sizeString = bytesToString(item.size)
             binding.fileSize.text = String.format("%s \u2022 %s", sizeString, dateString)
-            binding.fileIcon.visibility = View.GONE
-            binding.fileExtension.visibility = View.VISIBLE
-            val extension = item.path.substringAfterLast('.', "")
-            binding.fileExtension.text = if (extension.isNotEmpty()) {
-                if (extension.length > 4) {
-                    "FILE"
-                } else {
-                    if (extension.length == 4) {
-                        binding.fileExtension.textSize = 16f
-                    } else {
-                        binding.fileExtension.textSize = 18f
-                    }
-                    extension.uppercase(Locale.getDefault())
-                }
-            } else {
-                "..."
-            }
         }
+
+        FileIconHelper.bindFileIcon(
+            cardView = binding.cardView,
+            fileIcon = binding.fileIcon,
+            fileExtension = binding.fileExtension,
+            name = itemName,
+            isDirectory = item.isDirectory,
+            file = null
+        )
         if (selectedItems.get(position, false)) {
             binding.checkIcon.visibility = View.VISIBLE
 
