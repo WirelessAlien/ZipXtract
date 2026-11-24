@@ -17,6 +17,7 @@
 
 package com.wirelessalien.zipxtract.fragment
 
+import android.content.Context
 import android.content.SharedPreferences
 import android.os.Build
 import android.os.Bundle
@@ -25,12 +26,17 @@ import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
 import android.widget.PopupMenu
+import androidx.activity.ComponentDialog
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.view.ActionMode
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
+import androidx.core.widget.doAfterTextChanged
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -142,6 +148,28 @@ class PathPickerFragment : BottomSheetDialogFragment(), FilePickerAdapter.OnItem
         loadFiles(currentPath)
         updateCurrentPathChip()
 
+        binding.searchDirectoryInput.doAfterTextChanged { text ->
+            adapter.filter(text?.toString())
+        }
+
+        binding.searchDirectoryInput.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+                imm?.hideSoftInputFromWindow(binding.searchDirectoryInput.windowToken, 0)
+                binding.searchDirectoryInput.clearFocus()
+                true
+            } else {
+                false
+            }
+        }
+
+        val backCallback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                handleBackNavigation()
+            }
+        }
+        (dialog as? ComponentDialog)?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner, backCallback)
+
         dialog?.setOnKeyListener { _, keyCode, event ->
             if (keyCode == KeyEvent.KEYCODE_BACK && event.action == KeyEvent.ACTION_UP) {
                 handleBackNavigation()
@@ -232,15 +260,23 @@ class PathPickerFragment : BottomSheetDialogFragment(), FilePickerAdapter.OnItem
     }
 
     private fun handleBackNavigation() {
+        val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+        imm?.hideSoftInputFromWindow(binding.searchDirectoryInput.windowToken, 0)
+
         val sdCardPath = StorageHelper.getSdCardPath(requireContext())
         val basePath = Environment.getExternalStorageDirectory().absolutePath
-        val file = File(currentPath)
-        if (file.absolutePath == basePath || (sdCardPath != null && file.absolutePath == sdCardPath)) {
+        val currentFile = File(currentPath)
+        val baseFile = File(basePath)
+        val isAtInternalRoot = currentFile.absolutePath == baseFile.absolutePath
+        val isAtSdCardRoot = sdCardPath != null && currentFile.absolutePath == File(sdCardPath).absolutePath
+
+        if (isAtInternalRoot || isAtSdCardRoot) {
             dismiss()
             return
         }
-        val parent = file.parentFile
-        if (parent != null && parent.canRead()) {
+        val parent = currentFile.parentFile
+        if (parent != null && parent.canRead() &&
+            (parent.absolutePath.startsWith(baseFile.absolutePath) || (sdCardPath != null && parent.absolutePath.startsWith(File(sdCardPath).absolutePath)))) {
             loadFiles(parent.absolutePath)
         } else {
             dismiss()
@@ -265,6 +301,13 @@ class PathPickerFragment : BottomSheetDialogFragment(), FilePickerAdapter.OnItem
 
         currentPath = path
         updateCurrentPathChip()
+
+        if (binding.searchDirectoryInput.text?.isNotEmpty() == true) {
+            binding.searchDirectoryInput.text?.clear()
+        }
+        binding.searchDirectoryInput.clearFocus()
+        val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+        imm?.hideSoftInputFromWindow(binding.searchDirectoryInput.windowToken, 0)
 
         binding.shimmerViewContainer.startShimmer()
         binding.shimmerViewContainer.visibility = View.VISIBLE
@@ -315,7 +358,7 @@ class PathPickerFragment : BottomSheetDialogFragment(), FilePickerAdapter.OnItem
 //                binding.btnAddFolder.visibility = View.VISIBLE
 //            }
 
-            adapter.updateFilesAndFilter(combinedList)
+            adapter.updateFilesAndFilter(combinedList, binding.searchDirectoryInput.text?.toString())
 
             binding.shimmerViewContainer.stopShimmer()
             binding.shimmerViewContainer.visibility = View.GONE

@@ -198,9 +198,13 @@ class FilePickerAdapter(
     fun updateFilesAndFilter(newFiles: ArrayList<File>, query: String? = null) {
         files.clear()
         files.addAll(newFiles)
+        filter(query)
+    }
 
+    @SuppressLint("NotifyDataSetChanged")
+    fun filter(query: String?) {
         filteredFiles = if (!query.isNullOrBlank()) {
-            files.filter { it.name.contains(query, true) || it.isDirectory }
+            files.filter { it.name.contains(query, ignoreCase = true) }
         } else {
             files
         }
