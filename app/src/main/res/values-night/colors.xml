@@ -18,7 +18,7 @@
   ~     along with "ShowCase".  If not, see <https://www.gnu.org/licenses/>.
   -->
 
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <color name="md_theme_primary_90">#1A37618E</color>
     <color name="gen_90">#1A1A1A</color>
     <color name="md_theme_primary">#A1CAFD</color>
@@ -81,4 +81,8 @@
     <color name="file_on_folder_container">#E8DEF8</color>
     <color name="file_generic_container">#43474E</color>
     <color name="file_on_generic_container">#C3C6CF</color>
+
+    <!-- Action Mode status bar guard override to match Material 3 action mode color -->
+    <color name="abc_decor_view_status_guard" tools:override="true">@color/md_theme_surfaceContainer</color>
+    <color name="abc_decor_view_status_guard_light" tools:override="true">@color/md_theme_surfaceContainer</color>
 </resources>

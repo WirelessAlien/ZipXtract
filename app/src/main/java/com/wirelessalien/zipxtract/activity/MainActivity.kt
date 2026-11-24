@@ -21,6 +21,7 @@ package com.wirelessalien.zipxtract.activity
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Intent
+import android.content.res.Configuration
 import android.os.Bundle
 import android.provider.MediaStore
 import android.text.Editable
@@ -28,13 +29,21 @@ import android.text.TextWatcher
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.view.ActionMode
+import androidx.core.content.ContextCompat
 import androidx.core.content.edit
+import androidx.core.graphics.ColorUtils
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.commit
@@ -43,6 +52,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.chip.Chip
+import com.google.android.material.color.MaterialColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.search.SearchView
 import com.wirelessalien.zipxtract.R
@@ -498,6 +508,67 @@ class MainActivity : AppCompatActivity() {
         supportFragmentManager.commit {
             replace(R.id.container, fragment)
         }
+    }
+
+    override fun onSupportActionModeStarted(mode: ActionMode) {
+        super.onSupportActionModeStarted(mode)
+        updateStatusGuardColor()
+    }
+
+    override fun onSupportActionModeFinished(mode: ActionMode) {
+        super.onSupportActionModeFinished(mode)
+        val isNightMode = (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+        WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars = !isNightMode
+    }
+
+    private fun updateStatusGuardColor() {
+        val actionModeColor = MaterialColors.getColor(
+            this,
+            com.google.android.material.R.attr.colorSurfaceContainer,
+            ContextCompat.getColor(this, R.color.md_theme_surfaceContainer)
+        )
+        val isLightColor = ColorUtils.calculateLuminance(actionModeColor) > 0.5
+        WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars = isLightColor
+
+        fun applyColor() {
+            try {
+                var clazz: Class<*>? = delegate.javaClass
+                while (clazz != null && clazz != Any::class.java) {
+                    try {
+                        val field = clazz.getDeclaredField("mStatusGuard")
+                        field.isAccessible = true
+                        val statusGuard = field.get(delegate) as? View
+                        statusGuard?.setBackgroundColor(actionModeColor)
+                        break
+                    } catch (_: NoSuchFieldException) {
+                        clazz = clazz.superclass
+                    }
+                }
+            } catch (_: Exception) {
+            }
+
+            val statusBarHeight = ViewCompat.getRootWindowInsets(window.decorView)
+                ?.getInsets(WindowInsetsCompat.Type.statusBars())?.top ?: 0
+            if (statusBarHeight > 0) {
+                fun findAndColor(view: View) {
+                    if (view.javaClass == View::class.java &&
+                        view.id == View.NO_ID &&
+                        view.layoutParams?.height == statusBarHeight
+                    ) {
+                        view.setBackgroundColor(actionModeColor)
+                    }
+                    if (view is ViewGroup) {
+                        for (i in 0 until view.childCount) {
+                            findAndColor(view.getChildAt(i))
+                        }
+                    }
+                }
+                findAndColor(window.decorView)
+            }
+        }
+
+        applyColor()
+        window.decorView.post { applyColor() }
     }
 
     companion object {
