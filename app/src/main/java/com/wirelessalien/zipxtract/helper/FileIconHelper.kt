@@ -153,7 +153,7 @@ object FileIconHelper {
         val context = cardView.context
         val category = getFileCategory(name, isDirectory)
         val density = context.resources.displayMetrics.density
-        val defaultPaddingPx = (10 * density).toInt()
+        val defaultPaddingPx = (8 * density).toInt()
 
         if (category != FileCategory.IMAGE || file == null || !file.exists()) {
             try {
