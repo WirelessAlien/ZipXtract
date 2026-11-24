@@ -36,6 +36,7 @@ import androidx.core.content.edit
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.commit
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -75,6 +76,7 @@ class MainActivity : AppCompatActivity() {
     private var isSearchSubmitted = false
     private var searchJob: Job? = null
     private var currentFilterType: String? = null
+    private lateinit var callback: OnBackPressedCallback
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -128,7 +130,7 @@ class MainActivity : AppCompatActivity() {
             }
         }, this, Lifecycle.State.RESUMED)
 
-        val callback = object : OnBackPressedCallback(false) {
+        callback = object : OnBackPressedCallback(false) {
             override fun handleOnBackPressed() {
                 if (binding.searchView.isShowing) {
                     binding.searchView.hide()
@@ -136,9 +138,11 @@ class MainActivity : AppCompatActivity() {
                     val fragment = supportFragmentManager.findFragmentById(R.id.container)
                     if (fragment is Searchable && !fragment.getCurrentSearchQuery().isNullOrEmpty()) {
                         fragment.onSearch("", isExitingSearch = true)
-                        isEnabled = false
+                        updateBackCallbackState()
                     } else if (supportFragmentManager.backStackEntryCount > 0) {
                         supportFragmentManager.popBackStack()
+                    } else if (binding.tabLayout.selectedTabPosition != 0) {
+                        binding.tabLayout.getTabAt(0)?.select()
                     } else {
                         isEnabled = false
                         onBackPressedDispatcher.onBackPressed()
@@ -156,7 +160,7 @@ class MainActivity : AppCompatActivity() {
                 if (isSearchSubmitted) {
                     callback.isEnabled = true
                 } else {
-                    callback.isEnabled = supportFragmentManager.backStackEntryCount > 0
+                    updateBackCallbackState()
                     val fragment = supportFragmentManager.findFragmentById(R.id.container)
                     if (fragment is Searchable) {
                         fragment.onSearch("", isExitingSearch = true)
@@ -166,7 +170,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         supportFragmentManager.addOnBackStackChangedListener {
-            callback.isEnabled = binding.searchView.isShowing || isSearchSubmitted || supportFragmentManager.backStackEntryCount > 0
+            updateBackCallbackState()
         }
 
         val fileName = "Crash_Log.txt"
@@ -209,14 +213,34 @@ class MainActivity : AppCompatActivity() {
 
         binding.tabLayout.addOnTabSelectedListener(object : com.google.android.material.tabs.TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: com.google.android.material.tabs.TabLayout.Tab) {
-                when (tab.position) {
-                    0 -> loadFragment(MainFragment())
-                    1 -> loadFragment(ArchiveFragment())
+                if (supportFragmentManager.backStackEntryCount > 0) {
+                    supportFragmentManager.popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
                 }
+                when (tab.position) {
+                    0 -> {
+                        val currentFragment = supportFragmentManager.findFragmentById(R.id.container)
+                        if (currentFragment !is MainFragment) {
+                            loadFragment(MainFragment())
+                        }
+                    }
+                    1 -> {
+                        val currentFragment = supportFragmentManager.findFragmentById(R.id.container)
+                        if (currentFragment !is ArchiveFragment) {
+                            loadFragment(ArchiveFragment())
+                        }
+                    }
+                }
+                updateBackCallbackState()
             }
 
             override fun onTabUnselected(tab: com.google.android.material.tabs.TabLayout.Tab) {}
-            override fun onTabReselected(tab: com.google.android.material.tabs.TabLayout.Tab) {}
+            override fun onTabReselected(tab: com.google.android.material.tabs.TabLayout.Tab) {
+                if (tab.position == 0) {
+                    if (supportFragmentManager.backStackEntryCount > 0) {
+                        supportFragmentManager.popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                    }
+                }
+            }
         })
 
         if (savedInstanceState == null) {
@@ -224,6 +248,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         handleIntent()
+        updateBackCallbackState()
     }
 
     private fun setupSearchView() {
@@ -458,7 +483,18 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun loadFragment(fragment: Fragment) {
+    private fun updateBackCallbackState() {
+        callback.isEnabled = binding.searchView.isShowing ||
+                isSearchSubmitted ||
+                binding.tabLayout.selectedTabPosition != 0 ||
+                supportFragmentManager.backStackEntryCount > 0
+    }
+
+    fun selectTab(position: Int) {
+        binding.tabLayout.getTabAt(position)?.select()
+    }
+
+    fun loadFragment(fragment: Fragment) {
         supportFragmentManager.commit {
             replace(R.id.container, fragment)
         }

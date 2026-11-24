@@ -48,6 +48,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import com.wirelessalien.zipxtract.activity.MainActivity
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -151,9 +152,11 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
     }
 
     private fun navigateToParentDir(parentDir: File) {
+        val mainActivity = activity as? MainActivity
+        mainActivity?.selectTab(0)
         val fragment = MainFragment().apply {
             arguments = Bundle().apply {
-                putString("path", parentDir.absolutePath)
+                putString(MainFragment.ARG_DIRECTORY_PATH, parentDir.absolutePath)
             }
         }
         parentFragmentManager.beginTransaction()

@@ -26,6 +26,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
+import androidx.activity.ComponentDialog
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.view.ActionMode
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
@@ -157,6 +159,13 @@ class FilePickerFragment : BottomSheetDialogFragment(), FilePickerAdapter.OnItem
         updateCurrentPathChip()
         updateSelectedCount()
 
+        val backCallback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                handleBackNavigation()
+            }
+        }
+        (dialog as? ComponentDialog)?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner, backCallback)
+
         dialog?.setOnKeyListener { _, keyCode, event ->
             if (keyCode == KeyEvent.KEYCODE_BACK && event.action == KeyEvent.ACTION_UP) {
                 handleBackNavigation()
@@ -258,13 +267,18 @@ class FilePickerFragment : BottomSheetDialogFragment(), FilePickerAdapter.OnItem
     private fun handleBackNavigation() {
         val sdCardPath = StorageHelper.getSdCardPath(requireContext())
         val basePath = Environment.getExternalStorageDirectory().absolutePath
-        val file = File(currentPath)
-        if (file.absolutePath == basePath || (sdCardPath != null && file.absolutePath == sdCardPath)) {
+        val currentFile = File(currentPath)
+        val baseFile = File(basePath)
+        val isAtInternalRoot = currentFile.absolutePath == baseFile.absolutePath
+        val isAtSdCardRoot = sdCardPath != null && currentFile.absolutePath == File(sdCardPath).absolutePath
+
+        if (isAtInternalRoot || isAtSdCardRoot) {
             dismiss()
             return
         }
-        val parent = file.parentFile
-        if (parent != null && parent.canRead()) {
+        val parent = currentFile.parentFile
+        if (parent != null && parent.canRead() &&
+            (parent.absolutePath.startsWith(baseFile.absolutePath) || (sdCardPath != null && parent.absolutePath.startsWith(File(sdCardPath).absolutePath)))) {
             loadFiles(parent.absolutePath)
         } else {
             dismiss()
