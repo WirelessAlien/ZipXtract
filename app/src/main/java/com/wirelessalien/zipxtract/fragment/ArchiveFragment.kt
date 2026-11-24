@@ -570,12 +570,14 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
             pathPicker.show(parentFragmentManager, "path_picker")
         }
 
-        val ext = FileIconHelper.getDisplayExtension(file.name)
-        if (ext.isNotEmpty()) {
-            FileIconHelper.applyExtensionText(binding.fileExtension, ext)
-        } else {
-            binding.fileExtension.text = "—"
-        }
+        FileIconHelper.bindFileIcon(
+            cardView = binding.cardView,
+            fileIcon = binding.fileIcon,
+            fileExtension = binding.fileExtension,
+            name = file.name,
+            isDirectory = false,
+            file = file
+        )
 
         binding.fileSize.text = bytesToString(file.length())
 

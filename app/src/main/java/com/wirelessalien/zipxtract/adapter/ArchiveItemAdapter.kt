@@ -162,6 +162,7 @@ class ArchiveItemAdapter(
                 ContextCompat.getColor(context, typedValue.resourceId)
             }
 
+            binding.linearLayout.background = AppCompatResources.getDrawable(context, R.drawable.item_background)
             binding.linearLayout.backgroundTintList = ColorStateList.valueOf(color)
         } else {
             binding.checkIcon.visibility = View.GONE

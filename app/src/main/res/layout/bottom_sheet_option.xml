@@ -48,21 +48,35 @@
                 android:layout_height="48dp"
                 style="@style/Widget.Material3.CardView.Filled"
                 android:elevation="0dp"
-                app:cardCornerRadius="10dp"
+                app:cardCornerRadius="12dp"
+                app:strokeWidth="0dp"
+                app:contentPadding="2dp"
+                android:layout_margin="2dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
+
+                <ImageView
+                    android:id="@+id/fileIcon"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="8dp"
+                    android:src="@drawable/ic_unknown"
+                    android:scaleType="centerInside"
+                    android:contentDescription="@null" />
 
                 <TextView
                     android:id="@+id/fileExtension"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:gravity="center"
+                    android:paddingHorizontal="2dp"
                     android:textAppearance="?attr/textAppearanceLabelMedium"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:textStyle="bold"
                     android:maxLines="1"
-                    android:ellipsize="none"/>
+                    android:ellipsize="none"
+                    android:visibility="gone" />
             </com.google.android.material.card.MaterialCardView>
 
             <TextView

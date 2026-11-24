@@ -500,12 +500,15 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
         )
         binding.fileDate.text = item.lastModified?.let { dateFormat.format(it) } ?: ""
 
-        val ext = FileIconHelper.getDisplayExtension(item.path)
-        if (ext.isNotEmpty()) {
-            FileIconHelper.applyExtensionText(binding.fileExtension, ext)
-        } else {
-            binding.fileExtension.text = "—"
-        }
+        val itemName = item.path.removeSuffix("/").substringAfterLast('/')
+        FileIconHelper.bindFileIcon(
+            cardView = binding.cardView,
+            fileIcon = binding.fileIcon,
+            fileExtension = binding.fileExtension,
+            name = itemName,
+            isDirectory = item.isDirectory,
+            file = null
+        )
 
         binding.btnPreviewArchive.visibility = View.GONE
         binding.btnShare.visibility = View.GONE

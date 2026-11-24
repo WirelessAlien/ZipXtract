@@ -236,6 +236,7 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
                 ContextCompat.getColor(context, typedValue.resourceId)
             }
 
+            binding.linearLayout.background = AppCompatResources.getDrawable(context, R.drawable.item_background)
             binding.linearLayout.backgroundTintList = ColorStateList.valueOf(color)
         } else if (file == highlightedFile) {
             binding.checkIcon.visibility = View.GONE

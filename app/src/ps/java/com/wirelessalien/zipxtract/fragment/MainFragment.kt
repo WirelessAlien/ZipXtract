@@ -112,6 +112,7 @@ import com.wirelessalien.zipxtract.databinding.ProgressDialogArchiveBinding
 import com.wirelessalien.zipxtract.databinding.ProgressDialogExtractBinding
 import com.wirelessalien.zipxtract.helper.ChecksumUtils
 import com.wirelessalien.zipxtract.helper.EncryptionCheckHelper
+import com.wirelessalien.zipxtract.helper.FileIconHelper
 import com.wirelessalien.zipxtract.helper.FileOperationsDao
 import com.wirelessalien.zipxtract.helper.MimeTypeHelper
 import com.wirelessalien.zipxtract.helper.MultipartArchiveHelper
@@ -1418,20 +1419,14 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             pathPicker.show(parentFragmentManager, "path_picker")
         }
 
-        binding.fileExtension.text = if (file.extension.isNotEmpty()) {
-            if (file.extension.length > 4) {
-                "FILE"
-            } else {
-                if (file.extension.length == 4) {
-                    binding.fileExtension.textSize = 16f
-                } else {
-                    binding.fileExtension.textSize = 18f
-                }
-                file.extension.uppercase(Locale.getDefault())
-            }
-        } else {
-            "..."
-        }
+        FileIconHelper.bindFileIcon(
+            cardView = binding.cardView,
+            fileIcon = binding.fileIcon,
+            fileExtension = binding.fileExtension,
+            name = file.name,
+            isDirectory = false,
+            file = file
+        )
 
         binding.fileSize.text = bytesToString(file.length())
 
@@ -1627,20 +1622,14 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             }
         }
 
-        binding.fileExtension.text = if (file.extension.isNotEmpty()) {
-            if (file.extension.length > 4) {
-                "FILE"
-            } else {
-                if (file.extension.length == 4) {
-                    binding.fileExtension.textSize = 16f
-                } else {
-                    binding.fileExtension.textSize = 18f
-                }
-                file.extension.uppercase(Locale.getDefault())
-            }
-        } else {
-            "..."
-        }
+        FileIconHelper.bindFileIcon(
+            cardView = binding.cardView,
+            fileIcon = binding.fileIcon,
+            fileExtension = binding.fileExtension,
+            name = file.name,
+            isDirectory = false,
+            file = file
+        )
 
         binding.fileSize.text = bytesToString(file.length())
 
