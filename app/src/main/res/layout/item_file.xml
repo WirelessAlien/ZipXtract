@@ -14,7 +14,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="8dp">
+        android:padding="6dp">
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/card_view"
