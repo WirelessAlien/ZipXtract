@@ -273,4 +273,21 @@
     <string name="in_progress">In progress…</string>
     <string name="btn_open">Open</string>
     <string name="btn_close">Close</string>
+
+    <!-- File Management & Interaction Refinements -->
+    <string name="invert_selection">Invert selection</string>
+    <string name="selection_status_format">%1$d %2$s \u2022 %3$s</string>
+    <string name="item">item</string>
+    <string name="items">items</string>
+    <string name="undo">Undo</string>
+    <string name="files_deleted_count">%1$d items deleted</string>
+    <string name="delete_confirmation_title">Delete %1$d %2$s?</string>
+    <string name="delete_confirmation_desc">This action will permanently delete the selected item(s).</string>
+    <string name="conflict_dialog_title">File already exists</string>
+    <string name="conflict_dialog_message">File \"%1$s\" already exists in the destination.</string>
+    <string name="conflict_skip">Skip</string>
+    <string name="conflict_replace">Replace</string>
+    <string name="conflict_keep_both">Keep Both (Rename)</string>
+    <string name="conflict_do_for_all">Do for all</string>
+    <string name="operation_cancelled_all_skipped">Operation cancelled: all files skipped</string>
 </resources>

@@ -75,8 +75,8 @@ class CopyMoveService : Service() {
             val wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "ZipXtract:CopyMoveWakeLock")
             wakeLock.acquire(60 * 60 * 1000L /*1 hour*/)
             try {
-                val filesToCopyMove = fileOperationsDao.getFilesForJob(jobId).map { File(it) }
-                copyMoveFiles(filesToCopyMove, destinationPath, isCopyAction)
+                val filePairs = fileOperationsDao.getFilePairsForJob(jobId)
+                copyMoveFiles(filePairs, destinationPath, isCopyAction)
                 fileOperationsDao.deleteFilesForJob(jobId)
             } finally {
                 if (wakeLock.isHeld) wakeLock.release()
@@ -87,9 +87,10 @@ class CopyMoveService : Service() {
         return START_NOT_STICKY
     }
 
-    private fun copyMoveFiles(files: List<File>, destinationPath: String, isCopyAction: Boolean) {
+    private fun copyMoveFiles(filePairs: List<Pair<String, String?>>, destinationPath: String, isCopyAction: Boolean) {
+        val files = filePairs.map { (path, destName) -> File(path) to destName }
         var totalFilesCount = 0
-        for (file in files) {
+        for ((file, _) in files) {
             totalFilesCount += FileUtils.countTotalFiles(file)
         }
 
@@ -101,8 +102,9 @@ class CopyMoveService : Service() {
             updateNotification(processedFilesCount, totalFilesCount, isCopyAction)
         }
 
-        for (file in files) {
-            val destinationFile = File(destinationPath, file.name)
+        for ((file, customName) in files) {
+            val targetName = customName ?: file.name
+            val destinationFile = File(destinationPath, targetName)
             if (file.absolutePath == destinationFile.absolutePath) {
                 continue // Skip if the source and destination paths are the same
             }

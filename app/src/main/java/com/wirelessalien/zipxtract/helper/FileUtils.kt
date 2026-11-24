@@ -238,4 +238,25 @@ object FileUtils {
         }
         return parts.joinToString(File.separator)
     }
+
+    fun getUniqueDestinationFile(
+        destinationDir: File,
+        originalName: String,
+        reservedNames: Set<String> = emptySet()
+    ): File {
+        var candidate = File(destinationDir, originalName)
+        if (!candidate.exists() && !reservedNames.contains(candidate.name)) return candidate
+        val dotIndex = originalName.lastIndexOf('.')
+        val (nameWithoutExt, ext) = if (candidate.isFile && dotIndex > 0) {
+            originalName.substring(0, dotIndex) to originalName.substring(dotIndex)
+        } else {
+            originalName to ""
+        }
+        var counter = 1
+        while (candidate.exists() || reservedNames.contains(candidate.name)) {
+            candidate = File(destinationDir, "$nameWithoutExt ($counter)$ext")
+            counter++
+        }
+        return candidate
+    }
 }

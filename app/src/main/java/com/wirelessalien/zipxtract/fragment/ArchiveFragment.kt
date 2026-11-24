@@ -62,6 +62,8 @@ import com.wirelessalien.zipxtract.adapter.FileAdapter
 import com.wirelessalien.zipxtract.constant.BroadcastConstants
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.PREFERENCE_EXTRACT_DIR_PATH
 import com.wirelessalien.zipxtract.helper.AppEvent
+import com.wirelessalien.zipxtract.helper.DeletionSafetyHelper
+import com.wirelessalien.zipxtract.helper.HapticHelper
 import com.wirelessalien.zipxtract.helper.OngoingTaskManager
 import com.wirelessalien.zipxtract.helper.TaskType
 import com.wirelessalien.zipxtract.helper.EventBus
@@ -205,6 +207,7 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
                 if (!isAdded) return@collect
                 when (event) {
                     is AppEvent.ExtractionComplete -> {
+                        HapticHelper.performConfirm(binding.root)
                         binding.linearProgressBar.visibility = View.GONE
                         eProgressDialog.dismiss()
                         val dirPath = event.dirPath
@@ -708,28 +711,22 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
         }
 
         binding.btnDelete.setOnClickListener {
-            MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
-                .setTitle(getString(R.string.confirm_delete))
-                .setMessage(getString(R.string.confirm_delete_message))
-                .setPositiveButton(getString(R.string.delete)) { _, _ ->
-                    val filesToDelete = arrayListOf(file.absolutePath)
-                    val jobId = fileOperationsDao.addFilesForJob(filesToDelete)
-                    val intent = Intent(requireContext(), DeleteFilesService::class.java).apply {
-                        putExtra(EXTRA_JOB_ID, jobId)
-                    }
-                    ContextCompat.startForegroundService(requireContext(), intent)
-
-                    val fileItem = adapter.files.find { it.file == file }
-                    fileItem?.let {
-                        adapter.removeFileItem(it)
-                    }
-
-                    bottomSheetDialog.dismiss()
+            DeletionSafetyHelper.showDeleteConfirmationSheet(requireContext(), listOf(file)) {
+                val filesToDelete = arrayListOf(file.absolutePath)
+                val jobId = fileOperationsDao.addFilesForJob(filesToDelete)
+                val intent = Intent(requireContext(), DeleteFilesService::class.java).apply {
+                    putExtra(EXTRA_JOB_ID, jobId)
                 }
-                .setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
-                    dialog.dismiss()
+                ContextCompat.startForegroundService(requireContext(), intent)
+
+                val fileItem = adapter.files.find { it.file == file }
+                fileItem?.let {
+                    adapter.removeFileItem(it)
                 }
-                .show()
+
+                HapticHelper.performConfirm(binding.root)
+                bottomSheetDialog.dismiss()
+            }
         }
 
         bottomSheetDialog.show()

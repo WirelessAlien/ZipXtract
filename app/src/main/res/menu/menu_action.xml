@@ -26,7 +26,13 @@
         android:id="@+id/menu_action_select_all"
         android:title="@string/select_all"
         android:icon="@drawable/ic_select_all"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/menu_action_invert_selection"
+        android:title="@string/invert_selection"
+        android:icon="@drawable/ic_invert_selection"
+        app:showAsAction="always" />
 
     <item
         android:id="@+id/menu_action_copy_to"

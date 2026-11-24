@@ -89,7 +89,10 @@ import com.wirelessalien.zipxtract.adapter.FileAdapter
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.PREFERENCE_ARCHIVE_DIR_PATH
 import com.wirelessalien.zipxtract.constant.BroadcastConstants.PREFERENCE_EXTRACT_DIR_PATH
 import com.wirelessalien.zipxtract.helper.AppEvent
+import com.wirelessalien.zipxtract.helper.ConflictResolutionHelper
+import com.wirelessalien.zipxtract.helper.DeletionSafetyHelper
 import com.wirelessalien.zipxtract.helper.EventBus
+import com.wirelessalien.zipxtract.helper.HapticHelper
 import com.wirelessalien.zipxtract.helper.OngoingTask
 import com.wirelessalien.zipxtract.helper.OngoingTaskManager
 import com.wirelessalien.zipxtract.helper.TaskStatus
@@ -326,6 +329,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                 if (!isAdded) return@collect
                 when (event) {
                     is AppEvent.ExtractionComplete -> {
+                        HapticHelper.performConfirm(binding.root)
                         binding.progressBar.visibility = View.GONE
                         val dirPath = event.dirPath
                         Log.d("MainFragment", "onReceive: $dirPath")
@@ -361,6 +365,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                         }
                     }
                     is AppEvent.ArchiveComplete -> {
+                        HapticHelper.performConfirm(binding.root)
                         binding.progressBar.visibility = View.GONE
                         val dirPath = event.dirPath
                         if (dirPath != null) {
@@ -961,6 +966,10 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                             selectAllFiles()
                             true
                         }
+                        R.id.menu_action_invert_selection -> {
+                            invertSelection()
+                            true
+                        }
                         R.id.m_archive_7z -> {
                             show7zOptionsDialog()
                             true
@@ -1015,7 +1024,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
 
     private fun startCopyMoveAction(isCopy: Boolean) {
-        val filesToCopyMove = selectedFiles.map { it.absolutePath }
+        val filesToCopyMove = selectedFiles.toList()
         actionMode?.finish()
         if (filesToCopyMove.isEmpty()) return
 
@@ -1023,35 +1032,36 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         pathPicker.setPathPickerListener(object : PathPickerFragment.PathPickerListener {
             override fun onPathSelected(path: String) {
                 val ctx = context ?: return
-                val jobId = fileOperationsDao.addFilesForJob(filesToCopyMove)
-                val intent = Intent(ctx, CopyMoveService::class.java).apply {
-                    putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
-                    putExtra(ServiceConstants.EXTRA_DESTINATION_PATH, path)
-                    putExtra(ServiceConstants.EXTRA_IS_COPY_ACTION, isCopy)
+                val destinationDir = File(path)
+                ConflictResolutionHelper.resolveConflicts(
+                    ctx,
+                    filesToCopyMove,
+                    destinationDir
+                ) { resolvedPairs ->
+                    if (resolvedPairs.isEmpty()) {
+                        Toast.makeText(ctx, R.string.operation_cancelled_all_skipped, Toast.LENGTH_SHORT).show()
+                        return@resolveConflicts
+                    }
+                    val jobId = fileOperationsDao.addFilePairsForJob(resolvedPairs)
+                    val intent = Intent(ctx, CopyMoveService::class.java).apply {
+                        putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
+                        putExtra(ServiceConstants.EXTRA_DESTINATION_PATH, path)
+                        putExtra(ServiceConstants.EXTRA_IS_COPY_ACTION, isCopy)
+                    }
+                    ContextCompat.startForegroundService(ctx, intent)
                 }
-                ContextCompat.startForegroundService(ctx, intent)
             }
         })
         pathPicker.show(parentFragmentManager, "pathPicker")
     }
 
     private fun deleteSelectedFiles() {
-        val filesToDelete = selectedFiles.map { it.absolutePath }
-        MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
-            .setTitle(getString(R.string.confirm_delete))
-            .setMessage(getString(R.string.confirm_delete_message))
-            .setPositiveButton(getString(R.string.delete)) { _, _ ->
-                val jobId = fileOperationsDao.addFilesForJob(filesToDelete)
-                val intent = Intent(requireContext(), DeleteFilesService::class.java).apply {
-                    putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
-                }
-                ContextCompat.startForegroundService(requireContext(), intent)
-                unselectAllFiles()
-            }
-            .setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
-                dialog.dismiss()
-            }
-            .show()
+        val filesToDelete = selectedFiles.toList()
+        DeletionSafetyHelper.showDeleteConfirmationSheet(requireContext(), filesToDelete) {
+            actionMode?.finish()
+            unselectAllFiles()
+            executeDelete(filesToDelete)
+        }
     }
 
     fun toggleSelection(position: Int) {
@@ -1071,7 +1081,14 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
 
     private fun updateActionModeTitle() {
         val selectedItemCount = getSelectedItemCount()
-        actionMode?.title = "$selectedItemCount selected"
+        if (selectedItemCount == 0) {
+            actionMode?.finish()
+            return
+        }
+        val totalBytes = selectedFiles.sumOf { if (it.isFile) it.length() else 0L }
+        val sizeString = bytesToString(totalBytes)
+        val countLabel = if (selectedItemCount == 1) getString(R.string.item) else getString(R.string.items)
+        actionMode?.title = getString(R.string.selection_status_format, selectedItemCount, countLabel, sizeString)
     }
 
     private fun updateProgressBar(progress: Int) {
@@ -1489,22 +1506,10 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         }
 
         binding.btnDelete.setOnClickListener {
-            MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
-                .setTitle(getString(R.string.confirm_delete))
-                .setMessage(getString(R.string.confirm_delete_message))
-                .setPositiveButton(getString(R.string.delete)) { _, _ ->
-                    val filesToDelete = listOf(file.absolutePath)
-                    val jobId = fileOperationsDao.addFilesForJob(filesToDelete)
-                    val intent = Intent(requireContext(), DeleteFilesService::class.java).apply {
-                        putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
-                    }
-                    ContextCompat.startForegroundService(requireContext(), intent)
-                    bottomSheetDialog.dismiss()
-                }
-                .setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
-                    dialog.dismiss()
-                }
-                .show()
+            DeletionSafetyHelper.showDeleteConfirmationSheet(requireContext(), listOf(file)) {
+                bottomSheetDialog.dismiss()
+                executeDelete(listOf(file))
+            }
         }
 
         bottomSheetDialog.show()
@@ -1753,22 +1758,10 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         }
 
         binding.btnDelete.setOnClickListener {
-            MaterialAlertDialogBuilder(requireContext(), R.style.MaterialDialog)
-                .setTitle(getString(R.string.confirm_delete))
-                .setMessage(getString(R.string.confirm_delete_message))
-                .setPositiveButton(getString(R.string.delete)) { _, _ ->
-                    val filesToDelete = listOf(file.absolutePath)
-                    val jobId = fileOperationsDao.addFilesForJob(filesToDelete)
-                    val intent = Intent(requireContext(), DeleteFilesService::class.java).apply {
-                        putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
-                    }
-                    ContextCompat.startForegroundService(requireContext(), intent)
-                    bottomSheetDialog.dismiss()
-                }
-                .setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
-                    dialog.dismiss()
-                }
-                .show()
+            DeletionSafetyHelper.showDeleteConfirmationSheet(requireContext(), listOf(file)) {
+                bottomSheetDialog.dismiss()
+                executeDelete(listOf(file))
+            }
         }
 
         bottomSheetDialog.show()
@@ -1992,6 +1985,40 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             }
         }
         updateActionModeTitle()
+        HapticHelper.performConfirm(view)
+    }
+
+    private fun invertSelection() {
+        for (i in 0 until adapter.itemCount) {
+            val file = adapter.files[i].file
+            if (selectedFiles.contains(file)) {
+                selectedFiles.remove(file)
+            } else {
+                selectedFiles.add(file)
+            }
+            adapter.toggleSelection(i)
+        }
+        if (selectedFiles.isEmpty()) {
+            actionMode?.finish()
+        } else {
+            updateActionModeTitle()
+        }
+        HapticHelper.performConfirm(view)
+    }
+
+    private fun executeDelete(filesToDelete: List<File>) {
+        if (filesToDelete.isEmpty()) return
+        HapticHelper.performConfirm(binding.root)
+        val removedFileItems = adapter.files.filter { filesToDelete.contains(it.file) }
+        removedFileItems.forEach { adapter.removeFileItem(it) }
+
+        val ctx = context ?: return
+        val paths = filesToDelete.map { it.absolutePath }
+        val jobId = fileOperationsDao.addFilesForJob(paths)
+        val intent = Intent(ctx, DeleteFilesService::class.java).apply {
+            putExtra(ServiceConstants.EXTRA_JOB_ID, jobId)
+        }
+        ContextCompat.startForegroundService(ctx, intent)
     }
 
     fun startZipService(archiveName: String, password: String?, compressionMethod: CompressionMethod, compressionLevel: CompressionLevel, isEncrypted: Boolean, encryptionMethod: EncryptionMethod?, aesStrength: AesKeyStrength?, filesToArchive: List<String>, destinationPath: String? = null) {

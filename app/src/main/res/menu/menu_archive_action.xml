@@ -19,6 +19,18 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/menu_action_select_all"
+        android:title="@string/select_all"
+        android:icon="@drawable/ic_select_all"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/menu_action_invert_selection"
+        android:title="@string/invert_selection"
+        android:icon="@drawable/ic_invert_selection"
+        app:showAsAction="always" />
+
+    <item
         android:id="@+id/menu_action_delete"
         android:title="@string/delete"
         android:icon="@drawable/ic_round_cancel"

@@ -52,8 +52,10 @@ import com.wirelessalien.zipxtract.databinding.BottomSheetOptionBinding
 import com.wirelessalien.zipxtract.databinding.FragmentSevenZipBinding
 import com.wirelessalien.zipxtract.databinding.PasswordInputDialogBinding
 import com.wirelessalien.zipxtract.helper.AppEvent
+import com.wirelessalien.zipxtract.helper.DeletionSafetyHelper
 import com.wirelessalien.zipxtract.helper.EventBus
 import com.wirelessalien.zipxtract.helper.FileOperationsDao
+import com.wirelessalien.zipxtract.helper.HapticHelper
 import com.wirelessalien.zipxtract.helper.PathUtils
 import com.wirelessalien.zipxtract.service.ExtractArchiveService
 import com.wirelessalien.zipxtract.service.Update7zService
@@ -166,6 +168,7 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
                     }
                     is AppEvent.ArchiveComplete -> {
                         binding.progressBar.visibility = View.GONE
+                        HapticHelper.performConfirm(binding.root)
                         Toast.makeText(requireContext(),
                             getString(R.string.archive_updated_successfully), Toast.LENGTH_SHORT).show()
                         openArchiveAndLoad()
@@ -348,6 +351,7 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
     }
 
     override fun onFileLongClick(item: ArchiveItem, view: View) {
+        HapticHelper.performLongPress(view)
         if (actionMode == null) {
             actionMode = (activity as AppCompatActivity).startSupportActionMode(actionModeCallback)
         }
@@ -355,17 +359,28 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
             (0 until count).firstOrNull { adapter.getItem(it) == item }
         }
         if (position != null) {
-            toggleSelection(position)
+            toggleSelection(position, view)
         }
     }
 
-    private fun toggleSelection(position: Int) {
+    private fun toggleSelection(position: Int, view: View? = null) {
+        if (view != null) {
+            HapticHelper.performContextClick(view)
+        }
         adapter.toggleSelection(position)
-        val count = adapter.getSelectedItems().size
+        updateActionModeTitle()
+    }
+
+    private fun updateActionModeTitle() {
+        val selectedItems = adapter.getSelectedItems()
+        val count = selectedItems.size
         if (count == 0) {
             actionMode?.finish()
         } else {
-            actionMode?.title = "$count selected"
+            val totalBytes = selectedItems.sumOf { it.size }
+            val sizeString = bytesToString(totalBytes)
+            val countLabel = if (count == 1) getString(R.string.item) else getString(R.string.items)
+            actionMode?.title = getString(R.string.selection_status_format, count, countLabel, sizeString)
             actionMode?.invalidate()
         }
     }
@@ -382,26 +397,41 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
 
         override fun onActionItemClicked(mode: ActionMode?, item: MenuItem?): Boolean {
             return when (item?.itemId) {
+                R.id.menu_action_select_all -> {
+                    adapter.selectAll()
+                    updateActionModeTitle()
+                    HapticHelper.performConfirm(view)
+                    true
+                }
+                R.id.menu_action_invert_selection -> {
+                    adapter.invertSelection()
+                    val count = adapter.getSelectedItems().size
+                    if (count == 0) {
+                        actionMode?.finish()
+                    } else {
+                        updateActionModeTitle()
+                    }
+                    HapticHelper.performConfirm(view)
+                    true
+                }
                 R.id.menu_action_delete -> {
-                    MaterialAlertDialogBuilder(requireContext())
-                        .setTitle(getString(R.string.confirm_delete))
-                        .setMessage(getString(R.string.confirm_delete_message))
-                        .setNegativeButton(resources.getString(R.string.cancel)) { dialog, _ ->
-                            dialog.dismiss()
+                    val selectedItems = adapter.getSelectedItems()
+                    val totalSize = selectedItems.sumOf { it.size }
+                    DeletionSafetyHelper.showArchiveDeleteConfirmationSheet(
+                        requireContext(),
+                        selectedItems.size,
+                        totalSize
+                    ) {
+                        binding.progressBar.visibility = View.VISIBLE
+                        val pathsToRemove = selectedItems.map { it.path }
+                        val jobId = fileOperationsDao.addFilesForJob(pathsToRemove)
+                        val intent = Intent(requireContext(), Update7zService::class.java).apply {
+                            putExtra(ServiceConstants.EXTRA_ARCHIVE_PATH, archivePath)
+                            putExtra(ServiceConstants.EXTRA_ITEMS_TO_REMOVE_JOB_ID, jobId)
                         }
-                        .setPositiveButton(resources.getString(R.string.delete)) { _, _ ->
-                            binding.progressBar.visibility = View.VISIBLE
-                            val selectedItems = adapter.getSelectedItems()
-                            val pathsToRemove = selectedItems.map { it.path }
-                            val jobId = fileOperationsDao.addFilesForJob(pathsToRemove)
-                            val intent = Intent(requireContext(), Update7zService::class.java).apply {
-                                putExtra(ServiceConstants.EXTRA_ARCHIVE_PATH, archivePath)
-                                putExtra(ServiceConstants.EXTRA_ITEMS_TO_REMOVE_JOB_ID, jobId)
-                            }
-                            requireContext().startService(intent)
-                            mode?.finish()
-                        }
-                        .show()
+                        requireContext().startService(intent)
+                        mode?.finish()
+                    }
                     true
                 }
                 else -> false

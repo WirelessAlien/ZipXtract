@@ -39,6 +39,7 @@ import com.bumptech.glide.request.RequestOptions
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.databinding.ItemFileBinding
 import com.wirelessalien.zipxtract.fragment.MainFragment
+import com.wirelessalien.zipxtract.helper.HapticHelper
 import com.wirelessalien.zipxtract.model.FileItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -155,8 +156,10 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
         override fun onClick(v: View?) {
             if (v?.id == R.id.card_view || v?.id == R.id.file_icon || v?.id == R.id.file_extension) {
                 if (mainFragment != null && mainFragment.actionMode == null) {
+                    HapticHelper.performLongPress(v)
                     mainFragment.startActionMode(bindingAdapterPosition)
                 } else if (mainFragment != null) {
+                    HapticHelper.performContextClick(v)
                     mainFragment.toggleSelection(bindingAdapterPosition)
                     if (mainFragment.getSelectedItemCount() == 0) {
                         mainFragment.actionMode?.finish()
@@ -164,6 +167,7 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
                 }
             } else {
                 if (mainFragment?.actionMode != null) {
+                    HapticHelper.performContextClick(v)
                     mainFragment.toggleSelection(bindingAdapterPosition)
                     if (mainFragment.getSelectedItemCount() == 0) {
                         mainFragment.actionMode?.finish()
@@ -175,6 +179,7 @@ class FileAdapter(private val context: Context, private val mainFragment: MainFr
         }
 
         override fun onLongClick(v: View?): Boolean {
+            HapticHelper.performLongPress(v)
             mainFragment?.startActionMode(bindingAdapterPosition)
             return true
         }

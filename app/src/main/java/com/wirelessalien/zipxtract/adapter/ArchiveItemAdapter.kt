@@ -31,6 +31,7 @@ import androidx.core.util.size
 import androidx.recyclerview.widget.RecyclerView
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.databinding.ItemFileBinding
+import com.wirelessalien.zipxtract.helper.HapticHelper
 import com.wirelessalien.zipxtract.fragment.SevenZipFragment
 import java.util.Locale
 
@@ -73,6 +74,24 @@ class ArchiveItemAdapter(
         return items
     }
 
+    fun selectAll() {
+        for (i in items.indices) {
+            selectedItems.put(i, true)
+            notifyItemChanged(i)
+        }
+    }
+
+    fun invertSelection() {
+        for (i in items.indices) {
+            if (selectedItems.get(i, false)) {
+                selectedItems.delete(i)
+            } else {
+                selectedItems.put(i, true)
+            }
+            notifyItemChanged(i)
+        }
+    }
+
     inner class ViewHolder(val binding: ItemFileBinding) : RecyclerView.ViewHolder(binding.root), View.OnClickListener, View.OnLongClickListener {
         init {
             itemView.isClickable = true
@@ -82,10 +101,14 @@ class ArchiveItemAdapter(
         }
 
         override fun onClick(v: View?) {
+            if (selectedItems.size() > 0) {
+                HapticHelper.performContextClick(v)
+            }
             onItemClickListener?.onItemClick(items[bindingAdapterPosition])
         }
 
         override fun onLongClick(v: View?): Boolean {
+            HapticHelper.performLongPress(v)
             onFileLongClickListener?.onFileLongClick(items[bindingAdapterPosition], itemView)
             return true
         }
