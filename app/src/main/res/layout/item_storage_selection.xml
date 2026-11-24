@@ -41,7 +41,7 @@
             android:id="@+id/iconCard"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:cardCornerRadius="10dp"
+            app:cardCornerRadius="12dp"
             app:cardBackgroundColor="?attr/colorSurfaceVariant"
             app:contentPadding="8dp"
             app:strokeWidth="0dp"
