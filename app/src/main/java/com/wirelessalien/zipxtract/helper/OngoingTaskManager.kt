@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.util.concurrent.atomic.AtomicLong
 
 enum class TaskType {
     EXTRACTION, ARCHIVE
@@ -39,87 +40,84 @@ data class OngoingTask(
     val progress: Int = 0,
     val status: TaskStatus = TaskStatus.RUNNING,
     val outputDir: String? = null,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val id: Long = 0L
 )
 
 object OngoingTaskManager {
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+    private val nextTaskId = AtomicLong(0L)
     private val _currentTask = MutableStateFlow<OngoingTask?>(null)
     val currentTask: StateFlow<OngoingTask?> = _currentTask.asStateFlow()
 
     init {
         scope.launch {
             EventBus.events.collect { event ->
-                when (event) {
-                    is AppEvent.ExtractionProgress -> {
-                        updateProgress(TaskType.EXTRACTION, event.progress)
-                    }
-                    is AppEvent.ArchiveProgress -> {
-                        updateProgress(TaskType.ARCHIVE, event.progress)
-                    }
-                    is AppEvent.ExtractionComplete -> {
-                        completeTask(TaskType.EXTRACTION, event.dirPath)
-                    }
-                    is AppEvent.ArchiveComplete -> {
-                        completeTask(TaskType.ARCHIVE, event.dirPath)
-                    }
-                    is AppEvent.ExtractionError -> {
-                        errorTask(event.errorMessage)
-                    }
-                    is AppEvent.ArchiveError -> {
-                        errorTask(event.errorMessage)
-                    }
-                }
+                handleEvent(event)
             }
         }
     }
 
-    fun startTask(type: TaskType, name: String, outputDir: String? = null) {
+    internal fun handleEvent(event: AppEvent) {
+        when (event) {
+            is AppEvent.ExtractionProgress -> {
+                updateProgress(TaskType.EXTRACTION, event.progress)
+            }
+            is AppEvent.ArchiveProgress -> {
+                updateProgress(TaskType.ARCHIVE, event.progress)
+            }
+            is AppEvent.ExtractionComplete -> {
+                completeTask(TaskType.EXTRACTION, event.dirPath)
+            }
+            is AppEvent.ArchiveComplete -> {
+                completeTask(TaskType.ARCHIVE, event.dirPath)
+            }
+            is AppEvent.ExtractionError -> {
+                errorTask(TaskType.EXTRACTION, event.errorMessage)
+            }
+            is AppEvent.ArchiveError -> {
+                errorTask(TaskType.ARCHIVE, event.errorMessage)
+            }
+        }
+    }
+
+    fun startTask(type: TaskType, name: String, outputDir: String? = null): Boolean {
+        val current = _currentTask.value
+        if (current != null && current.status == TaskStatus.RUNNING) {
+            return false
+        }
         _currentTask.value = OngoingTask(
             type = type,
             name = name,
             progress = 0,
             status = TaskStatus.RUNNING,
-            outputDir = outputDir
+            outputDir = outputDir,
+            id = nextTaskId.incrementAndGet()
         )
+        return true
     }
 
     private fun updateProgress(type: TaskType, progress: Int) {
-        val current = _currentTask.value
-        if (current == null) {
-            _currentTask.value = OngoingTask(
-                type = type,
-                name = if (type == TaskType.EXTRACTION) "Extraction" else "Archive",
-                progress = progress,
-                status = TaskStatus.RUNNING
-            )
-        } else if (current.status == TaskStatus.RUNNING) {
+        val current = _currentTask.value ?: return
+        if (current.status == TaskStatus.RUNNING && current.type == type) {
             _currentTask.value = current.copy(progress = progress)
         }
     }
 
     private fun completeTask(type: TaskType, outputDir: String?) {
-        val current = _currentTask.value
-        if (current != null) {
+        val current = _currentTask.value ?: return
+        if (current.status == TaskStatus.RUNNING && current.type == type) {
             _currentTask.value = current.copy(
                 progress = 100,
                 status = TaskStatus.COMPLETED,
                 outputDir = outputDir ?: current.outputDir
             )
-        } else {
-            _currentTask.value = OngoingTask(
-                type = type,
-                name = if (type == TaskType.EXTRACTION) "Extraction" else "Archive",
-                progress = 100,
-                status = TaskStatus.COMPLETED,
-                outputDir = outputDir
-            )
         }
     }
 
-    private fun errorTask(errorMessage: String?) {
-        val current = _currentTask.value
-        if (current != null) {
+    private fun errorTask(type: TaskType, errorMessage: String?) {
+        val current = _currentTask.value ?: return
+        if (current.status == TaskStatus.RUNNING && current.type == type) {
             _currentTask.value = current.copy(
                 status = TaskStatus.ERROR,
                 errorMessage = errorMessage

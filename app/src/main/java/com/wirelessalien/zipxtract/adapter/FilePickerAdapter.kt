@@ -23,14 +23,12 @@ import android.content.Context
 import android.content.res.ColorStateList
 import android.icu.text.DateFormat
 import android.os.Build
-import android.util.SparseBooleanArray
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.content.ContextCompat
-import androidx.core.util.size
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DecodeFormat
@@ -65,13 +63,13 @@ class FilePickerAdapter(
 
     private var onItemClickListener: OnItemClickListener? = null
 
-    private val selectedItems = SparseBooleanArray()
+    private val selectedPaths = linkedSetOf<String>()
 
     fun toggleSelection(position: Int) {
-        if (selectedItems.get(position, false)) {
-            selectedItems.delete(position)
-        } else {
-            selectedItems.put(position, true)
+        if (position !in filteredFiles.indices) return
+        val path = filteredFiles[position].absolutePath
+        if (!selectedPaths.remove(path)) {
+            selectedPaths.add(path)
         }
         notifyItemChanged(position)
     }
@@ -129,7 +127,7 @@ class FilePickerAdapter(
             file = file
         )
 
-        if (selectedItems.get(position, false)) {
+        if (selectedPaths.contains(file.absolutePath)) {
             binding.checkIcon.visibility = View.VISIBLE
 
             val typedValue = TypedValue()
@@ -155,17 +153,15 @@ class FilePickerAdapter(
     }
 
     fun getSelectedItems(): List<File> {
-        val items = mutableListOf<File>()
-        for (i in 0 until selectedItems.size) {
-            items.add(filteredFiles[selectedItems.keyAt(i)])
-        }
-        return items
+        return files.filter { selectedPaths.contains(it.absolutePath) }
     }
 
     @SuppressLint("NotifyDataSetChanged")
     fun updateFilesAndFilter(newFiles: ArrayList<File>, query: String? = null) {
         files.clear()
         files.addAll(newFiles)
+        val validPaths = newFiles.mapTo(HashSet()) { it.absolutePath }
+        selectedPaths.retainAll(validPaths)
         filter(query)
     }
 

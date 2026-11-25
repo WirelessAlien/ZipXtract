@@ -23,23 +23,32 @@ object ConflictResolutionHelper {
      * For KEEP_BOTH, customDestinationName is a unique renamed file name.
      * For SKIP, the item is omitted.
      */
+    internal fun partitionConflicts(
+        files: List<File>,
+        destinationDir: File
+    ): Pair<MutableList<Pair<String, String?>>, MutableList<File>> {
+        val nonConflicting = mutableListOf<Pair<String, String?>>()
+        val conflicting = mutableListOf<File>()
+        val seenTargetNames = mutableSetOf<String>()
+
+        for (file in files) {
+            val target = File(destinationDir, file.name)
+            if (target.exists() || !seenTargetNames.add(file.name)) {
+                conflicting.add(file)
+            } else {
+                nonConflicting.add(file.absolutePath to null)
+            }
+        }
+        return nonConflicting to conflicting
+    }
+
     fun resolveConflicts(
         context: Context,
         files: List<File>,
         destinationDir: File,
         onFinished: (resolvedPairs: List<Pair<String, String?>>) -> Unit
     ) {
-        val nonConflicting = mutableListOf<Pair<String, String?>>()
-        val conflicting = mutableListOf<File>()
-
-        for (file in files) {
-            val target = File(destinationDir, file.name)
-            if (target.exists()) {
-                conflicting.add(file)
-            } else {
-                nonConflicting.add(file.absolutePath to null)
-            }
-        }
+        val (nonConflicting, conflicting) = partitionConflicts(files, destinationDir)
 
         if (conflicting.isEmpty()) {
             onFinished(nonConflicting)
@@ -60,7 +69,12 @@ object ConflictResolutionHelper {
                 }
                 ConflictAction.KEEP_BOTH -> {
                     val reservedNames = resolved.mapNotNull { it.second ?: File(it.first).name }.toSet()
-                    val uniqueFile = FileUtils.getUniqueDestinationFile(destinationDir, file.name, reservedNames)
+                    val uniqueFile = FileUtils.getUniqueDestinationFile(
+                        destinationDir,
+                        file.name,
+                        reservedNames,
+                        isDirectory = file.isDirectory
+                    )
                     resolved.add(file.absolutePath to uniqueFile.name)
                 }
             }

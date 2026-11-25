@@ -17,6 +17,7 @@
 
 package com.wirelessalien.zipxtract
 
+import com.wirelessalien.zipxtract.helper.ConflictResolutionHelper
 import com.wirelessalien.zipxtract.helper.FileUtils
 import com.wirelessalien.zipxtract.model.DirectoryInfo
 import org.junit.Assert.assertEquals
@@ -121,5 +122,36 @@ class FileUtilsTest {
         assertTrue(destSubDir.exists())
         assertTrue(File(destSubDir, "child.txt").exists())
         assertEquals("Child content", File(destSubDir, "child.txt").readText())
+    }
+
+    @Test
+    fun testPartitionConflictsDetectsDuplicateInputNames() {
+        val dirA = tempFolder.newFolder("srcA")
+        val dirB = tempFolder.newFolder("srcB")
+        val destDir = tempFolder.newFolder("empty_dest")
+
+        val fileA = File(dirA, "report.txt").apply { writeText("from A") }
+        val fileB = File(dirB, "report.txt").apply { writeText("from B") }
+        val uniqueFile = File(dirA, "notes.txt").apply { writeText("notes") }
+
+        val (nonConflicting, conflicting) = ConflictResolutionHelper.partitionConflicts(
+            listOf(fileA, fileB, uniqueFile),
+            destDir
+        )
+
+        assertEquals(listOf(fileA.absolutePath to null, uniqueFile.absolutePath to null), nonConflicting)
+        assertEquals(listOf(fileB), conflicting)
+    }
+
+    @Test
+    fun testGetUniqueDestinationFilePreservesExtensionForReservedNames() {
+        val destDir = tempFolder.newFolder("unique_dest")
+        val unique = FileUtils.getUniqueDestinationFile(
+            destinationDir = destDir,
+            originalName = "report.txt",
+            reservedNames = setOf("report.txt"),
+            isDirectory = false
+        )
+        assertEquals("report (1).txt", unique.name)
     }
 }

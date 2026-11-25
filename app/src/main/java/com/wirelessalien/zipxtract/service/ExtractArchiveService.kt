@@ -58,6 +58,7 @@ import me.zhanghai.android.libarchive.Archive
 import me.zhanghai.android.libarchive.ArchiveEntry
 import net.lingala.zip4j.ZipFile
 import net.lingala.zip4j.exception.ZipException
+import net.lingala.zip4j.model.FileHeader
 import net.lingala.zip4j.progress.ProgressMonitor
 import net.sf.sevenzipjbinding.ArchiveFormat
 import net.sf.sevenzipjbinding.ExtractAskMode
@@ -97,6 +98,40 @@ class ExtractArchiveService : Service() {
 
     companion object {
         const val NOTIFICATION_ID = 18
+
+        internal fun validateZipEntries(headers: List<FileHeader>, destinationDir: File) {
+            val canonicalDstPath = destinationDir.canonicalPath
+            val safeDstPath = if (canonicalDstPath.endsWith(File.separator)) canonicalDstPath else canonicalDstPath + File.separator
+            for (header in headers) {
+                val destFile = File(destinationDir, header.fileName)
+                val canonicalTarget = destFile.canonicalPath
+                if (!canonicalTarget.startsWith(safeDstPath) && canonicalTarget != canonicalDstPath) {
+                    throw ZipException("Zip Slip detected: ${header.fileName}")
+                }
+            }
+        }
+
+        internal fun extractZipToDirectory(
+            zipFile: ZipFile,
+            destinationDir: File,
+            itemsToExtract: List<String>? = null
+        ) {
+            destinationDir.mkdirs()
+            if (!itemsToExtract.isNullOrEmpty()) {
+                val itemsSet = itemsToExtract.map { it.removeSuffix("/") }.toSet()
+                val headersToExtract = zipFile.fileHeaders.filter { header ->
+                    val normalized = header.fileName.replace("\\", "/").removeSuffix("/")
+                    itemsSet.contains(normalized) || itemsSet.any { selected -> normalized.startsWith("$selected/") }
+                }
+                validateZipEntries(headersToExtract, destinationDir)
+                for (header in headersToExtract) {
+                    zipFile.extractFile(header, destinationDir.absolutePath)
+                }
+            } else {
+                validateZipEntries(zipFile.fileHeaders, destinationDir)
+                zipFile.extractAll(destinationDir.absolutePath)
+            }
+        }
     }
 
     private var archiveFormat: ArchiveFormat? = null
@@ -767,6 +802,7 @@ class ExtractArchiveService : Service() {
                     val normalized = header.fileName.replace("\\", "/").removeSuffix("/")
                     itemsSet.contains(normalized) || itemsSet.any { selected -> normalized.startsWith("$selected/") }
                 }
+                validateZipEntries(headersToExtract, finalDestinationDir)
                 for (header in headersToExtract) {
                     zipFile.extractFile(header, finalDestinationDir.absolutePath)
 
@@ -789,16 +825,13 @@ class ExtractArchiveService : Service() {
                     }
                 }
             } else {
-                val canonicalDstPath = finalDestinationDir.canonicalPath
-                val destDirPath = canonicalDstPath + if (canonicalDstPath.endsWith(File.separator)) "" else File.separator
+                validateZipEntries(zipFile.fileHeaders, finalDestinationDir)
                 for (fileHeader in zipFile.fileHeaders) {
                     if (fileHeader.isDirectory) {
                         val destFile = File(finalDestinationDir, fileHeader.fileName)
-                        if (destFile.canonicalPath.startsWith(destDirPath)) {
-                            val directoryPath = destFile.path
-                            val lastModified = if (fileHeader.lastModifiedTime > 0) fileHeader.lastModifiedTimeEpoch else System.currentTimeMillis()
-                            directories.add(DirectoryInfo(directoryPath, lastModified))
-                        }
+                        val directoryPath = destFile.path
+                        val lastModified = if (fileHeader.lastModifiedTime > 0) fileHeader.lastModifiedTimeEpoch else System.currentTimeMillis()
+                        directories.add(DirectoryInfo(directoryPath, lastModified))
                     }
                 }
                 zipFile.extractAll(finalDestinationDir.absolutePath)

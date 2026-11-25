@@ -242,12 +242,14 @@ object FileUtils {
     fun getUniqueDestinationFile(
         destinationDir: File,
         originalName: String,
-        reservedNames: Set<String> = emptySet()
+        reservedNames: Set<String> = emptySet(),
+        isDirectory: Boolean? = null
     ): File {
         var candidate = File(destinationDir, originalName)
         if (!candidate.exists() && !reservedNames.contains(candidate.name)) return candidate
         val dotIndex = originalName.lastIndexOf('.')
-        val (nameWithoutExt, ext) = if (candidate.isFile && dotIndex > 0) {
+        val isDir = isDirectory ?: candidate.isDirectory
+        val (nameWithoutExt, ext) = if (!isDir && dotIndex > 0) {
             originalName.substring(0, dotIndex) to originalName.substring(dotIndex)
         } else {
             originalName to ""

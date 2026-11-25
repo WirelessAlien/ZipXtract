@@ -66,7 +66,6 @@ import java.io.IOException
 import java.io.RandomAccessFile
 import java.util.Date
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.atomic.AtomicInteger
 
 class Archive7zService : Service() {
 
@@ -245,7 +244,6 @@ class Archive7zService : Service() {
                 }
                 var lastProgress = -1
                 val openStreams = ConcurrentHashMap<Int, Closeable>()
-                val currentItemIndex = AtomicInteger(0)
 
                 try {
                     outArchive.createArchive(
@@ -256,12 +254,8 @@ class Archive7zService : Service() {
                             }
 
                             override fun setOperationResult(operationResultOk: Boolean) {
-                                val index = currentItemIndex.getAndIncrement()
-                                try {
-                                    openStreams.remove(index)?.close()
-                                } catch (e: Exception) {
-                                    e.printStackTrace()
-                                }
+                                // Streams are closed in finally after createArchive completes to avoid
+                                // closing an active stream when multi-threaded callbacks finish out of order.
                             }
 
                             override fun setTotal(total: Long) {

@@ -199,16 +199,29 @@ class TarArchiveTest {
     @Test
     fun testExtractTruncatedTarThrowsException() {
         val workDir = tempFolder.newFolder("tar_truncated")
+        val sourceFile = File(workDir, "payload.txt").apply {
+            writeBytes(ByteArray(2048) { (it % 127).toByte() })
+        }
+        val validTar = File(workDir, "valid.tar")
+        TarArchiveOutputStream(FileOutputStream(validTar)).use { tarOut ->
+            val entry = TarArchiveEntry(sourceFile, "payload.txt")
+            tarOut.putArchiveEntry(entry)
+            sourceFile.inputStream().use { it.copyTo(tarOut) }
+            tarOut.closeArchiveEntry()
+        }
+
+        // Truncate inside the entry payload after the 512-byte header
+        val truncatedBytes = validTar.readBytes().copyOf(600)
         val truncatedTar = File(workDir, "broken.tar").apply {
-            writeBytes(byteArrayOf(0x75, 0x73, 0x74, 0x61, 0x72)) // partial header bytes
+            writeBytes(truncatedBytes)
         }
 
         val extractDir = tempFolder.newFolder("tar_broken_extract")
         try {
             extractTarArchive(truncatedTar, extractDir)
-            // Even if EOF is hit gracefully or exception is thrown, nothing should crash
+            fail("Expected IOException when extracting truncated TAR archive")
         } catch (e: IOException) {
-            // Expected for corrupted tar streams
+            // Expected for corrupted/truncated tar streams
         }
     }
 }

@@ -17,6 +17,7 @@
 
 package com.wirelessalien.zipxtract
 
+import com.wirelessalien.zipxtract.service.ExtractArchiveService
 import net.lingala.zip4j.ZipFile
 import net.lingala.zip4j.exception.ZipException
 import net.lingala.zip4j.model.ZipParameters
@@ -36,6 +37,8 @@ import org.junit.rules.TemporaryFolder
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 
 /**
  * Unit tests covering various Zip archive creation and extraction scenarios:
@@ -393,21 +396,28 @@ class ZipArchiveTest {
 
     @Test
     fun testZipSlipPathTraversalProtection() {
-        val extractDir = tempFolder.newFolder("extract_safe")
-        val canonicalDstPath = extractDir.canonicalPath
-        val safeDstPath = if (canonicalDstPath.endsWith(File.separator)) canonicalDstPath else canonicalDstPath + File.separator
+        val workDir = tempFolder.newFolder("zip_slip_work")
+        val maliciousZip = File(workDir, "malicious.zip")
+        ZipOutputStream(FileOutputStream(maliciousZip)).use { zos ->
+            zos.putNextEntry(ZipEntry("../../evil.txt"))
+            zos.write("malicious payload".toByteArray())
+            zos.closeEntry()
+        }
 
-        // Malicious entry path trying to escape destination directory
-        val maliciousPath = "../../evil.txt"
-        val resolvedFile = File(extractDir, maliciousPath)
+        val parentDir = tempFolder.newFolder("zip_slip_parent")
+        val extractDir = File(parentDir, "nested/extract_safe").apply { mkdirs() }
 
-        // Validate the Zip Slip prevention check used across ZipXtract services
-        val isEscaping = !resolvedFile.canonicalPath.startsWith(safeDstPath) && resolvedFile.canonicalPath != canonicalDstPath
-        assertTrue("Malicious path traversing outside destination must be detected", isEscaping)
+        try {
+            ZipFile(maliciousZip).use { zip ->
+                ExtractArchiveService.extractZipToDirectory(zip, extractDir)
+            }
+            fail("Expected ZipException when extracting archive with Zip Slip path traversal")
+        } catch (e: ZipException) {
+            // Expected
+        }
 
-        // Valid nested path should pass
-        val safeFile = File(extractDir, "sub/dir/safe.txt")
-        val isSafeValid = safeFile.canonicalPath.startsWith(safeDstPath) || safeFile.canonicalPath == canonicalDstPath
-        assertTrue("Legitimate nested path must be allowed", isSafeValid)
+        assertFalse("Escaped file must not exist in parent", File(extractDir.parentFile, "evil.txt").exists())
+        assertFalse("Escaped file must not exist in grandparent", File(parentDir, "evil.txt").exists())
+        assertFalse("Escaped file must not exist in extractDir", File(extractDir, "evil.txt").exists())
     }
 }

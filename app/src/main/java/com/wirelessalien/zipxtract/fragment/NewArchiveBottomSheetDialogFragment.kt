@@ -97,6 +97,15 @@ class NewArchiveBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private fun updateOngoingProcessUI(task: OngoingTask?) {
+        val isRunning = task?.status == TaskStatus.RUNNING
+        val cardAlpha = if (isRunning) 0.5f else 1.0f
+        binding.cardCreateZip.isEnabled = !isRunning
+        binding.cardCreateZip.alpha = cardAlpha
+        binding.cardCreate7z.isEnabled = !isRunning
+        binding.cardCreate7z.alpha = cardAlpha
+        binding.cardCreateTar.isEnabled = !isRunning
+        binding.cardCreateTar.alpha = cardAlpha
+
         if (task == null || task.status == TaskStatus.ERROR) {
             binding.cardOngoingProcess.visibility = View.GONE
             return

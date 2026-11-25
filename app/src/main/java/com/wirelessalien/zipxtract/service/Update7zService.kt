@@ -53,7 +53,6 @@ import java.io.File
 import java.io.FileNotFoundException
 import java.io.RandomAccessFile
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.atomic.AtomicInteger
 
 class Update7zService : Service() {
 
@@ -124,7 +123,6 @@ class Update7zService : Service() {
         var tmpFile: File? = null
         var success = false
         val openStreams = ConcurrentHashMap<Int, Closeable>()
-        val currentItemIndex = AtomicInteger(0)
         try {
             val inStream = RandomAccessFileInStream(RandomAccessFile(archivePath, "r"))
             val inArchive = SevenZip.openInArchive(null, inStream)
@@ -161,12 +159,8 @@ class Update7zService : Service() {
 
             outArchive.updateItems(outStream, newCount, object : IOutCreateCallback<IOutItemAllFormats> {
                 override fun setOperationResult(p0: Boolean) {
-                    val idx = currentItemIndex.getAndIncrement()
-                    try {
-                        openStreams.remove(idx)?.close()
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
+                    // Defer stream cleanup until updateItems returns to avoid closing active
+                    // streams when callbacks complete out of order.
                 }
                 override fun setTotal(size: Long) {
                     totalSize = size
