@@ -173,84 +173,163 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
-                    <com.google.android.material.chip.ChipGroup
-                        android:id="@+id/compressionChipGroup"
+                    <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        app:singleSelection="true">
+                        android:text="@string/compression_preset"
+                        android:layout_marginBottom="8dp"/>
+
+                    <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/presetChipGroup"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:singleSelection="true"
+                        app:selectionRequired="false">
 
                         <com.google.android.material.chip.Chip
-                            android:id="@+id/chipTar"
-                            style="@style/Widget.Material3.Chip.Suggestion"
+                            android:id="@+id/chipPresetFast"
+                            style="@style/Widget.Material3.Chip.Filter"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            app:chipCornerRadius="8dp"
-                            android:text="@string/no_compression"
-                            android:checked="true"/>
+                            android:text="@string/preset_fast"/>
 
                         <com.google.android.material.chip.Chip
-                            android:id="@+id/chipTarBz2"
-                            style="@style/Widget.Material3.Chip.Suggestion"
+                            android:id="@+id/chipPresetBalanced"
+                            style="@style/Widget.Material3.Chip.Filter"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            app:chipCornerRadius="8dp"
-                            android:text="tar.bz2"/>
+                            android:checked="true"
+                            android:text="@string/preset_balanced"/>
 
                         <com.google.android.material.chip.Chip
-                            android:id="@+id/chipTarGz"
-                            style="@style/Widget.Material3.Chip.Suggestion"
+                            android:id="@+id/chipPresetMaximum"
+                            style="@style/Widget.Material3.Chip.Filter"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            app:chipCornerRadius="8dp"
-                            android:text="tar.gz"/>
+                            android:text="@string/preset_maximum"/>
 
                         <com.google.android.material.chip.Chip
-                            android:id="@+id/chipTarLzma"
-                            style="@style/Widget.Material3.Chip.Suggestion"
+                            android:id="@+id/chipPresetStore"
+                            style="@style/Widget.Material3.Chip.Filter"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            app:chipCornerRadius="8dp"
-                            android:text="tar.lzma"/>
-
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chipTarXz"
-                            style="@style/Widget.Material3.Chip.Suggestion"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            app:chipCornerRadius="8dp"
-                            android:text="tar.xz"/>
-
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chipTarZstd"
-                            style="@style/Widget.Material3.Chip.Suggestion"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            app:chipCornerRadius="8dp"
-                            android:text="tar.zst"/>
+                            android:text="@string/preset_store"/>
                     </com.google.android.material.chip.ChipGroup>
 
                     <LinearLayout
-                        android:id="@+id/zstdCompressionLevelContainer"
+                        android:id="@+id/advancedSettingsToggle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:visibility="gone"
-                        android:layout_marginTop="16dp">
+                        android:layout_marginTop="12dp"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingVertical="8dp">
 
                         <TextView
-                            android:id="@+id/zstdCompressionLevelLabel"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/advanced_settings"
+                            android:textStyle="bold" />
+
+                        <ImageView
+                            android:id="@+id/advancedSettingsChevron"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:contentDescription="@string/advanced_settings"
+                            android:src="@drawable/ic_expand_more" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/advancedSettingsContainer"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+                        <com.google.android.material.chip.ChipGroup
+                            android:id="@+id/compressionChipGroup"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/zstd_compression_level_format"/>
+                            app:singleSelection="true">
 
-                        <com.google.android.material.slider.Slider
-                            android:id="@+id/zstdCompressionLevelSlider"
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chipTar"
+                                style="@style/Widget.Material3.Chip.Suggestion"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                app:chipCornerRadius="8dp"
+                                android:text="@string/no_compression"/>
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chipTarBz2"
+                                style="@style/Widget.Material3.Chip.Suggestion"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                app:chipCornerRadius="8dp"
+                                android:text="tar.bz2"/>
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chipTarGz"
+                                style="@style/Widget.Material3.Chip.Suggestion"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                app:chipCornerRadius="8dp"
+                                android:text="tar.gz"/>
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chipTarLzma"
+                                style="@style/Widget.Material3.Chip.Suggestion"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                app:chipCornerRadius="8dp"
+                                android:text="tar.lzma"/>
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chipTarXz"
+                                style="@style/Widget.Material3.Chip.Suggestion"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                app:chipCornerRadius="8dp"
+                                android:text="tar.xz"/>
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chipTarZstd"
+                                style="@style/Widget.Material3.Chip.Suggestion"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                app:chipCornerRadius="8dp"
+                                android:checked="true"
+                                android:text="tar.zst"/>
+                        </com.google.android.material.chip.ChipGroup>
+
+                        <LinearLayout
+                            android:id="@+id/zstdCompressionLevelContainer"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:valueFrom="0.0"
-                            android:valueTo="22.0"
-                            android:stepSize="1.0"
-                            android:value="3.0"/>
+                            android:orientation="vertical"
+                            android:visibility="visible"
+                            android:layout_marginTop="16dp">
+
+                            <TextView
+                                android:id="@+id/zstdCompressionLevelLabel"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/zstd_compression_level_format"/>
+
+                            <com.google.android.material.slider.Slider
+                                android:id="@+id/zstdCompressionLevelSlider"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:valueFrom="0.0"
+                                android:valueTo="22.0"
+                                android:stepSize="1.0"
+                                android:value="3.0"/>
+                        </LinearLayout>
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>

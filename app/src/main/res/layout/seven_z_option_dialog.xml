@@ -176,93 +176,172 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/compression_level"
-                        android:layout_marginBottom="10dp"/>
+                        android:text="@string/compression_preset"
+                        android:layout_marginBottom="8dp"/>
 
-                    <TextView
-                        android:id="@+id/compressionLevelDescription"
+                    <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/presetChipGroup"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Level 5 (Normal)"
-                        android:textSize="14sp"
-                        android:textColor="?attr/colorOnSurfaceVariant"
-                        android:layout_marginBottom="4dp"/>
+                        app:singleSelection="true"
+                        app:selectionRequired="false">
 
-                    <com.google.android.material.slider.Slider
-                        android:id="@+id/compressionLevelSlider"
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chipPresetFast"
+                            style="@style/Widget.Material3.Chip.Filter"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/preset_fast"/>
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chipPresetBalanced"
+                            style="@style/Widget.Material3.Chip.Filter"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:checked="true"
+                            android:text="@string/preset_balanced"/>
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chipPresetMaximum"
+                            style="@style/Widget.Material3.Chip.Filter"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/preset_maximum"/>
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chipPresetStore"
+                            style="@style/Widget.Material3.Chip.Filter"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/preset_store"/>
+                    </com.google.android.material.chip.ChipGroup>
+
+                    <LinearLayout
+                        android:id="@+id/advancedSettingsToggle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        app:labelBehavior="gone"
-                        android:valueFrom="0.0"
-                        android:valueTo="5.0"
-                        android:stepSize="1.0"
-                        android:value="3.0"/>
+                        android:layout_marginTop="12dp"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingVertical="8dp">
 
-                    <com.google.android.material.materialswitch.MaterialSwitch
-                        android:id="@+id/automaticThreadsSwitch"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
-                        android:text="@string/automatic_threads"
-                        android:checked="false"/>
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/advanced_settings"
+                            android:textStyle="bold" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/automatic_threads_subtitle"
-                        android:textSize="12sp"
-                        android:layout_marginStart="0dp"
-                        android:layout_marginTop="-5dp"/>
+                        <ImageView
+                            android:id="@+id/advancedSettingsChevron"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:contentDescription="@string/advanced_settings"
+                            android:src="@drawable/ic_expand_more" />
+                    </LinearLayout>
 
-                    <TextView
-                        android:id="@+id/automaticThreadsWarning"
+                    <LinearLayout
+                        android:id="@+id/advancedSettingsContainer"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:text="@string/automatic_threads_warning"
-                        android:textColor="?attr/colorError"
-                        android:visibility="gone"/>
+                        android:orientation="vertical"
+                        android:visibility="gone">
 
-                    <TextView
-                        android:id="@+id/threadCountText"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/specify_custom_thread_count"
-                        android:layout_marginTop="10dp"/>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/compression_level"
+                            android:layout_marginBottom="10dp"/>
 
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/threadCountInputLayout"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:visibility="visible"
-                        app:boxCornerRadiusTopStart="10dp"
-                        app:boxCornerRadiusTopEnd="10dp"
-                        app:boxCornerRadiusBottomStart="10dp"
-                        app:boxCornerRadiusBottomEnd="10dp"
-                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.Dense">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/threadCountEditText"
+                        <TextView
+                            android:id="@+id/compressionLevelDescription"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:hint="@string/thread_count"
-                            android:inputType="number"/>
-                    </com.google.android.material.textfield.TextInputLayout>
+                            android:text="Level 5 (Normal)"
+                            android:textSize="14sp"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:layout_marginBottom="4dp"/>
 
-                    <com.google.android.material.materialswitch.MaterialSwitch
-                        android:id="@+id/solidCheckBox"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="@string/solid_compression"/>
+                        <com.google.android.material.slider.Slider
+                            android:id="@+id/compressionLevelSlider"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            app:labelBehavior="gone"
+                            android:valueFrom="0.0"
+                            android:valueTo="5.0"
+                            android:stepSize="1.0"
+                            android:value="3.0"/>
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/solid_compression_subtitle"
-                        android:textSize="12sp"
-                        android:layout_marginTop="-5dp"/>
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/automaticThreadsSwitch"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="16dp"
+                            android:text="@string/automatic_threads"
+                            android:checked="false"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/automatic_threads_subtitle"
+                            android:textSize="12sp"
+                            android:layout_marginStart="0dp"
+                            android:layout_marginTop="-5dp"/>
+
+                        <TextView
+                            android:id="@+id/automaticThreadsWarning"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="@string/automatic_threads_warning"
+                            android:textColor="?attr/colorError"
+                            android:visibility="gone"/>
+
+                        <TextView
+                            android:id="@+id/threadCountText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/specify_custom_thread_count"
+                            android:layout_marginTop="10dp"/>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/threadCountInputLayout"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:visibility="visible"
+                            app:boxCornerRadiusTopStart="10dp"
+                            app:boxCornerRadiusTopEnd="10dp"
+                            app:boxCornerRadiusBottomStart="10dp"
+                            app:boxCornerRadiusBottomEnd="10dp"
+                            style="@style/Widget.Material3.TextInputLayout.OutlinedBox.Dense">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/threadCountEditText"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:hint="@string/thread_count"
+                                android:inputType="number"/>
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/solidCheckBox"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="@string/solid_compression"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/solid_compression_subtitle"
+                            android:textSize="12sp"
+                            android:layout_marginTop="-5dp"/>
+                    </LinearLayout>
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>

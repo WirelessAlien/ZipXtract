@@ -330,6 +330,40 @@ class ZipOptionDialogFragment : DialogFragment() {
 
         val compressionMethodChipGroup = binding.compressionMethodChipGroup
         val compressionMethods = listOf(CompressionMethod.STORE, CompressionMethod.DEFLATE)
+        var isApplyingPreset = false
+        var isClearingPreset = false
+
+        fun syncPresetSelection(method: CompressionMethod, level: Int) {
+            if (isApplyingPreset) return
+            val presetChipId = when {
+                method == CompressionMethod.STORE -> com.wirelessalien.zipxtract.R.id.chipPresetStore
+                method == CompressionMethod.DEFLATE && level == 2 -> com.wirelessalien.zipxtract.R.id.chipPresetFast
+                method == CompressionMethod.DEFLATE && level == 5 -> com.wirelessalien.zipxtract.R.id.chipPresetBalanced
+                method == CompressionMethod.DEFLATE && level == 9 -> com.wirelessalien.zipxtract.R.id.chipPresetMaximum
+                else -> View.NO_ID
+            }
+            if (presetChipId == View.NO_ID) {
+                isClearingPreset = true
+                try {
+                    binding.presetChipGroup.clearCheck()
+                } finally {
+                    isClearingPreset = false
+                }
+            } else if (binding.presetChipGroup.checkedChipId != presetChipId) {
+                binding.presetChipGroup.check(presetChipId)
+            }
+        }
+
+        binding.advancedSettingsToggle.setOnClickListener {
+            val isExpanded = binding.advancedSettingsContainer.visibility == View.VISIBLE
+            val nextVisibility = if (isExpanded) View.GONE else View.VISIBLE
+            binding.advancedSettingsContainer.visibility = nextVisibility
+            binding.securityAdvancedContainer.visibility = nextVisibility
+            binding.advancedSettingsChevron.animate()
+                .rotation(if (isExpanded) 0f else 180f)
+                .setDuration(200)
+                .start()
+        }
 
         compressionMethodChipGroup.setOnCheckedStateChangeListener { _, checkedIds ->
             val checkedId = checkedIds.firstOrNull()
@@ -343,6 +377,7 @@ class ZipOptionDialogFragment : DialogFragment() {
                 } else {
                     updateCompressionLevelDescription(binding.compressionLevelSlider.value.toInt())
                 }
+                syncPresetSelection(method, binding.compressionLevelSlider.value.toInt())
             }
         }
 
@@ -358,9 +393,55 @@ class ZipOptionDialogFragment : DialogFragment() {
         }
 
         binding.compressionLevelSlider.addOnChangeListener { _, value, _ ->
-            updateCompressionLevelDescription(value.toInt())
+            val level = value.toInt()
+            updateCompressionLevelDescription(level)
+            val checkedId = compressionMethodChipGroup.checkedChipId
+            val method = if (checkedId in compressionMethods.indices) {
+                compressionMethods[checkedId]
+            } else {
+                CompressionMethod.DEFLATE
+            }
+            syncPresetSelection(method, level)
         }
         updateCompressionLevelDescription(5)
+
+        binding.presetChipGroup.setOnCheckedStateChangeListener { _, checkedIds ->
+            val checkedId = checkedIds.firstOrNull()
+            if (checkedId == null) {
+                if (!isClearingPreset) {
+                    val methodId = compressionMethodChipGroup.checkedChipId
+                    val method = if (methodId in compressionMethods.indices) {
+                        compressionMethods[methodId]
+                    } else {
+                        CompressionMethod.DEFLATE
+                    }
+                    syncPresetSelection(method, binding.compressionLevelSlider.value.toInt())
+                }
+                return@setOnCheckedStateChangeListener
+            }
+            isApplyingPreset = true
+            try {
+                when (checkedId) {
+                    com.wirelessalien.zipxtract.R.id.chipPresetFast -> {
+                        compressionMethodChipGroup.check(compressionMethods.indexOf(CompressionMethod.DEFLATE))
+                        binding.compressionLevelSlider.value = 2f
+                    }
+                    com.wirelessalien.zipxtract.R.id.chipPresetBalanced -> {
+                        compressionMethodChipGroup.check(compressionMethods.indexOf(CompressionMethod.DEFLATE))
+                        binding.compressionLevelSlider.value = 5f
+                    }
+                    com.wirelessalien.zipxtract.R.id.chipPresetMaximum -> {
+                        compressionMethodChipGroup.check(compressionMethods.indexOf(CompressionMethod.DEFLATE))
+                        binding.compressionLevelSlider.value = 9f
+                    }
+                    com.wirelessalien.zipxtract.R.id.chipPresetStore -> {
+                        compressionMethodChipGroup.check(compressionMethods.indexOf(CompressionMethod.STORE))
+                    }
+                }
+            } finally {
+                isApplyingPreset = false
+            }
+        }
 
         val encryptionMethodChipGroup = binding.encryptionMethodChipGroup
         // Display Names mapping
@@ -378,9 +459,6 @@ class ZipOptionDialogFragment : DialogFragment() {
                 val methodKey = encryptionMethodKeys[checkedId]
                 val method = encryptionMethodsMap[methodKey]
 
-                passwordInput.isEnabled = method != EncryptionMethod.NONE
-                confirmPasswordInput.isEnabled = method != EncryptionMethod.NONE
-
                 if (method == EncryptionMethod.AES) {
                     binding.encryptionStrengthContainer.visibility = View.VISIBLE
                 } else {
@@ -396,8 +474,6 @@ class ZipOptionDialogFragment : DialogFragment() {
             chip.id = index
             if (name == "NONE") {
                 chip.isChecked = true
-                passwordInput.isEnabled = false
-                confirmPasswordInput.isEnabled = false
             }
             encryptionMethodChipGroup.addView(chip)
         }
@@ -450,16 +526,25 @@ class ZipOptionDialogFragment : DialogFragment() {
             }
 
             val selectedEncMethodChipId = binding.encryptionMethodChipGroup.checkedChipId
-            val selectedEncryptionMethod = if (selectedEncMethodChipId != -1 && selectedEncMethodChipId < encryptionMethodKeys.size) {
+            val rawEncryptionMethod = if (selectedEncMethodChipId != -1 && selectedEncMethodChipId < encryptionMethodKeys.size) {
                 encryptionMethodsMap[encryptionMethodKeys[selectedEncMethodChipId]]
             } else {
                 null
             }
+            val selectedEncryptionMethod = if (isEncryptionEnabled && (rawEncryptionMethod == null || rawEncryptionMethod == EncryptionMethod.NONE)) {
+                EncryptionMethod.AES
+            } else {
+                rawEncryptionMethod
+            }
 
             val selectedEncStrengthChipId = binding.encryptionStrengthChipGroup.checkedChipId
             val selectedEncryptionStrength =
-                if (selectedEncryptionMethod != null && selectedEncryptionMethod != EncryptionMethod.NONE && selectedEncStrengthChipId != -1 && selectedEncStrengthChipId < encryptionStrengthKeys.size) {
-                    encryptionStrengthsMap[encryptionStrengthKeys[selectedEncStrengthChipId]]
+                if (isEncryptionEnabled && selectedEncryptionMethod == EncryptionMethod.AES) {
+                    if (selectedEncStrengthChipId != -1 && selectedEncStrengthChipId < encryptionStrengthKeys.size) {
+                        encryptionStrengthsMap[encryptionStrengthKeys[selectedEncStrengthChipId]]
+                    } else {
+                        AesKeyStrength.KEY_STRENGTH_256
+                    }
                 } else {
                     null
                 }

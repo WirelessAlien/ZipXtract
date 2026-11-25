@@ -58,7 +58,8 @@ class TarOptionsDialogFragment : DialogFragment() {
     private lateinit var selectedFilePaths: MutableList<String>
     private lateinit var filePathAdapter: FilePathAdapter
     private var launchedWithFilePaths = false
-    private var selectedCompressionFormat: String = "TAR_ONLY"
+    private var selectedCompressionFormat: String =
+        org.apache.commons.compress.compressors.CompressorStreamFactory.ZSTANDARD
     private var jobId: String? = null
     private lateinit var fileOperationsDao: FileOperationsDao
 
@@ -285,8 +286,44 @@ class TarOptionsDialogFragment : DialogFragment() {
             pathPicker.show(parentFragmentManager, "path_picker")
         }
 
+        var isApplyingPreset = false
+        var isClearingPreset = false
+
+        fun syncPresetSelection() {
+            if (isApplyingPreset) return
+            val presetChipId = when {
+                selectedCompressionFormat == "TAR_ONLY" -> R.id.chipPresetStore
+                selectedCompressionFormat == org.apache.commons.compress.compressors.CompressorStreamFactory.XZ -> R.id.chipPresetMaximum
+                selectedCompressionFormat == org.apache.commons.compress.compressors.CompressorStreamFactory.ZSTANDARD &&
+                    binding.zstdCompressionLevelSlider.value.toInt() == 1 -> R.id.chipPresetFast
+                selectedCompressionFormat == org.apache.commons.compress.compressors.CompressorStreamFactory.ZSTANDARD &&
+                    binding.zstdCompressionLevelSlider.value.toInt() == 3 -> R.id.chipPresetBalanced
+                else -> View.NO_ID
+            }
+            if (presetChipId == View.NO_ID) {
+                isClearingPreset = true
+                try {
+                    binding.presetChipGroup.clearCheck()
+                } finally {
+                    isClearingPreset = false
+                }
+            } else if (binding.presetChipGroup.checkedChipId != presetChipId) {
+                binding.presetChipGroup.check(presetChipId)
+            }
+        }
+
+        binding.advancedSettingsToggle.setOnClickListener {
+            val isExpanded = binding.advancedSettingsContainer.visibility == View.VISIBLE
+            binding.advancedSettingsContainer.visibility = if (isExpanded) View.GONE else View.VISIBLE
+            binding.advancedSettingsChevron.animate()
+                .rotation(if (isExpanded) 0f else 180f)
+                .setDuration(200)
+                .start()
+        }
+
         binding.zstdCompressionLevelSlider.addOnChangeListener { _, value, _ ->
             binding.zstdCompressionLevelLabel.text = getString(R.string.zstd_compression_level_format, value.toInt())
+            syncPresetSelection()
         }
 
         // Initialize label with default value
@@ -306,6 +343,38 @@ class TarOptionsDialogFragment : DialogFragment() {
                 binding.zstdCompressionLevelContainer.visibility = View.VISIBLE
             } else {
                 binding.zstdCompressionLevelContainer.visibility = View.GONE
+            }
+            syncPresetSelection()
+        }
+
+        binding.presetChipGroup.setOnCheckedStateChangeListener { _, checkedIds ->
+            val checkedId = checkedIds.firstOrNull()
+            if (checkedId == null) {
+                if (!isClearingPreset) {
+                    syncPresetSelection()
+                }
+                return@setOnCheckedStateChangeListener
+            }
+            isApplyingPreset = true
+            try {
+                when (checkedId) {
+                    R.id.chipPresetFast -> {
+                        binding.compressionChipGroup.check(R.id.chipTarZstd)
+                        binding.zstdCompressionLevelSlider.value = 1f
+                    }
+                    R.id.chipPresetBalanced -> {
+                        binding.compressionChipGroup.check(R.id.chipTarZstd)
+                        binding.zstdCompressionLevelSlider.value = 3f
+                    }
+                    R.id.chipPresetMaximum -> {
+                        binding.compressionChipGroup.check(R.id.chipTarXz)
+                    }
+                    R.id.chipPresetStore -> {
+                        binding.compressionChipGroup.check(R.id.chipTar)
+                    }
+                }
+            } finally {
+                isApplyingPreset = false
             }
         }
 

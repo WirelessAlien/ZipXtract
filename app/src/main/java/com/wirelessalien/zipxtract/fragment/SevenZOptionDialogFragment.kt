@@ -287,17 +287,71 @@ class SevenZOptionDialogFragment : DialogFragment() {
 
         val compressionValues = listOf(0, 1, 3, 5, 7, 9)
         val compressionLevelNames = resources.getStringArray(R.array.compression_levels)
+        var isApplyingPreset = false
+        var isClearingPreset = false
+
+        fun syncPresetSelection(index: Int) {
+            if (isApplyingPreset) return
+            val presetChipId = when (index) {
+                0 -> R.id.chipPresetStore
+                1 -> R.id.chipPresetFast
+                3 -> R.id.chipPresetBalanced
+                5 -> R.id.chipPresetMaximum
+                else -> View.NO_ID
+            }
+            if (presetChipId == View.NO_ID) {
+                isClearingPreset = true
+                try {
+                    binding.presetChipGroup.clearCheck()
+                } finally {
+                    isClearingPreset = false
+                }
+            } else if (binding.presetChipGroup.checkedChipId != presetChipId) {
+                binding.presetChipGroup.check(presetChipId)
+            }
+        }
+
+        binding.advancedSettingsToggle.setOnClickListener {
+            val isExpanded = binding.advancedSettingsContainer.visibility == View.VISIBLE
+            binding.advancedSettingsContainer.visibility = if (isExpanded) View.GONE else View.VISIBLE
+            binding.advancedSettingsChevron.animate()
+                .rotation(if (isExpanded) 0f else 180f)
+                .setDuration(200)
+                .start()
+        }
 
         binding.compressionLevelSlider.addOnChangeListener { _, value, _ ->
             val index = value.toInt()
             if (index in compressionLevelNames.indices) {
                 binding.compressionLevelDescription.text = "Level ${compressionValues[index]} (${compressionLevelNames[index]})"
             }
+            syncPresetSelection(index)
         }
         // Set initial text
         val initialIndex = binding.compressionLevelSlider.value.toInt()
         if (initialIndex in compressionLevelNames.indices) {
             binding.compressionLevelDescription.text = "Level ${compressionValues[initialIndex]} (${compressionLevelNames[initialIndex]})"
+        }
+
+        binding.presetChipGroup.setOnCheckedStateChangeListener { _, checkedIds ->
+            val checkedId = checkedIds.firstOrNull()
+            if (checkedId == null) {
+                if (!isClearingPreset) {
+                    syncPresetSelection(binding.compressionLevelSlider.value.toInt())
+                }
+                return@setOnCheckedStateChangeListener
+            }
+            isApplyingPreset = true
+            try {
+                when (checkedId) {
+                    R.id.chipPresetFast -> binding.compressionLevelSlider.value = 1f
+                    R.id.chipPresetBalanced -> binding.compressionLevelSlider.value = 3f
+                    R.id.chipPresetMaximum -> binding.compressionLevelSlider.value = 5f
+                    R.id.chipPresetStore -> binding.compressionLevelSlider.value = 0f
+                }
+            } finally {
+                isApplyingPreset = false
+            }
         }
 
         binding.automaticThreadsSwitch.setOnCheckedChangeListener { _, isChecked ->
