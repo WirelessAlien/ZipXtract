@@ -296,9 +296,9 @@
 
     <!-- Compression Presets & Advanced Settings -->
     <string name="compression_preset">Compression Preset</string>
-    <string name="preset_fast">⚡ Fast</string>
-    <string name="preset_balanced">⚖️ Balanced</string>
-    <string name="preset_maximum">🗜️ Maximum</string>
-    <string name="preset_store">📂 Store</string>
+    <string name="preset_fast">Fast</string>
+    <string name="preset_balanced">Balanced</string>
+    <string name="preset_maximum">Maximum</string>
+    <string name="preset_store">Store</string>
     <string name="advanced_settings">Advanced Settings</string>
 </resources>
