@@ -32,11 +32,40 @@
         android:max="100"
         android:layout_marginEnd="16dp"/>
 
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/searchArchiveLayout"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.Dense"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/progressBar"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="4dp"
+        android:hint="@string/search_archive"
+        app:boxCornerRadiusBottomEnd="10dp"
+        app:boxCornerRadiusBottomStart="10dp"
+        app:boxCornerRadiusTopEnd="10dp"
+        app:boxCornerRadiusTopStart="10dp"
+        app:endIconMode="clear_text"
+        app:startIconDrawable="@drawable/ic_search">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/searchArchiveInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:imeOptions="actionSearch"
+            android:inputType="text"
+            android:maxLines="1"
+            android:singleLine="true"
+            style="@style/Widget.Material3.TextInputEditText.OutlinedBox.Dense" />
+    </com.google.android.material.textfield.TextInputLayout>
+
     <HorizontalScrollView
         android:id="@+id/horizontalScrollView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/progressBar"
+        android:layout_below="@id/searchArchiveLayout"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:scrollIndicators="none"
@@ -50,6 +79,16 @@
             app:singleLine="true" />
     </HorizontalScrollView>
 
+    <TextView
+        android:id="@+id/emptyView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:text="@string/no_matching_files"
+        android:textAppearance="?attr/textAppearanceBodyLarge"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:visibility="gone" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
@@ -62,10 +101,20 @@
         tools:listitem="@layout/item_file" />
 
     <RelativeLayout
+        android:id="@+id/bottomBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
         android:layout_alignParentBottom="true">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_extract_selected"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:visibility="gone"
+            app:icon="@drawable/ic_unarchive"
+            android:text="@string/extract_selected" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/fab_add_file"

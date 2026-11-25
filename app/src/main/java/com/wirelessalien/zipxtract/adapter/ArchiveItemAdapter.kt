@@ -27,7 +27,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.content.ContextCompat
-import androidx.core.util.size
 import androidx.recyclerview.widget.RecyclerView
 import com.wirelessalien.zipxtract.R
 import com.wirelessalien.zipxtract.databinding.ItemFileBinding
@@ -47,50 +46,52 @@ class ArchiveItemAdapter(
 
     private var onItemClickListener: OnItemClickListener? = null
     private var onFileLongClickListener: OnFileLongClickListener? = null
-    private val selectedItems = android.util.SparseBooleanArray()
+    private val selectedArchiveItems = mutableMapOf<String, SevenZipFragment.ArchiveItem>()
+    var isSearchMode: Boolean = false
 
     interface OnFileLongClickListener {
         fun onFileLongClick(item: SevenZipFragment.ArchiveItem, view: View)
     }
 
     fun toggleSelection(position: Int) {
-        if (selectedItems.get(position, false)) {
-            selectedItems.delete(position)
+        if (position !in items.indices) return
+        val item = items[position]
+        if (selectedArchiveItems.containsKey(item.path)) {
+            selectedArchiveItems.remove(item.path)
         } else {
-            selectedItems.put(position, true)
+            selectedArchiveItems[item.path] = item
         }
         notifyItemChanged(position)
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     fun clearSelection() {
-        selectedItems.clear()
+        selectedArchiveItems.clear()
         notifyDataSetChanged()
     }
 
     fun getSelectedItems(): List<SevenZipFragment.ArchiveItem> {
-        val items = mutableListOf<SevenZipFragment.ArchiveItem>()
-        for (i in 0 until selectedItems.size) {
-            items.add(this.items[selectedItems.keyAt(i)])
-        }
-        return items
+        return selectedArchiveItems.values.toList()
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     fun selectAll() {
-        for (i in items.indices) {
-            selectedItems.put(i, true)
-            notifyItemChanged(i)
+        for (item in items) {
+            selectedArchiveItems[item.path] = item
         }
+        notifyDataSetChanged()
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     fun invertSelection() {
-        for (i in items.indices) {
-            if (selectedItems.get(i, false)) {
-                selectedItems.delete(i)
+        for (item in items) {
+            if (selectedArchiveItems.containsKey(item.path)) {
+                selectedArchiveItems.remove(item.path)
             } else {
-                selectedItems.put(i, true)
+                selectedArchiveItems[item.path] = item
             }
-            notifyItemChanged(i)
         }
+        notifyDataSetChanged()
     }
 
     inner class ViewHolder(val binding: ItemFileBinding) : RecyclerView.ViewHolder(binding.root), View.OnClickListener, View.OnLongClickListener {
@@ -102,15 +103,21 @@ class ArchiveItemAdapter(
         }
 
         override fun onClick(v: View?) {
-            if (selectedItems.size() > 0) {
+            if (selectedArchiveItems.isNotEmpty()) {
                 HapticHelper.performContextClick(v)
             }
-            onItemClickListener?.onItemClick(items[bindingAdapterPosition])
+            val pos = bindingAdapterPosition
+            if (pos != RecyclerView.NO_POSITION && pos in items.indices) {
+                onItemClickListener?.onItemClick(items[pos])
+            }
         }
 
         override fun onLongClick(v: View?): Boolean {
             HapticHelper.performLongPress(v)
-            onFileLongClickListener?.onFileLongClick(items[bindingAdapterPosition], itemView)
+            val pos = bindingAdapterPosition
+            if (pos != RecyclerView.NO_POSITION && pos in items.indices) {
+                onFileLongClickListener?.onFileLongClick(items[pos], itemView)
+            }
             return true
         }
     }
@@ -129,13 +136,17 @@ class ArchiveItemAdapter(
 
         val dateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM, Locale.getDefault())
         val dateString = item.lastModified?.let { dateFormat.format(it) } ?: ""
+        val sizeString = if (item.isDirectory) context.getString(R.string.folder) else bytesToString(item.size)
 
-        if (item.isDirectory) {
-            val folderString = context.getString(R.string.folder)
-            binding.fileSize.text = String.format("%s \u2022 %s", folderString, dateString)
+        if (isSearchMode && item.path.contains('/')) {
+            val parentPath = item.path.removeSuffix("/").substringBeforeLast('/', "")
+            if (parentPath.isNotEmpty()) {
+                binding.fileSize.text = String.format("%s • %s", parentPath, sizeString)
+            } else {
+                binding.fileSize.text = String.format("%s • %s", sizeString, dateString)
+            }
         } else {
-            val sizeString = bytesToString(item.size)
-            binding.fileSize.text = String.format("%s \u2022 %s", sizeString, dateString)
+            binding.fileSize.text = String.format("%s • %s", sizeString, dateString)
         }
 
         FileIconHelper.bindFileIcon(
@@ -146,7 +157,8 @@ class ArchiveItemAdapter(
             isDirectory = item.isDirectory,
             file = null
         )
-        if (selectedItems.get(position, false)) {
+
+        if (selectedArchiveItems.containsKey(item.path)) {
             binding.checkIcon.visibility = View.VISIBLE
 
             val typedValue = TypedValue()
@@ -188,9 +200,9 @@ class ArchiveItemAdapter(
 
         return when {
             bytes < kilobyte -> "$bytes B"
-            bytes < megabyte -> String.format("%.2f KB", bytes.toFloat() / kilobyte)
-            bytes < gigabyte -> String.format("%.2f MB", bytes.toFloat() / megabyte)
-            else -> String.format("%.2f GB", bytes.toFloat() / gigabyte)
+            bytes < megabyte -> String.format(Locale.US, "%.2f KB", bytes.toFloat() / kilobyte)
+            bytes < gigabyte -> String.format(Locale.US, "%.2f MB", bytes.toFloat() / megabyte)
+            else -> String.format(Locale.US, "%.2f GB", bytes.toFloat() / gigabyte)
         }
     }
 

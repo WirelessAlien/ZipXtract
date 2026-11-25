@@ -101,6 +101,9 @@
     <string name="please_wait">Please wait…</string>
     <string name="enter_password">Enter Password</string>
     <string name="extract">Extract</string>
+    <string name="extract_selected">Extract Selected</string>
+    <string name="search_archive">Search archive</string>
+    <string name="no_matching_files">No matching files found</string>
     <string name="file_info">File info</string>
     <string name="multi_part_extract">Multi Part Extract:</string>
     <string name="copy_text">Copy</string>

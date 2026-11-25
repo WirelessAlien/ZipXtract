@@ -318,12 +318,12 @@ class ExtractArchiveService : Service() {
                 val extractCallback = ExtractCallback(inArchive, destinationDir, password, file.name)
                 
                 if (!itemsToExtract.isNullOrEmpty()) {
-                    val itemsSet = itemsToExtract.toSet()
+                    val itemsSet = itemsToExtract.map { it.removeSuffix("/") }.toSet()
                     val indices = mutableListOf<Int>()
                     val count = inArchive.numberOfItems
                     for (i in 0 until count) {
-                        val path = inArchive.getStringProperty(i, PropID.PATH)?.replace("\\", "/")
-                        if (path != null && itemsSet.contains(path)) {
+                        val path = inArchive.getStringProperty(i, PropID.PATH)?.replace("\\", "/")?.removeSuffix("/")
+                        if (path != null && (itemsSet.contains(path) || itemsSet.any { selected -> path.startsWith("$selected/") })) {
                             indices.add(i)
                         }
                     }
@@ -762,8 +762,13 @@ class ExtractArchiveService : Service() {
             val directories = mutableListOf<DirectoryInfo>()
 
             if (itemsToExtract != null && itemsToExtract.isNotEmpty()) {
-                for (itemPath in itemsToExtract) {
-                    zipFile.extractFile(itemPath, finalDestinationDir.absolutePath)
+                val itemsSet = itemsToExtract.map { it.removeSuffix("/") }.toSet()
+                val headersToExtract = zipFile.fileHeaders.filter { header ->
+                    val normalized = header.fileName.replace("\\", "/").removeSuffix("/")
+                    itemsSet.contains(normalized) || itemsSet.any { selected -> normalized.startsWith("$selected/") }
+                }
+                for (header in headersToExtract) {
+                    zipFile.extractFile(header, finalDestinationDir.absolutePath)
 
                     progressMonitor = zipFile.progressMonitor
                     var lastProgress = -1
