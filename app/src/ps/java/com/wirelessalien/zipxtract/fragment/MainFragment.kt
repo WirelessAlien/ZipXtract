@@ -1560,7 +1560,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     }
 
     private fun startCompressService(file: String, compressionFormat: String, destinationPath: String?) {
-        OngoingTaskManager.startTask(TaskType.ARCHIVE, File(file).name + compressionFormat, destinationPath)
+        if (!OngoingTaskManager.startTask(TaskType.ARCHIVE, File(file).name + compressionFormat, destinationPath)) return
         aProgressDialog.show()
         val jobId = fileOperationsDao.addFilesForJob(listOf(file))
         val intent = Intent(requireContext(), CompressCsArchiveService::class.java).apply {
@@ -1572,7 +1572,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     }
 
     fun startArchiveTarService(file: List<String>, archiveName: String, compressionFormat: String, destinationPath: String? = null, compressionLevel: Int = 3) {
-        OngoingTaskManager.startTask(TaskType.ARCHIVE, archiveName, destinationPath)
+        if (!OngoingTaskManager.startTask(TaskType.ARCHIVE, archiveName, destinationPath)) return
         aProgressDialog.show()
         val jobId = fileOperationsDao.addFilesForJob(file)
         val intent = Intent(requireContext(), ArchiveTarService::class.java).apply {
@@ -1886,7 +1886,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     }
 
     private fun startExtractionService(file: String, password: String?, destinationPath: String?) {
-        OngoingTaskManager.startTask(TaskType.EXTRACTION, File(file).name, destinationPath)
+        if (!OngoingTaskManager.startTask(TaskType.EXTRACTION, File(file).name, destinationPath)) return
         eProgressDialog.show()
         val jobId = fileOperationsDao.addFilesForJob(listOf(file))
         val intent = Intent(requireContext(), ExtractArchiveService::class.java).apply {
@@ -1898,7 +1898,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     }
 
     private fun startExtractionCsService(file: String, destinationPath: String?) {
-        OngoingTaskManager.startTask(TaskType.EXTRACTION, File(file).name, destinationPath)
+        if (!OngoingTaskManager.startTask(TaskType.EXTRACTION, File(file).name, destinationPath)) return
         eProgressDialog.show()
         val jobId = fileOperationsDao.addFilesForJob(listOf(file))
         val intent = Intent(requireContext(), ExtractCsArchiveService::class.java).apply {
@@ -1909,7 +1909,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     }
 
     private fun startRarExtractionService(file: String, password: String?, destinationPath: String?) {
-        OngoingTaskManager.startTask(TaskType.EXTRACTION, File(file).name, destinationPath)
+        if (!OngoingTaskManager.startTask(TaskType.EXTRACTION, File(file).name, destinationPath)) return
         eProgressDialog.show()
         val jobId = fileOperationsDao.addFilesForJob(listOf(file))
         val intent = Intent(requireContext(), ExtractRarService::class.java).apply {
@@ -1921,7 +1921,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     }
 
     private fun startMulti7zExtractionService(file: String, password: String?, destinationPath: String?) {
-        OngoingTaskManager.startTask(TaskType.EXTRACTION, File(file).name, destinationPath)
+        if (!OngoingTaskManager.startTask(TaskType.EXTRACTION, File(file).name, destinationPath)) return
         eProgressDialog.show()
         val jobId = fileOperationsDao.addFilesForJob(listOf(file))
         val intent = Intent(requireContext(), ExtractMultipart7zService::class.java).apply {
@@ -1933,7 +1933,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     }
 
     private fun startMultiZipExtractionService(file: String, password: String?, destinationPath: String?) {
-        OngoingTaskManager.startTask(TaskType.EXTRACTION, File(file).name, destinationPath)
+        if (!OngoingTaskManager.startTask(TaskType.EXTRACTION, File(file).name, destinationPath)) return
         eProgressDialog.show()
         val jobId = fileOperationsDao.addFilesForJob(listOf(file))
         val intent = Intent(requireContext(), ExtractMultipartZipService::class.java).apply {
@@ -2071,7 +2071,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     }
 
     fun startZipService(archiveName: String, password: String?, compressionMethod: CompressionMethod, compressionLevel: CompressionLevel, isEncrypted: Boolean, encryptionMethod: EncryptionMethod?, aesStrength: AesKeyStrength?, filesToArchive: List<String>, destinationPath: String? = null) {
-        OngoingTaskManager.startTask(TaskType.ARCHIVE, archiveName, destinationPath)
+        if (!OngoingTaskManager.startTask(TaskType.ARCHIVE, archiveName, destinationPath)) return
         aProgressDialog.show()
         val jobId = fileOperationsDao.addFilesForJob(filesToArchive)
         val intent = Intent(requireContext(), ArchiveZipService::class.java).apply {
@@ -2089,7 +2089,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     }
 
     fun startSplitZipService(archiveName: String, password: String?, compressionMethod: CompressionMethod, compressionLevel: CompressionLevel, isEncrypted: Boolean, encryptionMethod: EncryptionMethod?, aesStrength: AesKeyStrength?, filesToArchive: List<String>, splitSize: Long?, destinationPath: String? = null) {
-        OngoingTaskManager.startTask(TaskType.ARCHIVE, archiveName, destinationPath)
+        if (!OngoingTaskManager.startTask(TaskType.ARCHIVE, archiveName, destinationPath)) return
         aProgressDialog.show()
         val jobId = fileOperationsDao.addFilesForJob(filesToArchive)
         val intent = Intent(requireContext(), ArchiveSplitZipService::class.java).apply {
@@ -2127,7 +2127,7 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
     }
 
     fun startSevenZService(password: String?, archiveName: String, compressionLevel: Int, solid: Boolean, threadCount: Int, filesToArchive: List<String>, destinationPath: String? = null, headerEncryption: Boolean = false) {
-        OngoingTaskManager.startTask(TaskType.ARCHIVE, archiveName, destinationPath)
+        if (!OngoingTaskManager.startTask(TaskType.ARCHIVE, archiveName, destinationPath)) return
         aProgressDialog.show()
         val jobId = fileOperationsDao.addFilesForJob(filesToArchive)
         val intent = Intent(requireContext(), Archive7zService::class.java).apply {

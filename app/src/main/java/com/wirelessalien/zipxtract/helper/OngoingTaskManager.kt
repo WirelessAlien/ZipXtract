@@ -81,6 +81,7 @@ object OngoingTaskManager {
         }
     }
 
+    @Synchronized
     fun startTask(type: TaskType, name: String, outputDir: String? = null): Boolean {
         val current = _currentTask.value
         if (current != null && current.status == TaskStatus.RUNNING) {
@@ -97,6 +98,7 @@ object OngoingTaskManager {
         return true
     }
 
+    @Synchronized
     private fun updateProgress(type: TaskType, progress: Int) {
         val current = _currentTask.value ?: return
         if (current.status == TaskStatus.RUNNING && current.type == type) {
@@ -104,6 +106,7 @@ object OngoingTaskManager {
         }
     }
 
+    @Synchronized
     private fun completeTask(type: TaskType, outputDir: String?) {
         val current = _currentTask.value ?: return
         if (current.status == TaskStatus.RUNNING && current.type == type) {
@@ -115,6 +118,7 @@ object OngoingTaskManager {
         }
     }
 
+    @Synchronized
     private fun errorTask(type: TaskType, errorMessage: String?) {
         val current = _currentTask.value ?: return
         if (current.status == TaskStatus.RUNNING && current.type == type) {
@@ -125,6 +129,7 @@ object OngoingTaskManager {
         }
     }
 
+    @Synchronized
     fun clearTask() {
         _currentTask.value = null
     }
