@@ -19,9 +19,27 @@ package com.wirelessalien.zipxtract.helper
 
 import android.content.Context
 import android.os.Environment
+import android.view.ViewGroup
+import android.widget.ImageView
 import com.wirelessalien.zipxtract.R
 
 object PathUtils {
+
+    /**
+     * Creates a subtle chevron separator view for breadcrumb path segments.
+     */
+    fun createBreadcrumbSeparator(context: Context): ImageView {
+        return ImageView(context).apply {
+            setImageResource(R.drawable.ic_chevron_right)
+            scaleType = ImageView.ScaleType.CENTER
+            alpha = 0.6f
+            importantForAccessibility = ImageView.IMPORTANT_FOR_ACCESSIBILITY_NO
+            val density = context.resources.displayMetrics.density
+            val width = (18 * density).toInt()
+            val height = (48 * density).toInt()
+            layoutParams = ViewGroup.LayoutParams(width, height)
+        }
+    }
 
     fun formatPath(path: String, context: Context): String {
         val internalStorage = Environment.getExternalStorageDirectory().absolutePath

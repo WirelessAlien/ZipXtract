@@ -74,17 +74,17 @@
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:gravity="center_vertical"
                 android:orientation="horizontal">
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/storageChip"
-                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    style="@style/Widget.Material3.Chip.Assist"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/internal_storage"
                     android:clickable="true"
-                    android:checkable="false"
-                    android:layout_marginEnd="8dp"
+                    android:layout_marginEnd="4dp"
                     app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Full"
                     android:visibility="visible" />
 
@@ -93,6 +93,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
+                    app:chipSpacingHorizontal="4dp"
                     app:singleLine="true" />
             </LinearLayout>
         </HorizontalScrollView>

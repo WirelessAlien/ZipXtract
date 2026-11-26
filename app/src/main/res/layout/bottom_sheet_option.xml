@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    android:layout_height="match_parent">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -11,10 +12,14 @@
         android:layout_marginEnd="8dp"
         android:orientation="vertical">
 
+        <com.google.android.material.bottomsheet.BottomSheetDragHandleView
+            android:id="@+id/dragHandle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="40dp"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp">
 
@@ -106,39 +111,33 @@
             android:scrollbars="none"
             android:scrollIndicators="none"
             android:layout_marginStart="16dp"
-            android:layout_marginEnd="12dp"
-            android:layout_marginBottom="30dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="24dp"
             android:fillViewport="true"
-            android:layout_marginTop="10dp">
+            android:layout_marginTop="12dp">
 
-            <RelativeLayout
+            <LinearLayout
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnOpenWith"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginEnd="4dp"
+                    android:layout_marginEnd="8dp"
                     style="@style/Widget.Material3.Button.TonalButton"
-                    android:layout_alignParentStart="true"
                     android:text="@string/open_with" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnDelete"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
-                    android:layout_alignParentEnd="true"
-                    android:backgroundTint="?attr/colorErrorContainer"
-                    app:iconTint="?attr/colorError"
-                    app:icon="@drawable/ic_delete_forever"/>
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnShare"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_toEndOf="@id/btnOpenWith"
+                    android:layout_marginEnd="8dp"
+                    android:contentDescription="@string/share_file"
+                    android:tooltipText="@string/share_file"
+                    tools:targetApi="o"
                     style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
                     app:icon="@drawable/ic_share"/>
 
@@ -146,7 +145,10 @@
                     android:id="@+id/btnFileInfo"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_toEndOf="@id/btnShare"
+                    android:layout_marginEnd="8dp"
+                    android:contentDescription="@string/file_info"
+                    android:tooltipText="@string/file_info"
+                    tools:targetApi="o"
                     style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
                     app:icon="@drawable/ic_info"/>
 
@@ -154,11 +156,30 @@
                     android:id="@+id/btnRename"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_toEndOf="@id/btnFileInfo"
+                    android:layout_marginEnd="8dp"
                     android:contentDescription="@string/rename_t"
+                    android:tooltipText="@string/rename_t"
+                    tools:targetApi="o"
                     style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
                     app:icon="@drawable/ic_rename"/>
-            </RelativeLayout>
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnDelete"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:contentDescription="@string/delete"
+                    android:tooltipText="@string/delete"
+                    tools:targetApi="o"
+                    style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
+                    android:backgroundTint="?attr/colorErrorContainer"
+                    app:iconTint="?attr/colorError"
+                    app:icon="@drawable/ic_delete_forever"/>
+            </LinearLayout>
         </HorizontalScrollView>
 
         <com.google.android.material.button.MaterialButton

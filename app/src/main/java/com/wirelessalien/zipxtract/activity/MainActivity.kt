@@ -103,6 +103,23 @@ class MainActivity : AppCompatActivity() {
                 menuInflater.inflate(R.menu.menu_main, menu)
             }
 
+            override fun onPrepareMenu(menu: Menu) {
+                val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this@MainActivity)
+                val sortBy = sharedPreferences.getString("sortBy", "SORT_BY_NAME")
+                val sortAscending = sharedPreferences.getBoolean("sortAscending", true)
+
+                val sortById = when (sortBy) {
+                    "SORT_BY_SIZE" -> R.id.menu_sort_by_size
+                    "SORT_BY_MODIFIED" -> R.id.menu_sort_by_time_of_creation
+                    "SORT_BY_EXTENSION" -> R.id.menu_sort_by_extension
+                    else -> R.id.menu_sort_by_name
+                }
+                menu.findItem(sortById)?.isChecked = true
+
+                val orderId = if (sortAscending) R.id.menu_sort_ascending else R.id.menu_sort_descending
+                menu.findItem(orderId)?.isChecked = true
+            }
+
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 if (menuItem.itemId == R.id.menu_search) {
                     binding.searchView.show()
@@ -128,6 +145,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 if (isHandled && menuItem.itemId != R.id.menu_settings) {
+                    menuItem.isChecked = true
                     val fragment = supportFragmentManager.findFragmentById(R.id.container)
                     if (fragment is MainFragment) {
                         fragment.updateAdapterWithFullList()

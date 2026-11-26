@@ -243,6 +243,8 @@ class PathPickerFragment : BottomSheetDialogFragment(), FilePickerAdapter.OnItem
                 pathAccumulator = if (pathAccumulator.endsWith("/")) "$pathAccumulator$part" else "$pathAccumulator/$part"
             }
 
+            binding.chipGroupPath.addView(com.wirelessalien.zipxtract.helper.PathUtils.createBreadcrumbSeparator(requireContext()))
+
             val chip = LayoutInflater.from(requireContext()).inflate(R.layout.custom_chip, binding.chipGroupPath, false) as Chip
             chip.text = part
 

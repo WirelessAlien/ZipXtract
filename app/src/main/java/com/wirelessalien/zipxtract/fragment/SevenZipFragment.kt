@@ -256,6 +256,7 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
 
         for (part in pathParts) {
             cumulativePath += if (cumulativePath.isEmpty()) part else "/$part"
+            binding.chipGroupPath.addView(com.wirelessalien.zipxtract.helper.PathUtils.createBreadcrumbSeparator(requireContext()))
             val chip = LayoutInflater.from(requireContext()).inflate(R.layout.custom_chip, binding.chipGroupPath, false) as Chip
             chip.text = part
             val pathToLoad = cumulativePath
