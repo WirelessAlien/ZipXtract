@@ -631,9 +631,11 @@ class SevenZipFragment : Fragment(), ArchiveItemAdapter.OnItemClickListener, Fil
         }
 
         binding.btnPreviewArchive.visibility = View.GONE
+        binding.actionButtonsRow.visibility = View.GONE
         binding.btnShare.visibility = View.GONE
         binding.btnOpenWith.visibility = View.GONE
         binding.btnFileInfo.visibility = View.GONE
+        binding.btnRename.visibility = View.GONE
         binding.btnDelete.visibility = View.GONE
         binding.lowStorageWarning.visibility = View.GONE
 

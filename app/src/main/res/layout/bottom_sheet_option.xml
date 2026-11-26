@@ -106,6 +106,7 @@
             android:layout_marginEnd="16dp"/>
 
         <HorizontalScrollView
+            android:id="@+id/actionButtonsRow"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:scrollbars="none"
