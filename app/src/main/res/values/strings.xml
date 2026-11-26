@@ -142,8 +142,8 @@
     <!-- Settings -->
     <string name="extract_path">Extracted files folder</string>
     <string name="archive_path">Archived files folder</string>
-    <string name="archive_path_summary">Modify the default extract folder. \nDefault is \"parent folder\"</string>
-    <string name="extract_path_summary">Modify the default extract folder. \nDefault is \"parent folder\" or Internal Storage/ZipXtract (for \"Open With\" menu extracted archive)</string>
+    <string name="archive_path_summary">Choose where created archives are saved.\nDefault: parent folder (long-press to reset)</string>
+    <string name="extract_path_summary">Choose where extracted files are saved.\nDefault: parent folder, or Internal Storage/ZipXtract for \"Open With\" (long-press to reset)</string>
     <string name="fast_search">Fast Search</string>
     <string name="fast_search_summary">Use Android\'s media index for faster search</string>
     <string name="show_hidden_files">Show hidden files</string>
