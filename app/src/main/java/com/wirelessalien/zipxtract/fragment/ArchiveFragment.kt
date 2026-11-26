@@ -69,6 +69,7 @@ import com.wirelessalien.zipxtract.helper.HapticHelper
 import com.wirelessalien.zipxtract.helper.OngoingTaskManager
 import com.wirelessalien.zipxtract.helper.TaskType
 import com.wirelessalien.zipxtract.helper.EventBus
+import com.wirelessalien.zipxtract.helper.RenameDialogHelper
 import com.wirelessalien.zipxtract.constant.ServiceConstants.EXTRA_DESTINATION_PATH
 import com.wirelessalien.zipxtract.constant.ServiceConstants.EXTRA_JOB_ID
 import com.wirelessalien.zipxtract.constant.ServiceConstants.EXTRA_PASSWORD
@@ -706,6 +707,17 @@ class ArchiveFragment : Fragment(), FileAdapter.OnItemClickListener, Searchable 
 
             startActivity(Intent.createChooser(intent, getString(R.string.open_with)))
             bottomSheetDialog.dismiss()
+        }
+
+        binding.btnRename.setOnClickListener {
+            bottomSheetDialog.dismiss()
+            RenameDialogHelper.showSingleRenameDialog(
+                requireContext(),
+                viewLifecycleOwner.lifecycleScope,
+                file
+            ) {
+                updateAdapterWithFullList()
+            }
         }
 
         binding.btnDelete.setOnClickListener {

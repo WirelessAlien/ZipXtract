@@ -117,6 +117,7 @@ import com.wirelessalien.zipxtract.helper.FileOperationsDao
 import com.wirelessalien.zipxtract.helper.MimeTypeHelper
 import com.wirelessalien.zipxtract.helper.MultipartArchiveHelper
 import com.wirelessalien.zipxtract.helper.PathUtils
+import com.wirelessalien.zipxtract.helper.RenameDialogHelper
 import com.wirelessalien.zipxtract.helper.Searchable
 import com.wirelessalien.zipxtract.helper.StorageHelper
 import com.wirelessalien.zipxtract.model.FileItem
@@ -1003,6 +1004,11 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
                             true
                         }
 
+                        R.id.menu_action_rename -> {
+                            startRenameAction()
+                            true
+                        }
+
                         R.id.menu_action_delete -> {
                             deleteSelectedFiles()
                             actionMode?.finish()
@@ -1063,6 +1069,36 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             actionMode?.finish()
             unselectAllFiles()
             executeDelete(filesToDelete)
+        }
+    }
+
+    private fun refreshAfterRename() {
+        if (isSearchActive) {
+            searchFiles(currentQuery)
+        } else {
+            updateAdapterWithFullList()
+        }
+    }
+
+    private fun startRenameAction() {
+        val filesToRename = selectedFiles.toList()
+        actionMode?.finish()
+        if (filesToRename.isEmpty()) return
+
+        if (filesToRename.size == 1) {
+            RenameDialogHelper.showSingleRenameDialog(
+                requireContext(),
+                viewLifecycleOwner.lifecycleScope,
+                filesToRename.first()
+            ) {
+                refreshAfterRename()
+            }
+        } else {
+            val sheet = MultiRenameBottomSheetDialogFragment.newInstance(filesToRename)
+            sheet.setOnBatchRenameListener {
+                refreshAfterRename()
+            }
+            sheet.show(parentFragmentManager, MultiRenameBottomSheetDialogFragment.TAG)
         }
     }
 
@@ -1497,6 +1533,17 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
             bottomSheetDialog.dismiss()
         }
 
+        binding.btnRename.setOnClickListener {
+            bottomSheetDialog.dismiss()
+            RenameDialogHelper.showSingleRenameDialog(
+                requireContext(),
+                viewLifecycleOwner.lifecycleScope,
+                file
+            ) {
+                refreshAfterRename()
+            }
+        }
+
         binding.btnShare.setOnClickListener {
             val uri = FileProvider.getUriForFile(requireContext().applicationContext, "${BuildConfig.APPLICATION_ID}.provider", file)
             val mime: String = getMimeType(uri.toString())
@@ -1727,6 +1774,17 @@ class MainFragment : Fragment(), FileAdapter.OnItemClickListener, FileAdapter.On
         binding.btnFileInfo.setOnClickListener {
             showFileInfo(file)
             bottomSheetDialog.dismiss()
+        }
+
+        binding.btnRename.setOnClickListener {
+            bottomSheetDialog.dismiss()
+            RenameDialogHelper.showSingleRenameDialog(
+                requireContext(),
+                viewLifecycleOwner.lifecycleScope,
+                file
+            ) {
+                refreshAfterRename()
+            }
         }
 
         binding.btnShare.setOnClickListener {

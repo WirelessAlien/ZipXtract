@@ -45,6 +45,12 @@
         app:showAsAction="ifRoom" />
 
     <item
+        android:id="@+id/menu_action_rename"
+        android:title="@string/rename_t"
+        android:icon="@drawable/ic_rename"
+        app:showAsAction="ifRoom" />
+
+    <item
         android:id="@+id/menu_action_delete"
         android:title="@string/delete"
         app:showAsAction="ifRoom" />

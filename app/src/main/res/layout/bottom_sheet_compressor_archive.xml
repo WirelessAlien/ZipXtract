@@ -165,6 +165,15 @@
                     android:layout_toEndOf="@id/btnShare"
                     style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
                     app:icon="@drawable/ic_info"/>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnRename"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_toEndOf="@id/btnFileInfo"
+                    android:contentDescription="@string/rename_t"
+                    style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
+                    app:icon="@drawable/ic_rename"/>
             </RelativeLayout>
         </HorizontalScrollView>
 

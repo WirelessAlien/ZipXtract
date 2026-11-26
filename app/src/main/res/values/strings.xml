@@ -301,4 +301,37 @@
     <string name="preset_maximum">Maximum</string>
     <string name="preset_store">Store</string>
     <string name="advanced_settings">Advanced Settings</string>
+
+    <!-- Rename & Multi-Rename -->
+    <string name="rename_new_name">New name</string>
+    <string name="rename_error_empty">Name cannot be empty</string>
+    <string name="rename_error_invalid_chars">Name cannot contain / or \\ or be . or ..</string>
+    <string name="rename_error_exists">An item with this name already exists</string>
+    <string name="rename_failed">Failed to rename</string>
+    <string name="rename_success">Renamed to %1$s</string>
+    <string name="multi_rename_title">Multi Rename (%1$d items)</string>
+    <string name="multi_rename_mode_pattern">Pattern</string>
+    <string name="multi_rename_mode_replace">Replace</string>
+    <string name="multi_rename_mode_add_case">Add / Case</string>
+    <string name="multi_rename_pattern_hint">Pattern (e.g. {name}_{n:02})</string>
+    <string name="multi_rename_start">Start</string>
+    <string name="multi_rename_step">Step</string>
+    <string name="multi_rename_find">Find</string>
+    <string name="multi_rename_replace">Replace with</string>
+    <string name="multi_rename_case_sensitive">Case sensitive</string>
+    <string name="multi_rename_use_regex">Use regex</string>
+    <string name="multi_rename_prefix">Prefix</string>
+    <string name="multi_rename_suffix">Suffix</string>
+    <string name="multi_rename_case_label">Case</string>
+    <string name="multi_rename_case_unchanged">Unchanged</string>
+    <string name="multi_rename_case_lower">lowercase</string>
+    <string name="multi_rename_case_upper">UPPERCASE</string>
+    <string name="multi_rename_case_title">Title Case</string>
+    <string name="multi_rename_keep_extension">Keep file extension</string>
+    <string name="multi_rename_preview">Preview</string>
+    <string name="multi_rename_action">Rename (%1$d)</string>
+    <string name="multi_rename_error_duplicate">Duplicate target name in selection</string>
+    <string name="multi_rename_error_regex">Invalid regular expression</string>
+    <string name="multi_rename_result_summary">Renamed %1$d item(s)</string>
+    <string name="multi_rename_result_partial">Renamed %1$d, failed %2$d</string>
 </resources>
